@@ -304,12 +304,12 @@ class PharmacyPortalStockReportTest extends TestCase
             ->assertSee('Paracetamol 500mg Tablet')
             ->assertSee(__('public.pharmacy_portal.stock_src_portal'), false);
 
-        // The legacy /portals/pharmacy/inventory path is repointed at the same
-        // data — it no longer reads pharmacy_inventories.
+        // The legacy /portals/pharmacy/inventory alias was deleted with the
+        // inventory-ops module in the Finder extraction. It must stay gone —
+        // the stock page above is the only entry.
         $this->asPharmacist()
             ->get('/portals/pharmacy/inventory')
-            ->assertOk()
-            ->assertSee('Paracetamol 500mg Tablet');
+            ->assertNotFound();
     }
 
     public function test_a_stock_report_never_writes_to_the_legacy_pharmacy_inventories_table(): void

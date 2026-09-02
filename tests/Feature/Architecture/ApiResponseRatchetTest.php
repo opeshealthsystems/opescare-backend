@@ -42,9 +42,10 @@ class ApiResponseRatchetTest extends TestCase
      * after the Tier-3 batch (17 controllers); 115 after the Tier-4 tail
      * (CountryExpansion + OfflineSync); 86 after the Tier-5 batch (Radiology,
      * Maternity, AdvanceDirective, PenTest, BloodInventory, PaymentPlan,
-     * ResearchAccess). This number must only ever go DOWN.
+     * ResearchAccess); 40 after the Finder extraction deleted the out-of-scope
+     * API controllers outright. This number must only ever go DOWN.
      */
-    private const BASELINE = 86;
+    private const BASELINE = 40;
 
     public function test_raw_model_api_responses_do_not_exceed_baseline(): void
     {

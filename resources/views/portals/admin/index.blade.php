@@ -37,34 +37,14 @@
     <div class="stat-card__value">{{ $platformStats['facilities'] ?? '—' }}</div>
     <div class="stat-card__label">{{ __('public.admin_governance.stat_total_facilities', [], app()->getLocale()) ?: 'Total Facilities' }}</div>
   </a>
-  <a href="{{ route('portals.admin.organizations.index') }}" class="stat-card">
-    <div class="stat-card__icon"><i data-lucide="building-2"></i></div>
-    <div class="stat-card__value">{{ $platformStats['organizations'] ?? '—' }}</div>
-    <div class="stat-card__label">{{ __('public.admin_governance.stat_organizations', [], app()->getLocale()) ?: 'Organizations' }}</div>
-  </a>
-  <a href="{{ route('portals.admin.subscription') }}" class="stat-card">
-    <div class="stat-card__icon"><i data-lucide="credit-card"></i></div>
-    <div class="stat-card__value">{{ $platformStats['active_subscriptions'] ?? '—' }}</div>
-    <div class="stat-card__label">{{ __('public.admin_governance.stat_active_subscriptions', [], app()->getLocale()) ?: 'Active Subscriptions' }}</div>
-  </a>
-  <a href="{{ route('portals.admin.support.index') }}" class="stat-card">
-    <div class="stat-card__icon"><i data-lucide="life-buoy"></i></div>
-    <div class="stat-card__value">{{ $platformStats['open_tickets'] ?? '—' }}</div>
-    <div class="stat-card__label">{{ __('public.admin_governance.stat_open_tickets', [], app()->getLocale()) ?: 'Open Support Tickets' }}</div>
-  </a>
-</div>
+      </div>
 <div class="stat-grid mb-6" style="--cols:3">
   <a href="{{ route('portals.admin.users.index') }}" class="stat-card">
     <div class="stat-card__icon"><i data-lucide="users"></i></div>
     <div class="stat-card__value">{{ $platformStats['total_users'] ?? '—' }}</div>
     <div class="stat-card__label">{{ __('public.admin_governance.stat_total_users', [], app()->getLocale()) ?: 'Total Users' }}</div>
   </a>
-  <a href="{{ route('portals.admin.onboarding') }}" class="stat-card">
-    <div class="stat-card__icon"><i data-lucide="rocket"></i></div>
-    <div class="stat-card__value">{{ $platformStats['pending_onboarding'] ?? '—' }}</div>
-    <div class="stat-card__label">{{ __('public.admin_governance.stat_pending_onboarding', [], app()->getLocale()) ?: 'Pending Onboardings' }}</div>
-  </a>
-</div>
+  </div>
 @endplatformadmin
 
 <!-- KPI Cards -->

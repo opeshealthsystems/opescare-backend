@@ -28,7 +28,7 @@ class DashboardProfileService
 
         $url = $profile ? $profile->landingUrl() : url('/portals/patient');
 
-        if (! \App\Support\Features::pathIsFrozen($url)) {
+        if (! \App\Support\Features::pathIsFrozen($url) && $this->pathExists($url)) {
             return $url;
         }
 
@@ -43,13 +43,36 @@ class DashboardProfileService
         if ($portal) {
             $root = url('/portals/' . ltrim($portal, '/'));
 
-            if (! \App\Support\Features::pathIsFrozen($root)) {
+            if (! \App\Support\Features::pathIsFrozen($root) && $this->pathExists($root)) {
                 return $root;
             }
         }
 
         // Portal root frozen too — the whole surface is out of this release.
         return route('portal.unavailable');
+    }
+
+    /**
+     * Whether any GET route answers at this path.
+     *
+     * The frozen-path check above covers the platform's freeze-flag world; this
+     * covers the Finder's, where removed modules are DELETED rather than frozen
+     * and so are invisible to the freeze map. Without it, a role whose portal
+     * was removed (every insurance account, for instance) is sent from login
+     * straight to a 404 -- the exact dead end the portal-unavailable page
+     * exists to prevent.
+     */
+    private function pathExists(string $url): bool
+    {
+        try {
+            app('router')->getRoutes()->match(
+                \Illuminate\Http\Request::create($url, 'GET')
+            );
+
+            return true;
+        } catch (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException|\Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException) {
+            return false;
+        }
     }
 
     public function landingUrlForCurrent(): string

@@ -23,44 +23,16 @@
         <i data-lucide="calendar-check-2"></i>
         <span>{{ __('public.portal.nav_appointments', [], app()->getLocale()) ?: 'Appointments' }}</span>
     </a>
-    <a href="{{ route('portals.staff.queue') }}" class="sidebar-link">
-        <i data-lucide="list-ordered"></i>
-        <span>{{ __('public.portal.nav_queue', [], app()->getLocale()) ?: 'Patient Queue' }}</span>
-    </a>
-    <a href="{{ route('portals.staff.visits') }}" class="sidebar-link">
-        <i data-lucide="stethoscope"></i>
-        <span>{{ __('public.portal.nav_visits', [], app()->getLocale()) ?: 'Visits' }}</span>
-    </a>
-    @feature('clinical_decision_support')
+            @feature('clinical_decision_support')
     @endfeature
 </div>
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.stf_nav_hr_staff') }}</div>
-    <a href="{{ route('portals.staff.hr.directory') }}" class="sidebar-link">
-        <i data-lucide="users"></i>
-        <span>{{ __('public.portal.nav_staff_directory', [], app()->getLocale()) ?: 'Directory' }}</span>
-    </a>
-    <a href="{{ route('portals.staff.hr.shifts') }}" class="sidebar-link">
-        <i data-lucide="clock"></i>
-        <span>{{ __('public.portal.nav_staff_shifts', [], app()->getLocale()) ?: 'Shifts' }}</span>
-    </a>
-    <a href="{{ route('portals.staff.hr.roster') }}" class="sidebar-link">
-        <i data-lucide="calendar-range"></i>
-        <span>{{ __('public.portal.nav_staff_roster', [], app()->getLocale()) ?: 'Duty Roster' }}</span>
-    </a>
-    <a href="{{ route('portals.staff.hr.leave') }}" class="sidebar-link">
-        <i data-lucide="plane-takeoff"></i>
-        <span>{{ __('public.portal.nav_staff_leave', [], app()->getLocale()) ?: 'Leave' }}</span>
-    </a>
-</div>
+                </div>
 @feature('inventory_ops')
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.stf_nav_inventory') }}</div>
-    <a href="{{ route('portals.staff.inventory.pharmacy') }}" class="sidebar-link">
-        <i data-lucide="pill"></i>
-        <span>{{ __('public.portal.nav_inventory_pharmacy', [], app()->getLocale()) ?: 'Pharmacy' }}</span>
-    </a>
-    <a href="{{ route('portals.staff.inventory.blood') }}" class="sidebar-link">
+        <a href="{{ route('portals.staff.inventory.blood') }}" class="sidebar-link">
         <i data-lucide="droplets"></i>
         <span>{{ __('public.portal.nav_inventory_blood', [], app()->getLocale()) ?: 'Blood Bank' }}</span>
     </a>
@@ -69,47 +41,15 @@
 @feature('inventory_ops')
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.stf_nav_supply_chain') }}</div>
-    <a href="{{ route('portals.staff.supply') }}" class="sidebar-link {{ request()->routeIs('portals.staff.supply*') ? 'active' : '' }}">
-        <i data-lucide="package"></i>
-        <span>{{ __('public.stf_nav_supply_chain') }}</span>
-    </a>
-</div>
+    </div>
 @endfeature
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.stf_nav_operations') }}</div>
     @feature('billing')
-    <a href="{{ route('portals.staff.billing') }}" class="sidebar-link">
-        <i data-lucide="receipt"></i>
-        <span>{{ __('public.portal.nav_billing', [], app()->getLocale()) ?: 'Billing' }}</span>
-    </a>
-    @endfeature
-    <a href="{{ route('portals.staff.support') }}" class="sidebar-link">
-        <i data-lucide="headset"></i>
-        <span>{{ __('public.portal.nav_support', [], app()->getLocale()) ?: 'Support' }}</span>
-    </a>
-    @feature('insurance')
-    <a href="{{ route('portals.insurance.policies') }}" class="sidebar-link">
-        <i data-lucide="shield-check"></i>
-        <span>{{ __('public.portal.nav_insurance', [], app()->getLocale()) ?: 'Insurance' }}</span>
-    </a>
-    @endfeature
-    <a href="{{ route('portals.staff.data_import.index') }}" class="sidebar-link">
-        <i data-lucide="upload-cloud"></i>
-        <span>{{ __('public.portal.nav_data_import', [], app()->getLocale()) ?: 'Data Import' }}</span>
-    </a>
-    <a href="{{ route('portals.staff.search') }}" class="sidebar-link {{ request()->routeIs('portals.staff.search') ? 'active' : '' }}">
-        <i data-lucide="search"></i>
-        <span>{{ __('public.portal.nav_search', [], app()->getLocale()) ?: 'Global Search' }}</span>
-    </a>
-    <a href="{{ route('portals.staff.files.index') }}" class="sidebar-link {{ request()->routeIs('portals.staff.files*') ? 'active' : '' }}">
-        <i data-lucide="paperclip"></i>
-        <span>{{ __('public.portal.nav_files', [], app()->getLocale()) ?: 'Files & Attachments' }}</span>
-    </a>
-    <a href="{{ route('portals.staff.wards') }}" class="sidebar-link {{ request()->routeIs('portals.staff.wards*') ? 'active' : '' }}">
-        <i data-lucide="bed"></i>
-        <span>{{ __('public.portal.nav_wards', [], app()->getLocale()) ?: 'Wards & Beds' }}</span>
-    </a>
-</div>
+        @endfeature
+        @feature('insurance')
+        @endfeature
+                </div>
 @endsection
 
 @section('breadcrumb_home', __('public.staff_portal.title', [], app()->getLocale()) ?: 'Staff Portal')

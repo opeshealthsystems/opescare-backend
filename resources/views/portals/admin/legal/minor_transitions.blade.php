@@ -5,8 +5,7 @@
 @section('content')
 
 <div class="breadcrumb">
-    <a href="{{ route('portals.admin.legal') }}">{{ __('public.adm_legal_closures_breadcrumb') }}</a>
-    <i data-lucide="chevron-right"></i>
+        <i data-lucide="chevron-right"></i>
     <span>{{ __('public.adm_legal_minor_breadcrumb_span') }}</span>
 </div>
 

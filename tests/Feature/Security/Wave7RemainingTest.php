@@ -19,10 +19,4 @@ class Wave7RemainingTest extends TestCase
             'PortalContextService::actorId() must not return the string "anonymous"');
     }
 
-    public function test_analytics_controller_has_facility_id_validation(): void
-    {
-        $source = file_get_contents(app_path('Http/Controllers/Api/V1/AnalyticsController.php'));
-        $this->assertStringContainsString('facility_id', $source,
-            'AnalyticsController must validate facility_id ownership');
-    }
 }

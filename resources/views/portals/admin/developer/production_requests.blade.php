@@ -5,8 +5,7 @@
 @section('content')
 
 <div class="breadcrumb">
-    <a href="{{ route('portals.admin.connect') }}">{{ __('public.adm_dev_prod_breadcrumb_parent') }}</a>
-    <i data-lucide="chevron-right"></i>
+        <i data-lucide="chevron-right"></i>
     <span>{{ __('public.adm_dev_prod_breadcrumb_section') }}</span>
 </div>
 

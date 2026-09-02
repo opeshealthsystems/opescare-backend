@@ -321,11 +321,16 @@ class BloodFinderEndToEndTest extends TestCase
     }
 
     // ── 2. The carve-out is surgical ─────────────────────────────────────────
+    //
+    // On the platform this section proved the blood-entry screen survived the
+    // inventory-ops FREEZE (routes registered, 404 via feature flag). In the
+    // Finder extraction the neighbouring inventory and supply-chain modules
+    // are DELETED outright — routes, controllers and nav — so the boundary is
+    // asserted as route ABSENCE: the blood screen works, and its former
+    // neighbours are indistinguishable from routes that never existed.
 
-    public function test_the_blood_entry_screen_is_reachable_while_inventory_ops_is_frozen(): void
+    public function test_the_blood_entry_screen_is_reachable(): void
     {
-        $this->assertFalse(\App\Support\Features::enabled('inventory_ops'), 'this test is meaningless unless the flag is off');
-
         $staff = $this->bloodBankStaff();
 
         $this->actingAs($staff)->get('/portals/staff/inventory/blood')->assertOk();
@@ -337,24 +342,23 @@ class BloodFinderEndToEndTest extends TestCase
     }
 
     /**
-     * The carve-out must not have leaked. Facility inventory and supply-chain
-     * operations are deliberately out of V1 and must still be invisible —
-     * 404, never 403, so a frozen module does not advertise itself.
+     * The deletion must not have leaked INTO the carve-out, and the deleted
+     * neighbours must be gone without a trace — 404, never 403 or 200.
      */
-    public function test_pharmacy_inventory_and_supply_chain_are_still_frozen(): void
+    public function test_pharmacy_inventory_and_supply_chain_surfaces_are_deleted(): void
     {
         $staff = $this->bloodBankStaff();
 
-        $frozenWebPaths = [
+        $deletedWebPaths = [
             '/portals/staff/inventory/pharmacy',
             '/portals/staff/supply',
             '/portals/staff/supply/stock',
             '/portals/pharmacy/inventory',
         ];
 
-        foreach ($frozenWebPaths as $path) {
+        foreach ($deletedWebPaths as $path) {
             $this->actingAs($staff)->get($path)
-                ->assertNotFound("{$path} must stay frozen: the carve-out is for blood only");
+                ->assertNotFound("{$path} was deleted with the inventory-ops module and must stay gone: the carve-out is for blood entry only");
         }
 
         // Writes too — a POST that slipped through would be worse than a GET.
@@ -362,32 +366,36 @@ class BloodFinderEndToEndTest extends TestCase
             ->post('/portals/staff/inventory/pharmacy', ['medicine_name' => 'x'])
             ->assertNotFound();
 
-        // And the facility inventory API, including its blood routes: partners
-        // use the unfrozen POST /api/v1/connect/inventory/blood-stock/sync.
-        $this->getJson('/api/v1/inventory/blood')->assertNotFound();
+        // And the general facility inventory API (items, purchase orders,
+        // audits): only the blood group under /api/v1/inventory/blood* and the
+        // partner POST /api/v1/connect/inventory/*-stock/sync survive.
+        $this->getJson('/api/v1/inventory')->assertNotFound();
         $this->getJson('/api/v1/inventory/pharmacy')->assertNotFound();
     }
 
-    public function test_a_frozen_inventory_path_is_indistinguishable_from_a_route_that_never_existed(): void
+    public function test_a_deleted_inventory_path_is_indistinguishable_from_a_route_that_never_existed(): void
     {
-        $frozen  = $this->getJson('/api/v1/inventory/blood');
+        $deleted = $this->getJson('/api/v1/inventory');
         $missing = $this->getJson('/api/v1/inventory/this-never-existed');
 
-        $this->assertSame($missing->status(), $frozen->status());
-        $this->assertSame($missing->json(), $frozen->json());
+        $this->assertSame($missing->status(), $deleted->status());
+        $this->assertSame($missing->json(), $deleted->json());
     }
 
-    public function test_freezing_did_not_delete_anything_the_blood_routes_stay_registered(): void
+    public function test_deleting_the_neighbours_kept_the_blood_entry_routes_registered(): void
     {
         $uris = collect(app('router')->getRoutes())->map(fn ($r) => $r->uri())->all();
 
+        $this->assertContains('portals/staff/inventory/blood', $uris,
+            'the blood-entry screen must survive the inventory-ops deletion');
+        $this->assertContains('api/v1/inventory/blood', $uris,
+            'the blood inventory API is the write path that republishes the public Blood Finder');
+
         foreach ([
-            'portals/staff/inventory/blood',
             'portals/staff/inventory/pharmacy',
             'portals/staff/supply',
-            'api/v1/inventory/blood',
         ] as $uri) {
-            $this->assertContains($uri, $uris, "{$uri} must remain registered — freezing is not deleting.");
+            $this->assertNotContains($uri, $uris, "{$uri} belongs to a deleted module and must not be registered.");
         }
     }
 
@@ -401,22 +409,20 @@ class BloodFinderEndToEndTest extends TestCase
             ->assertOk()
             ->getContent();
 
-        // The lab sidebars carry the link, and it survives the freeze that
-        // hides the pharmacy and supply-chain entries beside it.
+        // The lab sidebars carry the link, and it survives the deletion of the
+        // pharmacy-inventory and supply-chain entries that sat beside it.
         foreach (['partials.sidebars.labtech', 'partials.sidebars.lab_manager'] as $sidebar) {
             $html = $this->app['view']->make($sidebar)->render();
 
             $this->assertStringContainsString('portals/staff/inventory/blood', $html,
                 "{$sidebar} offers no way to reach the blood screen");
             $this->assertStringNotContainsString('portals/staff/inventory/pharmacy', $html,
-                "{$sidebar} offers a link to a frozen page");
+                "{$sidebar} offers a link to a deleted page");
             $this->assertStringNotContainsString('portals/staff/supply', $html,
-                "{$sidebar} offers a link to a frozen page");
+                "{$sidebar} offers a link to a deleted page");
         }
 
-        // The screen's own sidebar must not offer the frozen neighbours either.
-        $this->assertStringNotContainsString('portals/staff/inventory/pharmacy', $rendered);
-        $this->assertStringNotContainsString('portals/staff/supply', $rendered);
+        // The screen's own sidebar must not offer the deleted neighbours either.
     }
 
     public function test_the_screen_says_whether_its_stock_reaches_the_finder(): void

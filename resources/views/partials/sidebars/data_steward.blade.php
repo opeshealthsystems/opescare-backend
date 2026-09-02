@@ -13,14 +13,6 @@
 </div>
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_administration', [], $l) ?: 'Data Quality' }}</div>
-    <a href="{{ route('portals.staff.data_import.index') }}" class="sidebar-link">
-        <i data-lucide="upload"></i>
-        <span>{{ __('public.portal.nav_data_import', [], $l) ?: 'Data Import' }}</span>
-    </a>
-    @feature('analytics_dashboards')
+        @feature('analytics_dashboards')
     @endfeature
-    <a href="{{ route('portals.staff.support') }}" class="sidebar-link">
-        <i data-lucide="headset"></i>
-        <span>{{ __('public.portal.nav_support', [], $l) ?: 'Support' }}</span>
-    </a>
-</div>
+    </div>

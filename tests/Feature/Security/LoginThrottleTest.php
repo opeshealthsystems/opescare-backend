@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Security;
 
-use App\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Support\Facades\RateLimiter;
 use Tests\TestCase;
 
@@ -12,7 +12,7 @@ class LoginThrottleTest extends TestCase
     {
         parent::setUp();
         // Disable ONLY CSRF so requests reach the route's throttle:5,1 middleware.
-        $this->withoutMiddleware(VerifyCsrfToken::class);
+        $this->withoutMiddleware(ValidateCsrfToken::class);
         RateLimiter::clear(sha1('brute@opescare.test|127.0.0.1'));
     }
 

@@ -20,13 +20,13 @@ class PortalNavigationTest extends TestCase
             ->get(route('portals.patient'));
 
         $response->assertStatus(200);
-        $response->assertSee(route('portals.patient.labs'));
+        // The Finder's patient portal sections: labs, consent, documents and
+        // access-log pages were deleted with the records/governance web UI
+        // (mobile keeps the privacy screens), so the dashboard offers the
+        // surviving sections only.
         $response->assertSee(route('portals.patient.prescriptions'));
-        $response->assertSee(route('portals.patient.consent'));
-        $response->assertSee(route('portals.patient.documents'));
         $response->assertSee(route('portals.patient.profile'));
         $response->assertSee(route('portals.patient.appointments'));
-        $response->assertSee(route('portals.patient.logs'));
         $response->assertSee(route('public.care-map'));
     }
 

@@ -199,65 +199,12 @@ class AppointmentBookingTest extends TestCase
         $this->assertEquals('scheduled', $future->fresh()->status);
     }
 
-    public function test_api_patient_scope_cannot_list_another_patients_appointments()
-    {
-        [$patient, $facility, $provider] = $this->appointmentActors();
-        $otherPatient = Patient::create(['health_id' => 'OC-APT-OTHER', 'first_name' => 'Other', 'last_name' => 'Patient']);
+    // NOTE (Finder extraction): the two B2B listing tests (patient-scope and
+    // provider/facility filters on GET /api/v1/appointments) were removed with
+    // the v1 B2B appointments API. Booking, rescheduling, cancellation,
+    // check-in and no-show coverage above runs on the kept service and
+    // portal/mobile surfaces.
 
-        Appointment::create([
-            'patient_id' => $patient->id,
-            'facility_id' => $facility->id,
-            'provider_id' => $provider->id,
-            'appointment_type' => 'outpatient',
-            'status' => 'scheduled',
-            'scheduled_at' => '2026-06-01 09:00:00',
-        ]);
-        Appointment::create([
-            'patient_id' => $otherPatient->id,
-            'facility_id' => $facility->id,
-            'provider_id' => $provider->id,
-            'appointment_type' => 'outpatient',
-            'status' => 'scheduled',
-            'scheduled_at' => '2026-06-01 10:00:00',
-        ]);
-
-        $response = $this->withHeaders($this->clientHeadersFor($facility))
-            ->getJson('/api/v1/appointments?patient_id='.$patient->id.'&scope=patient');
-
-        $response->assertOk()->assertJsonCount(1, 'data');
-        $this->assertSame($patient->id, $response->json('data.0.patient_id'));
-    }
-
-    public function test_api_provider_and_facility_filters_return_assigned_appointments()
-    {
-        [$patient, $facility, $provider] = $this->appointmentActors();
-        $otherFacility = Facility::create(['name' => 'Other Facility', 'type' => 'clinic']);
-        $otherProvider = User::create(['name' => 'Dr Other', 'email' => 'other@test.com', 'password' => 'password', 'primary_facility_id' => $otherFacility->id]);
-
-        Appointment::create([
-            'patient_id' => $patient->id,
-            'facility_id' => $facility->id,
-            'provider_id' => $provider->id,
-            'appointment_type' => 'outpatient',
-            'status' => 'scheduled',
-            'scheduled_at' => '2026-06-01 09:00:00',
-        ]);
-        Appointment::create([
-            'patient_id' => $patient->id,
-            'facility_id' => $otherFacility->id,
-            'provider_id' => $otherProvider->id,
-            'appointment_type' => 'outpatient',
-            'status' => 'scheduled',
-            'scheduled_at' => '2026-06-01 10:00:00',
-        ]);
-
-        $response = $this->withHeaders($this->clientHeadersFor($facility))
-            ->getJson('/api/v1/appointments?facility_id='.$facility->id.'&provider_id='.$provider->id);
-
-        $response->assertOk()->assertJsonCount(1, 'data');
-        $this->assertSame($facility->id, $response->json('data.0.facility_id'));
-        $this->assertSame($provider->id, $response->json('data.0.provider_id'));
-    }
 
     /**
      * Create an active IntegrationClient bound to the given facility so

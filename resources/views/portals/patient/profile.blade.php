@@ -101,10 +101,7 @@
                 <div class="form-group">
                     <div class="flex-between mb-3">
                         <label class="form-label">{{ __('public.portal.lbl_active_allergies', [], $l) ?: 'Active Allergies' }}</label>
-                        <a href="{{ route('portals.patient.allergies') }}" class="link-action">
-                            <i data-lucide="external-link"></i> {{ __('public.portal.link_view_manage', [], $l) ?: 'View / manage →' }}
-                        </a>
-                    </div>
+                                            </div>
                     @if($allergies->isEmpty())
                         <div class="empty-state">
                             <i data-lucide="check-circle"></i> {{ __('public.portal.lbl_no_allergies', [], $l) ?: 'No allergies on record.' }}
@@ -138,10 +135,7 @@
                 <div class="form-group">
                     <div class="flex-between mb-3">
                         <label class="form-label">{{ __('public.portal.lbl_active_conditions', [], $l) ?: 'Active Conditions' }}</label>
-                        <a href="{{ route('portals.patient.clinical') }}" class="link-action">
-                            <i data-lucide="external-link"></i> {{ __('public.portal.link_view_all', [], $l) ?: 'View all →' }}
-                        </a>
-                    </div>
+                                            </div>
                     @if($conditions->isEmpty())
                         <div class="empty-state">
                             <i data-lucide="check-circle"></i> {{ __('public.portal.lbl_no_conditions', [], $l) ?: 'No active conditions on record.' }}
@@ -236,10 +230,7 @@
                 </label>
 
                 <hr style="margin:1rem 0;border:none;border-top:1px solid var(--color-border);">
-                <a href="{{ route('portals.patient.data-rights.export') }}" class="btn btn-secondary">
-                    <i data-lucide="download"></i> {{ __('public.portal.btn_download_my_data', [], $l) ?: 'Download my data' }}
-                </a>
-                <p class="text-sm text-muted" style="margin-top:.5rem;">{{ __('public.portal.data_export_hint', [], $l) ?: 'Download a copy of all your personal health data (Law No. 2010/012).' }}</p>
+                                <p class="text-sm text-muted" style="margin-top:.5rem;">{{ __('public.portal.data_export_hint', [], $l) ?: 'Download a copy of all your personal health data (Law No. 2010/012).' }}</p>
 
             </div>
         </div>

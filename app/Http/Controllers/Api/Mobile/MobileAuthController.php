@@ -12,7 +12,6 @@ use App\Models\PasswordResetCode;
 use App\Models\Role;
 use App\Models\User;
 use App\Modules\Notifications\Services\SmsNotificationService;
-use App\Modules\Subscription\Services\ReferralRewardService;
 use App\Services\Identity\HealthIdGeneratorService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -303,25 +302,9 @@ class MobileAuthController extends Controller
             return [$patient, $rawToken];
         });
 
-        // "Refer & Earn" capture — MUST NEVER break signup. Wrapped so any failure
-        // (bad code, missing plan, DB error) is logged and swallowed; the new
-        // patient still completes registration successfully. Mirrors
-        // PublicPageController::submitPatientRegister.
-        $refCode = trim((string) $request->input('ref', ''));
-        if ($refCode !== '') {
-            try {
-                $rewards = app(ReferralRewardService::class);
-                $invite  = $rewards->recordSignup($patient, $refCode);
-                if ($invite !== null) {
-                    $rewards->grantRewards($invite);
-                }
-            } catch (\Throwable $e) {
-                Log::error('referral_signup_capture_failed', [
-                    'patient_id' => $patient->id,
-                    'error'      => $e->getMessage(),
-                ]);
-            }
-        }
+        // "Refer & Earn" capture removed with the Subscription module in the
+        // Finder extraction — an incoming `ref` code is accepted and ignored so
+        // old app builds can still register.
 
         // Welcome email — best-effort, never blocks the response the app is waiting on.
         if ($patient->email) {

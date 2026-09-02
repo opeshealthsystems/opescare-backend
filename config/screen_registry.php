@@ -299,27 +299,9 @@ return [
 
     // ─── Staff Portal — Files ─────────────────────────────────────────────────
 
-    'staff.files' => [
-        'route'     => 'portals.staff.files.index',
-        'portal'    => 'staff',
-        'label'     => 'Medical Files',
-        'category'  => 'files',
-        'audit'     => true,
-        'high_risk' => false,
-        'read_only' => false,
-    ],
 
     // ─── Staff Portal — Data Import ───────────────────────────────────────────
 
-    'staff.data_import' => [
-        'route'     => 'portals.staff.data_import.index',
-        'portal'    => 'staff',
-        'label'     => 'Data Import',
-        'category'  => 'data_import',
-        'audit'     => true,
-        'high_risk' => true,
-        'read_only' => false,
-    ],
 
     // ─── Insurance Portal ─────────────────────────────────────────────────────
 
@@ -470,15 +452,6 @@ return [
 
     // ─── Admin Portal — Connect Suite ─────────────────────────────────────────
 
-    'admin.connect' => [
-        'route'     => 'portals.admin.connect',
-        'portal'    => 'admin',
-        'label'     => 'Connect Suite',
-        'category'  => 'connect',
-        'audit'     => false,
-        'high_risk' => false,
-        'read_only' => false,
-    ],
 
     // ─── Admin Portal — Bridge Agent ─────────────────────────────────────────
 
@@ -518,24 +491,6 @@ return [
 
     // ─── Admin Portal — Onboarding / KPI / Go-Live ───────────────────────────
 
-    'admin.onboarding' => [
-        'route'     => 'portals.admin.onboarding',
-        'portal'    => 'admin',
-        'label'     => 'Facility Onboarding',
-        'category'  => 'onboarding',
-        'audit'     => false,
-        'high_risk' => false,
-        'read_only' => false,
-    ],
-    'admin.kpi' => [
-        'route'     => 'portals.admin.kpi.index',
-        'portal'    => 'admin',
-        'label'     => 'KPI Dashboard',
-        'category'  => 'analytics',
-        'audit'     => false,
-        'high_risk' => false,
-        'read_only' => true,
-    ],
     'admin.go_live' => [
         'route'     => 'portals.admin.go-live',
         'portal'    => 'admin',

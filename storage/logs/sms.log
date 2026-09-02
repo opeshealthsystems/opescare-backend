@@ -2,3 +2,31 @@
 [2026-09-02 21:08:34] testing.INFO: SMS [simulated] {"to":"0700000099","body":"Your OpesCare verification code is: 350036. Valid for 10 minutes."} 
 [2026-09-02 21:10:28] testing.INFO: SMS [simulated] {"to":"0700000001","body":"Your OpesCare verification code is: 827204. Valid for 10 minutes."} 
 [2026-09-02 21:10:29] testing.INFO: SMS [simulated] {"to":"0700000099","body":"Your OpesCare verification code is: 431135. Valid for 10 minutes."} 
+[2026-09-02 21:47:04] testing.INFO: SMS [simulated] {"to":"0700000001","body":"Your OpesCare verification code is: 183922. Valid for 10 minutes."} 
+[2026-09-02 21:47:05] testing.INFO: SMS [simulated] {"to":"0700000099","body":"Your OpesCare verification code is: 760200. Valid for 10 minutes."} 
+[2026-09-02 21:49:55] testing.INFO: SMS [simulated] {"to":"0700000001","body":"Your OpesCare verification code is: 184307. Valid for 10 minutes."} 
+[2026-09-02 21:49:56] testing.INFO: SMS [simulated] {"to":"0700000099","body":"Your OpesCare verification code is: 324325. Valid for 10 minutes."} 
+[2026-09-02 21:52:04] testing.INFO: SMS [simulated] {"to":"0700000001","body":"Your OpesCare verification code is: 641781. Valid for 10 minutes."} 
+[2026-09-02 21:52:05] testing.INFO: SMS [simulated] {"to":"0700000099","body":"Your OpesCare verification code is: 325388. Valid for 10 minutes."} 
+[2026-09-02 21:54:14] testing.INFO: SMS [simulated] {"to":"0700000001","body":"Your OpesCare verification code is: 258199. Valid for 10 minutes."} 
+[2026-09-02 21:54:16] testing.INFO: SMS [simulated] {"to":"0700000099","body":"Your OpesCare verification code is: 539747. Valid for 10 minutes."} 
+[2026-09-02 22:09:55] testing.INFO: SMS [simulated] {"to":"0700000001","body":"Your OpesCare verification code is: 039477. Valid for 10 minutes."} 
+[2026-09-02 22:10:18] testing.INFO: SMS [simulated] {"to":"0700000099","body":"Your OpesCare verification code is: 182871. Valid for 10 minutes."} 
+[2026-09-02 22:10:36] testing.INFO: SMS [simulated] {"to":"+237699000001","body":"Hello, you have a new notification."} 
+[2026-09-02 22:10:47] testing.INFO: SMS [simulated] {"to":"+237699000002","body":"Hello, you have a new notification."} 
+[2026-09-02 22:18:37] testing.INFO: SMS [simulated] {"to":"0700000001","body":"Your OpesCare verification code is: 938194. Valid for 10 minutes."} 
+[2026-09-02 22:18:47] testing.INFO: SMS [simulated] {"to":"0700000099","body":"Your OpesCare verification code is: 648301. Valid for 10 minutes."} 
+[2026-09-02 22:42:53] testing.INFO: SMS [simulated] {"to":"0700000001","body":"Your OpesCare verification code is: 895092. Valid for 10 minutes."} 
+[2026-09-02 22:42:55] testing.INFO: SMS [simulated] {"to":"0700000099","body":"Your OpesCare verification code is: 932211. Valid for 10 minutes."} 
+[2026-09-02 23:08:05] testing.INFO: SMS [simulated] {"to":"0700000001","body":"Your OpesCare verification code is: 001577. Valid for 10 minutes."} 
+[2026-09-02 23:08:08] testing.INFO: SMS [simulated] {"to":"0700000099","body":"Your OpesCare verification code is: 093649. Valid for 10 minutes."} 
+[2026-09-02 23:16:47] testing.INFO: SMS [simulated] {"to":"+237699000001","body":"Hello, you have a new notification."} 
+[2026-09-02 23:16:47] testing.INFO: SMS [simulated] {"to":"+237699000002","body":"Hello, you have a new notification."} 
+[2026-09-02 23:20:57] testing.INFO: SMS [simulated] {"to":"0700000001","body":"Your OpesCare verification code is: 957116. Valid for 10 minutes."} 
+[2026-09-02 23:21:00] testing.INFO: SMS [simulated] {"to":"0700000099","body":"Your OpesCare verification code is: 099679. Valid for 10 minutes."} 
+[2026-09-02 23:21:08] testing.INFO: SMS [simulated] {"to":"+237699000001","body":"Hello, you have a new notification."} 
+[2026-09-02 23:21:09] testing.INFO: SMS [simulated] {"to":"+237699000002","body":"Hello, you have a new notification."} 
+[2026-09-02 23:38:36] testing.INFO: SMS [simulated] {"to":"0700000001","body":"Your OpesCare verification code is: 623218. Valid for 10 minutes."} 
+[2026-09-02 23:38:42] testing.INFO: SMS [simulated] {"to":"0700000099","body":"Your OpesCare verification code is: 135254. Valid for 10 minutes."} 
+[2026-09-02 23:38:47] testing.INFO: SMS [simulated] {"to":"+237699000001","body":"Hello, you have a new notification."} 
+[2026-09-02 23:38:47] testing.INFO: SMS [simulated] {"to":"+237699000002","body":"Hello, you have a new notification."} 

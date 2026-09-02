@@ -26,11 +26,7 @@
         <span>{{ __('public.portal.nav_production_req', [], $l) ?: 'Production Requests' }}</span>
     </a>
     @platformadmin
-    <a href="{{ route('portals.admin.legal') }}" class="sidebar-link">
-        <i data-lucide="scale"></i>
-        <span>{{ __('public.portal.nav_legal', [], $l) ?: 'Legal Documents' }}</span>
-    </a>
-    @endplatformadmin
+        @endplatformadmin
     <a href="{{ route('public.help') }}" class="sidebar-link">
         <i data-lucide="help-circle"></i>
         <span>{{ __('public.portal.nav_help', [], $l) ?: 'Help' }}</span>

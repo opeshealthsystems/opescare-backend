@@ -25,7 +25,9 @@ class SecurityHeadersTest extends TestCase
 
     public function test_api_responses_include_x_content_type_options(): void
     {
-        $response = $this->get('/api/fhir/R4/metadata');
+        // Was /api/fhir/R4/metadata; the FHIR surface is not part of the
+        // Finder product — a surviving API route proves the same header.
+        $response = $this->get('/api/health');
         $response->assertHeader('X-Content-Type-Options', 'nosniff');
     }
 }

@@ -21,11 +21,7 @@
 </div>
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_privacy', [], $l) ?: 'Privacy & Access' }}</div>
-    <a href="{{ route('portals.patient.logs') }}" class="sidebar-link">
-        <i data-lucide="history"></i>
-        <span>{{ __('public.portal.nav_access_logs', [], $l) ?: 'Access Logs' }}</span>
-    </a>
-</div>
+    </div>
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_resources', [], $l) ?: 'Resources' }}</div>
     <a href="{{ route('public.care-map') }}" class="sidebar-link">

@@ -129,15 +129,15 @@ class ConnectPlatformTest extends TestCase
 
     /**
      * Test client verification middleware blocks unauthorized requests.
+     *
+     * The Finder's only Bearer-gated B2B surface is the stock-sync ingest
+     * (the platform's /connect/patients/search was deleted with the Connect
+     * patient APIs), so the auth gate is proven against the sync endpoint.
      */
     public function test_b2b_routes_block_unauthorized_clients()
     {
         // Missing Authorization: Bearer header
-        $response = $this->postJson('/api/v1/connect/patients/search', [
-            'search_type' => 'health_id',
-            'query' => 'OC-CMR-7KQ9-MP42-X8D1',
-            'purpose' => 'treatment'
-        ]);
+        $response = $this->postJson('/api/v1/connect/inventory/pharmacy-stock/sync', []);
 
         $response->assertStatus(401)
                  ->assertJson([
@@ -146,167 +146,11 @@ class ConnectPlatformTest extends TestCase
 
         // A forged/garbage token must also be rejected
         $this->withHeaders(['Authorization' => 'Bearer not.a.valid-token'])
-            ->postJson('/api/v1/connect/patients/search', [
-                'search_type' => 'health_id',
-                'query' => 'OC-CMR-7KQ9-MP42-X8D1',
-                'purpose' => 'treatment'
-            ])
+            ->postJson('/api/v1/connect/inventory/pharmacy-stock/sync', [])
             ->assertStatus(401)
             ->assertJson(['error' => 'invalid_token']);
     }
 
-    /**
-     * Test secure patient search exact match.
-     */
-    public function test_patient_search_succeeds_with_valid_sandbox_client()
-    {
-        $response = $this->withHeaders($this->bearerHeaders())->postJson('/api/v1/connect/patients/search', [
-            'search_type' => 'health_id',
-            'query' => 'OC-CMR-7KQ9-MP42-X8D1',
-            'purpose' => 'treatment'
-        ]);
-
-        $response->assertStatus(200)
-                 ->assertJsonFragment([
-                     'status' => 'matched',
-                     'match_type' => 'exact'
-                 ]);
-    }
-
-    /**
-     * Test idempotency key enforcement on writes.
-     */
-    public function test_writes_require_idempotency_key_header()
-    {
-        $response = $this->withHeaders($this->bearerHeaders())->postJson('/api/v1/connect/records/encounters', [
-            'health_id' => 'OC-CMR-7KQ9-MP42-X8D1',
-            'external_encounter_id' => 'ENC-9001'
-        ]);
-
-        $response->assertStatus(400)
-                 ->assertJsonFragment([
-                     'error_code' => 'IDEMPOTENCY_KEY_REQUIRED'
-                 ]);
-    }
-
-    /**
-     * Test idempotency key conflict check using real database caching.
-     */
-    public function test_writes_block_duplicate_idempotency_keys_and_retrieve_cache_hits()
-    {
-        // 1. Initial write — consent grant required on write routes
-        $response = $this->withHeaders($this->bearerHeaders([
-            'Idempotency-Key'   => 'idm_key_test_1002',
-            'X-Consent-Grant-Id' => '0c000000-0000-4000-8000-0000000cc001',
-        ]))->postJson('/api/v1/connect/records/encounters', [
-            'health_id' => 'OC-CMR-7KQ9-MP42-X8D1',
-            'external_encounter_id' => 'ENC-9001'
-        ]);
-
-        $response->assertStatus(200)
-                 ->assertJsonFragment([
-                     'status' => 'accepted'
-                 ]);
-
-        // Assert row is cached in database
-        $this->assertDatabaseHas('idempotency_records', [
-            'idempotency_key' => 'idm_key_test_1002',
-            'client_id' => 'test_client_id'
-        ]);
-
-        // 2. Duplicate request with EXACT same key and body returns CACHE HIT response
-        $response2 = $this->withHeaders($this->bearerHeaders([
-            'Idempotency-Key'   => 'idm_key_test_1002',
-            'X-Consent-Grant-Id' => '0c000000-0000-4000-8000-0000000cc001',
-        ]))->postJson('/api/v1/connect/records/encounters', [
-            'health_id' => 'OC-CMR-7KQ9-MP42-X8D1',
-            'external_encounter_id' => 'ENC-9001'
-        ]);
-
-        $response2->assertStatus(200);
-        $response2->assertHeader('X-Cache-Idempotency', 'HIT');
-
-        // 3. Request with same key but DIFFERENT body throws 409 conflict
-        $response3 = $this->withHeaders($this->bearerHeaders([
-            'Idempotency-Key'   => 'idm_key_test_1002',
-            'X-Consent-Grant-Id' => '0c000000-0000-4000-8000-0000000cc001',
-        ]))->postJson('/api/v1/connect/records/encounters', [
-            'health_id' => 'OC-CMR-7KQ9-MP42-X8D1',
-            'external_encounter_id' => 'ENC-9002_DIFFERENT'
-        ]);
-
-        $response3->assertStatus(409)
-                 ->assertJsonFragment([
-                     'error_code' => 'IDEMPOTENCY_CONFLICT'
-                 ]);
-    }
-
-    /**
-     * Test B2B pull requires active consent header.
-     */
-    public function test_pull_summary_fails_without_consent_grant_token()
-    {
-        $response = $this->withHeaders($this->bearerHeaders([
-            'X-Purpose-Of-Use' => 'treatment',
-            'X-Consent-Grant-Id' => 'invalid_grant'
-        ]))->getJson('/api/v1/connect/patients/OC-CMR-7KQ9-MP42-X8D1/summary');
-
-        $response->assertStatus(403)
-                 ->assertJsonFragment([
-                     'error_code' => 'CONSENT_REQUIRED'
-                 ]);
-    }
-
-    /**
-     * Test audited emergency override pull and verify PostgreSQL audit_events row creation.
-     */
-    public function test_emergency_override_pull_bypasses_standard_consent_and_logs_audit_events()
-    {
-        // Purpose and reason now come from the validated request body (C-2 fix),
-        // never from spoofable headers.
-        $response = $this->withHeaders($this->bearerHeaders())
-            ->json('GET', '/api/v1/connect/patients/OC-CMR-7KQ9-MP42-X8D1/emergency-profile', [
-                'purpose'          => 'emergency',
-                'emergency_reason' => 'Patient is unconscious in ICU',
-            ]);
-
-        $response->assertStatus(200)
-                 ->assertJsonFragment([
-                     'emergency_status' => 'consent_bypassed_audited'
-                 ]);
-
-        // Assert database audit trail was persisted in PostgreSQL
-        $this->assertDatabaseHas('audit_events', [
-            'emergency_override' => true,
-            'reason' => 'Patient is unconscious in ICU'
-        ]);
-    }
-
-    /**
-     * Test matching reconciliation triggers.
-     */
-    public function test_reconciliation_case_creation_on_matching_conflicts()
-    {
-        $response = $this->withHeaders($this->bearerHeaders([
-            'Idempotency-Key'   => 'idm_recon_key_01',
-            'X-Consent-Grant-Id' => '0c000000-0000-4000-8000-0000000cc001',
-        ]))->postJson('/api/v1/connect/records/encounters', [
-            'health_id' => 'OC-CMR-RECON-REQUIRED',
-            'external_encounter_id' => 'ENC-RECON-001'
-        ]);
-
-        $response->assertStatus(202)
-                 ->assertJsonFragment([
-                     'status' => 'pending_reconciliation',
-                     'error_code' => 'RECONCILIATION_REQUIRED'
-                 ]);
-
-        // Verify row was inserted into reconciliation_cases table
-        $this->assertDatabaseHas('reconciliation_cases', [
-            'mismatch_reason' => 'unresolved_health_id',
-            'status' => 'pending'
-        ]);
-    }
 
     /**
      * Test B2C Mobile endpoints.
@@ -339,15 +183,13 @@ class ConnectPlatformTest extends TestCase
         $tokenResponse->assertStatus(200);
         $token = $tokenResponse->json('access_token');
 
+        // An empty payload fails VALIDATION (422) — which proves the Bearer
+        // token cleared the auth gate. 401 here would mean it did not.
         $response = $this->withHeaders([
             'Authorization' => 'Bearer ' . $token,
-        ])->postJson('/api/v1/connect/patients/search', [
-            'search_type' => 'health_id',
-            'query'       => 'OC-CMR-7KQ9-MP42-X8D1',
-            'purpose'     => 'treatment',
-        ]);
+        ])->postJson('/api/v1/connect/inventory/pharmacy-stock/sync', []);
 
-        $response->assertStatus(200);
+        $response->assertStatus(422);
     }
 
     /**
@@ -366,25 +208,21 @@ class ConnectPlatformTest extends TestCase
         // And a self-made (unsigned) token is rejected by the API
         $this->withHeaders([
             'Authorization' => 'Bearer forged.token.value',
-        ])->postJson('/api/v1/connect/patients/search', [
-            'search_type' => 'health_id',
-            'query'       => 'OC-CMR-7KQ9-MP42-X8D1',
-            'purpose'     => 'treatment',
-        ])->assertStatus(401);
+        ])->postJson('/api/v1/connect/inventory/pharmacy-stock/sync', [])
+            ->assertStatus(401);
     }
 
     /**
      * Rate-limit headers are present on Connect API responses.
+     * ThrottleByClient stamps them on every response it passes, so the
+     * validation 422 from an empty payload carries them too.
      */
     public function test_rate_limit_headers_present_on_connect_response(): void
     {
-        $response = $this->withHeaders($this->bearerHeaders())->postJson('/api/v1/connect/patients/search', [
-            'search_type' => 'health_id',
-            'query'       => 'OC-CMR-7KQ9-MP42-X8D1',
-            'purpose'     => 'treatment',
-        ]);
+        $response = $this->withHeaders($this->bearerHeaders())
+            ->postJson('/api/v1/connect/inventory/pharmacy-stock/sync', []);
 
-        $response->assertStatus(200)
+        $response->assertStatus(422)
                  ->assertHeader('X-RateLimit-Limit')
                  ->assertHeader('X-RateLimit-Remaining');
     }

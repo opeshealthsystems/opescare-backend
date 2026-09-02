@@ -10,30 +10,10 @@
 @feature('insurance')
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_dashboard', [], $l) ?: 'Overview' }}</div>
-    <a href="{{ route('portals.insurance.dashboard') }}" class="sidebar-link">
-        <i data-lucide="layout-dashboard"></i>
-        <span>{{ __('public.portal.nav_dashboard', [], $l) ?: 'Dashboard' }}</span>
-    </a>
-</div>
+    </div>
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_operations', [], $l) ?: 'Insurance' }}</div>
-    <a href="{{ route('portals.insurance.claims') }}" class="sidebar-link">
-        <i data-lucide="file-text"></i>
-        <span>{{ __('public.portal.nav_claims', [], $l) ?: 'Claims' }}</span>
-    </a>
-    <a href="{{ route('portals.insurance.preauths') }}" class="sidebar-link">
-        <i data-lucide="clipboard-check"></i>
-        <span>{{ __('public.portal.nav_preauths', [], $l) ?: 'Pre-Authorizations' }}</span>
-    </a>
-    <a href="{{ route('portals.insurance.policies') }}" class="sidebar-link">
-        <i data-lucide="shield"></i>
-        <span>{{ __('public.portal.nav_policies', [], $l) ?: 'Policies' }}</span>
-    </a>
-    <a href="{{ route('portals.insurance.providers') }}" class="sidebar-link">
-        <i data-lucide="building-2"></i>
-        <span>{{ __('public.portal.nav_providers', [], $l) ?: 'Providers' }}</span>
-    </a>
-</div>
+                </div>
 @endfeature
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_help', [], $l) ?: 'Help' }}</div>

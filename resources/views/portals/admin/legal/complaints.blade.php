@@ -5,8 +5,7 @@
 @section('content')
 
 <div class="breadcrumb">
-    <a href="{{ route('portals.admin.legal') }}">{{ __('public.adm_legal_closures_breadcrumb') }}</a>
-    <i data-lucide="chevron-right"></i>
+        <i data-lucide="chevron-right"></i>
     <span>{{ __('public.adm_legal_complaints_breadcrumb_span') }}</span>
 </div>
 
@@ -42,16 +41,7 @@
                             <span class="badge badge--{{ $c->statusColor() }} badge-sm">@enum($c->status)</span>
                         </td>
                         <td data-label="{{ __('public.adm_legal_complaints_col_received') }}" class="td-muted">{{ $c->created_at->format('d M Y') }}</td>
-                        <td class="row-actions">
-                            @if($c->status === 'open' || $c->status === 'under_review')
-                            <form method="POST" action="{{ route('portals.admin.legal.complaints.resolve', $c) }}"
-                                  onsubmit="return confirm('{{ __('public.adm_legal_complaints_confirm_resolve') }}')">
-                                @csrf
-                                <input type="hidden" name="resolution" value="Reviewed and resolved by OpesCare compliance team.">
-                                <button type="submit" class="btn btn-success btn-sm">{{ __('public.adm_legal_complaints_btn_resolve') }}</button>
-                            </form>
-                            @endif
-                        </td>
+                        <td class="row-actions"></td>
                     </tr>
                 @empty
                     <tr><td colspan="6" class="td-muted empty-cell">{{ __('public.adm_legal_complaints_empty') }}</td></tr>

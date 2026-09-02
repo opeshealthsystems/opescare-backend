@@ -13,23 +13,7 @@
 </div>
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_compliance', [], $l) ?: 'Compliance' }}</div>
-    <a href="{{ route('portals.admin.security') }}" class="sidebar-link">
-        <i data-lucide="shield-check"></i>
-        <span>{{ __('public.portal.nav_security', [], $l) ?: 'Security' }}</span>
-    </a>
-    <a href="{{ route('portals.admin.security.audit_explorer') }}" class="sidebar-link">
-        <i data-lucide="file-search"></i>
-        <span>{{ __('public.portal.nav_audit_log', [], $l) ?: 'Audit Log' }}</span>
-    </a>
-    <a href="{{ route('portals.admin.security.incidents') }}" class="sidebar-link">
-        <i data-lucide="alert-octagon"></i>
-        <span>{{ __('public.portal.nav_incidents', [], $l) ?: 'Security Incidents' }}</span>
-    </a>
-    <a href="{{ route('portals.admin.legal') }}" class="sidebar-link">
-        <i data-lucide="scale"></i>
-        <span>{{ __('public.portal.nav_legal', [], $l) ?: 'Legal Documents' }}</span>
-    </a>
-    <a href="{{ route('public.help') }}" class="sidebar-link">
+                    <a href="{{ route('public.help') }}" class="sidebar-link">
         <i data-lucide="help-circle"></i>
         <span>{{ __('public.portal.nav_help', [], $l) ?: 'Help' }}</span>
     </a>

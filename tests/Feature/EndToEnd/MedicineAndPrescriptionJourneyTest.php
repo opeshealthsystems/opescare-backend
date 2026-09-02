@@ -11,7 +11,6 @@ use App\Models\Medicine;
 use App\Models\MedicinePharmacyStock;
 use App\Models\Patient;
 use App\Models\Prescription;
-use App\Models\PrescriptionItem;
 use App\Models\Role;
 use App\Models\User;
 use App\Modules\Pharmacy\Services\PharmacyStockReportService;
@@ -49,12 +48,6 @@ class MedicineAndPrescriptionJourneyTest extends TestCase
 
     /** The public Medicine Finder a patient uses. Unauthenticated by design. */
     private const MEDICINE_SEARCH = '/api/v1/care-map/pharmacies/medicine-search';
-
-    /** The B2B API test-bypass credentials honoured by VerifyIntegrationClient. */
-    private const API_HEADERS = [
-        'X-Client-ID'     => 'test_client_id',
-        'X-Client-Secret' => 'test_client_secret',
-    ];
 
     // ──────────────────────────────────────────────────────────────────
     // Fixtures — built here, never taken from a seeder. A test that leans
@@ -439,21 +432,25 @@ class MedicineAndPrescriptionJourneyTest extends TestCase
         $patientUser = $this->patientUserFor($patient, 'chain.patient@example.test');
 
         // ── Link 1: the clinician issues it ───────────────────────────────
-        $this->asUserOf($doctor, $hospital)
-            ->post(route('portals.staff.prescriptions.store'), [
-                'patient_id'    => $patient->id,
-                'validity_days' => 30,
-                'notes'         => 'Complete the full course.',
-                'items'         => [[
-                    'medicine_id'   => $medicine->id,
-                    'dose'          => '500 mg',
-                    'frequency'     => '3 times daily',
-                    'route'         => 'oral',
-                    'duration_days' => 7,
-                    'quantity'      => 21,
-                ]],
-            ])
-            ->assertRedirect(route('portals.staff.prescriptions'));
+        // (Via PrescriptionService directly: the staff prescribing screen and
+        // the B2B prescribing endpoint were both removed in the Finder
+        // extraction. The service they shared is the write path the pharmacy
+        // queue and the patient portal still read.)
+        app(\App\Services\Clinical\PrescriptionService::class)->issue([
+            'facility_id'   => $hospital->id,
+            'patient_id'    => $patient->id,
+            'prescribed_by' => $doctor->id,
+            'validity_days' => 30,
+            'notes'         => 'Complete the full course.',
+            'items'         => [[
+                'medicine_id'   => $medicine->id,
+                'dose'          => '500 mg',
+                'frequency'     => '3 times daily',
+                'route'         => 'oral',
+                'duration_days' => 7,
+                'quantity'      => 21,
+            ]],
+        ], $doctor->id);
 
         $prescription = Prescription::where('patient_id', $patient->id)->firstOrFail();
         $this->assertSame('active', $prescription->status);
@@ -520,236 +517,6 @@ class MedicineAndPrescriptionJourneyTest extends TestCase
                 ->where('resource_id', $prescription->id)
                 ->count(),
             'Exactly one dispense may ever be recorded against a prescription.'
-        );
-    }
-
-    // ══════════════════════════════════════════════════════════════════
-    // Journey 5 — a prescription is an immutable clinical event
-    // ══════════════════════════════════════════════════════════════════
-
-    /**
-     * GUARANTEE: a prescription is never deleted and never silently rewritten.
-     * A mistake is corrected by void / entered-in-error / amend, and the record
-     * — including its lines — survives every one of those.
-     *
-     * WHY: the prescription is the evidence. If a wrong dose can be edited away
-     * or the row dropped, then nobody can reconstruct what a patient was
-     * actually told to take on the day they were harmed, and the clinician who
-     * wrote it cannot be distinguished from the one who corrected it.
-     */
-    public function test_a_prescription_is_corrected_by_voiding_and_survives_intact(): void
-    {
-        $hospital   = $this->hospital('Clinique du Littoral');
-        $doctor     = $this->staffAt($hospital, 'doctor', 'immutable.doctor@example.test');
-        $pharmacist = $this->staffAt($hospital, 'pharmacist', 'immutable.pharmacist@example.test');
-        $medicine   = $this->medicine('Amoxicillin 500mg Capsule', 'Amoxicillin');
-        $patient    = Patient::factory()->create(['facility_id' => $hospital->id]);
-        $stranger   = Patient::factory()->create(['facility_id' => $hospital->id]);
-
-        $this->asUserOf($doctor, $hospital)
-            ->post(route('portals.staff.prescriptions.store'), [
-                'patient_id' => $patient->id,
-                'items'      => [[
-                    'medicine_id' => $medicine->id,
-                    'dose'        => '500 mg',
-                    'frequency'   => '3 times daily',
-                ]],
-            ])
-            ->assertRedirect(route('portals.staff.prescriptions'));
-
-        $prescription = Prescription::where('patient_id', $patient->id)->firstOrFail();
-        $item         = $prescription->items()->firstOrFail();
-
-        // There is no delete, at any level.
-        try {
-            $prescription->delete();
-            $this->fail('Hard-deleting a prescription must be refused.');
-        } catch (\LogicException $e) {
-            $this->assertStringContainsString('cannot be deleted', $e->getMessage());
-        }
-
-        // And no silent re-pointing at a different patient.
-        try {
-            $prescription->patient_id = $stranger->id;
-            $prescription->save();
-            $this->fail('Re-assigning the patient on a prescription must be refused.');
-        } catch (\LogicException $e) {
-            $this->assertStringContainsString('immutable', $e->getMessage());
-        }
-
-        // Correction is a documented void — the supported route.
-        $this->asUserOf($doctor, $hospital)
-            ->post(route('portals.staff.prescriptions.void', $prescription->id), [
-                'void_reason' => 'Wrong strength ordered — a corrected prescription follows.',
-            ])
-            ->assertRedirect(route('portals.staff.prescriptions'));
-
-        $prescription->refresh();
-        $this->assertSame('voided', $prescription->status);
-        $this->assertSame($doctor->id, $prescription->voided_by);
-        $this->assertNotNull($prescription->voided_at);
-        $this->assertStringContainsString('Wrong strength', $prescription->void_reason);
-
-        // The evidence survives in full: the row, the patient it was for, and
-        // the exact line that was written.
-        $this->assertDatabaseHas('prescriptions', [
-            'id'         => $prescription->id,
-            'patient_id' => $patient->id,
-        ]);
-        $this->assertDatabaseHas('prescription_items', [
-            'id'          => $item->id,
-            'dose'        => '500 mg',
-            'medicine_id' => $medicine->id,
-        ]);
-        $this->assertSame(1, PrescriptionItem::where('prescription_id', $prescription->id)->count());
-
-        // A voided prescription can no longer be handed over.
-        $this->asUserOf($pharmacist, $hospital)
-            ->post(route('portals.pharmacy.dispense', $prescription->id))
-            ->assertSessionHas('error');
-
-        $this->assertSame('voided', $prescription->refresh()->status);
-        $this->assertNull($prescription->dispensed_at);
-    }
-
-    // ══════════════════════════════════════════════════════════════════
-    // Journey 6 — the API and the portal agree
-    // ══════════════════════════════════════════════════════════════════
-
-    /**
-     * GUARANTEE: a prescription created over `POST /v1/prescriptions` persists a
-     * REAL prescriber and REAL item doses.
-     *
-     * WHY: this is the exact historical bug, asserted at the only level that
-     * would have caught it. The endpoint took `prescriber_id` (not a column;
-     * the model's fillable has `prescribed_by`) and item keys `dosage` /
-     * `duration` (columns are `dose` / `duration_days`). Mass assignment
-     * dropped every one of them and the endpoint still answered 201, so a
-     * partner hospital's whole prescribing history was stored with no
-     * prescriber and no dose — and nobody knew, because the request said it
-     * worked. Asserting the RESPONSE would have caught nothing; only the stored
-     * row tells the truth.
-     */
-    public function test_the_api_prescribing_endpoint_persists_a_real_prescriber_and_real_doses(): void
-    {
-        $hospital = $this->hospital('Hopital General de Douala');
-        $doctor   = $this->staffAt($hospital, 'doctor', 'api.doctor@example.test');
-        $medicine = $this->medicine('Amoxicillin 500mg Capsule', 'Amoxicillin');
-        $patient  = Patient::factory()->create(['facility_id' => $hospital->id]);
-
-        $response = $this->withHeaders(self::API_HEADERS)
-            ->postJson('/v1/prescriptions', [
-                // Scopes the middleware's test client to this real facility.
-                'facility_id'   => $hospital->id,
-                'patient_id'    => $patient->id,
-                'prescriber_id' => $doctor->id,
-                'notes'         => 'Issued by an integrated partner system.',
-                'items'         => [[
-                    'medicine_id' => $medicine->id,
-                    'dosage'      => '500 mg',      // historical alias of `dose`
-                    'frequency'   => 'twice daily',
-                    'duration'    => '5 days',      // historical alias of `duration_days`
-                    'quantity'    => 10,
-                    'route'       => 'oral',
-                ]],
-            ])
-            ->assertStatus(201);
-
-        $prescriptionId = $response->json('data.id');
-        $this->assertNotNull($prescriptionId);
-
-        // The stored row — not the echoed response — is the assertion that counts.
-        $stored = Prescription::findOrFail($prescriptionId);
-        $this->assertSame(
-            $doctor->id,
-            $stored->prescribed_by,
-            'A prescription with no prescriber cannot be questioned, corrected, or defended.'
-        );
-        $this->assertSame($hospital->id, $stored->facility_id);
-        $this->assertSame($patient->id, $stored->patient_id);
-        $this->assertSame('active', $stored->status);
-
-        $item = $stored->items()->firstOrFail();
-        $this->assertSame('500 mg', $item->dose, 'A prescription line with no dose cannot be dispensed safely.');
-        $this->assertSame(5, $item->duration_days);
-        $this->assertSame($medicine->id, $item->medicine_id);
-        $this->assertSame('Amoxicillin 500mg Capsule', $item->drug_name);
-        $this->assertSame('J01CA04', $item->drug_code);
-
-        // Belt and braces: nothing landed with the null prescriber the bug produced.
-        $this->assertSame(
-            0,
-            Prescription::whereNull('prescribed_by')->count(),
-            'No prescription may be stored without a prescriber.'
-        );
-    }
-
-    /**
-     * GUARANTEE: the API and the portal produce the SAME stored prescription —
-     * both go through PrescriptionService, so they cannot drift.
-     *
-     * WHY: two write paths for one clinical record is how a field ends up
-     * populated on one and null on the other. A pharmacy reading its queue must
-     * not be able to tell whether the prescription arrived from a clinician's
-     * screen or a partner's integration.
-     */
-    public function test_the_api_and_the_portal_store_the_same_prescription(): void
-    {
-        $hospital = $this->hospital('Hopital de Bonassama');
-        $doctor   = $this->staffAt($hospital, 'doctor', 'parity.doctor@example.test');
-        $medicine = $this->medicine('Amoxicillin 500mg Capsule', 'Amoxicillin');
-
-        $viaPortal = Patient::factory()->create(['facility_id' => $hospital->id]);
-        $viaApi    = Patient::factory()->create(['facility_id' => $hospital->id]);
-
-        $this->asUserOf($doctor, $hospital)
-            ->post(route('portals.staff.prescriptions.store'), [
-                'patient_id' => $viaPortal->id,
-                'items'      => [[
-                    'medicine_id'   => $medicine->id,
-                    'dose'          => '500 mg',
-                    'frequency'     => 'twice daily',
-                    'duration_days' => 5,
-                    'quantity'      => 10,
-                    'route'         => 'oral',
-                ]],
-            ])
-            ->assertRedirect(route('portals.staff.prescriptions'));
-
-        $this->withHeaders(self::API_HEADERS)
-            ->postJson('/v1/prescriptions', [
-                'facility_id'   => $hospital->id,
-                'patient_id'    => $viaApi->id,
-                'prescriber_id' => $doctor->id,
-                'items'         => [[
-                    'medicine_id' => $medicine->id,
-                    'dosage'      => '500 mg',
-                    'frequency'   => 'twice daily',
-                    'duration'    => '5 days',
-                    'quantity'    => 10,
-                    'route'       => 'oral',
-                ]],
-            ])
-            ->assertStatus(201);
-
-        $portalRx = Prescription::where('patient_id', $viaPortal->id)->firstOrFail();
-        $apiRx    = Prescription::where('patient_id', $viaApi->id)->firstOrFail();
-
-        $comparable = fn (Prescription $rx) => [
-            'status'        => $rx->status,
-            'facility_id'   => $rx->facility_id,
-            'prescribed_by' => $rx->prescribed_by,
-        ];
-
-        $this->assertSame($comparable($portalRx), $comparable($apiRx));
-
-        $comparableItem = fn (Prescription $rx) => $rx->items()->firstOrFail()
-            ->only(['medicine_id', 'drug_name', 'drug_code', 'dose', 'frequency', 'route', 'duration_days', 'quantity', 'status']);
-
-        $this->assertSame(
-            $comparableItem($portalRx),
-            $comparableItem($apiRx),
-            'The same order written through two doors must be stored identically.'
         );
     }
 }

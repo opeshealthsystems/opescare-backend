@@ -46,192 +46,27 @@ return Application::configure(basePath: dirname(__DIR__))
 
         /*
         |--------------------------------------------------------------------
-        | V1 launch-scope module freeze — applied BY URI PATTERN
+        | URI-pattern feature freeze — mechanism kept, map empty
         |--------------------------------------------------------------------
         |
-        | See docs/plans/V1_LAUNCH_SCOPE.md and config/features.php.
+        | On the OpesCare platform this block declared, via Features::freeze(),
+        | the URI surface of every module frozen out of the V1 launch scope
+        | (insurance, billing, inventory ops, CDSS, analytics dashboards,
+        | telemedicine). In the Finder product those modules are DELETED --
+        | their routes no longer exist, so there is nothing to freeze and no
+        | map is declared (Features::$frozenPaths defaults to empty, and the
+        | globally-appended EnforceFeatureFlag below passes every request
+        | straight through).
         |
-        | Every pattern below is gated by its module's flag in config/features.php
-        | and FAILS CLOSED with a 404. Why patterns instead of route middleware:
-        | routes/api.php is SEALED (apps/api-laravel/CLAUDE.md) and holds the
-        | insurance v1 group. Gating by path freezes it without touching the file.
-        | routes/web.php is not sealed, but the freeze list is kept here in one
-        | auditable place rather than scattered across route files — one diff
-        | shows exactly what V1 does and does not ship, and one flag reverses it.
+        | To freeze a future feature by path, declare its patterns here:
         |
-        | Nothing is deleted. Every route, model, migration and seeded row stays.
+        |     \App\Support\Features::freeze([
+        |         '<feature-key>' => ['api/v1/thing', 'api/v1/thing/*'],
+        |     ]);
         |
-        | Read the NOT-frozen notes carefully: the neighbouring paths they name
-        | are V1 launch features and must keep working.
-        |
+        | and add the matching flag to config/features.php -- an unmapped flag
+        | gates nothing by URI, and an unflagged map key fails closed with 404.
         */
-        \App\Support\Features::freeze([
-
-            // Manual claims ledger: claims, preauths, policies, providers.
-            // NOT frozen: nothing else under api/v1 or portals.
-            'insurance' => [
-                'api/v1/insurance',
-                'api/v1/insurance/*',
-                'portals/insurance',
-                'portals/insurance/*',
-            ],
-
-            // The patient's read-only view of their OWN coverage. Defaults ON in
-            // config/features.php, unlike everything else in this map: coverage is
-            // Health-ID identity data ("who covers this person, until when"), not the
-            // claims money workflow above. It is the same fact FHIR R4 Coverage already
-            // exposes to partners, so freezing it left the patient unable to see their
-            // own cover while a partner system could read it — backwards.
-            //
-            // This MUST be its own key. featureForRequest() returns the FIRST matching
-            // pattern, so while 'insurance' owned 'api/mobile/insurance' the endpoint
-            // 404'd on the claims flag and the coverage flag was never consulted.
-            'insurance_coverage' => [
-                'api/mobile/insurance',          // exact — marketplace is a separate key below
-            ],
-
-            // Patient-facing plan shopping / purchase.
-            'insurance_marketplace' => [
-                'api/mobile/insurance/marketplace',
-                'api/mobile/insurance/marketplace/*',
-                'portals/patient/insurance',
-                'portals/patient/insurance/*',
-            ],
-
-            // Facility-internal patient billing.
-            // Every pattern below still matches a live route — the api/v1 ones
-            // in the SEALED routes/api.php, the portal ones in routes/web.php —
-            // so none of them may be removed from this list.
-            // NOT frozen: portals/admin/subscription/* and
-            // api/payments/mobile-money/*/callback — that is OpesCare's own
-            // platform revenue plus live gateway webhooks. 404-ing a payment
-            // provider's callback loses money. (portals/admin/financial/* was
-            // deleted outright from routes/web.php.)
-            'billing' => [
-                'api/v1/billing',
-                'api/v1/billing/*',
-                'api/v1/payment-plans',
-                'api/v1/payment-plans/*',
-                'api/v1/patients/*/payment-plans',
-                'portals/staff/billing',
-                'portals/staff/billing/*',
-                'portals/patient/billing',
-                'portals/patient/billing/*',
-                'portals/lite/billing',
-            ],
-
-            // Facility-internal stock, supply chain, batch tracking.
-            // NOT frozen — these are the V1 finders and the data plane feeding
-            // them, and they must keep working:
-            //   api/mobile/pharmacy/*        (pharmacy finder)
-            //   api/mobile/blood/*           (blood finder)
-            //   api/v1/care-map/*            (medicine + blood search)
-            //   api/v1/connect/inventory/*   (partner stock-sync ingest)
-            //   api/v1/sdk/facilities/*/stock
-            //   api/v1/pharmacy/formulary/*  (medicine catalogue)
-            //   portals/staff/inventory/blood + /blood/*  <- SEE BELOW
-            //
-            // ── The blood carve-out. Do not "tidy" this back. ───────────────
-            //
-            // This list used to read `portals/staff/inventory/*`, which swept
-            // up the blood-bank stock screen along with pharmacy stock. That
-            // 404'd the ONLY reachable writer of `blood_availability`, and
-            // `blood_availability` is what the public Blood Finder
-            // (GET api/v1/care-map/blood/search, GET api/mobile/blood/search)
-            // reads. The finder shipped in V1, had no way to be given data,
-            // and returned [] for ever.
-            //
-            // So the pharmacy paths are enumerated one by one instead of
-            // wildcarding the whole prefix. The freeze is unchanged in every
-            // other respect — `portals/staff/inventory/pharmacy*`,
-            // `portals/staff/supply*`, `api/v1/inventory*` and
-            // `portals/pharmacy/inventory` are all still frozen, because
-            // facility inventory and supply-chain OPERATIONS are genuinely out
-            // of V1. Only the blood-bank stock entry that feeds the finder is
-            // let through. This matches what config/features.php has always
-            // said about this flag: it "does NOT cover the pharmacy/blood
-            // FINDERS ... nor the partner stock-sync ingest that feeds them".
-            //
-            // `api/v1/inventory/blood*` stays FROZEN on purpose even though it
-            // writes the same table: it is the facility inventory-ops API, and
-            // partners already have a live, unfrozen ingest for blood at
-            // POST api/v1/connect/inventory/blood-stock/sync (which does not
-            // match `api/v1/inventory*`). Blood therefore has two live writers
-            // — the staff screen and the partner ingest — without unfreezing
-            // the inventory-ops API surface.
-            //
-            // If a new route is added under portals/staff/inventory/, decide
-            // deliberately which list it belongs to. There is no catch-all any
-            // more, so an unlisted path is LIVE, not frozen.
-            'inventory_ops' => [
-                'api/v1/inventory',
-                'api/v1/inventory/*',
-                'portals/staff/inventory',            // bare prefix; no route today
-                'portals/staff/inventory/pharmacy',
-                'portals/staff/inventory/pharmacy/*',
-                'portals/staff/supply',
-                'portals/staff/supply/*',
-                'portals/pharmacy/inventory',
-            ],
-
-            // Drug-interaction / allergy / lab-rule alerting.
-            // The portal surfaces (portals/staff/cdss/*, portals/admin/cdss/*)
-            // were deleted from routes/web.php, so their patterns are gone from
-            // this list. The api/v1/cdss group still exists in the SEALED
-            // routes/api.php and this freeze is the only thing 404-ing it — do
-            // not remove these two patterns.
-            'clinical_decision_support' => [
-                'api/v1/cdss',
-                'api/v1/cdss/*',
-            ],
-
-            // Analytics + public-health dashboards.
-            // portals/staff/analytics/* was deleted from routes/web.php, so its
-            // patterns are gone from this list. The api/v1 patterns below still
-            // match live routes in the SEALED routes/api.php and this freeze is
-            // the only thing 404-ing them — do not remove them.
-            // NOT frozen: the rest of api/v1/public-health/* — statutory
-            // MINSANTE report generation, review and submission is a legal
-            // obligation, not a dashboard. portals/developer/analytics is the
-            // partner API-usage surface and also stays.
-            'analytics_dashboards' => [
-                'api/v1/analytics',
-                'api/v1/analytics/*',
-                'api/v1/public-health/dashboard',
-                'api/v1/public-health/facility-dashboard/*',
-                'api/v1/public-health/intelligence/*',
-            ],
-
-            // Full telehealth platform: waiting-room queue + video session
-            // orchestration.
-            // The whole portals/staff/telemedicine/* surface was deleted from
-            // routes/web.php, so its patterns are gone from this list. The three
-            // api/v1 patterns below still match live routes in the SEALED
-            // routes/api.php and this freeze is the only thing 404-ing them —
-            // do not remove them.
-            // api/mobile/telemedicine/* is gone too — its controller was deleted,
-            // so those routes were removed from routes/mobile_telehealth.php.
-            // STILL LIVE and NOT gated by this flag (sealed routes/api.php):
-            //   POST   api/v1/telemedicine/consultations
-            //   GET    api/v1/telemedicine/consultations/{id}
-            //   POST   api/v1/telemedicine/consultations/{id}/consent|cancel
-            // Their controller (Api\V1\TelemedicineController) has been deleted,
-            // so those four 500 rather than 404. Broaden this list to
-            // 'api/v1/telemedicine' + 'api/v1/telemedicine/*' to close that gap.
-            'telemedicine_full' => [
-                // The whole v1 telemedicine surface. This used to cover only the
-                // call/waiting-room/session paths, which left four routes —
-                // consultations create/show, consent, cancel — matched but
-                // unfrozen. Their controller was deleted with the rest of the
-                // module, so an AUTHENTICATED partner hitting them got a fatal
-                // "class not found" rather than a clean 404. Unauthenticated
-                // callers were always fine: auth middleware runs first, which is
-                // what kept this quiet.
-                'api/v1/telemedicine',
-                'api/v1/telemedicine/*',
-            ],
-
-        ]);
 
         // Runs globally so a frozen path 404s before routing — there is no route
         // file, route group or controller a frozen module can be reached through.
@@ -257,7 +92,6 @@ return Application::configure(basePath: dirname(__DIR__))
             // entitlement, fails OPEN) or 'patient.feature' below (per-patient
             // subscription plan).
             'feature'                   => \App\Http\Middleware\EnforceFeatureFlag::class,
-            'patient.feature'           => \App\Http\Middleware\EnsurePatientFeature::class,
             'patient.profile'           => \App\Http\Middleware\RequireCompletePatientProfile::class,
             'guardian.profile'          => \App\Http\Middleware\RequireCompleteGuardianProfile::class,
             'api.deprecated'            => \App\Http\Middleware\MarkDeprecated::class,
@@ -349,12 +183,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withSchedule(function (\Illuminate\Console\Scheduling\Schedule $schedule) {
         $schedule->command('family:check-age-transitions')->daily();
 
-        // DHIS2 monthly push — 1st of each month at 04:00 (Item 16)
-        $schedule->command('opescare:push-dhis2 --month=' . now()->subMonth()->format('Y-m'))
-                 ->monthlyOn(1, '04:00')
-                 ->withoutOverlapping()
-                 ->onSuccess(function () { \Log::info('DHIS2 monthly push completed'); })
-                 ->onFailure(function () { \Log::error('DHIS2 monthly push failed'); });
+        // (The platform scheduled `opescare:push-dhis2` here — the monthly
+        // DHIS2 / MINSANTE aggregate push. Institutional public-health
+        // reporting is not part of the Finder product; the command and its
+        // schedule entry are deleted.)
 
         // Data retention purge — daily at 03:00 (Item 53)
         $schedule->command('opescare:purge-expired-data')
@@ -367,10 +199,10 @@ return Application::configure(basePath: dirname(__DIR__))
                  ->weeklyOn(1, '08:00')
                  ->withoutOverlapping();
 
-        // Generate API plan invoices from metered usage — 1st of each month at 02:00
-        $schedule->command('opescare:bill-api-usage')
-                 ->monthlyOn(1, '02:00')
-                 ->withoutOverlapping();
+        // (The platform scheduled `opescare:bill-api-usage` here — monthly API
+        // plan invoicing from metered usage. The subscription/billing domain is
+        // deleted from the Finder product along with the BillApiUsage command,
+        // so its schedule entry is gone too.)
 
         // Blood Finder: lapse unanswered blood-unit requests — hourly.
         //

@@ -190,14 +190,12 @@ class EnsurePortalAccess
         return match (true) {
             in_array($role, self::PORTAL_ROLES['portals/patient'])    => '/portals/patient',
             in_array($role, self::PORTAL_ROLES['portals/pharmacy'])   => '/portals/pharmacy',
-            in_array($role, self::PORTAL_ROLES['portals/lab'])        => '/portals/lab',
-            in_array($role, self::PORTAL_ROLES['portals/healthorg'])  => '/portals/healthorg',
             in_array($role, self::PORTAL_ROLES['portals/staff'])      => '/portals/staff',
-            in_array($role, self::PORTAL_ROLES['portals/insurance'])  => '/portals/insurance',
             in_array($role, self::PORTAL_ROLES['portals/developer'])  => '/portals/developer',
-            in_array($role, self::PORTAL_ROLES['portals/lite'])       => '/portals/lite',
             in_array($role, self::PORTAL_ROLES['portals/admin'])      => '/portals/admin',
             // Unknown/unassigned role must NOT default into the admin portal.
+            // Roles whose portals do not exist in this product (insurance, lab,
+            // lite, healthorg) fall through here too — same default deny.
             default                                                    => '/login',
         };
     }

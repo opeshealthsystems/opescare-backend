@@ -55,19 +55,12 @@ class AppServiceProvider extends ServiceProvider
             return \App\Http\Middleware\RequirePlatformAdmin::isPlatformTier(auth()->user());
         });
 
-        // @patientfeature('teleconsult') … @endpatientfeature — gate UI by patient
-        // subscription feature (honours family-sharing coverage). False when not
-        // authenticated as a patient.
-        //
-        // Previously registered as @feature; renamed when @feature became the V1
-        // module-freeze gate above. The two answer different questions: this one
-        // is "has this patient paid for it", @feature is "does this product ship".
-        \Illuminate\Support\Facades\Blade::if('patientfeature', function (string $key) {
-            $patient = auth()->user()?->patient;
-            return $patient
-                ? app(\App\Modules\Subscription\Services\PatientSubscriptionService::class)->hasFeature($patient, $key)
-                : false;
-        });
+        // @patientfeature - REMOVED with the Subscription module (Finder has no
+        // patient subscriptions). The directive stays registered as a constant
+        // false rather than being dropped: an unregistered @patientfeature in a
+        // Blade file compiles as literal text instead of failing, which would
+        // silently print the directive to patients if a view ever reintroduced it.
+        \Illuminate\Support\Facades\Blade::if('patientfeature', fn (string $key) => false);
 
         // @enum($model->status) / @enum($x->severity, 'severity') — render a DB
         // enum value through lang/{locale}/enums.php with a graceful title-case
@@ -273,26 +266,7 @@ class AppServiceProvider extends ServiceProvider
         \App\Models\Appointment::updated(fn($m) => $familyListener->handleAppointmentUpdated($m));
         \App\Models\ConsentRequest::created(fn($m) => $familyListener->handleConsentRequest($m));
 
-        // FHIR Subscriptions: dispatch async notifications when clinical resources change.
-        // Uses Laravel's Eloquent closure-based observers to avoid a proliferation of
-        // observer class registrations. The job is queued (fhir-notifications queue)
-        // so delivery never blocks the originating request.
-        $fhirObserver = new \App\Observers\FhirSubscriptionObserver(
-            app(\App\Modules\Fhir\Services\FhirService::class)
-        );
-        \App\Models\Patient::created([$fhirObserver, 'created']);
-        \App\Models\Patient::updated([$fhirObserver, 'updated']);
-        \App\Models\Visit::created([$fhirObserver, 'created']);
-        \App\Models\Visit::updated([$fhirObserver, 'updated']);
-        \App\Models\LabOrder::created([$fhirObserver, 'created']);
-        \App\Models\LabOrder::updated([$fhirObserver, 'updated']);
-        \App\Models\Prescription::created([$fhirObserver, 'created']);
-        \App\Models\Prescription::updated([$fhirObserver, 'updated']);
-        \App\Models\ImmunizationRecord::created([$fhirObserver, 'created']);
-        \App\Models\ImmunizationRecord::updated([$fhirObserver, 'updated']);
-        \App\Models\AllergyRecord::created([$fhirObserver, 'created']);
-        \App\Models\AllergyRecord::updated([$fhirObserver, 'updated']);
-        \App\Models\Diagnosis::created([$fhirObserver, 'created']);
-        \App\Models\Diagnosis::updated([$fhirObserver, 'updated']);
+        // FHIR subscription observer wiring removed along with the Fhir module:
+        // the Finder extraction does not ship FHIR interop.
     }
 }

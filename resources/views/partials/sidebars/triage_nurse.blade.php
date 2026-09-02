@@ -17,23 +17,11 @@
 </div>
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_clinical', [], $l) ?: 'Clinical' }}</div>
-    <a href="{{ route('portals.staff.queue') }}" class="sidebar-link">
-        <i data-lucide="list-ordered"></i>
-        <span>{{ __('public.portal.nav_queue', [], $l) ?: 'Patient Queue' }}</span>
-    </a>
-    <a href="{{ route('portals.staff.visits') }}" class="sidebar-link">
-        <i data-lucide="clipboard-list"></i>
-        <span>{{ __('public.portal.nav_visits', [], $l) ?: 'Visits / Triage' }}</span>
-    </a>
-    <a href="{{ route('portals.staff.appointments') }}" class="sidebar-link">
+            <a href="{{ route('portals.staff.appointments') }}" class="sidebar-link">
         <i data-lucide="calendar-check-2"></i>
         <span>{{ __('public.portal.nav_appointments', [], $l) ?: 'Appointments' }}</span>
     </a>
 </div>
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_operations', [], $l) ?: 'Operations' }}</div>
-    <a href="{{ route('portals.staff.support') }}" class="sidebar-link">
-        <i data-lucide="headset"></i>
-        <span>{{ __('public.portal.nav_support', [], $l) ?: 'Support' }}</span>
-    </a>
-</div>
+    </div>

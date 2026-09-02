@@ -21,79 +21,23 @@
         <i data-lucide="calendar-check-2"></i>
         <span>{{ __('public.portal.nav_appointments', [], app()->getLocale()) ?: 'Appointments' }}</span>
     </a>
-    <a href="{{ route('portals.staff.queue') }}" class="sidebar-link">
-        <i data-lucide="list-ordered"></i>
-        <span>{{ __('public.portal.nav_queue', [], app()->getLocale()) ?: 'Patient Queue' }}</span>
-    </a>
-    <a href="{{ route('portals.staff.visits') }}" class="sidebar-link">
-        <i data-lucide="stethoscope"></i>
-        <span>{{ __('public.portal.nav_visits', [], app()->getLocale()) ?: 'Visits' }}</span>
-    </a>
-</div>
+        </div>
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('staff_inv.nav_lbl_hr', [], app()->getLocale()) ?: 'HR & Staff' }}</div>
-    <a href="{{ route('portals.staff.hr.directory') }}" class="sidebar-link">
-        <i data-lucide="users"></i>
-        <span>{{ __('public.portal.nav_staff_directory', [], app()->getLocale()) ?: 'Directory' }}</span>
-    </a>
-    <a href="{{ route('portals.staff.hr.roster') }}" class="sidebar-link">
-        <i data-lucide="calendar-range"></i>
-        <span>{{ __('public.portal.nav_staff_roster', [], app()->getLocale()) ?: 'Duty Roster' }}</span>
-    </a>
-    <a href="{{ route('portals.staff.hr.shifts') }}" class="sidebar-link">
-        <i data-lucide="clock"></i>
-        <span>{{ __('public.portal.nav_staff_shifts', [], app()->getLocale()) ?: 'Shifts' }}</span>
-    </a>
-    <a href="{{ route('portals.staff.hr.leave') }}" class="sidebar-link">
-        <i data-lucide="plane-takeoff"></i>
-        <span>{{ __('public.portal.nav_staff_leave', [], app()->getLocale()) ?: 'Leave' }}</span>
-    </a>
-</div>
+                </div>
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('staff_inv.nav_lbl_inventory', [], app()->getLocale()) ?: 'Inventory' }}</div>
-    <a href="{{ route('portals.staff.inventory.pharmacy') }}" class="sidebar-link active">
-        <i data-lucide="pill"></i>
-        <span>{{ __('public.portal.nav_inventory_pharmacy', [], app()->getLocale()) ?: 'Pharmacy' }}</span>
-    </a>
-    <a href="{{ route('portals.staff.inventory.blood') }}" class="sidebar-link">
+        <a href="{{ route('portals.staff.inventory.blood') }}" class="sidebar-link">
         <i data-lucide="droplets"></i>
         <span>{{ __('public.portal.nav_inventory_blood', [], app()->getLocale()) ?: 'Blood Bank' }}</span>
     </a>
 </div>
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('staff_inv.nav_lbl_supply_chain', [], app()->getLocale()) ?: 'Supply Chain' }}</div>
-    <a href="{{ route('portals.staff.supply') }}" class="sidebar-link {{ request()->routeIs('portals.staff.supply*') ? 'active' : '' }}">
-        <i data-lucide="package"></i>
-        <span>{{ __('staff_inv.nav_supply_chain', [], app()->getLocale()) ?: 'Supply Chain' }}</span>
-    </a>
-</div>
+    </div>
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('staff_inv.nav_lbl_operations', [], app()->getLocale()) ?: 'Operations' }}</div>
-    <a href="{{ route('portals.staff.billing') }}" class="sidebar-link">
-        <i data-lucide="receipt"></i>
-        <span>{{ __('public.portal.nav_billing', [], app()->getLocale()) ?: 'Billing' }}</span>
-    </a>
-    <a href="{{ route('portals.staff.support') }}" class="sidebar-link">
-        <i data-lucide="headset"></i>
-        <span>{{ __('public.portal.nav_support', [], app()->getLocale()) ?: 'Support' }}</span>
-    </a>
-    <a href="{{ route('portals.staff.data_import.index') }}" class="sidebar-link">
-        <i data-lucide="upload-cloud"></i>
-        <span>{{ __('public.portal.nav_data_import', [], app()->getLocale()) ?: 'Data Import' }}</span>
-    </a>
-    <a href="{{ route('portals.staff.search') }}" class="sidebar-link {{ request()->routeIs('portals.staff.search') ? 'active' : '' }}">
-        <i data-lucide="search"></i>
-        <span>{{ __('public.portal.nav_search', [], app()->getLocale()) ?: 'Global Search' }}</span>
-    </a>
-    <a href="{{ route('portals.staff.files.index') }}" class="sidebar-link {{ request()->routeIs('portals.staff.files*') ? 'active' : '' }}">
-        <i data-lucide="paperclip"></i>
-        <span>{{ __('public.portal.nav_files', [], app()->getLocale()) ?: 'Files & Attachments' }}</span>
-    </a>
-    <a href="{{ route('portals.staff.wards') }}" class="sidebar-link {{ request()->routeIs('portals.staff.wards*') ? 'active' : '' }}">
-        <i data-lucide="bed"></i>
-        <span>{{ __('public.portal.nav_wards', [], app()->getLocale()) ?: 'Wards & Beds' }}</span>
-    </a>
-</div>
+                        </div>
 @endsection
 
 @section('breadcrumb_home', __('public.staff_portal.title', [], app()->getLocale()) ?: 'Staff Portal')
@@ -105,10 +49,6 @@
 <div class="page-head">
     <h2>{{ __('public.stf_inv_pharm_title') }}</h2>
     <div class="page-head__spacer"></div>
-    <button type="button" class="btn btn-primary btn-sm" onclick="openAddModal()">
-        <i data-lucide="plus-circle"></i>
-        {{ __('public.stf_inv_pharm_add_btn') }}
-    </button>
 </div>
 <p class="page-subtitle mb-6">{{ __('public.stf_inv_pharm_subtitle') }}</p>
 
@@ -148,7 +88,7 @@
 </div>
 
 {{-- Filters --}}
-<form method="GET" action="{{ route('portals.staff.inventory.pharmacy') }}" class="filter-bar">
+<form method="GET" class="filter-bar">
     <select name="stock_status" class="filter-select">
         <option value="">{{ __('public.stf_inv_pharm_all_statuses') }}</option>
         @foreach(['in_stock','low_stock','out_of_stock'] as $s)
@@ -175,8 +115,7 @@
     <button type="submit" class="btn btn-primary btn-sm">
         <i data-lucide="filter"></i> {{ __('public.stf_inv_pharm_filter_btn') }}
     </button>
-    <a href="{{ route('portals.staff.inventory.pharmacy') }}" class="btn btn-ghost btn-sm">{{ __('public.stf_inv_pharm_clear_btn') }}</a>
-</form>
+    </form>
 
 <div class="panel">
     <div class="panel-body panel-body--flush">
@@ -185,7 +124,6 @@
                 <div class="empty-state-icon"><i data-lucide="pill"></i></div>
                 <h3>{{ __('public.stf_inv_pharm_empty_title') }}</h3>
                 <p>{{ __('public.stf_inv_pharm_empty_desc') }}</p>
-                <button type="button" class="btn btn-primary btn-sm mt-6" onclick="openAddModal()">{{ __('public.stf_inv_pharm_add_btn') }}</button>
             </div>
         @else
             <div class="table-wrapper">
@@ -249,14 +187,7 @@
                                         <i data-lucide="flag"></i>
                                         {{ __('public.stf_inv_pharm_btn_flags') }}
                                     </button>
-                                    <form method="POST" action="{{ route('portals.staff.inventory.pharmacy.delete', $item->id) }}" class="inline-form">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-ghost btn-xs"
-                                            onclick="return confirm('{{ addslashes(__('staff_inv.js_confirm_remove', ['name' => $item->medicine_name], app()->getLocale()) ?: 'Remove '.$item->medicine_name.' from inventory?') }}')">
-                                            <i data-lucide="trash-2"></i>
-                                        </button>
-                                    </form>
+                                    
                                 </div>
                             </td>
                         </tr>
@@ -268,48 +199,6 @@
     </div>
 </div>
 
-{{-- Add Item Modal --}}
-<div id="add-modal" class="modal-backdrop mt-6" hidden>
-    <div class="modal" role="dialog" aria-modal="true">
-        <h3 class="modal__title"><i data-lucide="plus-circle"></i> {{ __('public.stf_inv_pharm_modal_add_title') }}</h3>
-        <form method="POST" action="{{ route('portals.staff.inventory.pharmacy.store') }}">
-            @csrf
-            <div class="modal__body">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">{{ __('public.stf_inv_pharm_lbl_med_name') }}</label>
-                        <input type="text" name="medicine_name" class="form-control" required maxlength="200">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">{{ __('public.stf_inv_pharm_lbl_generic_name') }}</label>
-                        <input type="text" name="generic_name" class="form-control" required maxlength="200">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">{{ __('public.stf_inv_pharm_lbl_form') }}</label>
-                        <input type="text" name="form" class="form-control" required maxlength="80" placeholder="{{ __('staff_inv.ph_form', [], app()->getLocale()) ?: 'e.g. Tablet, Syrup, Injection' }}">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">{{ __('public.stf_inv_pharm_lbl_strength') }}</label>
-                        <input type="text" name="strength" class="form-control" required maxlength="80" placeholder="{{ __('staff_inv.ph_strength', [], app()->getLocale()) ?: 'e.g. 500mg, 250mg/5ml' }}">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">{{ __('public.stf_inv_pharm_lbl_qty') }}</label>
-                    <input type="number" name="available_quantity" class="form-control" required min="0" value="0">
-                </div>
-            </div>
-            <div class="modal__footer">
-                <button type="button" class="btn btn-ghost btn-sm" onclick="closeAddModal()">{{ __('public.stf_inv_pharm_cancel') }}</button>
-                <button type="submit" class="btn btn-primary btn-sm">
-                    <i data-lucide="plus-circle"></i>
-                    {{ __('public.stf_inv_pharm_btn_add_item') }}
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
 
 {{-- Restock Modal --}}
 <div id="restock-modal" class="modal-backdrop mt-6" hidden>
@@ -391,9 +280,6 @@
 <script>
     var baseUrl = '{{ url('/portals/staff/inventory/pharmacy') }}';
 
-    function openAddModal()  { document.getElementById('add-modal').removeAttribute('hidden'); }
-    function closeAddModal() { document.getElementById('add-modal').setAttribute('hidden',''); }
-    document.getElementById('add-modal').addEventListener('click', function(e) { if(e.target===this) closeAddModal(); });
 
     function openRestockModal(id, name) {
         document.getElementById('restock-name').textContent = name;

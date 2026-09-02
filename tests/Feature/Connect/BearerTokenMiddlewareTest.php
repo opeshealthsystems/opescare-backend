@@ -7,7 +7,8 @@ use App\Services\JwtService;
 use Tests\TestCase;
 
 /**
- * Tests for VerifyBearerToken middleware on protected routes.
+ * Tests for VerifyBearerToken middleware on protected routes
+ * (exercised via the kept Connect stock-sync surface).
  *
  * Covers:
  *  - No token â†’ 401 with JSON
@@ -47,7 +48,7 @@ class BearerTokenMiddlewareTest extends TestCase
 
     public function test_no_token_returns_401_json(): void
     {
-        $response = $this->getJson('/api/fhir/R4/Patient');
+        $response = $this->postJson('/api/v1/connect/inventory/pharmacy-stock/sync');
 
         $response->assertStatus(401)
             ->assertJson(['error' => 'missing_token']);
@@ -56,7 +57,7 @@ class BearerTokenMiddlewareTest extends TestCase
     public function test_malformed_token_returns_401_json(): void
     {
         $response = $this->withToken('not.a.real.jwt.atall')
-            ->getJson('/api/fhir/R4/Patient');
+            ->postJson('/api/v1/connect/inventory/pharmacy-stock/sync');
 
         $response->assertStatus(401)
             ->assertJson(['error' => 'invalid_token']);
@@ -70,16 +71,20 @@ class BearerTokenMiddlewareTest extends TestCase
         $tampered = implode('.', $parts);
 
         $this->withToken($tampered)
-            ->getJson('/api/fhir/R4/Patient')
+            ->postJson('/api/v1/connect/inventory/pharmacy-stock/sync')
             ->assertStatus(401)
             ->assertJson(['error' => 'invalid_token']);
     }
 
     public function test_valid_token_passes_through(): void
     {
+        // An empty body fails validation (422) — proving the request got PAST
+        // the bearer middleware (which would have answered 401) and reached
+        // the controller. The FHIR surface this test used to ride on was
+        // removed in the Finder extraction.
         $this->withToken($this->validToken)
-            ->getJson('/api/fhir/R4/metadata')
-            ->assertStatus(200);
+            ->postJson('/api/v1/connect/inventory/pharmacy-stock/sync')
+            ->assertStatus(422);
     }
 
     public function test_unhandled_exception_returns_json_not_html(): void

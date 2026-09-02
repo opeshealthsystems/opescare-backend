@@ -88,10 +88,7 @@
                     </td>
                     <td class="row-actions">
                         @if($doc->status === 'released' && $doc->pdf_path)
-                        <a href="{{ route('portals.patient.documents.download', $doc->id) }}" class="btn btn-secondary btn-sm">
-                            <i data-lucide="download"></i> {{ __('public.portal.btn_download', [], $l) ?: 'Download' }}
-                        </a>
-                        @elseif($doc->status === 'released')
+                                                @elseif($doc->status === 'released')
                         <span class="td-muted">{{ __('public.portal.lbl_processing', [], $l) ?: 'Processing…' }}</span>
                         @endif
                     </td>

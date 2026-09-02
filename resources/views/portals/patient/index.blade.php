@@ -95,43 +95,15 @@
         <div class="quick-action-icon"><i data-lucide="calendar-check-2"></i></div>
         <span class="quick-action-label">{{ __('public.portal.nav_appointments', [], app()->getLocale()) ?: 'Appointments' }}</span>
     </a>
-    <a href="{{ route('portals.patient.labs') }}" class="quick-action-btn">
-        <div class="quick-action-icon"><i data-lucide="flask-conical"></i></div>
-        <span class="quick-action-label">{{ __('public.portal.nav_labs', [], app()->getLocale()) ?: 'Lab Results' }}</span>
-    </a>
-    <a href="{{ route('portals.patient.prescriptions') }}" class="quick-action-btn">
+        <a href="{{ route('portals.patient.prescriptions') }}" class="quick-action-btn">
         <div class="quick-action-icon"><i data-lucide="pill"></i></div>
         <span class="quick-action-label">{{ __('public.portal.nav_prescriptions', [], app()->getLocale()) ?: 'Prescriptions' }}</span>
     </a>
-    <a href="{{ route('portals.patient.consent') }}" class="quick-action-btn">
-        <div class="quick-action-icon"><i data-lucide="shield-check"></i></div>
-        <span class="quick-action-label">{{ __('public.portal.nav_consent', [], app()->getLocale()) ?: 'Consent' }}</span>
-    </a>
-    <a href="{{ route('portals.patient.documents') }}" class="quick-action-btn">
-        <div class="quick-action-icon"><i data-lucide="file-text"></i></div>
-        <span class="quick-action-label">{{ __('public.portal.nav_documents', [], app()->getLocale()) ?: 'Documents' }}</span>
-    </a>
-    <a href="{{ route('portals.patient.logs') }}" class="quick-action-btn">
-        <div class="quick-action-icon"><i data-lucide="history"></i></div>
-        <span class="quick-action-label">{{ __('public.medical_id.access_logs', [], app()->getLocale()) ?: 'Access Logs' }}</span>
-    </a>
-    <a href="{{ route('portals.patient.profile') }}" class="quick-action-btn">
+                <a href="{{ route('portals.patient.profile') }}" class="quick-action-btn">
         <div class="quick-action-icon"><i data-lucide="user-cog"></i></div>
         <span class="quick-action-label">{{ __('public.portal.nav_profile', [], app()->getLocale()) ?: 'My Profile' }}</span>
     </a>
-    <a href="{{ route('portals.patient.allergies') }}" class="quick-action-btn">
-        <div class="quick-action-icon"><i data-lucide="zap"></i></div>
-        <span class="quick-action-label">{{ __('public.portal.nav_allergies', [], app()->getLocale()) ?: 'Allergies' }}</span>
-    </a>
-    <a href="{{ route('portals.patient.clinical') }}" class="quick-action-btn">
-        <div class="quick-action-icon"><i data-lucide="stethoscope"></i></div>
-        <span class="quick-action-label">{{ __('public.portal.nav_conditions', [], app()->getLocale()) ?: 'Conditions' }}</span>
-    </a>
-    <a href="{{ route('portals.patient.immunizations') }}" class="quick-action-btn">
-        <div class="quick-action-icon"><i data-lucide="syringe"></i></div>
-        <span class="quick-action-label">{{ __('public.portal.nav_immunizations', [], app()->getLocale()) ?: 'Immunizations' }}</span>
-    </a>
-    <a href="{{ route('public.care-map') }}" class="quick-action-btn">
+                <a href="{{ route('public.care-map') }}" class="quick-action-btn">
         <div class="quick-action-icon"><i data-lucide="map-pin"></i></div>
         <span class="quick-action-label">{{ __('public.portal.nav_care_map', [], app()->getLocale()) ?: 'Care Map' }}</span>
     </a>
@@ -140,11 +112,7 @@
         <span class="quick-action-label">{{ __('public.portal.nav_family', [], app()->getLocale()) ?: 'Family' }}</span>
     </a>
     @feature('insurance_marketplace')
-    <a href="{{ route('portals.patient.insurance') }}" class="quick-action-btn">
-        <div class="quick-action-icon"><i data-lucide="shield"></i></div>
-        <span class="quick-action-label">{{ __('public.portal.nav_insurance', [], app()->getLocale()) ?: 'Insurance' }}</span>
-    </a>
-    @endfeature
+        @endfeature
 </div>
 
 @if(isset($upcomingAppointments) && $upcomingAppointments->isNotEmpty())
@@ -202,8 +170,7 @@
                         @endforeach
                     </div>
                     @if(($criticalAllergies ?? collect())->count() > 3)
-                        <a href="{{ route('portals.patient.allergies') }}" class="stat-card__hint">+{{ ($criticalAllergies ?? collect())->count() - 3 }} {{ __('public.portal.lnk_more_suffix', [], app()->getLocale()) ?: 'more →' }}</a>
-                    @endif
+                                            @endif
                 @endif
             </div>
 
@@ -211,16 +178,14 @@
             <div class="stat-card {{ ($activeAllergies ?? collect())->isEmpty() ? '' : 'stat-card--warning' }}">
                 <div class="stat-card__label">{{ __('public.portal.active_allergies', [], app()->getLocale()) ?: 'Active Allergies' }}</div>
                 <div class="stat-card__value">{{ ($activeAllergies ?? collect())->count() }}</div>
-                <a href="{{ route('portals.patient.allergies') }}" class="stat-card__hint">{{ __('public.portal.lnk_view_all', [], app()->getLocale()) ?: 'View all →' }}</a>
-            </div>
+                            </div>
 
             {{-- Active Conditions --}}
             <div class="stat-card">
                 <div class="stat-card__label">{{ __('public.portal.active_conditions', [], app()->getLocale()) ?: 'Active Conditions' }}</div>
                 <div class="stat-card__value">{{ ($activeConditions ?? collect())->count() }}</div>
                 @if(($activeConditions ?? collect())->isNotEmpty())
-                    <a href="{{ route('portals.patient.clinical') }}" class="stat-card__hint">{{ __('public.portal.lnk_view_all', [], app()->getLocale()) ?: 'View all →' }}</a>
-                @endif
+                                    @endif
             </div>
 
         </div>
@@ -230,7 +195,7 @@
             <i data-lucide="alert-triangle"></i>
             <div>
                 {{ __('public.portal.allergy_safety_notice', [], app()->getLocale()) ?: 'Ensure your care team has your up-to-date allergy and condition list before any procedure or prescription.' }}
-                <a href="{{ route('portals.patient.allergies') }}">{{ __('public.portal.view_allergy_list', [], app()->getLocale()) ?: 'View full allergy list' }}</a>.
+                .
             </div>
         </div>
         @endif

@@ -103,12 +103,6 @@ return [
         'auth'     => env('PACS_AUTH_TOKEN', ''),
     ],
 
-    'dhis2' => [
-        'url'      => env('DHIS2_URL', 'https://dhis2.minsante.cm'),
-        'username' => env('DHIS2_USERNAME'),
-        'password' => env('DHIS2_PASSWORD'),
-    ],
-
     // OpesCare Connect/SDK JWT. Read via config (not env() in the service) so the
     // configured TTL survives config:cache in production.
     'opescare_jwt' => [

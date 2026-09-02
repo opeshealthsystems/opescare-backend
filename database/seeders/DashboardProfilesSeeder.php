@@ -247,7 +247,7 @@ class DashboardProfilesSeeder extends Seeder
                 'key'           => 'facility_executive',
                 'name'          => 'Hospital / Clinic Executive Dashboard',
                 'portal_prefix' => 'admin',
-                'landing_route' => 'portals.admin.kpi.index',
+                'landing_route' => 'portals.admin',
                 'description'   => 'Executive overview: KPIs, performance, compliance',
             ],
             [
@@ -371,7 +371,7 @@ class DashboardProfilesSeeder extends Seeder
                 'key'           => 'implementation_lead',
                 'name'          => 'Implementation Lead Dashboard',
                 'portal_prefix' => 'admin',
-                'landing_route' => 'portals.admin.onboarding',
+                'landing_route' => 'portals.admin',
                 'description'   => 'Facility onboarding and go-live project management',
             ],
 
@@ -417,7 +417,7 @@ class DashboardProfilesSeeder extends Seeder
                 'key'           => 'data_import',
                 'name'          => 'Data Import Dashboard',
                 'portal_prefix' => 'staff',
-                'landing_route' => 'portals.staff.data_import.index',
+                'landing_route' => 'portals.staff',
                 'description'   => 'Bulk data import, mapping, and validation',
             ],
 

@@ -84,11 +84,32 @@ class PlatformAdminIsolationTest extends TestCase
         $this->assertNotSame(200, $res->getStatusCode(), 'facility admin must NOT reach the platform control center');
     }
 
-    /** Regression: clicking "Onboarding" must not silently show the god-mode view. */
+    /**
+     * Regression: clicking a platform-tier menu item must not silently show
+     * the god-mode view.
+     *
+     * The platform's list (onboarding, kpi, go-live, security, legal,
+     * subscription, reports/minsante-monthly) was deleted with those modules
+     * in the Finder extraction; this now sweeps the platform-tier subpaths
+     * that SURVIVE. A 404 would also be acceptable isolation, but every one
+     * of these pages exists — so anything but 403 is a leak.
+     */
     public function test_facility_admin_blocked_from_every_godmode_subpath(): void
     {
         $admin = $this->userWithRole('clinic_admin');
-        foreach (['onboarding', 'kpi', 'go-live', 'security', 'legal', 'subscription', 'reports/minsante-monthly'] as $sub) {
+        foreach ([
+            'cc/audit',
+            'cc/feature-flags',
+            'cc/health',
+            'cc/maintenance',
+            'cc/modules',
+            'cc/settings',
+            'users',
+            'roles',
+            'leads',
+            'developer/accounts',
+            'developer/production-requests',
+        ] as $sub) {
             $res = $this->actingAs($admin)->get('/portals/admin/' . $sub);
             $this->assertSame(403, $res->getStatusCode(), "facility admin must get 403 on /portals/admin/{$sub}");
         }

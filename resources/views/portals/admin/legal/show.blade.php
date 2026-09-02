@@ -5,8 +5,7 @@
 @section('content')
 
 <div class="breadcrumb">
-    <a href="{{ route('portals.admin.legal') }}">{{ __('public.adm_legal_closures_breadcrumb') }}</a>
-    <i data-lucide="chevron-right"></i>
+        <i data-lucide="chevron-right"></i>
     <span>{{ $document->title }}</span>
 </div>
 
@@ -20,9 +19,6 @@
         </div>
     </div>
     <div class="entity-head__spacer"></div>
-    <button type="button" onclick="opOpenModal('publishModal')" class="btn btn-primary btn-sm">
-        <i data-lucide="upload"></i> {{ __('public.adm_legal_show_btn_publish') }}
-    </button>
 </div>
 
 @if(session('success'))<div class="alert alert-success mb-6"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
@@ -93,46 +89,6 @@
 </div>
 @endif
 
-{{-- Publish New Version Modal --}}
-<div id="publishModal" class="modal-fixed">
-    <div class="modal-fixed__panel">
-        <div class="modal-fixed__head">
-            <h3 class="modal-fixed__title">{{ __('public.adm_legal_show_modal_title') }} — {{ $document->title }}</h3>
-            <button type="button" class="icon-btn" aria-label="{{ __('public.aria_close') }}" onclick="opCloseModal('publishModal')"><i data-lucide="x"></i></button>
-        </div>
-        <form method="POST" action="{{ route('portals.admin.legal.publish_version', $document) }}">
-            @csrf
-            <div class="form-row mb-3">
-                <div class="form-group">
-                    <label class="form-label form-label-required">{{ __('public.adm_legal_show_modal_version_label') }}</label>
-                    <input type="text" name="version" class="form-control" placeholder="1.0" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">{{ __('public.adm_legal_show_modal_effective_label') }}</label>
-                    <input type="date" name="effective_at" class="form-control">
-                </div>
-            </div>
-            <div class="form-group mb-3">
-                <label class="form-label">{{ __('public.adm_legal_show_modal_summary_label') }}</label>
-                <input type="text" name="change_summary" class="form-control" placeholder="{{ __('admin_extra.ph_change_summary', [], app()->getLocale()) ?: 'What changed in this version?' }}">
-            </div>
-            <div class="form-group mb-3">
-                <label class="form-label form-label-required">{{ __('public.adm_legal_show_modal_content_label') }}</label>
-                <textarea name="content_html" rows="12" class="form-control mono" required placeholder="<h1>{{ __('admin_extra.legal_terms_of_use', [], app()->getLocale()) ?: 'Terms of Use' }}</h1><p>...</p>"></textarea>
-            </div>
-            <div class="form-group mb-4">
-                <label class="form-check">
-                    <input type="checkbox" id="reaccept" name="requires_reacceptance" value="1">
-                    {{ __('public.adm_legal_show_modal_reaccept_label') }}
-                </label>
-            </div>
-            <div class="modal__footer">
-                <button type="button" onclick="opCloseModal('publishModal')" class="btn btn-ghost">{{ __('public.adm_legal_btn_cancel') }}</button>
-                <button type="submit" class="btn btn-primary">{{ __('public.adm_legal_show_btn_publish_version') }}</button>
-            </div>
-        </form>
-    </div>
-</div>
 
 @endsection
 @section('scripts')

@@ -17,10 +17,7 @@
         <i data-lucide="package"></i><span><?php echo e(__('public.pharmacy_portal.nav_public_stock', [], $l) ?: 'Public availability'); ?></span>
     </a>
     <?php if (\Illuminate\Support\Facades\Blade::check('feature', 'inventory_ops')): ?>
-    <a href="<?php echo e(route('portals.pharmacy.inventory')); ?>" class="sidebar-link <?php echo e(request()->routeIs('portals.pharmacy.inventory') ? 'active' : ''); ?>">
-        <i data-lucide="boxes"></i><span><?php echo e(__('public.pharmacy_portal.nav_inventory', [], $l) ?: 'Drug inventory'); ?></span>
-    </a>
-    <?php endif; ?>
+        <?php endif; ?>
     <a href="<?php echo e(route('portals.pharmacy.controlled')); ?>" class="sidebar-link <?php echo e(request()->routeIs('portals.pharmacy.controlled') ? 'active' : ''); ?>">
         <i data-lucide="lock"></i><span><?php echo e(__('public.pharmacy_portal.nav_controlled', [], $l) ?: 'Controlled substances'); ?></span>
     </a>
@@ -28,12 +25,6 @@
 <?php if (\Illuminate\Support\Facades\Blade::check('feature', 'inventory_ops')): ?>
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label"><?php echo e(__('public.pharmacy_portal.nav_stock_section', [], $l) ?: 'Stock management'); ?></div>
-    <a href="<?php echo e(route('portals.staff.inventory.pharmacy')); ?>" class="sidebar-link">
-        <i data-lucide="archive"></i><span><?php echo e(__('public.pharmacy_portal.nav_stock_manager', [], $l) ?: 'Full stock manager'); ?></span>
-    </a>
-    <a href="<?php echo e(route('portals.staff.supply')); ?>" class="sidebar-link">
-        <i data-lucide="truck"></i><span><?php echo e(__('public.pharmacy_portal.nav_supply_chain', [], $l) ?: 'Supply chain'); ?></span>
-    </a>
-</div>
+        </div>
 <?php endif; ?>
 <?php /**PATH C:\laragon\www\opescare-finder\resources\views/portals/pharmacy/_sidebar.blade.php ENDPATH**/ ?>

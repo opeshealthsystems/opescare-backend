@@ -14,38 +14,18 @@
 @feature('inventory_ops')
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_dashboard', [], $l) ?: 'Overview' }}</div>
-    <a href="{{ route('portals.staff.inventory.pharmacy') }}" class="sidebar-link">
-        <i data-lucide="layout-dashboard"></i>
-        <span>{{ __('public.portal.nav_dashboard', [], $l) ?: 'Dashboard' }}</span>
-    </a>
-</div>
+    </div>
 @endfeature
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_pharmacy', [], $l) ?: 'Pharmacy' }}</div>
     @feature('inventory_ops')
-    <a href="{{ route('portals.staff.inventory.pharmacy') }}" class="sidebar-link">
-        <i data-lucide="pill"></i>
-        <span>{{ __('public.portal.nav_pharmacy', [], $l) ?: 'Pharmacy Inventory' }}</span>
-    </a>
-    <a href="{{ route('portals.staff.supply') }}" class="sidebar-link">
-        <i data-lucide="package"></i>
-        <span>{{ __('public.portal.nav_supply', [], $l) ?: 'Supply Chain' }}</span>
-    </a>
-    @endfeature
+            @endfeature
     @feature('billing')
-    <a href="{{ route('portals.staff.billing') }}" class="sidebar-link">
-        <i data-lucide="receipt"></i>
-        <span>{{ __('public.portal.nav_billing', [], $l) ?: 'Billing' }}</span>
-    </a>
-    @endfeature
+        @endfeature
     @feature('analytics_dashboards')
     @endfeature
     <a href="{{ route('portals.listing.edit') }}" class="sidebar-link {{ request()->routeIs('portals.listing.*') ? 'active' : '' }}">
         <i data-lucide="map-pin"></i>
         <span>{{ __('caremap_claim.nav_my_listing', [], $l) }}</span>
     </a>
-    <a href="{{ route('portals.staff.support') }}" class="sidebar-link">
-        <i data-lucide="headset"></i>
-        <span>{{ __('public.portal.nav_support', [], $l) ?: 'Support' }}</span>
-    </a>
-</div>
+    </div>

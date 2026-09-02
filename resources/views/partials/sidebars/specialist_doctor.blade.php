@@ -17,39 +17,11 @@
 </div>
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_clinical', [], $l) ?: 'Clinical' }}</div>
-    <a href="{{ route('portals.staff.visits') }}" class="sidebar-link">
-        <i data-lucide="clipboard-list"></i>
-        <span>{{ __('public.portal.nav_visits', [], $l) ?: 'Visits' }}</span>
-    </a>
-    <a href="{{ route('portals.staff.appointments') }}" class="sidebar-link">
+        <a href="{{ route('portals.staff.appointments') }}" class="sidebar-link">
         <i data-lucide="calendar-check-2"></i>
         <span>{{ __('public.portal.nav_appointments', [], $l) ?: 'Appointments' }}</span>
     </a>
-    <a href="{{ route('portals.staff.queue') }}" class="sidebar-link">
-        <i data-lucide="list-ordered"></i>
-        <span>{{ __('public.portal.nav_queue', [], $l) ?: 'Patient Queue' }}</span>
-    </a>
-    <a href="{{ route('portals.staff.referrals') }}" class="sidebar-link">
-        <i data-lucide="send"></i>
-        <span>{{ __('public.portal.nav_referrals', [], $l) ?: 'Referrals' }}</span>
-    </a>
-    <a href="{{ route('portals.staff.prescriptions') }}" class="sidebar-link">
-        <i data-lucide="clipboard-list"></i>
-        <span>{{ __('public.portal.nav_prescriptions', [], $l) ?: 'Prescriptions' }}</span>
-    </a>
-    <a href="{{ route('portals.staff.prescriptions.create') }}" class="sidebar-link {{ request()->routeIs('portals.staff.prescriptions.create') ? 'active' : '' }}">
-        <i data-lucide="clipboard-plus"></i>
-        <span>{{ __('public.portal.nav_prescribe', [], $l) ?: 'New Prescription' }}</span>
-    </a>
-    <a href="{{ route('portals.staff.lab_orders') }}" class="sidebar-link">
-        <i data-lucide="microscope"></i>
-        <span>{{ __('public.portal.nav_lab_orders', [], $l) ?: 'Lab Orders' }}</span>
-    </a>
-</div>
+                    </div>
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_operations', [], $l) ?: 'Operations' }}</div>
-    <a href="{{ route('portals.staff.support') }}" class="sidebar-link">
-        <i data-lucide="headset"></i>
-        <span>{{ __('public.portal.nav_support', [], $l) ?: 'Support' }}</span>
-    </a>
-</div>
+    </div>

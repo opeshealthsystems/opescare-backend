@@ -15,42 +15,22 @@
         <span>{{ __('team.page_title', [], $l) ?: 'My Team' }}</span>
     </a>
     @platformadmin
-    <a href="{{ route('portals.admin.kpi.index') }}" class="sidebar-link">
-        <i data-lucide="trending-up"></i>
-        <span>{{ __('public.portal.nav_kpi', [], $l) ?: 'KPI Dashboard' }}</span>
-    </a>
-    @endplatformadmin
+        @endplatformadmin
     <a href="{{ route('select-facility') }}" class="sidebar-link">
         <i data-lucide="repeat"></i>
         <span>{{ __('public.portal.nav_switch_facility', [], $l) ?: 'Switch Facility' }}</span>
     </a>
     @platformadmin
-    <a href="{{ route('portals.admin.onboarding') }}" class="sidebar-link">
-        <i data-lucide="play-circle"></i>
-        <span>{{ __('public.portal.nav_onboarding', [], $l) ?: 'Onboarding' }}</span>
-    </a>
-    @endplatformadmin
+        @endplatformadmin
     @platformadmin
-    <a href="{{ route('portals.admin.go-live') }}" class="sidebar-link">
-        <i data-lucide="rocket"></i>
-        <span>{{ __('public.portal.nav_go_live', [], $l) ?: 'Go-Live Readiness' }}</span>
-    </a>
-    @endplatformadmin
+        @endplatformadmin
 </div>
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_compliance', [], $l) ?: 'Compliance' }}</div>
     @platformadmin
-    <a href="{{ route('portals.admin.security') }}" class="sidebar-link">
-        <i data-lucide="shield-check"></i>
-        <span>{{ __('public.portal.nav_security', [], $l) ?: 'Security' }}</span>
-    </a>
-    @endplatformadmin
+        @endplatformadmin
     @platformadmin
-    <a href="{{ route('portals.admin.legal') }}" class="sidebar-link">
-        <i data-lucide="scale"></i>
-        <span>{{ __('public.portal.nav_legal', [], $l) ?: 'Legal Documents' }}</span>
-    </a>
-    @endplatformadmin
+        @endplatformadmin
     <a href="{{ route('public.help') }}" class="sidebar-link">
         <i data-lucide="help-circle"></i>
         <span>{{ __('public.portal.nav_help', [], $l) ?: 'Help' }}</span>

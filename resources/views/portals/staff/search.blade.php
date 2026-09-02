@@ -16,7 +16,7 @@
 </div>
 
 {{-- Search Bar --}}
-<form method="GET" action="{{ route('portals.staff.search') }}" class="filter-bar">
+<form method="GET" class="filter-bar">
     <label class="filter-search">
         <i data-lucide="search"></i>
         <input type="text" name="q" value="{{ $query }}"
@@ -26,8 +26,7 @@
     </label>
     <button type="submit" class="btn btn-primary btn-sm">{{ __('public.staff_portal.btn_search', [], $l) ?: 'Search' }}</button>
     @if($query)
-        <a href="{{ route('portals.staff.search') }}" class="btn btn-ghost btn-sm">{{ __('public.staff_portal.filter_clear', [], $l) ?: 'Clear' }}</a>
-    @endif
+            @endif
 </form>
 
 @if($query === '')

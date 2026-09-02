@@ -10,22 +10,10 @@
         <i data-lucide="layout-dashboard"></i>
         <span>{{ __('public.portal.nav_dashboard', [], $l) ?: 'Dashboard' }}</span>
     </a>
-    <a href="{{ route('portals.admin.kpi.index') }}" class="sidebar-link">
-        <i data-lucide="trending-up"></i>
-        <span>{{ __('public.portal.nav_kpi', [], $l) ?: 'KPI Dashboard' }}</span>
-    </a>
-</div>
+    </div>
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_compliance', [], $l) ?: 'Compliance' }}</div>
-    <a href="{{ route('portals.admin.security') }}" class="sidebar-link">
-        <i data-lucide="shield-check"></i>
-        <span>{{ __('public.portal.nav_security', [], $l) ?: 'Security' }}</span>
-    </a>
-    <a href="{{ route('portals.admin.legal') }}" class="sidebar-link">
-        <i data-lucide="scale"></i>
-        <span>{{ __('public.portal.nav_legal', [], $l) ?: 'Legal Documents' }}</span>
-    </a>
-    <a href="{{ route('public.help') }}" class="sidebar-link">
+            <a href="{{ route('public.help') }}" class="sidebar-link">
         <i data-lucide="help-circle"></i>
         <span>{{ __('public.portal.nav_help', [], $l) ?: 'Help' }}</span>
     </a>

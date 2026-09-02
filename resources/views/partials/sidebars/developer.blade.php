@@ -14,29 +14,13 @@
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_developer_accounts', [], $l) ?: 'Developer' }}</div>
     @platformadmin
-    <a href="{{ route('portals.admin.security') }}" class="sidebar-link">
-        <i data-lucide="terminal"></i>
-        <span>{{ __('public.portal.nav_apps', [], $l) ?: 'My Apps' }}</span>
-    </a>
-    @endplatformadmin
+        @endplatformadmin
     @platformadmin
-    <a href="{{ route('portals.admin.security') }}" class="sidebar-link">
-        <i data-lucide="webhook"></i>
-        <span>{{ __('public.portal.nav_webhooks', [], $l) ?: 'Webhooks' }}</span>
-    </a>
-    @endplatformadmin
+        @endplatformadmin
     @platformadmin
-    <a href="{{ route('portals.admin.security') }}" class="sidebar-link">
-        <i data-lucide="file-code-2"></i>
-        <span>{{ __('public.portal.nav_code_mappings', [], $l) ?: 'Code Mappings' }}</span>
-    </a>
-    @endplatformadmin
+        @endplatformadmin
     @platformadmin
-    <a href="{{ route('portals.admin.legal') }}" class="sidebar-link">
-        <i data-lucide="scale"></i>
-        <span>{{ __('public.portal.nav_legal', [], $l) ?: 'Legal Documents' }}</span>
-    </a>
-    @endplatformadmin
+        @endplatformadmin
     <a href="{{ route('public.help') }}" class="sidebar-link">
         <i data-lucide="help-circle"></i>
         <span>{{ __('public.portal.nav_help', [], $l) ?: 'Help' }}</span>

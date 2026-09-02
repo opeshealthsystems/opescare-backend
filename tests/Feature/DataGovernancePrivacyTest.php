@@ -138,45 +138,40 @@ class DataGovernancePrivacyTest extends TestCase
         $this->assertFalse($frSettings['consent_required_for_treatment']);
     }
 
-    /** @test */
-    public function test_it_asserts_immutable_access_logs()
-    {
-        $response = $this->withHeaders($this->headers)->postJson('/api/v1/admin/security-incidents', [
-            'incident_type' => 'unauthorized_access',
-            'severity' => 'critical',
-            'summary' => 'Suspicious patient timeline pull',
-            'created_by' => $this->user->id
-        ]);
-        $response->assertStatus(201);
-
-        $this->assertDatabaseHas('security_incidents', [
-            'severity' => 'critical',
-            'status' => 'new'
-        ]);
-    }
+    // NOTE (Finder extraction): the platform's B2B governance surface
+    // (/api/v1/connect/consents/*, /api/v1/connect/emergency-access/*,
+    // /api/v1/admin/security-incidents, /api/v1/admin/correction-requests,
+    // /api/v1/admin/data-export-requests) was deleted with the Connect patient
+    // APIs and the admin governance plane. The lifecycle tests below are
+    // re-anchored on the kept Governance services and the kept MOBILE privacy
+    // endpoints, which is the surface the Finder actually ships. Two tests
+    // that existed only to drive the deleted admin endpoints (the
+    // admin-incident POST mislabelled "immutable access logs", and incident
+    // containment/resolution) are gone with those endpoints.
 
     /** @test */
     public function test_it_manages_the_multi_level_consent_lifecycle()
     {
-        // 1. Request consent from Connect B2B Interoperability API
-        $reqResponse = $this->postJson('/api/v1/connect/consents/request', [
-            'patient_id' => $this->patient->id,
-            'requested_by_user_id' => $this->user->id,
-            'purpose' => 'treatment',
-            'scopes' => ['patient.summary', 'allergies.read'],
-            'duration_minutes' => 60
-        ], $this->bearerHeaders());
-        $reqResponse->assertStatus(202);
-        $requestId = $reqResponse->json('consent_request_id');
+        $consents = app(\App\Modules\Governance\Services\ConsentService::class);
+
+        // 1. A facility requests consent (service-level; the B2B endpoint is gone)
+        $request = $consents->requestConsent(
+            $this->patient->id,
+            $this->facility->id,
+            $this->user->id,
+            'treatment',
+            ['patient.summary', 'allergies.read'],
+            60
+        );
 
         $this->assertDatabaseHas('consent_requests', [
-            'id' => $requestId,
+            'id' => $request->id,
             'status' => 'pending_patient_approval'
         ]);
 
-        // 2. Approve consent via Patient B2C Mobile App
+        // 2. Approve consent via Patient B2C Mobile App (kept surface)
         $appResponse = $this->withHeaders($this->mobileAuthHeaders($this->patient))
-            ->postJson("/api/mobile/consent-requests/{$requestId}/approve", [
+            ->postJson("/api/mobile/consent-requests/{$request->id}/approve", [
                 'user_id' => $this->user->id
             ]);
         $appResponse->assertStatus(200);
@@ -188,15 +183,15 @@ class DataGovernancePrivacyTest extends TestCase
         ]);
 
         // 3. Verify access is active for valid scope
-        $verifyResponse = $this->postJson('/api/v1/connect/consents/verify', [
-            'patient_id' => $this->patient->id,
-            'scope' => 'patient.summary',
-            'purpose' => 'treatment'
-        ], $this->bearerHeaders());
-        $verifyResponse->assertStatus(200);
-        $this->assertTrue($verifyResponse->json('is_valid'));
+        $this->assertTrue($consents->verifyAccess(
+            $this->patient->id,
+            $this->facility->id,
+            $this->user->id,
+            'patient.summary',
+            'treatment'
+        ));
 
-        // 4. Revoke consent via Mobile B2C App
+        // 4. Revoke consent via Mobile B2C App (kept surface)
         $revResponse = $this->withHeaders($this->mobileAuthHeaders($this->patient))
             ->postJson("/api/mobile/consents/{$grantId}/revoke", [
                 'user_id' => $this->user->id
@@ -204,33 +199,34 @@ class DataGovernancePrivacyTest extends TestCase
         $revResponse->assertStatus(200);
 
         // 5. Verify access is now rejected
-        $verifyRevResponse = $this->postJson('/api/v1/connect/consents/verify', [
-            'patient_id' => $this->patient->id,
-            'scope' => 'patient.summary',
-            'purpose' => 'treatment'
-        ], $this->bearerHeaders());
-        $verifyRevResponse->assertStatus(200);
-        $this->assertFalse($verifyRevResponse->json('is_valid'));
+        $this->assertFalse($consents->verifyAccess(
+            $this->patient->id,
+            $this->facility->id,
+            $this->user->id,
+            'patient.summary',
+            'treatment'
+        ));
     }
 
     /** @test */
     public function test_it_implements_two_person_emergency_override_reviews_with_incident_spawning()
     {
-        // 1. Request emergency bypass override
-        $overrideResponse = $this->postJson('/api/v1/connect/emergency-access/request', [
-            'patient_id' => $this->patient->id,
-            'actor_id' => $this->user->id,
-            'reason' => 'Patient in anaphylactic shock, unresponsive.'
-        ], $this->bearerHeaders());
-        $overrideResponse->assertStatus(201);
-        $eventId = $overrideResponse->json('emergency_access_event_id');
+        $service = app(EmergencyAccessService::class);
+
+        // 1. Request emergency bypass override (service-level; B2B endpoint gone)
+        $event = $service->requestEmergencyAccess(
+            $this->patient->id,
+            $this->facility->id,
+            $this->user->id,
+            'Patient in anaphylactic shock, unresponsive.'
+        );
 
         $this->assertDatabaseHas('emergency_access_events', [
-            'id' => $eventId
+            'id' => $event->id
         ]);
 
         $this->assertDatabaseHas('emergency_review_cases', [
-            'emergency_access_event_id' => $eventId,
+            'emergency_access_event_id' => $event->id,
             'status' => 'pending'
         ]);
 
@@ -241,16 +237,16 @@ class DataGovernancePrivacyTest extends TestCase
             'access_type' => 'override'
         ]);
 
-        // 3. Review override and flag abuse -> Spawns Security Incident Alarm case automatically
-        $reviewResponse = $this->withHeaders($this->headers)->postJson("/api/v1/admin/emergency-access/{$eventId}/review", [
-            'reviewer_id' => $this->user->id,
-            'review_status' => 'confirmed_abuse',
-            'comment' => 'Physician queried timeline for non-emergency patient.'
-        ]);
-        $reviewResponse->assertStatus(200);
+        // 3. Review override and flag abuse -> spawns a security incident automatically
+        $service->reviewEmergencyAccess(
+            $event->id,
+            $this->user->id,
+            'confirmed_abuse',
+            'Physician queried timeline for non-emergency patient.'
+        );
 
         $this->assertDatabaseHas('emergency_review_cases', [
-            'emergency_access_event_id' => $eventId,
+            'emergency_access_event_id' => $event->id,
             'status' => 'confirmed_abuse'
         ]);
 
@@ -355,11 +351,9 @@ class DataGovernancePrivacyTest extends TestCase
         $corrResponse->assertStatus(201);
         $requestId = $corrResponse->json('id');
 
-        // 2. Approve correction request via Admin plane
-        $approveResponse = $this->withHeaders($this->headers)->postJson("/api/v1/admin/correction-requests/{$requestId}/approve", [
-            'reviewer_id' => $this->user->id
-        ]);
-        $approveResponse->assertStatus(200);
+        // 2. Approve the correction (service-level; the admin endpoint is gone)
+        app(\App\Modules\Governance\Services\CorrectionRequestService::class)
+            ->approveRequest($requestId, $this->user->id);
 
         // 3. Verify original signed clinical note's status was set to entered_in_error
         $this->assertEquals('entered_in_error', $note->fresh()->status);
@@ -379,11 +373,9 @@ class DataGovernancePrivacyTest extends TestCase
         $expResponse->assertStatus(201);
         $requestId = $expResponse->json('id');
 
-        // 2. Approve export by Admin
-        $appResponse = $this->withHeaders($this->headers)->postJson("/api/v1/admin/data-export-requests/{$requestId}/approve", [
-            'approver_id' => $this->user->id
-        ]);
-        $appResponse->assertStatus(200);
+        // 2. Approve the export (service-level; the admin endpoint is gone)
+        app(\App\Modules\Governance\Services\DataExportService::class)
+            ->approveExport($requestId, $this->user->id);
 
         // 3. Download successfully
         $dlResponse = $this->withHeaders($mobileHeaders)
@@ -403,28 +395,4 @@ class DataGovernancePrivacyTest extends TestCase
         $this->assertEquals('expired', DataExportRequest::find($requestId)->status);
     }
 
-    /** @test */
-    public function test_it_asserts_security_incident_containment_and_resolution()
-    {
-        // 1. Spawn incident
-        $incident = new SecurityIncident();
-        $incident->incident_type = 'brute_force';
-        $incident->severity = 'medium';
-        $incident->status = 'new';
-        $incident->summary = 'Repeated invalid login attempts from IP 192.168.1.1';
-        $incident->detected_at = Carbon::now();
-        $incident->save();
-
-        // 2. Contain incident
-        $containResponse = $this->withHeaders($this->headers)->postJson("/api/v1/admin/security-incidents/{$incident->id}/contain");
-        $containResponse->assertStatus(200);
-        $this->assertEquals('contained', SecurityIncident::find($incident->id)->status);
-        $this->assertNotNull(SecurityIncident::find($incident->id)->contained_at);
-
-        // 3. Resolve incident
-        $resolveResponse = $this->withHeaders($this->headers)->postJson("/api/v1/admin/security-incidents/{$incident->id}/resolve");
-        $resolveResponse->assertStatus(200);
-        $this->assertEquals('resolved', SecurityIncident::find($incident->id)->status);
-        $this->assertNotNull(SecurityIncident::find($incident->id)->resolved_at);
-    }
 }

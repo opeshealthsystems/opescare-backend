@@ -13,11 +13,7 @@
 </div>
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_clinical', [], $l) ?: 'Clinical' }}</div>
-    <a href="{{ route('portals.staff.visits') }}" class="sidebar-link">
-        <i data-lucide="clipboard-list"></i>
-        <span>{{ __('public.portal.nav_visits', [], $l) ?: 'Visits' }}</span>
-    </a>
-    <a href="{{ route('portals.staff.appointments') }}" class="sidebar-link">
+        <a href="{{ route('portals.staff.appointments') }}" class="sidebar-link">
         <i data-lucide="calendar-check-2"></i>
         <span>{{ __('public.portal.nav_appointments', [], $l) ?: 'Appointments' }}</span>
     </a>

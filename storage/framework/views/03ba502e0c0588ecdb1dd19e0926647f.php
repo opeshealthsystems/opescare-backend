@@ -19,43 +19,15 @@
         <i data-lucide="calendar-check-2"></i>
         <span><?php echo e(__('public.portal.nav_appointments', [], app()->getLocale()) ?: 'Appointments'); ?></span>
     </a>
-    <a href="<?php echo e(route('portals.staff.queue')); ?>" class="sidebar-link">
-        <i data-lucide="list-ordered"></i>
-        <span><?php echo e(__('public.portal.nav_queue', [], app()->getLocale()) ?: 'Patient Queue'); ?></span>
-    </a>
-    <a href="<?php echo e(route('portals.staff.visits')); ?>" class="sidebar-link">
-        <i data-lucide="stethoscope"></i>
-        <span><?php echo e(__('public.portal.nav_visits', [], app()->getLocale()) ?: 'Visits'); ?></span>
-    </a>
-</div>
+        </div>
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label"><?php echo e(__('staff_inv.nav_lbl_hr', [], app()->getLocale()) ?: 'HR & Staff'); ?></div>
-    <a href="<?php echo e(route('portals.staff.hr.directory')); ?>" class="sidebar-link">
-        <i data-lucide="users"></i>
-        <span><?php echo e(__('public.portal.nav_staff_directory', [], app()->getLocale()) ?: 'Directory'); ?></span>
-    </a>
-    <a href="<?php echo e(route('portals.staff.hr.roster')); ?>" class="sidebar-link">
-        <i data-lucide="calendar-range"></i>
-        <span><?php echo e(__('public.portal.nav_staff_roster', [], app()->getLocale()) ?: 'Duty Roster'); ?></span>
-    </a>
-    <a href="<?php echo e(route('portals.staff.hr.shifts')); ?>" class="sidebar-link">
-        <i data-lucide="clock"></i>
-        <span><?php echo e(__('public.portal.nav_staff_shifts', [], app()->getLocale()) ?: 'Shifts'); ?></span>
-    </a>
-    <a href="<?php echo e(route('portals.staff.hr.leave')); ?>" class="sidebar-link">
-        <i data-lucide="plane-takeoff"></i>
-        <span><?php echo e(__('public.portal.nav_staff_leave', [], app()->getLocale()) ?: 'Leave'); ?></span>
-    </a>
-</div>
+                </div>
 
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label"><?php echo e(__('staff_inv.nav_lbl_inventory', [], app()->getLocale()) ?: 'Inventory'); ?></div>
     <?php if (\Illuminate\Support\Facades\Blade::check('feature', 'inventory_ops')): ?>
-    <a href="<?php echo e(route('portals.staff.inventory.pharmacy')); ?>" class="sidebar-link">
-        <i data-lucide="pill"></i>
-        <span><?php echo e(__('public.portal.nav_inventory_pharmacy', [], app()->getLocale()) ?: 'Pharmacy'); ?></span>
-    </a>
-    <?php endif; ?>
+        <?php endif; ?>
     <a href="<?php echo e(route('portals.staff.inventory.blood')); ?>" class="sidebar-link active">
         <i data-lucide="droplets"></i>
         <span><?php echo e(__('public.portal.nav_inventory_blood', [], app()->getLocale()) ?: 'Blood Bank'); ?></span>
@@ -64,41 +36,13 @@
 <?php if (\Illuminate\Support\Facades\Blade::check('feature', 'inventory_ops')): ?>
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label"><?php echo e(__('staff_inv.nav_lbl_supply_chain', [], app()->getLocale()) ?: 'Supply Chain'); ?></div>
-    <a href="<?php echo e(route('portals.staff.supply')); ?>" class="sidebar-link <?php echo e(request()->routeIs('portals.staff.supply*') ? 'active' : ''); ?>">
-        <i data-lucide="package"></i>
-        <span><?php echo e(__('staff_inv.nav_supply_chain', [], app()->getLocale()) ?: 'Supply Chain'); ?></span>
-    </a>
-</div>
+    </div>
 <?php endif; ?>
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label"><?php echo e(__('staff_inv.nav_lbl_operations', [], app()->getLocale()) ?: 'Operations'); ?></div>
     <?php if (\Illuminate\Support\Facades\Blade::check('feature', 'billing')): ?>
-    <a href="<?php echo e(route('portals.staff.billing')); ?>" class="sidebar-link">
-        <i data-lucide="receipt"></i>
-        <span><?php echo e(__('public.portal.nav_billing', [], app()->getLocale()) ?: 'Billing'); ?></span>
-    </a>
-    <?php endif; ?>
-    <a href="<?php echo e(route('portals.staff.support')); ?>" class="sidebar-link">
-        <i data-lucide="headset"></i>
-        <span><?php echo e(__('public.portal.nav_support', [], app()->getLocale()) ?: 'Support'); ?></span>
-    </a>
-    <a href="<?php echo e(route('portals.staff.data_import.index')); ?>" class="sidebar-link">
-        <i data-lucide="upload-cloud"></i>
-        <span><?php echo e(__('public.portal.nav_data_import', [], app()->getLocale()) ?: 'Data Import'); ?></span>
-    </a>
-    <a href="<?php echo e(route('portals.staff.search')); ?>" class="sidebar-link <?php echo e(request()->routeIs('portals.staff.search') ? 'active' : ''); ?>">
-        <i data-lucide="search"></i>
-        <span><?php echo e(__('public.portal.nav_search', [], app()->getLocale()) ?: 'Global Search'); ?></span>
-    </a>
-    <a href="<?php echo e(route('portals.staff.files.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('portals.staff.files*') ? 'active' : ''); ?>">
-        <i data-lucide="paperclip"></i>
-        <span><?php echo e(__('public.portal.nav_files', [], app()->getLocale()) ?: 'Files & Attachments'); ?></span>
-    </a>
-    <a href="<?php echo e(route('portals.staff.wards')); ?>" class="sidebar-link <?php echo e(request()->routeIs('portals.staff.wards*') ? 'active' : ''); ?>">
-        <i data-lucide="bed"></i>
-        <span><?php echo e(__('public.portal.nav_wards', [], app()->getLocale()) ?: 'Wards & Beds'); ?></span>
-    </a>
-</div>
+        <?php endif; ?>
+                    </div>
 <?php $__env->stopSection(); ?>
 
 <?php $__env->startSection('breadcrumb_home', __('public.staff_portal.title', [], app()->getLocale()) ?: 'Staff Portal'); ?>

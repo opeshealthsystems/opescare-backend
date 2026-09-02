@@ -7,11 +7,7 @@
 <div style="margin-bottom:var(--p-space-3);"></div>
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label"><?php echo e(__('public.portal.nav_lab_portal', [], $l) ?: 'Lab Portal'); ?></div>
-    <a href="<?php echo e(route('portals.lab.dashboard')); ?>" class="sidebar-link" style="background:rgba(14,165,233,.08);border-left:3px solid #0ea5e9;">
-        <i data-lucide="microscope" style="color:#0ea5e9;"></i>
-        <span style="font-weight:700;"><?php echo e(__('public.portal.nav_lab_portal_my', [], $l) ?: 'My Lab Portal'); ?></span>
-    </a>
-</div>
+    </div>
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label"><?php echo e(__('public.portal.nav_dashboard', [], $l) ?: 'Overview'); ?></div>
     <a href="<?php echo e(route('portals.staff')); ?>" class="sidebar-link">
@@ -21,28 +17,12 @@
 </div>
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label"><?php echo e(__('public.portal.nav_lab', [], $l) ?: 'Laboratory'); ?></div>
-    <a href="<?php echo e(route('portals.staff.queue')); ?>" class="sidebar-link">
-        <i data-lucide="list-ordered"></i>
-        <span><?php echo e(__('public.portal.nav_queue', [], $l) ?: 'Sample Queue'); ?></span>
-    </a>
-    <a href="<?php echo e(route('portals.staff.immunizations')); ?>" class="sidebar-link">
-        <i data-lucide="syringe"></i>
-        <span><?php echo e(__('public.portal.nav_immunizations', [], $l) ?: 'Immunizations'); ?></span>
-    </a>
-    
+            
     <a href="<?php echo e(route('portals.staff.inventory.blood')); ?>" class="sidebar-link <?php echo e(request()->routeIs('portals.staff.inventory.blood*') ? 'active' : ''); ?>">
         <i data-lucide="droplets"></i>
         <span><?php echo e(__('public.portal.nav_inventory_blood', [], $l) ?: 'Blood Bank'); ?></span>
     </a>
     <?php if (\Illuminate\Support\Facades\Blade::check('feature', 'inventory_ops')): ?>
-    <a href="<?php echo e(route('portals.staff.supply')); ?>" class="sidebar-link">
-        <i data-lucide="package"></i>
-        <span><?php echo e(__('public.portal.nav_supply', [], $l) ?: 'Supply Chain'); ?></span>
-    </a>
-    <?php endif; ?>
-    <a href="<?php echo e(route('portals.staff.support')); ?>" class="sidebar-link">
-        <i data-lucide="headset"></i>
-        <span><?php echo e(__('public.portal.nav_support', [], $l) ?: 'Support'); ?></span>
-    </a>
-</div>
+        <?php endif; ?>
+    </div>
 <?php /**PATH C:\laragon\www\opescare-finder\resources\views/partials/sidebars/labtech.blade.php ENDPATH**/ ?>

@@ -17,13 +17,21 @@ use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 /**
- * The prescribing chain, end to end.
+ * The prescribing chain, from issue to dispense.
  *
- * `prescriptions` had 0 rows in production for one reason: nothing could create
- * one. Staff could read a register, patients could read their list, pharmacies
- * could dispense — and the first link, a clinician issuing a prescription, did
- * not exist. Every test here walks the whole chain rather than a single screen,
- * because a working link that connects to nothing is what was already shipped.
+ * On the platform this file walked the chain from the STAFF PRESCRIBING UI
+ * (portals/staff/prescriptions) through the patient portal to the pharmacy
+ * counter. The Finder product does not ship the staff prescribing screens —
+ * those routes and views were deleted with the clinical module — but it keeps
+ * everything downstream: prescriptions arrive through the shared
+ * PrescriptionService (the same write path POST /v1/prescriptions uses), the
+ * patient portal lists them, and the pharmacy portal dispenses them.
+ *
+ * So issuance here is anchored on PrescriptionService::issue(), and the
+ * UI-only tests (form reachability, form validation, sidebar link, staff
+ * scoping of the patient picker) are gone with the UI. Everything that
+ * guards the RECORD — immutability, void-not-delete, single dispense,
+ * expiry, audit — stays.
  */
 class PrescribingChainTest extends TestCase
 {
@@ -112,23 +120,22 @@ class PrescribingChainTest extends TestCase
         return $user;
     }
 
-    private function asDoctor(): self
-    {
-        return $this->actingAs($this->doctor)
-            ->withSession(['active_facility_id' => $this->facility->id]);
-    }
-
     private function asPharmacist(): self
     {
         return $this->actingAs($this->pharmacist)
             ->withSession(['active_facility_id' => $this->facility->id]);
     }
 
-    /** @return array<string,mixed> the payload the prescribing form submits */
-    private function prescriptionPayload(array $overrides = []): array
+    /**
+     * Issue a prescription through the shared service — the write path the
+     * v1 API uses, and the only issuance path the Finder product ships.
+     */
+    private function issueViaService(array $overrides = []): Prescription
     {
-        return array_merge([
+        return app(PrescriptionService::class)->issue(array_merge([
             'patient_id'    => $this->patient->id,
+            'facility_id'   => $this->facility->id,
+            'prescribed_by' => $this->doctor->id,
             'validity_days' => 30,
             'notes'         => 'Complete the full course.',
             'items'         => [
@@ -141,38 +148,18 @@ class PrescribingChainTest extends TestCase
                     'quantity'      => 21,
                 ],
             ],
-        ], $overrides);
-    }
-
-    /** Issue a prescription through the portal and return it. */
-    private function issueViaPortal(array $overrides = []): Prescription
-    {
-        $this->asDoctor()
-            ->post(route('portals.staff.prescriptions.store'), $this->prescriptionPayload($overrides))
-            ->assertRedirect(route('portals.staff.prescriptions'));
-
-        return Prescription::latest('created_at')->firstOrFail();
+        ], $overrides), $this->doctor->id);
     }
 
     // ──────────────────────────────────────────────────────────────────
     // The chain
     // ──────────────────────────────────────────────────────────────────
 
-    public function test_the_prescribing_form_is_reachable_and_offers_this_facilitys_patients(): void
+    public function test_an_issued_prescription_reaches_the_patients_portal(): void
     {
-        $this->asDoctor()
-            ->get(route('portals.staff.prescriptions.create'))
-            ->assertOk()
-            ->assertViewHas('patients', fn ($patients) => $patients->contains('id', $this->patient->id))
-            ->assertViewHas('medicines', fn ($medicines) => $medicines->contains('id', $this->medicine->id));
-    }
-
-    public function test_a_clinician_issues_a_prescription_and_the_patient_sees_it(): void
-    {
-        // BEFORE: this is the production state — nothing has ever been prescribed.
         $this->assertSame(0, Prescription::count());
 
-        $prescription = $this->issueViaPortal();
+        $prescription = $this->issueViaService();
 
         $this->assertSame('active', $prescription->status);
         $this->assertSame($this->patient->id, $prescription->patient_id);
@@ -190,7 +177,7 @@ class PrescribingChainTest extends TestCase
         $this->assertSame(7, $item->duration_days);
         $this->assertSame('pending', $item->status);
 
-        // AFTER: the patient's own portal now carries it.
+        // The patient's own portal carries it.
         $this->actingAs($this->patientUser)
             ->withSession(['active_facility_id' => $this->facility->id])
             ->get(route('portals.patient.prescriptions'))
@@ -200,7 +187,7 @@ class PrescribingChainTest extends TestCase
 
     public function test_a_pharmacy_dispenses_the_prescription_and_the_dispense_is_recorded(): void
     {
-        $prescription = $this->issueViaPortal();
+        $prescription = $this->issueViaService();
 
         // The pharmacy queue shows it before dispensing.
         $this->asPharmacist()
@@ -230,7 +217,7 @@ class PrescribingChainTest extends TestCase
 
     public function test_dispensing_cannot_be_silently_repeated(): void
     {
-        $prescription = $this->issueViaPortal();
+        $prescription = $this->issueViaService();
 
         $this->asPharmacist()->post(route('portals.pharmacy.dispense', $prescription->id));
 
@@ -265,7 +252,7 @@ class PrescribingChainTest extends TestCase
 
     public function test_a_prescription_cannot_be_hard_deleted(): void
     {
-        $prescription = $this->issueViaPortal();
+        $prescription = $this->issueViaService();
 
         try {
             $prescription->delete();
@@ -289,7 +276,7 @@ class PrescribingChainTest extends TestCase
 
     public function test_a_prescription_cannot_be_overwritten(): void
     {
-        $prescription = $this->issueViaPortal();
+        $prescription = $this->issueViaService();
 
         $otherPatient = Patient::create([
             'health_id'   => 'OC-TST-4100-0002-01',
@@ -329,7 +316,7 @@ class PrescribingChainTest extends TestCase
 
     public function test_a_dispensed_prescription_cannot_be_walked_back_to_active(): void
     {
-        $prescription = $this->issueViaPortal();
+        $prescription = $this->issueViaService();
         $this->asPharmacist()->post(route('portals.pharmacy.dispense', $prescription->id));
         $prescription->refresh();
 
@@ -346,13 +333,13 @@ class PrescribingChainTest extends TestCase
 
     public function test_a_mistake_is_corrected_by_voiding_not_by_deleting(): void
     {
-        $prescription = $this->issueViaPortal();
+        $prescription = $this->issueViaService();
 
-        $this->asDoctor()
-            ->post(route('portals.staff.prescriptions.void', $prescription->id), [
-                'void_reason' => 'Wrong strength ordered — a corrected prescription follows.',
-            ])
-            ->assertRedirect(route('portals.staff.prescriptions'));
+        app(PrescriptionService::class)->void(
+            $prescription,
+            'Wrong strength ordered — a corrected prescription follows.',
+            $this->doctor->id,
+        );
 
         $prescription->refresh();
         $this->assertSame('voided', $prescription->status);
@@ -374,14 +361,13 @@ class PrescribingChainTest extends TestCase
 
     public function test_a_prescription_can_be_marked_entered_in_error(): void
     {
-        $prescription = $this->issueViaPortal();
+        $prescription = $this->issueViaService();
 
-        $this->asDoctor()
-            ->post(route('portals.staff.prescriptions.void', $prescription->id), [
-                'void_reason'      => 'Recorded against the wrong patient at the bedside.',
-                'entered_in_error' => '1',
-            ])
-            ->assertRedirect(route('portals.staff.prescriptions'));
+        app(PrescriptionService::class)->markEnteredInError(
+            $prescription,
+            'Recorded against the wrong patient at the bedside.',
+            $this->doctor->id,
+        );
 
         $this->assertSame('entered_in_error', $prescription->refresh()->status);
         $this->assertDatabaseHas('audit_events', [
@@ -392,7 +378,7 @@ class PrescribingChainTest extends TestCase
 
     public function test_an_amendment_creates_a_new_prescription_linked_to_the_original(): void
     {
-        $original = $this->issueViaPortal();
+        $original = $this->issueViaService();
 
         $amendment = app(PrescriptionService::class)->amend(
             $original,
@@ -415,13 +401,16 @@ class PrescribingChainTest extends TestCase
     }
 
     // ──────────────────────────────────────────────────────────────────
-    // Audit + consent-equivalent scoping
+    // Audit
     // ──────────────────────────────────────────────────────────────────
 
     public function test_issuing_a_prescription_is_audited(): void
     {
-        $prescription = $this->issueViaPortal();
+        $prescription = $this->issueViaService();
 
+        // The staff controller's own 'staff_prescription_issued' event went
+        // with the deleted staff UI; the service-level audit trail is the one
+        // every issuance path shares.
         $this->assertDatabaseHas('audit_events', [
             'action_type'   => 'prescription_issued',
             'resource_type' => 'Prescription',
@@ -430,100 +419,10 @@ class PrescribingChainTest extends TestCase
             'facility_id'   => $this->facility->id,
             'actor_id'      => $this->doctor->id,
         ]);
-
-        $this->assertDatabaseHas('audit_events', [
-            'action_type' => 'staff_prescription_issued',
-            'resource_id' => $prescription->id,
-            'actor_id'    => $this->doctor->id,
-        ]);
-    }
-
-    public function test_a_clinician_cannot_prescribe_for_a_patient_outside_their_facility(): void
-    {
-        $otherFacility = Facility::create([
-            'name'   => 'Clinique du Littoral',
-            'type'   => 'clinic',
-            'status' => 'active',
-        ]);
-
-        $stranger = Patient::create([
-            'health_id'   => 'OC-TST-4100-0003-01',
-            'first_name'  => 'Clarisse',
-            'last_name'   => 'Bekolo',
-            'sex'         => 'female',
-            'facility_id' => $otherFacility->id,
-            'is_demo'     => false,
-        ]);
-
-        $this->asDoctor()
-            ->post(route('portals.staff.prescriptions.store'), $this->prescriptionPayload([
-                'patient_id' => $stranger->id,
-            ]))
-            ->assertForbidden();
-
-        $this->assertSame(0, Prescription::where('patient_id', $stranger->id)->count());
-
-        // The form does not even offer them.
-        $this->asDoctor()
-            ->get(route('portals.staff.prescriptions.create'))
-            ->assertViewHas('patients', fn ($patients) => ! $patients->contains('id', $stranger->id));
-    }
-
-    public function test_a_patient_reachable_only_by_consent_grant_can_be_prescribed_for(): void
-    {
-        $otherFacility = Facility::create([
-            'name'   => 'Clinique du Littoral',
-            'type'   => 'clinic',
-            'status' => 'active',
-        ]);
-
-        $referred = Patient::create([
-            'health_id'   => 'OC-TST-4100-0004-01',
-            'first_name'  => 'Serge',
-            'last_name'   => 'Manga',
-            'sex'         => 'male',
-            'facility_id' => $otherFacility->id,
-            'is_demo'     => false,
-        ]);
-
-        DB::table('consent_grants')->insert([
-            'id'                => (string) \Illuminate\Support\Str::uuid(),
-            'patient_id'        => $referred->id,
-            'facility_id'       => $this->facility->id,
-            'authorizing_actor' => 'patient',
-            'scope'             => json_encode(['patients:read', 'patients:write']),
-            'status'            => 'active',
-            'expires_at'        => now()->addYear(),
-            'created_at'        => now(),
-            'updated_at'        => now(),
-            'is_demo'           => false,
-        ]);
-
-        $this->asDoctor()
-            ->post(route('portals.staff.prescriptions.store'), $this->prescriptionPayload([
-                'patient_id' => $referred->id,
-            ]))
-            ->assertRedirect(route('portals.staff.prescriptions'));
-
-        $this->assertSame(1, Prescription::where('patient_id', $referred->id)->count());
-    }
-
-    public function test_prescribing_requires_a_medicine_from_the_catalogue(): void
-    {
-        $this->asDoctor()
-            ->post(route('portals.staff.prescriptions.store'), $this->prescriptionPayload([
-                'items' => [[
-                    'medicine_id' => (string) \Illuminate\Support\Str::uuid(),
-                    'frequency'   => 'once daily',
-                ]],
-            ]))
-            ->assertSessionHasErrors('items.0.medicine_id');
-
-        $this->assertSame(0, Prescription::count());
     }
 
     // ──────────────────────────────────────────────────────────────────
-    // Portal and API share one write path
+    // The shared service write path
     // ──────────────────────────────────────────────────────────────────
 
     public function test_the_api_field_aliases_now_persist_through_the_shared_service(): void
@@ -568,7 +467,7 @@ class PrescribingChainTest extends TestCase
 
     public function test_an_expired_prescription_cannot_be_dispensed(): void
     {
-        $prescription = $this->issueViaPortal();
+        $prescription = $this->issueViaService();
 
         // Expiry is not an immutable attribute — but reaching it must close the
         // door on dispensing.
@@ -584,18 +483,9 @@ class PrescribingChainTest extends TestCase
         $this->assertNull($prescription->dispensed_at);
     }
 
-    public function test_the_prescribing_page_is_linked_from_the_prescriber_sidebar(): void
-    {
-        // A feature reachable only by URL is not shipped.
-        $this->asDoctor()
-            ->get(route('portals.staff.prescriptions'))
-            ->assertOk()
-            ->assertSee(route('portals.staff.prescriptions.create'), false);
-    }
-
     public function test_prescription_items_are_never_orphaned_from_their_catalogue_link(): void
     {
-        $prescription = $this->issueViaPortal();
+        $prescription = $this->issueViaService();
 
         $this->assertSame(
             1,

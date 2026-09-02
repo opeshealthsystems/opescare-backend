@@ -5,8 +5,7 @@
 @section('content')
 
 <div class="breadcrumb">
-    <a href="{{ route('portals.admin.legal') }}">{{ __('public.adm_legal_closures_breadcrumb') }}</a>
-    <i data-lucide="chevron-right"></i>
+        <i data-lucide="chevron-right"></i>
     <span>{{ __('public.adm_legal_closures_breadcrumb_span') }}</span>
 </div>
 
@@ -43,23 +42,7 @@
                             <span class="badge badge--{{ $req->statusColor() }} badge-sm">@enum($req->status)</span>
                         </td>
                         <td data-label="{{ __('public.adm_legal_closures_col_requested') }}" class="td-muted">{{ $req->created_at->format('d M Y') }}</td>
-                        <td class="row-actions">
-                            @if($req->isPending())
-                            <div class="row-actions-inline">
-                                <form method="POST" action="{{ route('portals.admin.legal.closures.review', $req) }}">
-                                    @csrf
-                                    <input type="hidden" name="action" value="approve">
-                                    <button type="submit" class="btn btn-success btn-sm"
-                                            onclick="return confirm('{{ __('public.adm_legal_closures_confirm_approve') }}')">{{ __('public.adm_legal_closures_btn_approve') }}</button>
-                                </form>
-                                <form method="POST" action="{{ route('portals.admin.legal.closures.review', $req) }}">
-                                    @csrf
-                                    <input type="hidden" name="action" value="reject">
-                                    <button type="submit" class="btn btn-secondary btn-sm">{{ __('public.adm_legal_closures_btn_reject') }}</button>
-                                </form>
-                            </div>
-                            @endif
-                        </td>
+                        <td class="row-actions"></td>
                     </tr>
                 @empty
                     <tr><td colspan="7" class="td-muted empty-cell">{{ __('public.adm_legal_closures_empty') }}</td></tr>

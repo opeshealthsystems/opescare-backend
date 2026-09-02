@@ -57,6 +57,10 @@ abstract class TestCase extends BaseTestCase
     {
         return $database === ':memory:'
             || str_ends_with($database, '_test')
-            || str_contains($database, '_test_');
+            || str_contains($database, '_test_')
+            // The Finder extraction's per-agent test databases are provisioned
+            // as opescare_finder_a1..aN. The pattern is exact — the dev
+            // database "opescare_finder" (no suffix) is still refused.
+            || preg_match('/^opescare_finder_a\d+$/', $database) === 1;
     }
 }

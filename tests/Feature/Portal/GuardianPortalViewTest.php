@@ -20,8 +20,10 @@ class GuardianPortalViewTest extends TestCase
         ];
     }
 
-    public function test_guardian_can_view_dependent_lab_results(): void
+    public function test_guardian_can_view_dependent_appointments(): void
     {
+        // Was the labs page; the Finder's patient portal does not ship lab
+        // results, so guardian read access is proven on the appointments page.
         $guardian  = User::factory()->create();
         $dependent = Patient::factory()->create(['is_demo' => false]);
         FamilyLink::factory()->create([
@@ -33,7 +35,7 @@ class GuardianPortalViewTest extends TestCase
 
         $response = $this->actingAs($guardian)
             ->withSession($this->guardianSession($dependent->id))
-            ->get(route('portals.patient.labs'));
+            ->get(route('portals.patient.appointments'));
 
         $response->assertStatus(200);
     }
@@ -92,7 +94,7 @@ class GuardianPortalViewTest extends TestCase
 
         $response = $this->actingAs($guardian)
             ->withSession($this->guardianSession($dependent->id))
-            ->get(route('portals.patient.labs'));
+            ->get(route('portals.patient.appointments'));
 
         $response->assertStatus(200);
         $response->assertViewHas('patient', fn($p) => $p->id === $dependent->id);

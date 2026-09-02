@@ -5,18 +5,12 @@ namespace Tests\Feature\Communications;
 use Tests\TestCase;
 use App\Modules\Notifications\Models\NotificationTemplate;
 use App\Modules\Notifications\Models\NotificationPreference;
-use App\Modules\Notifications\Models\NotificationEvent;
-use App\Modules\Notifications\Models\EscalationChain;
-use App\Modules\Tasks\Models\ActionTask;
 use App\Modules\Messaging\Models\MessageThread;
 use App\Modules\Messaging\Models\Message;
 use App\Modules\Messaging\Models\MessageAttachment;
-use App\Modules\Broadcasts\Models\Broadcast;
 
 use App\Modules\Notifications\Services\NotificationService;
-use App\Modules\Notifications\Services\AlertEscalationService;
 use App\Modules\Communications\Services\CommunicationRouterService;
-use App\Modules\Tasks\Services\TaskService;
 use App\Modules\Messaging\Services\MessagingService;
 use App\Modules\Messaging\Services\MessagePermissionService;
 use App\Modules\Messaging\Services\MessageAttachmentService;
@@ -207,47 +201,9 @@ class CommunicationEcosystemTest extends TestCase
         $this->assertFalse($phThreadExposed);
     }
 
-    public function test_critical_lab_alert_creates_action_task_and_escalates_if_unacknowledged()
-    {
-        $taskService = app(TaskService::class);
-        $escalationService = app(AlertEscalationService::class);
-
-        // 1. Create escalation chain
-        $chain = EscalationChain::create([
-            'uuid' => Str::uuid(),
-            'name' => 'Critical Lab Escalation',
-            'event_type' => 'critical_lab_provider',
-            'steps_json' => json_encode([
-                ['step' => 1, 'role' => 'ordering_doctor'],
-                ['step' => 2, 'role' => 'on_duty_director']
-            ]),
-            'active' => true
-        ]);
-
-                // 2. Create notification event for critical lab alert linked to escalation chain
-        $event = NotificationEvent::create([
-            'uuid' => Str::uuid(),
-            'event_type' => 'critical_lab_provider',
-            'communication_type' => 'health_updates',
-            'recipient_type' => 'provider',
-            'payload_json' => json_encode(['body' => 'Critical alert']),
-            'requires_acknowledgement' => true,
-            'acknowledgement_status' => 'pending',
-            'escalation_chain_id' => $chain->id
-        ]);
-
-        // 3. Trigger escalation checks
-        $escalationService->escalateIfUnacknowledged($event);
-
-        // 4. Verify original event status escalates
-        $event->refresh();
-        $this->assertEquals('escalated', $event->acknowledgement_status);
-
-        // 5. Verify backup escalated task was generated for next role
-        $escalatedTask = ActionTask::where('task_type', 'escalated_clinical_alert')->first();
-        $this->assertNotNull($escalatedTask);
-        $this->assertEquals('on_duty_director', $escalatedTask->assigned_role);
-    }
+    // NOTE (Finder extraction): the critical-lab escalation test was removed with
+    // the Tasks module (ActionTask/TaskService) — clinical alerting is not part
+    // of the Finder product. Messaging and notification coverage stays.
 
     public function test_blocked_executables_and_allowed_attachments_work_on_messaging()
     {

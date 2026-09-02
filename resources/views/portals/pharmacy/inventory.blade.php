@@ -30,10 +30,7 @@
     <p class="page-subtitle">{{ __('public.pharmacy_portal.page_subtitle_stock', [], $l) }}</p>
     <div class="page-head__spacer"></div>
     @feature('inventory_ops')
-    <a href="{{ route('portals.staff.inventory.pharmacy') }}" class="btn btn-secondary btn-sm">
-        <i data-lucide="settings"></i> {{ __('public.pharmacy_portal.btn_manage_stock', [], $l) ?: 'Manage stock' }}
-    </a>
-    @endfeature
+        @endfeature
 </div>
 
 @if($errors->any())

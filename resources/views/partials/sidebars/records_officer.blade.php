@@ -17,16 +17,4 @@
 </div>
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_operations', [], $l) ?: 'Operations' }}</div>
-    <a href="{{ route('portals.staff.files.index') }}" class="sidebar-link">
-        <i data-lucide="folder-open"></i>
-        <span>{{ __('public.portal.nav_files', [], $l) ?: 'Documents & Files' }}</span>
-    </a>
-    <a href="{{ route('portals.staff.data_import.index') }}" class="sidebar-link">
-        <i data-lucide="upload"></i>
-        <span>{{ __('public.portal.nav_data_import', [], $l) ?: 'Data Import' }}</span>
-    </a>
-    <a href="{{ route('portals.staff.support') }}" class="sidebar-link">
-        <i data-lucide="headset"></i>
-        <span>{{ __('public.portal.nav_support', [], $l) ?: 'Support' }}</span>
-    </a>
-</div>
+            </div>

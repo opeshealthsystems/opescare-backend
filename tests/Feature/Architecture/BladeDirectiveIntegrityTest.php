@@ -70,7 +70,9 @@ class BladeDirectiveIntegrityTest extends TestCase
     public function test_the_view_tree_is_not_empty(): void
     {
         // Guards the two tests below: a scan that finds no files trivially passes.
-        $this->assertGreaterThan(300, count($this->bladeFiles()));
+        // Floor lowered from 300 when the Finder extraction pruned the view
+        // tree to ~265 files; 200 still catches a scan pointed at nothing.
+        $this->assertGreaterThan(200, count($this->bladeFiles()));
     }
 
     public function test_no_directive_is_glued_to_a_word_character(): void

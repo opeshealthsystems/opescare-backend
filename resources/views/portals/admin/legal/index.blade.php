@@ -5,17 +5,13 @@
 @section('content')
 
 <div class="breadcrumb">
-    <a href="{{ route('portals.admin.legal') }}">{{ __('public.adm_legal_breadcrumb') }}</a>
-    <i data-lucide="chevron-right"></i>
+        <i data-lucide="chevron-right"></i>
     <span>{{ __('public.adm_legal_breadcrumb_docs') }}</span>
 </div>
 
 <div class="page-head">
     <h2>{{ __('public.adm_legal_h2') }}</h2>
     <div class="page-head__spacer"></div>
-    <button type="button" onclick="opOpenModal('newDocModal')" class="btn btn-primary btn-sm">
-        <i data-lucide="plus"></i> {{ __('public.adm_legal_btn_new') }}
-    </button>
 </div>
 
 <p class="td-muted mb-6">{{ __('public.adm_legal_subtitle') }}</p>
@@ -44,10 +40,7 @@
     <div class="panel-header">
         <h3 class="panel-title"><i data-lucide="scale"></i> {{ __('public.adm_legal_panel_title') }}</h3>
         <div class="row-actions-inline">
-            <a href="{{ route('portals.admin.legal.closures') }}" class="btn btn-secondary btn-sm">{{ __('public.adm_legal_btn_closures') }}</a>
-            <a href="{{ route('portals.admin.legal.complaints') }}" class="btn btn-secondary btn-sm">{{ __('public.adm_legal_btn_complaints') }}</a>
-            <a href="{{ route('portals.admin.legal.minor_transitions') }}" class="btn btn-secondary btn-sm">{{ __('public.adm_legal_btn_minor_transitions') }}</a>
-            <a href="{{ route('public.legal') }}" target="_blank" class="btn btn-secondary btn-sm">
+                                                <a href="{{ route('public.legal') }}" target="_blank" class="btn btn-secondary btn-sm">
                 <i data-lucide="external-link"></i> {{ __('public.adm_legal_btn_public_view') }}
             </a>
         </div>
@@ -83,8 +76,7 @@
                             </span>
                         </td>
                         <td class="row-actions">
-                            <a href="{{ route('portals.admin.legal.show', $doc) }}" class="btn btn-secondary btn-sm">{{ __('public.adm_legal_btn_manage') }}</a>
-                        </td>
+                                                    </td>
                     </tr>
                 @empty
                     <tr><td colspan="6" class="td-muted empty-cell">
@@ -97,41 +89,6 @@
     </div>
 </div>
 
-{{-- New Document Modal --}}
-<div id="newDocModal" class="modal-fixed">
-    <div class="modal-fixed__panel modal-fixed__panel--lg">
-        <div class="modal-fixed__head">
-            <h3 class="modal-fixed__title">{{ __('public.adm_legal_modal_new_title') }}</h3>
-            <button type="button" class="icon-btn" aria-label="{{ __('public.aria_close') }}" onclick="opCloseModal('newDocModal')"><i data-lucide="x"></i></button>
-        </div>
-        <form method="POST" action="{{ route('portals.admin.legal.store') }}">
-            @csrf
-            <div class="form-group mb-3">
-                <label class="form-label form-label-required">{{ __('public.adm_legal_modal_slug_label') }}</label>
-                <input type="text" name="slug" class="form-control" placeholder="terms-of-use" required>
-            </div>
-            <div class="form-group mb-3">
-                <label class="form-label form-label-required">{{ __('public.adm_legal_modal_title_label') }}</label>
-                <input type="text" name="title" class="form-control" placeholder="{{ __('public.aria_ph_legal_title') }}" required>
-            </div>
-            <div class="form-group mb-4">
-                <label class="form-label form-label-required">{{ __('public.adm_legal_modal_type_label') }}</label>
-                <select name="document_type" class="form-control" required>
-                    <option value="terms">{{ __('public.adm_legal_modal_type_terms') }}</option>
-                    <option value="privacy">{{ __('public.adm_legal_modal_type_privacy') }}</option>
-                    <option value="consent">{{ __('public.adm_legal_modal_type_consent') }}</option>
-                    <option value="dpa">{{ __('public.adm_legal_modal_type_dpa') }}</option>
-                    <option value="facility_agreement">{{ __('public.adm_legal_modal_type_facility') }}</option>
-                    <option value="api_terms">{{ __('public.adm_legal_modal_type_api') }}</option>
-                </select>
-            </div>
-            <div class="modal__footer">
-                <button type="button" onclick="opCloseModal('newDocModal')" class="btn btn-ghost">{{ __('public.adm_legal_btn_cancel') }}</button>
-                <button type="submit" class="btn btn-primary">{{ __('public.adm_legal_btn_create') }}</button>
-            </div>
-        </form>
-    </div>
-</div>
 
 @endsection
 @section('scripts')

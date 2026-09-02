@@ -62,21 +62,9 @@
             </div>
             <div class="row-actions" style="flex-direction:column;align-items:flex-end;">
                 @if($req->status === 'pending')
-                <form method="POST" action="{{ route('portals.patient.consent.approve', $req->id) }}">
-                    @csrf
-                    <button type="submit" class="btn btn-primary btn-sm"><i data-lucide="check"></i> {{ __('public.portal.btn_approve', [], $l) ?: 'Approve' }}</button>
-                </form>
-                <form method="POST" action="{{ route('portals.patient.consent.deny', $req->id) }}">
-                    @csrf
-                    <button type="submit" class="btn btn-secondary btn-sm"><i data-lucide="x"></i> {{ __('public.portal.btn_deny', [], $l) ?: 'Deny' }}</button>
-                </form>
+                <span class="badge badge-warning">@enum($req->status)</span>
                 @else
                 <span class="badge {{ $req->status === 'approved' ? 'badge-success' : 'badge-neutral' }}">@enum($req->status)</span>
-                @if($req->status === 'approved')
-                <button type="button" class="btn btn-danger btn-sm" onclick="opOpenModal('revoke-consent-{{ $req->id }}')">
-                    <i data-lucide="shield-off"></i> {{ __('public.portal.btn_revoke_access', [], $l) ?: 'Revoke access' }}
-                </button>
-                @endif
                 @endif
             </div>
         </div>
@@ -90,25 +78,7 @@
 </div>
 @endif
 
-@foreach($consentRequests as $req)
-    @if($req->status === 'approved')
-    <div id="revoke-consent-{{ $req->id }}" class="modal-backdrop mt-6" hidden>
-        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="revoke-consent-{{ $req->id }}-title">
-            <h3 class="modal__title" id="revoke-consent-{{ $req->id }}-title"><i data-lucide="shield-off"></i> {{ __('public.portal.modal_revoke_title', [], $l) ?: 'Revoke access' }}</h3>
-            <form method="POST" action="{{ route('portals.patient.consent.revoke', $req->id) }}">
-                @csrf
-                <div class="modal__body">
-                    <p>{{ __('public.portal.modal_revoke_body', [], $l) ?: 'Revoke this consent? The facility will immediately lose access.' }}</p>
-                </div>
-                <div class="modal__footer">
-                    <button type="button" class="btn btn-ghost" onclick="opCloseModal('revoke-consent-{{ $req->id }}')">{{ __('public.portal.btn_cancel', [], $l) ?: 'Cancel' }}</button>
-                    <button type="submit" class="btn btn-danger">{{ __('public.portal.btn_revoke_access', [], $l) ?: 'Revoke access' }}</button>
-                </div>
-            </form>
-        </div>
-    </div>
-    @endif
-@endforeach
+
 
 @endif
 
