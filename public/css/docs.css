@@ -1,0 +1,355 @@
+/* ============================================================
+   OpesCare Developer Docs — docs.css
+   ============================================================ */
+
+/* Reset & base */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --docs-sidebar-w: 260px;
+  --docs-topbar-h: 56px;
+  --docs-primary: #4F46E5;
+  --docs-primary-light: #818CF8;
+  --docs-bg: #0F172A;
+  --docs-sidebar-bg: #1E293B;
+  --docs-content-bg: #FFFFFF;
+  --docs-border: #334155;
+  --docs-text: #E2E8F0;
+  --docs-text-muted: #94A3B8;
+  --docs-code-bg: #1E293B;
+  --docs-code-border: #334155;
+  --docs-tab-active: #4F46E5;
+  --docs-link: #818CF8;
+}
+
+body.docs-body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--docs-content-bg);
+  color: #1E293B;
+  line-height: 1.6;
+}
+
+/* Topbar */
+.docs-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--docs-topbar-h);
+  background: var(--docs-bg);
+  border-bottom: 1px solid var(--docs-border);
+  display: flex;
+  align-items: center;
+  padding: 0 1.5rem;
+  gap: 1rem;
+  z-index: 100;
+}
+.docs-topbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 1rem;
+}
+.docs-topbar-logo span.badge {
+  font-size: 0.6875rem;
+  background: var(--docs-primary);
+  color: white;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+.docs-topbar-spacer { flex: 1; }
+.docs-topbar-links {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+.docs-topbar-links a {
+  color: var(--docs-text-muted);
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: color .15s;
+}
+.docs-topbar-links a:hover { color: var(--docs-text); }
+
+/* Shell */
+.docs-shell {
+  display: flex;
+  min-height: 100vh;
+  padding-top: var(--docs-topbar-h);
+}
+
+/* Sidebar */
+.docs-sidebar {
+  position: fixed;
+  top: var(--docs-topbar-h);
+  left: 0;
+  width: var(--docs-sidebar-w);
+  height: calc(100vh - var(--docs-topbar-h));
+  background: var(--docs-sidebar-bg);
+  border-right: 1px solid var(--docs-border);
+  overflow-y: auto;
+  padding: 1.5rem 0 2rem;
+}
+.docs-nav-section {
+  margin-bottom: 0.25rem;
+}
+.docs-nav-heading {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--docs-text-muted);
+  padding: 0.75rem 1.25rem 0.25rem;
+}
+.docs-nav-link {
+  display: block;
+  padding: 0.35rem 1.25rem;
+  font-size: 0.875rem;
+  color: var(--docs-text-muted);
+  text-decoration: none;
+  border-left: 3px solid transparent;
+  transition: color .15s, border-color .15s, background .15s;
+}
+.docs-nav-link:hover {
+  color: var(--docs-text);
+  background: rgba(255,255,255,.04);
+}
+.docs-nav-link.active {
+  color: var(--docs-primary-light);
+  border-left-color: var(--docs-primary-light);
+  background: rgba(79,70,229,.1);
+  font-weight: 600;
+}
+
+/* Content area */
+.docs-content {
+  margin-left: var(--docs-sidebar-w);
+  flex: 1;
+  max-width: 860px;
+  padding: 2.5rem 3rem 4rem;
+}
+.docs-content h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0F172A;
+  margin-bottom: 0.75rem;
+  line-height: 1.2;
+}
+.docs-content h2 {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: #1E293B;
+  margin: 2.5rem 0 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #E2E8F0;
+}
+.docs-content h3 {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: #1E293B;
+  margin: 1.75rem 0 0.5rem;
+}
+.docs-content p {
+  color: #475569;
+  margin-bottom: 1rem;
+  line-height: 1.7;
+}
+.docs-content ul, .docs-content ol {
+  color: #475569;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+.docs-content li { margin-bottom: 0.25rem; }
+.docs-content a { color: var(--docs-primary); text-decoration: underline; }
+.docs-content code {
+  font-family: 'Fira Code', 'Consolas', monospace;
+  font-size: 0.8125rem;
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: #1E293B;
+}
+
+/* Lead paragraph */
+.docs-lead {
+  font-size: 1.0625rem;
+  color: #475569;
+  margin-bottom: 2rem;
+  line-height: 1.75;
+}
+
+/* Callout boxes */
+.docs-callout {
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+.docs-callout.info { background: #EFF6FF; border-left: 4px solid #3B82F6; color: #1E40AF; }
+.docs-callout.warning { background: #FFFBEB; border-left: 4px solid #F59E0B; color: #92400E; }
+.docs-callout.success { background: #F0FDF4; border-left: 4px solid #22C55E; color: #166534; }
+.docs-callout.danger { background: #FEF2F2; border-left: 4px solid #EF4444; color: #991B1B; }
+
+/* Code tabs */
+.docs-code-block {
+  margin-bottom: 1.5rem;
+  border-radius: 10px;
+  border: 1px solid var(--docs-code-border);
+  overflow: hidden;
+  background: var(--docs-code-bg);
+}
+.docs-code-tabs {
+  display: flex;
+  background: rgba(0,0,0,.2);
+  border-bottom: 1px solid var(--docs-code-border);
+  overflow-x: auto;
+}
+.docs-code-tab {
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--docs-text-muted);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: color .15s, border-color .15s;
+}
+.docs-code-tab.active {
+  color: var(--docs-primary-light);
+  border-bottom-color: var(--docs-primary-light);
+}
+.docs-code-pane {
+  display: none;
+  padding: 1.25rem 1.5rem;
+  overflow-x: auto;
+}
+.docs-code-pane.active { display: block; }
+.docs-code-pane pre {
+  margin: 0;
+  font-family: 'Fira Code', 'Consolas', monospace;
+  font-size: 0.8125rem;
+  color: #CBD5E1;
+  line-height: 1.6;
+  white-space: pre;
+}
+
+/* Endpoint pills */
+.endpoint-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.method-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: monospace;
+}
+.method-get    { background: #D1FAE5; color: #065F46; }
+.method-post   { background: #DBEAFE; color: #1E40AF; }
+.method-put    { background: #FEF3C7; color: #92400E; }
+.method-delete { background: #FEE2E2; color: #991B1B; }
+.endpoint-path {
+  font-family: 'Fira Code', 'Consolas', monospace;
+  font-size: 0.875rem;
+  color: #1E293B;
+  font-weight: 600;
+}
+
+/* Parameter table */
+.docs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+}
+.docs-table th {
+  background: #F8FAFC;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  font-weight: 600;
+  color: #475569;
+  border-bottom: 2px solid #E2E8F0;
+}
+.docs-table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #E2E8F0;
+  color: #475569;
+  vertical-align: top;
+}
+.docs-table td code { white-space: nowrap; }
+
+/* Breadcrumb / page nav */
+.docs-page-nav {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #E2E8F0;
+}
+.docs-page-nav a {
+  font-size: 0.875rem;
+  color: var(--docs-primary);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* Mobile */
+.docs-menu-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+@media (max-width: 768px) {
+  .docs-sidebar {
+    transform: translateX(-100%);
+    transition: transform .25s;
+    z-index: 90;
+  }
+  .docs-sidebar.open { transform: translateX(0); }
+  .docs-content { margin-left: 0; padding: 1.5rem 1.25rem 3rem; }
+  .docs-menu-toggle { display: flex; }
+}
+
+/* ── Icon utilities ─────────────────────────────────────────── */
+/* Standard callout / inline icon (1rem) */
+.docs-icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+/* Topbar / nav icon (1.25rem) */
+.docs-icon-lg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* ── Inline badge for key-endpoint labels ───────────────────── */
+.badge-key {
+  display: inline-block;
+  background: #22C55E;
+  color: #fff;
+  font-size: .65rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  vertical-align: middle;
+  margin-left: .5rem;
+}

@@ -1,0 +1,410 @@
+<!-- DEVELOPER PORTAL -->
+<div id="portal-developer" class="portal-pane" style="display:none">
+  <div class="portal-wrap">
+    <nav class="portal-sidebar">
+      <div class="sidebar-logo"><i data-lucide="heart-pulse"></i><span>OpesCare</span></div>
+      <div class="sidebar-role-badge" style="background:rgba(99,102,241,.15);color:#818cf8;border:1px solid rgba(99,102,241,.3);border-radius:6px;padding:6px 10px;margin:0 12px 8px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:6px"><i data-lucide="code-2" style="width:14px;height:14px"></i>Developer</div>
+      <div class="sidebar-user"><div class="avatar" style="background:#4f46e5">TD</div><div><div style="font-size:13px;font-weight:600;color:#fff">Tchouangang Dev</div><div style="font-size:11px;color:#94a3b8">Sandbox access</div></div></div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-nav-section">
+          <div class="sidebar-nav-label">OVERVIEW</div>
+          <a class="sidebar-link active" onclick="goPage('developer','dashboard')"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+        </div>
+        <div class="sidebar-nav-section">
+          <div class="sidebar-nav-label">APPS</div>
+          <a class="sidebar-link" onclick="goPage('developer','apps')"><i data-lucide="plug"></i><span>My Apps</span></a>
+          <a class="sidebar-link" onclick="goPage('developer','app-create')"><i data-lucide="plus-circle"></i><span>Create App</span></a>
+        </div>
+        <div class="sidebar-nav-section">
+          <div class="sidebar-nav-label">API</div>
+          <a class="sidebar-link" onclick="goPage('developer','analytics')"><i data-lucide="bar-chart-3"></i><span>Analytics</span></a>
+          <a class="sidebar-link" onclick="goPage('developer','ratelimits')"><i data-lucide="gauge"></i><span>Rate Limits</span></a>
+          <a class="sidebar-link" onclick="goPage('developer','webhooks')"><i data-lucide="webhook"></i><span>Webhooks</span></a>
+        </div>
+        <div class="sidebar-nav-section">
+          <div class="sidebar-nav-label">ACCESS</div>
+          <a class="sidebar-link" onclick="goPage('developer','production')"><i data-lucide="rocket"></i><span>Production Requests</span></a>
+          <a class="sidebar-link" onclick="goPage('developer','fhir')"><i data-lucide="share-2"></i><span>FHIR Explorer</span></a>
+          <a class="sidebar-link" onclick="goPage('developer','sandbox')"><i data-lucide="flask-conical"></i><span>Sandbox</span></a>
+        </div>
+        <div class="sidebar-nav-section">
+          <div class="sidebar-nav-label">DOCS</div>
+          <a class="sidebar-link"><i data-lucide="book-open"></i><span>API Reference</span><i data-lucide="external-link" style="width:12px;height:12px;margin-left:auto;color:#64748b"></i></a>
+          <a class="sidebar-link" onclick="goPage('developer','changelog')"><i data-lucide="git-commit"></i><span>Changelog</span></a>
+        </div>
+      </nav>
+    </nav>
+    <div class="portal-main">
+      <header class="portal-topbar">
+        <div class="topbar-breadcrumb"><span>Developer</span><span class="sep">/</span><span id="dev-bread">Dashboard</span></div>
+        <div class="topbar-right"><i data-lucide="bell" style="width:18px;height:18px;color:#64748b"></i><div class="avatar" style="background:#4f46e5;margin-left:12px">TD</div><span style="font-size:13px;margin-left:8px;color:#334155">Tchouangang Dev</span></div>
+      </header>
+      <div class="portal-content">
+
+        <!-- DASHBOARD -->
+        <div id="developer-dashboard" class="portal-page">
+          <div class="page-header">
+            <div><h1 class="page-title">Developer Portal</h1><p class="page-subtitle">Welcome back, Tchouangang Dev</p></div>
+            <div style="display:flex;align-items:center;gap:8px"><span class="badge badge-warning">Sandbox only</span><button class="btn btn-primary btn-sm" onclick="goPage('developer','production-create')"><i data-lucide="rocket"></i> Request Production Access</button></div>
+          </div>
+          <div class="stat-grid mb-6">
+            <div class="stat-card stat-card--primary"><div class="stat-card__label">Apps</div><div class="stat-card__value">3</div></div>
+            <div class="stat-card"><div class="stat-card__label">API Requests (30d)</div><div class="stat-card__value">14,821</div></div>
+            <div class="stat-card stat-card--danger"><div class="stat-card__label">Errors (30d)</div><div class="stat-card__value">47</div></div>
+            <div class="stat-card stat-card--warning"><div class="stat-card__label">Pending Requests</div><div class="stat-card__value">1</div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+            <div class="panel">
+              <div class="panel-hd"><h3 class="panel-title"><i data-lucide="plug" style="width:16px;height:16px;vertical-align:middle"></i> Your Apps</h3><button class="btn btn-primary btn-sm" onclick="goPage('developer','app-create')"><i data-lucide="plus"></i> New App</button></div>
+              <div class="table-wrapper"><table class="data-table"><thead><tr><th>App</th><th>Environment</th><th>Status</th><th></th></tr></thead><tbody>
+                <tr><td><strong>OpesCare Mobile</strong></td><td><span class="badge badge-info">Sandbox</span></td><td><span class="badge badge-success">Active</span></td><td><button class="btn btn-secondary btn-sm" onclick="goPage('developer','app-detail')"><i data-lucide="eye"></i></button></td></tr>
+                <tr><td><strong>Patient Connect</strong></td><td><span class="badge badge-info">Sandbox</span></td><td><span class="badge badge-success">Active</span></td><td><button class="btn btn-secondary btn-sm" onclick="goPage('developer','app-detail')"><i data-lucide="eye"></i></button></td></tr>
+                <tr><td><strong>Lab Integrator</strong></td><td><span class="badge badge-info">Sandbox</span></td><td><span class="badge badge-neutral">Inactive</span></td><td><button class="btn btn-secondary btn-sm" onclick="goPage('developer','app-detail')"><i data-lucide="eye"></i></button></td></tr>
+              </tbody></table></div>
+            </div>
+            <div class="panel">
+              <div class="panel-hd"><h3 class="panel-title"><i data-lucide="rocket" style="width:16px;height:16px;vertical-align:middle"></i> Production Requests</h3><button class="btn btn-secondary btn-sm" onclick="goPage('developer','production-create')">Request Access</button></div>
+              <div class="table-wrapper"><table class="data-table"><thead><tr><th>Use Case</th><th>Status</th><th>Date</th></tr></thead><tbody>
+                <tr><td>Patient data for mobile telemedicine app</td><td><span class="badge badge-warning">Pending</span></td><td class="td-muted">01 Jun 2026</td></tr>
+              </tbody></table></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-hd"><h3 class="panel-title"><i data-lucide="link" style="width:16px;height:16px;vertical-align:middle"></i> Quick Links</h3></div>
+            <div class="panel-body" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+              <a class="stat-card" onclick="goPage('developer','apps')" style="cursor:pointer;text-decoration:none"><i data-lucide="key" style="width:20px;height:20px;color:var(--b)"></i><div class="stat-card__label" style="margin-top:8px">API Keys</div></a>
+              <a class="stat-card" onclick="goPage('developer','production')" style="cursor:pointer;text-decoration:none"><i data-lucide="rocket" style="width:20px;height:20px;color:var(--b)"></i><div class="stat-card__label" style="margin-top:8px">Production Access</div></a>
+              <a class="stat-card" onclick="goPage('developer','analytics')" style="cursor:pointer;text-decoration:none"><i data-lucide="bar-chart-3" style="width:20px;height:20px;color:var(--b)"></i><div class="stat-card__label" style="margin-top:8px">API Analytics</div></a>
+              <a class="stat-card" onclick="goPage('developer','webhooks')" style="cursor:pointer;text-decoration:none"><i data-lucide="webhook" style="width:20px;height:20px;color:var(--b)"></i><div class="stat-card__label" style="margin-top:8px">Webhooks</div></a>
+            </div>
+          </div>
+        </div>
+
+        <!-- APPS LIST -->
+        <div id="developer-apps" class="portal-page" style="display:none">
+          <div class="page-header"><div><h1 class="page-title">My Apps</h1></div><button class="btn btn-primary" onclick="goPage('developer','app-create')"><i data-lucide="plus"></i> New App</button></div>
+          <div class="panel"><div class="table-wrapper"><table class="data-table"><thead><tr><th>App Name</th><th>Client ID</th><th>Environment</th><th>Scopes</th><th>Status</th><th>Created</th><th></th></tr></thead><tbody>
+            <tr><td><strong>OpesCare Mobile</strong></td><td class="mono" style="font-size:11px">oc_cli_7kq9mp42...</td><td><span class="badge badge-info">Sandbox</span></td><td style="font-size:11px">read:patient, read:lab <span style="color:#64748b">+2</span></td><td><span class="badge badge-success">Active</span></td><td class="td-muted">15 Jan 2026</td><td><button class="btn btn-secondary btn-sm" onclick="goPage('developer','app-detail')"><i data-lucide="eye"></i></button></td></tr>
+            <tr><td><strong>Patient Connect</strong></td><td class="mono" style="font-size:11px">oc_cli_8fj3nr91...</td><td><span class="badge badge-info">Sandbox</span></td><td style="font-size:11px">read:patient</td><td><span class="badge badge-success">Active</span></td><td class="td-muted">28 Feb 2026</td><td><button class="btn btn-secondary btn-sm" onclick="goPage('developer','app-detail')"><i data-lucide="eye"></i></button></td></tr>
+            <tr><td><strong>Lab Integrator</strong></td><td class="mono" style="font-size:11px">oc_cli_2xk7ys44...</td><td><span class="badge badge-info">Sandbox</span></td><td style="font-size:11px">read:lab, write:lab</td><td><span class="badge badge-neutral">Inactive</span></td><td class="td-muted">10 Mar 2026</td><td><button class="btn btn-secondary btn-sm" onclick="goPage('developer','app-detail')"><i data-lucide="eye"></i></button></td></tr>
+          </tbody></table></div></div>
+        </div>
+
+        <!-- APP CREATE -->
+        <div id="developer-app-create" class="portal-page" style="display:none">
+          <div class="page-header"><div><h1 class="page-title">Create New App</h1></div></div>
+          <div class="panel"><div class="panel-body">
+            <div class="form-group"><label class="form-label">App Name <span style="color:red">*</span></label><input type="text" class="form-control" placeholder="e.g. My Healthcare App"></div>
+            <div class="form-group"><label class="form-label">Description</label><textarea class="form-control" rows="2" placeholder="Brief description of your application..."></textarea></div>
+            <div class="form-group"><label class="form-label">Website / Homepage URL</label><input type="url" class="form-control" placeholder="https://myapp.cm"></div>
+            <div class="form-group"><label class="form-label">Redirect URIs <span class="form-hint">One URI per line</span></label><textarea class="form-control" rows="3" placeholder="https://myapp.cm/callback&#10;com.myapp://auth"></textarea></div>
+            <div class="form-group"><label class="form-label">OAuth Scopes</label>
+              <div style="border:1px solid var(--bdr);border-radius:var(--rad);padding:16px;display:flex;flex-direction:column;gap:12px">
+                <div><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#64748b;margin-bottom:8px">Patient Data</div><div style="display:flex;flex-wrap:wrap;gap:12px"><label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox" checked> read:patient</label><label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox"> write:patient</label></div></div>
+                <div><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#64748b;margin-bottom:8px">Clinical</div><div style="display:flex;flex-wrap:wrap;gap:12px"><label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox" checked> read:lab</label><label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox"> write:lab</label><label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox" checked> read:prescriptions</label><label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox"> write:prescriptions</label></div></div>
+                <div><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#64748b;margin-bottom:8px">FHIR Resources</div><div style="display:flex;flex-wrap:wrap;gap:12px"><label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox"> fhir:read</label><label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox"> fhir:write</label></div></div>
+              </div>
+            </div>
+            <div class="form-group"><label class="form-label">Environment</label><div style="display:flex;flex-direction:column;gap:8px"><label style="display:flex;align-items:center;gap:8px;font-size:13px"><input type="radio" name="env" checked> <strong>Sandbox</strong> — Test environment with synthetic data</label><label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#94a3b8"><input type="radio" name="env" disabled> <strong>Production</strong> — Requires production access approval</label></div></div>
+            <div class="form-group"><label style="display:flex;align-items:center;gap:8px;font-size:13px"><input type="checkbox"> I agree to the OpesCare Developer Terms of Service and API Usage Policy</label></div>
+            <div style="display:flex;gap:8px"><button class="btn btn-primary"><i data-lucide="plus"></i> Create App</button><a style="color:#64748b;cursor:pointer;line-height:2.2;font-size:14px" onclick="goPage('developer','apps')">Cancel</a></div>
+          </div></div>
+        </div>
+
+        <!-- APP DETAIL -->
+        <div id="developer-app-detail" class="portal-page" style="display:none">
+          <div class="page-header"><div><h1 class="page-title">OpesCare Mobile <span class="badge badge-info" style="vertical-align:middle;font-size:12px">Sandbox</span> <span class="badge badge-success" style="vertical-align:middle;font-size:12px">Active</span></h1></div><button class="btn btn-secondary"><i data-lucide="edit"></i> Edit</button></div>
+          <div class="panel mb-4">
+            <div class="panel-hd"><h3 class="panel-title"><i data-lucide="key" style="width:16px;height:16px;vertical-align:middle"></i> Credentials</h3></div>
+            <div class="panel-body" style="background:#F8FAFC">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--bdr)">
+                <div style="width:100px;font-size:12px;font-weight:600;color:#64748b">Client ID</div>
+                <code style="flex:1;font-family:'JetBrains Mono',monospace;font-size:13px;background:#fff;border:1px solid var(--bdr);border-radius:4px;padding:6px 10px">oc_cli_7kq9mp42x8d1n3f7</code>
+                <button class="btn btn-secondary btn-sm"><i data-lucide="copy"></i></button>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px">
+                <div style="width:100px;font-size:12px;font-weight:600;color:#64748b">Client Secret</div>
+                <code style="flex:1;font-family:'JetBrains Mono',monospace;font-size:13px;background:#fff;border:1px solid var(--bdr);border-radius:4px;padding:6px 10px;color:#94a3b8">••••••••••••••••••••••••••••••••</code>
+                <button class="btn btn-secondary btn-sm">Reveal</button>
+                <button class="btn btn-secondary btn-sm" style="border-color:#f59e0b;color:#B45309">Rotate</button>
+              </div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+            <div class="panel">
+              <div class="panel-hd"><h3 class="panel-title">Scopes</h3></div>
+              <div class="panel-body" style="display:flex;flex-wrap:wrap;gap:6px">
+                <span class="badge badge-info">read:patient</span><span class="badge badge-info">read:lab</span><span class="badge badge-info">read:prescriptions</span><span class="badge badge-info">read:facility</span>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-hd"><h3 class="panel-title">Redirect URIs</h3></div>
+              <div class="panel-body"><code style="display:block;font-family:'JetBrains Mono',monospace;font-size:12px;background:#F8FAFC;padding:4px 8px;border-radius:4px;margin-bottom:4px">https://opescare-mobile.app/callback</code><code style="display:block;font-family:'JetBrains Mono',monospace;font-size:12px;background:#F8FAFC;padding:4px 8px;border-radius:4px">com.opescare.mobile://auth</code></div>
+            </div>
+          </div>
+          <div class="stat-grid mb-4" style="grid-template-columns:repeat(4,1fr)">
+            <div class="stat-card"><div class="stat-card__label">Requests Today</div><div class="stat-card__value">142</div></div>
+            <div class="stat-card"><div class="stat-card__label">This Week</div><div class="stat-card__value">892</div></div>
+            <div class="stat-card"><div class="stat-card__label">This Month</div><div class="stat-card__value">14,821</div></div>
+            <div class="stat-card stat-card--success"><div class="stat-card__label">Error Rate</div><div class="stat-card__value">0.3%</div></div>
+          </div>
+          <div class="panel mb-4">
+            <div class="panel-hd"><h3 class="panel-title">Webhook URL</h3></div>
+            <div class="panel-body" style="display:flex;gap:8px"><input type="url" class="form-control" value="https://api.myapp.cm/webhooks/opescare"><button class="btn btn-secondary">Update</button></div>
+          </div>
+          <div class="panel" style="border-color:#fca5a5">
+            <div class="panel-hd" style="border-color:#fca5a5;background:#fff5f5"><h3 class="panel-title" style="color:#B91C1C"><i data-lucide="triangle-alert" style="width:16px;height:16px;vertical-align:middle"></i> Danger Zone</h3></div>
+            <div class="panel-body" style="display:flex;align-items:center;justify-content:space-between"><div><div style="font-weight:600;font-size:14px;color:#B91C1C">Delete Application</div><div style="font-size:12px;color:#64748b">This action cannot be undone. All API keys and access will be revoked immediately.</div></div><button class="btn btn-danger">Delete App</button></div>
+          </div>
+        </div>
+
+        <!-- ANALYTICS -->
+        <div id="developer-analytics" class="portal-page" style="display:none">
+          <div class="page-header"><div><h1 class="page-title">API Analytics</h1></div><div style="display:flex;gap:8px"><input type="date" class="form-control" style="width:150px" value="2026-06-01"><input type="date" class="form-control" style="width:150px" value="2026-06-15"><button class="btn btn-secondary"><i data-lucide="download"></i> Export</button></div></div>
+          <div class="panel mb-4">
+            <div class="panel-hd"><h3 class="panel-title">Request Volume (Last 14 Days)</h3></div>
+            <div class="panel-body">
+              <div style="display:flex;align-items:flex-end;gap:6px;height:140px;border-bottom:2px solid #e2e8f0;margin-bottom:6px">
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center"><div style="width:100%;background:var(--b);border-radius:3px 3px 0 0;opacity:.7;height:70px"></div></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center"><div style="width:100%;background:var(--b);border-radius:3px 3px 0 0;opacity:.7;height:80px"></div></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center"><div style="width:100%;background:var(--b);border-radius:3px 3px 0 0;opacity:.7;height:73px"></div></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center"><div style="width:100%;background:var(--b);border-radius:3px 3px 0 0;opacity:.7;height:85px"></div></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center"><div style="width:100%;background:var(--b);border-radius:3px 3px 0 0;opacity:.7;height:78px"></div></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center"><div style="width:100%;background:var(--b);border-radius:3px 3px 0 0;height:95px"></div></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center"><div style="width:100%;background:var(--b);border-radius:3px 3px 0 0;height:88px"></div></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center"><div style="width:100%;background:var(--b);border-radius:3px 3px 0 0;height:105px"></div></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center"><div style="width:100%;background:var(--b);border-radius:3px 3px 0 0;height:98px"></div></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center"><div style="width:100%;background:var(--b);border-radius:3px 3px 0 0;height:103px"></div></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center"><div style="width:100%;background:var(--b);border-radius:3px 3px 0 0;height:95px"></div></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center"><div style="width:100%;background:var(--b);border-radius:3px 3px 0 0;height:110px"></div></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center"><div style="width:100%;background:var(--b);border-radius:3px 3px 0 0;height:115px"></div></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center"><div style="width:100%;background:var(--b);border-radius:3px 3px 0 0;height:105px"></div></div>
+              </div>
+              <div style="display:flex;gap:6px">
+                <div style="flex:1;text-align:center;font-size:9px;color:#94a3b8">Jun 1</div><div style="flex:1;text-align:center;font-size:9px;color:#94a3b8">2</div><div style="flex:1;text-align:center;font-size:9px;color:#94a3b8">3</div><div style="flex:1;text-align:center;font-size:9px;color:#94a3b8">4</div><div style="flex:1;text-align:center;font-size:9px;color:#94a3b8">5</div><div style="flex:1;text-align:center;font-size:9px;color:#94a3b8">6</div><div style="flex:1;text-align:center;font-size:9px;color:#94a3b8">7</div><div style="flex:1;text-align:center;font-size:9px;color:#94a3b8">8</div><div style="flex:1;text-align:center;font-size:9px;color:#94a3b8">9</div><div style="flex:1;text-align:center;font-size:9px;color:#94a3b8">10</div><div style="flex:1;text-align:center;font-size:9px;color:#94a3b8">11</div><div style="flex:1;text-align:center;font-size:9px;color:#94a3b8">12</div><div style="flex:1;text-align:center;font-size:9px;color:#94a3b8">13</div><div style="flex:1;text-align:center;font-size:9px;color:#94a3b8">14</div>
+              </div>
+            </div>
+          </div>
+          <div class="panel mb-4">
+            <div class="panel-hd"><h3 class="panel-title">Endpoint Breakdown</h3></div>
+            <div class="table-wrapper"><table class="data-table"><thead><tr><th>Endpoint</th><th>Method</th><th>Calls</th><th>Errors</th><th>Avg Latency</th><th>P99</th></tr></thead><tbody>
+              <tr><td class="mono" style="font-size:12px">GET /api/v1/patients/{id}</td><td><span class="badge badge-info">GET</span></td><td>5,821</td><td>12</td><td>234ms</td><td>891ms</td></tr>
+              <tr><td class="mono" style="font-size:12px">GET /api/v1/lab/results</td><td><span class="badge badge-info">GET</span></td><td>3,204</td><td>8</td><td>187ms</td><td>456ms</td></tr>
+              <tr><td class="mono" style="font-size:12px">POST /api/v1/appointments</td><td><span class="badge badge-success">POST</span></td><td>2,891</td><td>18</td><td>412ms</td><td>1,204ms</td></tr>
+              <tr><td class="mono" style="font-size:12px">GET /api/v1/prescriptions</td><td><span class="badge badge-info">GET</span></td><td>1,654</td><td>4</td><td>156ms</td><td>389ms</td></tr>
+              <tr><td class="mono" style="font-size:12px">GET /api/v1/facilities</td><td><span class="badge badge-info">GET</span></td><td>1,251</td><td>5</td><td>98ms</td><td>234ms</td></tr>
+            </tbody></table></div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+            <div class="stat-card stat-card--warning"><div class="stat-card__label">400 Bad Request</div><div class="stat-card__value">21</div></div>
+            <div class="stat-card stat-card--danger"><div class="stat-card__label">401 Unauthorized</div><div class="stat-card__value">8</div></div>
+            <div class="stat-card"><div class="stat-card__label">404 Not Found</div><div class="stat-card__value">12</div></div>
+            <div class="stat-card stat-card--danger"><div class="stat-card__label">500 Server Error</div><div class="stat-card__value">6</div></div>
+          </div>
+        </div>
+
+        <!-- RATE LIMITS -->
+        <div id="developer-ratelimits" class="portal-page" style="display:none">
+          <div class="page-header"><div><h1 class="page-title">Rate Limits</h1></div></div>
+          <div class="alert alert-info mb-4"><i data-lucide="gauge"></i><div><strong>Sandbox Tier</strong> — 100 requests per minute per endpoint. <a onclick="goPage('developer','production-create')" style="cursor:pointer;color:var(--b);font-weight:600">Upgrade to Standard</a> for 1,000 req/min.</div></div>
+          <div class="panel mb-4">
+            <div class="panel-hd"><h3 class="panel-title">Current Usage</h3></div>
+            <div class="table-wrapper"><table class="data-table"><thead><tr><th>Endpoint</th><th>Limit</th><th>Current (per min)</th><th>Utilisation</th></tr></thead><tbody>
+              <tr><td class="mono" style="font-size:12px">/api/v1/patients/*</td><td>100/min</td><td>14</td><td><div style="background:#e2e8f0;border-radius:4px;height:8px;width:200px"><div style="background:var(--b);height:8px;border-radius:4px;width:14%"></div></div><span style="font-size:11px;color:#64748b;margin-left:6px">14%</span></td></tr>
+              <tr><td class="mono" style="font-size:12px">/api/v1/lab/*</td><td>100/min</td><td>8</td><td><div style="background:#e2e8f0;border-radius:4px;height:8px;width:200px"><div style="background:var(--b);height:8px;border-radius:4px;width:8%"></div></div><span style="font-size:11px;color:#64748b;margin-left:6px">8%</span></td></tr>
+              <tr><td class="mono" style="font-size:12px">/api/v1/appointments/*</td><td>100/min</td><td>23</td><td><div style="background:#e2e8f0;border-radius:4px;height:8px;width:200px"><div style="background:#f59e0b;height:8px;border-radius:4px;width:23%"></div></div><span style="font-size:11px;color:#64748b;margin-left:6px">23%</span></td></tr>
+              <tr><td class="mono" style="font-size:12px">/api/v1/prescriptions/*</td><td>100/min</td><td>6</td><td><div style="background:#e2e8f0;border-radius:4px;height:8px;width:200px"><div style="background:var(--b);height:8px;border-radius:4px;width:6%"></div></div><span style="font-size:11px;color:#64748b;margin-left:6px">6%</span></td></tr>
+            </tbody></table></div>
+          </div>
+          <div class="panel">
+            <div class="panel-hd"><h3 class="panel-title">Tier Comparison</h3></div>
+            <div class="table-wrapper"><table class="data-table"><thead><tr><th>Feature</th><th>Sandbox (Current)</th><th>Standard</th><th>Premium</th></tr></thead><tbody>
+              <tr><td>Rate Limit</td><td>100/min</td><td>1,000/min</td><td>10,000/min</td></tr>
+              <tr><td>Environments</td><td>Sandbox only</td><td>Sandbox + Production</td><td>Sandbox + Production</td></tr>
+              <tr><td>FHIR Access</td><td><span class="badge badge-neutral">None</span></td><td>Read only</td><td>Read + Write</td></tr>
+              <tr><td>Support</td><td>Community</td><td>Email</td><td>Dedicated</td></tr>
+              <tr><td>Price</td><td>Free</td><td>25,000 XAF/mo</td><td>Custom</td></tr>
+            </tbody></table></div>
+          </div>
+        </div>
+
+        <!-- WEBHOOKS -->
+        <div id="developer-webhooks" class="portal-page" style="display:none">
+          <div class="page-header"><div><h1 class="page-title">Webhooks</h1></div><button class="btn btn-primary"><i data-lucide="plus"></i> Add Webhook</button></div>
+          <div class="panel mb-4">
+            <div class="table-wrapper"><table class="data-table"><thead><tr><th>URL</th><th>Events</th><th>Status</th><th>Last Triggered</th><th>Success Rate</th></tr></thead><tbody>
+              <tr><td class="mono" style="font-size:11px">https://api.myapp.cm/webhooks/opescare</td><td style="font-size:11px">patient.updated, appointment.created <span style="color:#64748b">+2</span></td><td><span class="badge badge-success">Active</span></td><td class="td-muted">15 Jun 2026 08:42</td><td>98.2%</td></tr>
+            </tbody></table></div>
+          </div>
+          <div class="panel mb-4">
+            <div class="panel-hd"><h3 class="panel-title">Add Webhook</h3></div>
+            <div class="panel-body">
+              <div class="form-group"><label class="form-label">Webhook URL</label><input type="url" class="form-control" placeholder="https://yourapp.cm/webhooks/opescare"></div>
+              <div class="form-group"><label class="form-label">Signing Secret <span class="form-hint">Used to verify webhook signatures</span></label><input type="text" class="form-control" placeholder="whsec_..."></div>
+              <div class="form-group"><label class="form-label">Events</label>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox" checked> patient.updated</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox" checked> patient.created</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox"> appointment.created</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox"> appointment.cancelled</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox" checked> lab.result_released</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox"> prescription.issued</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox"> claim.status_changed</label>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px"><button class="btn btn-primary">Save Webhook</button><button class="btn btn-secondary">Test Webhook</button></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-hd"><h3 class="panel-title">Delivery Log</h3></div>
+            <div class="table-wrapper"><table class="data-table"><thead><tr><th>Timestamp</th><th>Event</th><th>Response</th><th>Latency</th><th>Status</th></tr></thead><tbody>
+              <tr><td class="td-muted">15 Jun 08:42:18</td><td style="font-size:12px">patient.updated</td><td><span class="badge badge-success">200</span></td><td>142ms</td><td><span class="badge badge-success">Delivered</span></td></tr>
+              <tr><td class="td-muted">15 Jun 08:31:04</td><td style="font-size:12px">lab.result_released</td><td><span class="badge badge-success">200</span></td><td>89ms</td><td><span class="badge badge-success">Delivered</span></td></tr>
+              <tr><td class="td-muted">15 Jun 07:58:33</td><td style="font-size:12px">patient.created</td><td><span class="badge badge-danger">503</span></td><td>—</td><td><span class="badge badge-danger">Failed</span></td></tr>
+              <tr><td class="td-muted">14 Jun 17:22:11</td><td style="font-size:12px">patient.updated</td><td><span class="badge badge-success">200</span></td><td>201ms</td><td><span class="badge badge-success">Delivered</span></td></tr>
+              <tr><td class="td-muted">14 Jun 14:09:45</td><td style="font-size:12px">lab.result_released</td><td><span class="badge badge-success">200</span></td><td>117ms</td><td><span class="badge badge-success">Delivered</span></td></tr>
+            </tbody></table></div>
+          </div>
+        </div>
+
+        <!-- PRODUCTION REQUESTS -->
+        <div id="developer-production" class="portal-page" style="display:none">
+          <div class="page-header"><div><h1 class="page-title">Production Requests</h1></div><button class="btn btn-primary" onclick="goPage('developer','production-create')"><i data-lucide="rocket"></i> Request Access</button></div>
+          <div class="panel"><div class="table-wrapper"><table class="data-table"><thead><tr><th>App</th><th>Use Case</th><th>Status</th><th>Submitted</th><th>Reviewer Notes</th></tr></thead><tbody>
+            <tr><td><strong>OpesCare Mobile</strong></td><td>Patient data access for telemedicine mobile application serving rural areas</td><td><span class="badge badge-warning">Pending</span></td><td class="td-muted">01 Jun 2026</td><td style="font-size:12px;color:#64748b">Under review — security assessment in progress</td></tr>
+          </tbody></table></div></div>
+        </div>
+
+        <!-- PRODUCTION REQUEST CREATE -->
+        <div id="developer-production-create" class="portal-page" style="display:none">
+          <div class="page-header"><div><h1 class="page-title">Request Production Access</h1></div></div>
+          <div class="panel"><div class="panel-body">
+            <div class="form-group"><label class="form-label">Select App <span style="color:red">*</span></label><select class="form-control"><option>OpesCare Mobile</option><option>Patient Connect</option><option>Lab Integrator</option></select></div>
+            <div class="form-group"><label class="form-label">Use Case Description <span style="color:red">*</span> <span class="form-hint">Min. 200 characters</span></label><textarea class="form-control" rows="4" placeholder="Describe how your application will use patient data, the clinical benefit, and the population served..."></textarea></div>
+            <div class="form-group"><label class="form-label">Expected Daily Request Volume</label><input type="number" class="form-control" placeholder="e.g. 5000"></div>
+            <div class="form-group"><label class="form-label">Data Types Needed</label>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox" checked> Patient Demographics</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox" checked> Lab Results</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox"> Prescriptions</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox" checked> Appointments</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox"> Facility Data</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox"> FHIR Resources</label>
+              </div>
+            </div>
+            <div class="form-group"><label class="form-label">Security Measures</label><textarea class="form-control" rows="3" placeholder="Describe encryption methods, access controls, data storage policies, staff training..."></textarea></div>
+            <div class="form-group"><label style="display:flex;align-items:flex-start;gap:8px;font-size:13px"><input type="checkbox" style="margin-top:2px"> I confirm this application complies with Cameroonian Law No. 2010/013 on electronic communications and applicable health data regulations, and that a signed Data Processing Agreement will be provided.</label></div>
+            <div class="form-group"><label class="form-label">Data Processing Agreement (DPA)</label><div style="border:2px dashed #cbd5e1;border-radius:var(--rad);padding:24px;text-align:center;color:#64748b"><i data-lucide="upload-cloud" style="width:28px;height:28px;display:block;margin:0 auto 8px"></i><p style="font-size:13px">Upload signed DPA document</p></div></div>
+            <button class="btn btn-primary" style="width:100%"><i data-lucide="rocket"></i> Submit Request</button>
+          </div></div>
+        </div>
+
+        <!-- FHIR EXPLORER -->
+        <div id="developer-fhir" class="portal-page" style="display:none">
+          <div class="page-header"><div><h1 class="page-title">FHIR Explorer</h1></div></div>
+          <div class="alert alert-info mb-4"><i data-lucide="share-2"></i><div>FHIR R4 Base URL: <code style="font-family:'JetBrains Mono',monospace;background:#dbeafe;padding:2px 6px;border-radius:4px">https://api.opescare.cloud/fhir/r4</code> <button class="btn btn-secondary btn-sm" style="margin-left:8px"><i data-lucide="copy"></i> Copy</button></div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div>
+              <div class="panel mb-4">
+                <div class="panel-hd"><h3 class="panel-title">FHIR Resources</h3></div>
+                <div class="panel-body" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+                  <div class="panel" style="margin:0;cursor:pointer;border-color:var(--b)"><div class="panel-body" style="padding:10px;text-align:center"><i data-lucide="user" style="width:20px;height:20px;color:var(--b)"></i><div style="font-size:12px;font-weight:600;margin-top:4px">Patient</div></div></div>
+                  <div class="panel" style="margin:0;cursor:pointer"><div class="panel-body" style="padding:10px;text-align:center"><i data-lucide="activity" style="width:20px;height:20px;color:#64748b"></i><div style="font-size:12px;font-weight:600;margin-top:4px">Observation</div></div></div>
+                  <div class="panel" style="margin:0;cursor:pointer"><div class="panel-body" style="padding:10px;text-align:center"><i data-lucide="pill" style="width:20px;height:20px;color:#64748b"></i><div style="font-size:12px;font-weight:600;margin-top:4px">MedicationRequest</div></div></div>
+                  <div class="panel" style="margin:0;cursor:pointer"><div class="panel-body" style="padding:10px;text-align:center"><i data-lucide="calendar" style="width:20px;height:20px;color:#64748b"></i><div style="font-size:12px;font-weight:600;margin-top:4px">Appointment</div></div></div>
+                  <div class="panel" style="margin:0;cursor:pointer"><div class="panel-body" style="padding:10px;text-align:center"><i data-lucide="file-text" style="width:20px;height:20px;color:#64748b"></i><div style="font-size:12px;font-weight:600;margin-top:4px">DiagnosticReport</div></div></div>
+                  <div class="panel" style="margin:0;cursor:pointer"><div class="panel-body" style="padding:10px;text-align:center"><i data-lucide="syringe" style="width:20px;height:20px;color:#64748b"></i><div style="font-size:12px;font-weight:600;margin-top:4px">Immunization</div></div></div>
+                  <div class="panel" style="margin:0;cursor:pointer"><div class="panel-body" style="padding:10px;text-align:center"><i data-lucide="stethoscope" style="width:20px;height:20px;color:#64748b"></i><div style="font-size:12px;font-weight:600;margin-top:4px">Encounter</div></div></div>
+                  <div class="panel" style="margin:0;cursor:pointer"><div class="panel-body" style="padding:10px;text-align:center"><i data-lucide="heart-pulse" style="width:20px;height:20px;color:#64748b"></i><div style="font-size:12px;font-weight:600;margin-top:4px">Condition</div></div></div>
+                  <div class="panel" style="margin:0;cursor:pointer"><div class="panel-body" style="padding:10px;text-align:center"><i data-lucide="scissors" style="width:20px;height:20px;color:#64748b"></i><div style="font-size:12px;font-weight:600;margin-top:4px">Procedure</div></div></div>
+                </div>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-hd"><h3 class="panel-title">Try It</h3></div>
+              <div class="panel-body">
+                <div style="display:flex;gap:8px;margin-bottom:8px">
+                  <select class="form-control" style="width:90px"><option>GET</option><option>POST</option><option>PUT</option></select>
+                  <input type="text" class="form-control mono" value="/fhir/r4/Patient?identifier=CM-HID-7KQ9-MP42-X8D1" style="font-size:12px">
+                </div>
+                <div class="form-group"><label class="form-label" style="font-size:11px">Headers</label><textarea class="form-control mono" rows="2" style="font-size:11px">Authorization: Bearer {your_token}
+Accept: application/fhir+json</textarea></div>
+                <button class="btn btn-primary btn-sm" style="margin-bottom:12px">Send Request</button>
+                <div style="background:#0F172A;border-radius:var(--rad);padding:16px;overflow:auto;max-height:260px">
+                  <pre style="color:#e2e8f0;font-family:'JetBrains Mono',monospace;font-size:11px;margin:0;white-space:pre-wrap">{
+  "resourceType": "Patient",
+  "id": "pat-7kq9mp42",
+  "meta": {
+    "lastUpdated": "2026-06-15T08:00:00Z"
+  },
+  "identifier": [{
+    "system": "https://opescare.cloud/hid",
+    "value": "CM-HID-7KQ9-MP42-X8D1"
+  }],
+  "name": [{
+    "family": "Mbarga",
+    "given": ["Alain", "Christophe"]
+  }],
+  "birthDate": "1989-03-14",
+  "gender": "male",
+  "address": [{
+    "country": "CM",
+    "city": "Yaoundé"
+  }]
+}</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SANDBOX -->
+        <div id="developer-sandbox" class="portal-page" style="display:none">
+          <div class="page-header"><div><h1 class="page-title">Sandbox</h1></div></div>
+          <div class="alert alert-info mb-4"><i data-lucide="flask-conical"></i><div><strong>Sandbox Environment</strong> — All data is synthetic and automatically resets every 30 days. Never use real patient data in the sandbox.</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div class="panel">
+              <div class="panel-hd"><h3 class="panel-title">Test Patients</h3></div>
+              <div class="panel-body" style="display:flex;flex-direction:column;gap:10px">
+                <div style="border:1px solid var(--bdr);border-radius:var(--rad);padding:10px;display:flex;align-items:center;gap:10px"><div style="flex:1"><div style="font-size:13px;font-weight:600">Mbarga Alain Christophe</div><code style="font-size:11px;color:var(--b);font-family:'JetBrains Mono',monospace">CM-HID-7KQ9-MP42-X8D1</code><div style="font-size:11px;color:#64748b;margin-top:2px">Male, 37y — Hypertension, T2 Diabetes</div></div><button class="btn btn-secondary btn-sm"><i data-lucide="copy"></i></button></div>
+                <div style="border:1px solid var(--bdr);border-radius:var(--rad);padding:10px;display:flex;align-items:center;gap:10px"><div style="flex:1"><div style="font-size:13px;font-weight:600">Fouda Marie Claire</div><code style="font-size:11px;color:var(--b);font-family:'JetBrains Mono',monospace">CM-HID-3FP7-KL19-R4Q2</code><div style="font-size:11px;color:#64748b;margin-top:2px">Female, 44y — Malaria recovery</div></div><button class="btn btn-secondary btn-sm"><i data-lucide="copy"></i></button></div>
+                <div style="border:1px solid var(--bdr);border-radius:var(--rad);padding:10px;display:flex;align-items:center;gap:10px"><div style="flex:1"><div style="font-size:13px;font-weight:600">Biya Jean-Pierre</div><code style="font-size:11px;color:var(--b);font-family:'JetBrains Mono',monospace">CM-HID-9MN2-XT84-W7K5</code><div style="font-size:11px;color:#64748b;margin-top:2px">Male, 60y — HIV managed</div></div><button class="btn btn-secondary btn-sm"><i data-lucide="copy"></i></button></div>
+                <div style="border:1px solid var(--bdr);border-radius:var(--rad);padding:10px;display:flex;align-items:center;gap:10px"><div style="flex:1"><div style="font-size:13px;font-weight:600">Ngono Suzanne</div><code style="font-size:11px;color:var(--b);font-family:'JetBrains Mono',monospace">CM-HID-5QR8-BV31-Y2N9</code><div style="font-size:11px;color:#64748b;margin-top:2px">Female, 29y — Pregnant, ANC</div></div><button class="btn btn-secondary btn-sm"><i data-lucide="copy"></i></button></div>
+                <div style="border:1px solid var(--bdr);border-radius:var(--rad);padding:10px;display:flex;align-items:center;gap:10px"><div style="flex:1"><div style="font-size:13px;font-weight:600">Kamga Patrick</div><code style="font-size:11px;color:var(--b);font-family:'JetBrains Mono',monospace">CM-HID-1DH4-SJ72-C8M3</code><div style="font-size:11px;color:#64748b;margin-top:2px">Male, 17y — No conditions</div></div><button class="btn btn-secondary btn-sm"><i data-lucide="copy"></i></button></div>
+              </div>
+            </div>
+            <div>
+              <div class="panel mb-4">
+                <div class="panel-hd"><h3 class="panel-title">Sandbox API Key</h3></div>
+                <div class="panel-body">
+                  <div style="display:flex;gap:8px;margin-bottom:12px"><code style="flex:1;font-family:'JetBrains Mono',monospace;font-size:12px;background:#F8FAFC;border:1px solid var(--bdr);border-radius:4px;padding:8px">sk_sandbox_7kq9mp42x8d1...</code><button class="btn btn-secondary btn-sm"><i data-lucide="copy"></i></button></div>
+                  <button class="btn btn-secondary btn-sm" style="border-color:#f59e0b;color:#B45309">Rotate Key</button>
+                </div>
+              </div>
+              <div class="panel" style="border-color:#fca5a5">
+                <div class="panel-hd" style="border-color:#fca5a5"><h3 class="panel-title" style="color:#B91C1C">Reset Sandbox</h3></div>
+                <div class="panel-body"><p style="font-size:13px;color:#64748b;margin-bottom:12px">This will delete all custom data and restore the default synthetic dataset. This cannot be undone.</p><button class="btn btn-danger">Reset Sandbox Data</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CHANGELOG -->
+        <div id="developer-changelog" class="portal-page" style="display:none">
+          <div class="page-header"><div><h1 class="page-title">API Changelog</h1></div></div>
+          <div class="panel"><div class="panel-body">
+            <div style="position:relative;padding-left:24px;border-left:2px solid var(--bdr);display:flex;flex-direction:column;gap:0">
+              <div style="margin-bottom:24px;position:relative"><div style="position:absolute;left:-30px;top:0;width:12px;height:12px;background:var(--b);border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 2px var(--b)"></div><div style="font-size:11px;color:#94a3b8;margin-bottom:4px">01 Jun 2026</div><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-weight:700;font-size:15px">v2.4.0</span><span class="badge badge-success">Feature</span></div><p style="font-size:13px;color:#334155;margin:0">FHIR R4 Immunization and Encounter resources now available. Added support for <code>fhir:read</code> scope in Standard tier.</p></div>
+              <div style="margin-bottom:24px;position:relative"><div style="position:absolute;left:-30px;top:0;width:12px;height:12px;background:#0F766E;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 2px #0F766E"></div><div style="font-size:11px;color:#94a3b8;margin-bottom:4px">15 May 2026</div><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-weight:700;font-size:15px">v2.3.2</span><span class="badge badge-info">Fix</span></div><p style="font-size:13px;color:#334155;margin:0">Fixed 401 errors on token refresh for mobile clients using PKCE flow. Tokens now refresh correctly without re-authentication.</p></div>
+              <div style="margin-bottom:24px;position:relative"><div style="position:absolute;left:-30px;top:0;width:12px;height:12px;background:var(--b);border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 2px var(--b)"></div><div style="font-size:11px;color:#94a3b8;margin-bottom:4px">01 May 2026</div><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-weight:700;font-size:15px">v2.3.0</span><span class="badge badge-success">Feature</span></div><p style="font-size:13px;color:#334155;margin:0">Webhook delivery now includes automatic retry logic — up to 3 retries with exponential backoff (30s, 60s, 120s).</p></div>
+              <div style="margin-bottom:24px;position:relative"><div style="position:absolute;left:-30px;top:0;width:12px;height:12px;background:#0F766E;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 2px #0F766E"></div><div style="font-size:11px;color:#94a3b8;margin-bottom:4px">10 Apr 2026</div><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-weight:700;font-size:15px">v2.2.1</span><span class="badge badge-info">Fix</span></div><p style="font-size:13px;color:#334155;margin:0">Resolved pagination cursor issue in <code>GET /api/v2/patients</code> when filtering by facility and date simultaneously.</p></div>
+              <div style="margin-bottom:24px;position:relative"><div style="position:absolute;left:-30px;top:0;width:12px;height:12px;background:var(--b);border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 2px var(--b)"></div><div style="font-size:11px;color:#94a3b8;margin-bottom:4px">01 Apr 2026</div><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-weight:700;font-size:15px">v2.2.0</span><span class="badge badge-success">Feature</span></div><p style="font-size:13px;color:#334155;margin:0">Rate limit headers now included in all API responses: <code>X-RateLimit-Limit</code>, <code>X-RateLimit-Remaining</code>, <code>X-RateLimit-Reset</code>.</p></div>
+              <div style="position:relative"><div style="position:absolute;left:-30px;top:0;width:12px;height:12px;background:#B91C1C;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 2px #B91C1C"></div><div style="font-size:11px;color:#94a3b8;margin-bottom:4px">01 Mar 2026</div><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-weight:700;font-size:15px">v2.1.0</span><span class="badge badge-danger">Breaking</span></div><p style="font-size:13px;color:#334155;margin:0">API v1 is now deprecated. All v1 endpoints will be removed on <strong>01 September 2026</strong>. Migrate to v2 immediately. See <a href="#" style="color:var(--b)">migration guide</a>.</p></div>
+            </div>
+          </div></div>
+        </div>
+
+      </div><!-- portal-content -->
+    </div><!-- portal-main -->
+  </div><!-- portal-wrap -->
+</div><!-- portal-developer -->

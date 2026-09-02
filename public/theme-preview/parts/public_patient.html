@@ -1,0 +1,799 @@
+
+<!-- ===== PUBLIC PORTAL ===== -->
+<div class="fullpage-pane" id="portal-public">
+  <div class="pub-nav">
+    <div class="pub-nav-logo">
+      <div class="pub-nav-logo-ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+      OpesCare
+    </div>
+    <a onclick="goPublicPage('care-map')">Care Map</a>
+    <a onclick="goPublicPage('health-id-verify')">Health ID Verify</a>
+    <a onclick="goPublicPage('facility-finder')">Facility Finder</a>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <button class="btn btn-secondary btn-sm" onclick="switchPortal('auth')">Sign In</button>
+      <button class="btn btn-primary btn-sm">Register Free</button>
+    </div>
+  </div>
+  <!-- Public sub-nav -->
+  <div style="background:#fff;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:0;padding:0 24px;height:40px;">
+    <span onclick="goPublicPage('care-map')" class="pub-sub-tab active" id="pubtab-care-map" style="padding:0 14px;height:100%;display:flex;align-items:center;font-size:12px;font-weight:600;cursor:pointer;border-bottom:2px solid var(--b);color:var(--b)">Care Map</span>
+    <span onclick="goPublicPage('health-id-verify')" class="pub-sub-tab" id="pubtab-health-id-verify" style="padding:0 14px;height:100%;display:flex;align-items:center;font-size:12px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;color:var(--muted)">Health ID Verify</span>
+    <span onclick="goPublicPage('facility-finder')" class="pub-sub-tab" id="pubtab-facility-finder" style="padding:0 14px;height:100%;display:flex;align-items:center;font-size:12px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;color:var(--muted)">Facility Finder</span>
+  </div>
+  <!-- Care Map -->
+  <div id="pubpage-care-map" class="pub-page" style="display:block;height:calc(100% - 96px);position:relative">
+    <div style="position:absolute;top:16px;left:50%;transform:translateX(-50%);z-index:10;width:560px">
+      <div class="search-bar-lg" style="box-shadow:0 4px 16px rgba(0,0,0,.15)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input placeholder="Search hospitals, clinics, labs near Yaoundé...">
+        <button class="btn btn-primary btn-sm">Search</button>
+      </div>
+    </div>
+    <div class="map-placeholder" style="height:100%;"><span>🗺 Interactive Care Map — Cameroon Health Facilities</span></div>
+    <!-- Sidebar panel -->
+    <div style="position:absolute;top:72px;right:16px;width:300px;background:#fff;border-radius:var(--radl);box-shadow:var(--shd2);max-height:calc(100% - 88px);overflow-y:auto">
+      <div style="padding:14px 16px;border-bottom:1px solid var(--bdr);font-size:13px;font-weight:700;color:var(--txt)">Nearby Facilities (5)</div>
+      <div style="padding:12px 16px;border-bottom:1px solid var(--bdr);cursor:pointer" onmouseover="this.style.background='var(--sur2)'" onmouseout="this.style.background='#fff'">
+        <div style="display:flex;justify-content:space-between;align-items:start">
+          <div><div style="font-size:13px;font-weight:600;color:var(--txt)">Hôpital Central Yaoundé</div>
+          <div style="font-size:12px;color:var(--muted)">0.8 km · General Hospital</div></div>
+          <span class="badge badge-ok" style="margin-top:2px">Open</span>
+        </div>
+        <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">
+          <span class="badge badge-info">Emergency</span><span class="badge badge-b">Lab</span><span class="badge badge-muted">Pharmacy</span>
+        </div>
+      </div>
+      <div style="padding:12px 16px;border-bottom:1px solid var(--bdr);cursor:pointer" onmouseover="this.style.background='var(--sur2)'" onmouseout="this.style.background='#fff'">
+        <div style="display:flex;justify-content:space-between;align-items:start">
+          <div><div style="font-size:13px;font-weight:600;color:var(--txt)">Centre Médical de Yaoundé</div>
+          <div style="font-size:12px;color:var(--muted)">1.2 km · Clinic</div></div>
+          <span class="badge badge-ok">Open</span>
+        </div>
+      </div>
+      <div style="padding:12px 16px;border-bottom:1px solid var(--bdr);cursor:pointer" onmouseover="this.style.background='var(--sur2)'" onmouseout="this.style.background='#fff'">
+        <div style="display:flex;justify-content:space-between;align-items:start">
+          <div><div style="font-size:13px;font-weight:600;color:var(--txt)">CHU de Yaoundé</div>
+          <div style="font-size:12px;color:var(--muted)">2.1 km · University Hospital</div></div>
+          <span class="badge badge-ok">Open</span>
+        </div>
+      </div>
+      <div style="padding:12px 16px;border-bottom:1px solid var(--bdr);cursor:pointer" onmouseover="this.style.background='var(--sur2)'" onmouseout="this.style.background='#fff'">
+        <div style="display:flex;justify-content:space-between;align-items:start">
+          <div><div style="font-size:13px;font-weight:600;color:var(--txt)">Clinique de la Paix Douala</div>
+          <div style="font-size:12px;color:var(--muted)">245 km · Private Clinic</div></div>
+          <span class="badge badge-warn">Closed</span>
+        </div>
+      </div>
+      <div style="padding:12px 16px;cursor:pointer" onmouseover="this.style.background='var(--sur2)'" onmouseout="this.style.background='#fff'">
+        <div style="display:flex;justify-content:space-between;align-items:start">
+          <div><div style="font-size:13px;font-weight:600;color:var(--txt)">Hôpital Régional de Bafoussam</div>
+          <div style="font-size:12px;color:var(--muted)">290 km · Regional Hospital</div></div>
+          <span class="badge badge-ok">Open</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Health ID Verify -->
+  <div id="pubpage-health-id-verify" class="pub-page" style="display:none;padding:40px;background:var(--bg);min-height:calc(100% - 96px)">
+    <div style="max-width:560px;margin:0 auto">
+      <div style="text-align:center;margin-bottom:32px">
+        <div style="width:56px;height:56px;background:rgba(15,76,129,.1);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--b)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <h2 style="font-size:22px;font-weight:700;color:var(--txt);margin-bottom:6px">Health ID Verification</h2>
+        <p style="font-size:13px;color:var(--muted)">Verify a patient's identity using their OpesCare Health ID. This service is available to registered healthcare providers.</p>
+      </div>
+      <div class="panel">
+        <div class="panel-body">
+          <div class="form-group">
+            <label class="form-label">Patient Health ID <span>*</span></label>
+            <input class="form-control mono" placeholder="CM-HID-XXXX-XXXX-XXXX" style="font-size:16px;letter-spacing:.05em">
+            <p class="form-hint">Enter the Health ID exactly as shown on the patient's card</p>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Your Facility ID <span>*</span></label>
+            <input class="form-control mono" placeholder="FAC-CM-00142">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Purpose of Verification <span>*</span></label>
+            <select class="form-control">
+              <option>Outpatient Consultation</option>
+              <option>Emergency Access</option>
+              <option>Lab Test</option>
+              <option>Prescription Pickup</option>
+              <option>Insurance Claim</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center;padding:11px">Verify Health ID</button>
+        </div>
+      </div>
+      <!-- Result Card -->
+      <div class="panel" style="border-left:3px solid var(--ok)">
+        <div class="panel-hd"><span class="panel-title"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>Verification Result</span><span class="badge badge-ok">Verified</span></div>
+        <div class="panel-body">
+          <div style="display:flex;align-items:center;gap:16px">
+            <div style="width:60px;height:60px;background:var(--sur2);border:1px solid var(--bdr);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted)">Photo</div>
+            <div>
+              <div style="font-size:16px;font-weight:700;color:var(--txt)">Mbarga Alain Christophe</div>
+              <div class="mono" style="color:var(--b);margin-top:2px">CM-HID-7KQ9-MP42-X8D1</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:4px">DOB: 15 Mar 1985 · Male · Blood Type: O+</div>
+            </div>
+          </div>
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--bdr);display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px">
+            <div><span style="color:var(--muted)">Status:</span> <strong style="color:var(--ok)">Active</strong></div>
+            <div><span style="color:var(--muted)">Nationality:</span> <strong>Cameroonian</strong></div>
+            <div><span style="color:var(--muted)">Verified at:</span> <strong>14 Jun 2025, 10:42</strong></div>
+            <div><span style="color:var(--muted)">Ref:</span> <span class="mono">VRF-98234</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Facility Finder -->
+  <div id="pubpage-facility-finder" class="pub-page" style="display:none;padding:24px;background:var(--bg);min-height:calc(100% - 96px)">
+    <div style="max-width:900px;margin:0 auto">
+      <h2 style="font-size:20px;font-weight:700;margin-bottom:16px">Find a Healthcare Facility</h2>
+      <div class="panel">
+        <div class="panel-body">
+          <div class="form-row cols-3">
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">Search</label>
+              <input class="form-control" placeholder="Facility name or service...">
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">Region</label>
+              <select class="form-control"><option>All Regions</option><option>Centre</option><option>Littoral</option><option>West</option><option>North West</option><option>South West</option><option>Far North</option><option>North</option><option>Adamawa</option><option>East</option><option>South</option></select>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">Type</label>
+              <select class="form-control"><option>All Types</option><option>Hospital</option><option>Clinic</option><option>Laboratory</option><option>Pharmacy</option><option>Health Center</option></select>
+            </div>
+          </div>
+          <div style="margin-top:12px;display:flex;gap:8px">
+            <button class="btn btn-primary btn-sm">Search Facilities</button>
+            <button class="btn btn-secondary btn-sm">Clear Filters</button>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+        <div class="panel" style="margin-bottom:0">
+          <div class="panel-body">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <span class="badge badge-b">Hospital</span><span class="badge badge-ok">Open</span>
+            </div>
+            <div style="font-size:14px;font-weight:700;color:var(--txt);margin-bottom:4px">Hôpital Central Yaoundé</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Rue Joseph Mballa Eloumden, Yaoundé · Centre Region</div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px">
+              <span class="badge badge-muted">Emergency</span><span class="badge badge-muted">Surgery</span><span class="badge badge-muted">Lab</span>
+            </div>
+            <button class="btn btn-secondary btn-sm" style="width:100%;justify-content:center">View Details</button>
+          </div>
+        </div>
+        <div class="panel" style="margin-bottom:0">
+          <div class="panel-body">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <span class="badge badge-b">University Hospital</span><span class="badge badge-ok">Open</span>
+            </div>
+            <div style="font-size:14px;font-weight:700;color:var(--txt);margin-bottom:4px">CHU de Yaoundé</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Carrefour Nlongkak, Yaoundé · Centre Region</div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px">
+              <span class="badge badge-muted">Cardiology</span><span class="badge badge-muted">Oncology</span><span class="badge badge-muted">Maternity</span>
+            </div>
+            <button class="btn btn-secondary btn-sm" style="width:100%;justify-content:center">View Details</button>
+          </div>
+        </div>
+        <div class="panel" style="margin-bottom:0">
+          <div class="panel-body">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <span class="badge badge-info">Clinic</span><span class="badge badge-ok">Open</span>
+            </div>
+            <div style="font-size:14px;font-weight:700;color:var(--txt);margin-bottom:4px">Clinique de la Paix Douala</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Bonanjo, Douala · Littoral Region</div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px">
+              <span class="badge badge-muted">Outpatient</span><span class="badge badge-muted">Lab</span>
+            </div>
+            <button class="btn btn-secondary btn-sm" style="width:100%;justify-content:center">View Details</button>
+          </div>
+        </div>
+        <div class="panel" style="margin-bottom:0">
+          <div class="panel-body">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <span class="badge badge-b">Regional Hospital</span><span class="badge badge-ok">Open</span>
+            </div>
+            <div style="font-size:14px;font-weight:700;color:var(--txt);margin-bottom:4px">Hôpital Régional de Bafoussam</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Bafoussam, Cameroon · West Region</div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px">
+              <span class="badge badge-muted">Inpatient</span><span class="badge badge-muted">Emergency</span>
+            </div>
+            <button class="btn btn-secondary btn-sm" style="width:100%;justify-content:center">View Details</button>
+          </div>
+        </div>
+        <div class="panel" style="margin-bottom:0">
+          <div class="panel-body">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <span class="badge badge-info">Polyclinic</span><span class="badge badge-warn">Limited</span>
+            </div>
+            <div style="font-size:14px;font-weight:700;color:var(--txt);margin-bottom:4px">Polyclinique Bonanjo</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Bonanjo, Douala · Littoral Region</div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px">
+              <span class="badge badge-muted">Outpatient</span><span class="badge badge-muted">Pharmacy</span>
+            </div>
+            <button class="btn btn-secondary btn-sm" style="width:100%;justify-content:center">View Details</button>
+          </div>
+        </div>
+        <div class="panel" style="margin-bottom:0">
+          <div class="panel-body">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <span class="badge badge-info">Centre Médical</span><span class="badge badge-ok">Open</span>
+            </div>
+            <div style="font-size:14px;font-weight:700;color:var(--txt);margin-bottom:4px">Centre Médical de Yaoundé</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Quartier Bastos, Yaoundé · Centre Region</div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px">
+              <span class="badge badge-muted">GP</span><span class="badge badge-muted">Lab</span>
+            </div>
+            <button class="btn btn-secondary btn-sm" style="width:100%;justify-content:center">View Details</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PATIENT PORTAL ===== -->
+<div class="portal-pane" id="portal-patient">
+  <div class="portal-wrap">
+    <div class="portal-sidebar">
+      <div class="sb-brand">
+        <div class="sb-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+        <div><div class="sb-name">OpesCare</div><div class="sb-sub">Patient Portal</div></div>
+      </div>
+      <div class="sb-rb"><div class="role-badge"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Patient</div></div>
+      <nav class="sb-nav">
+        <div class="sb-sec">Overview</div>
+        <div class="sb-link active" id="pat-nav-dashboard" onclick="goPage('patient','dashboard')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</div>
+        <div class="sb-sec">Health</div>
+        <div class="sb-link" id="pat-nav-appointments" onclick="goPage('patient','appointments')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Appointments</div>
+        <div class="sb-link" id="pat-nav-book" onclick="goPage('patient','book')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Book Appointment</div>
+        <div class="sb-link" id="pat-nav-lab-results" onclick="goPage('patient','lab-results')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>Lab Results</div>
+        <div class="sb-link" id="pat-nav-prescriptions" onclick="goPage('patient','prescriptions')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>Prescriptions</div>
+        <div class="sb-link" id="pat-nav-immunizations" onclick="goPage('patient','immunizations')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h.01M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/><path d="M22 4v16"/></svg>Immunizations</div>
+        <div class="sb-sec">Records</div>
+        <div class="sb-link" id="pat-nav-documents" onclick="goPage('patient','documents')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Documents</div>
+        <div class="sb-link" id="pat-nav-care-map" onclick="goPage('patient','care-map')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3,11 22,2 13,21 11,13 3,11"/></svg>Care Map</div>
+        <div class="sb-link" id="pat-nav-insurance" onclick="goPage('patient','insurance')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Insurance</div>
+        <div class="sb-sec">Account</div>
+        <div class="sb-link" id="pat-nav-profile" onclick="goPage('patient','profile')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile</div>
+        <div class="sb-link" id="pat-nav-family" onclick="goPage('patient','family')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Family</div>
+        <div class="sb-link" id="pat-nav-consent" onclick="goPage('patient','consent')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>Consent</div>
+        <div class="sb-link" id="pat-nav-access-logs" onclick="goPage('patient','access-logs')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Access Logs</div>
+      </nav>
+      <div class="sb-foot">
+        <div class="sb-user">
+          <div class="sb-av">MA</div>
+          <div><div class="sb-uname">Mbarga Alain</div><div class="sb-urole">CM-HID-7KQ9-MP42</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="portal-main">
+      <div class="portal-topbar">
+        <span class="tb-crumb">Patient</span><span class="tb-sep">/</span>
+        <span class="tb-page" id="pat-breadcrumb">Dashboard</span>
+        <div class="tb-right">
+          <div class="icon-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+          <div class="icon-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+          <div class="tb-av">MA</div><span class="tb-uname">Mbarga Alain</span>
+        </div>
+      </div>
+      <div class="portal-content">
+        <!-- PATIENT DASHBOARD -->
+        <div class="portal-page active" id="pat-page-dashboard">
+          <div class="hid-card">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between">
+              <div>
+                <div style="font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">OpesCare Universal Health ID</div>
+                <div class="hid-id">CM-HID-7KQ9-MP42-X8D1</div>
+                <div class="hid-name">Mbarga Alain Christophe</div>
+                <div class="hid-meta">
+                  <span>DOB: 15 Mar 1985</span>
+                  <span>Age: 40</span>
+                  <span>Male</span>
+                  <span>🇨🇲 Cameroonian</span>
+                </div>
+                <div class="hid-chips">
+                  <div class="hid-chip danger">B. Group: O+</div>
+                  <div class="hid-chip">Hypertension</div>
+                  <div class="hid-chip">⚠ Penicillin Allergy</div>
+                </div>
+              </div>
+              <div style="text-align:right">
+                <div class="qr-box">QR</div>
+                <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px">Scan to verify</div>
+              </div>
+            </div>
+          </div>
+          <div class="safety-strip">
+            <div class="safety-pill danger"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Allergy: Penicillin</div>
+            <div class="safety-pill danger"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>Allergy: Sulfa Drugs</div>
+            <div class="safety-pill warn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Hypertension (I10)</div>
+            <div class="safety-pill info"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Blood Type: O+</div>
+          </div>
+          <div class="qa-grid" style="grid-template-columns:repeat(4,1fr)">
+            <div class="qa-card" onclick="goPage('patient','book')"><div class="qa-ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div><div class="qa-lbl">Book Appointment</div></div>
+            <div class="qa-card" onclick="goPage('patient','lab-results')"><div class="qa-ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg></div><div class="qa-lbl">Lab Results</div></div>
+            <div class="qa-card" onclick="goPage('patient','prescriptions')"><div class="qa-ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div><div class="qa-lbl">Prescriptions</div></div>
+            <div class="qa-card" onclick="goPage('patient','documents')"><div class="qa-ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div><div class="qa-lbl">Documents</div></div>
+            <div class="qa-card" onclick="goPage('patient','insurance')"><div class="qa-ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div class="qa-lbl">Insurance</div></div>
+            <div class="qa-card" onclick="goPage('patient','immunizations')"><div class="qa-ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 4v16"/></svg></div><div class="qa-lbl">Immunizations</div></div>
+            <div class="qa-card" onclick="goPage('patient','care-map')"><div class="qa-ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3,11 22,2 13,21 11,13 3,11"/></svg></div><div class="qa-lbl">Care Map</div></div>
+            <div class="qa-card" onclick="goPage('patient','consent')"><div class="qa-ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg></div><div class="qa-lbl">Consent</div></div>
+          </div>
+          <div class="content-grid">
+            <div>
+              <div class="panel">
+                <div class="panel-hd"><span class="panel-title"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Upcoming Appointments</span><button class="btn btn-secondary btn-sm" onclick="goPage('patient','appointments')">View All</button></div>
+                <table class="data-table">
+                  <thead><tr><th>Date & Time</th><th>Doctor</th><th>Facility</th><th>Type</th><th>Status</th></tr></thead>
+                  <tbody>
+                    <tr><td><div style="font-weight:600">20 Jun 2025</div><div style="font-size:11px;color:var(--muted)">09:30 AM</div></td><td>Dr. Ndongo Emmanuel</td><td>CHU de Yaoundé</td><td><span class="badge badge-b">Cardiology</span></td><td><span class="badge badge-ok">Confirmed</span></td></tr>
+                    <tr><td><div style="font-weight:600">25 Jun 2025</div><div style="font-size:11px;color:var(--muted)">02:00 PM</div></td><td>Dr. Abena Martin</td><td>Centre Médical Yaoundé</td><td><span class="badge badge-muted">General</span></td><td><span class="badge badge-warn">Pending</span></td></tr>
+                    <tr><td><div style="font-weight:600">02 Jul 2025</div><div style="font-size:11px;color:var(--muted)">10:00 AM</div></td><td>Dr. Fopa Isabelle</td><td>Hôpital Central</td><td><span class="badge badge-info">Paediatrics</span></td><td><span class="badge badge-ok">Confirmed</span></td></tr>
+                    <tr><td><div style="font-weight:600">10 Jul 2025</div><div style="font-size:11px;color:var(--muted)">11:00 AM</div></td><td>Dr. Essomba Christine</td><td>CHU de Yaoundé</td><td><span class="badge badge-muted">Gynaecology</span></td><td><span class="badge badge-muted">Scheduled</span></td></tr>
+                    <tr><td><div style="font-weight:600">18 Jul 2025</div><div style="font-size:11px;color:var(--muted)">03:30 PM</div></td><td>Dr. Ndongo Emmanuel</td><td>CHU de Yaoundé</td><td><span class="badge badge-b">Follow-up</span></td><td><span class="badge badge-muted">Scheduled</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div>
+              <div class="panel">
+                <div class="panel-hd"><span class="panel-title"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>Temporary Access QR</span></div>
+                <div class="panel-body" style="text-align:center">
+                  <div style="width:120px;height:120px;background:#0F172A;border-radius:8px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;padding:10px">
+                    <svg width="100" height="100" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg">
+                      <rect x="0" y="0" width="4" height="4" fill="white"/><rect x="1" y="1" width="2" height="2" fill="black"/>
+                      <rect x="6" y="0" width="4" height="4" fill="white"/><rect x="7" y="1" width="2" height="2" fill="black"/>
+                      <rect x="0" y="6" width="4" height="4" fill="white"/><rect x="1" y="7" width="2" height="2" fill="black"/>
+                      <rect x="4" y="4" width="2" height="2" fill="white"/>
+                      <rect x="6" y="5" width="1" height="1" fill="white"/>
+                      <rect x="8" y="6" width="2" height="1" fill="white"/>
+                      <rect x="5" y="7" width="2" height="2" fill="white"/>
+                      <rect x="4" y="0" width="1" height="3" fill="white"/>
+                    </svg>
+                  </div>
+                  <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Valid for 15 minutes · One-time use</div>
+                  <div style="font-size:10px;color:var(--muted);background:var(--sur2);border-radius:4px;padding:4px 8px;font-family:'JetBrains Mono',monospace;margin-bottom:12px">QR-TMP-9F4K2-20250614-0942</div>
+                  <button class="btn btn-secondary btn-sm" style="width:100%;justify-content:center">Regenerate QR Code</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- PATIENT APPOINTMENTS -->
+        <div class="portal-page" id="pat-page-appointments">
+          <div class="page-header"><div><h2>Appointments</h2><p>Your appointment history and upcoming visits</p></div><button class="btn btn-primary" onclick="goPage('patient','book')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Book New</button></div>
+          <div class="filter-bar">
+            <input class="form-control" type="date" style="width:150px">
+            <input class="form-control" type="date" style="width:150px">
+            <select class="form-control"><option>All Types</option><option>Cardiology</option><option>General</option><option>Paediatrics</option></select>
+            <select class="form-control"><option>All Statuses</option><option>Confirmed</option><option>Pending</option><option>Cancelled</option></select>
+            <button class="btn btn-secondary btn-sm">Filter</button>
+          </div>
+          <div class="panel">
+            <table class="data-table">
+              <thead><tr><th>Date & Time</th><th>Doctor</th><th>Facility</th><th>Type</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody>
+                <tr><td><div style="font-weight:600">20 Jun 2025, 09:30</div></td><td>Dr. Ndongo Emmanuel</td><td>CHU de Yaoundé</td><td>Cardiology</td><td><span class="badge badge-ok">Confirmed</span></td><td><button class="btn btn-secondary btn-xs">Details</button> <button class="btn btn-xs" style="background:var(--dangerl);color:var(--danger);border:1px solid rgba(185,28,28,.2)">Cancel</button></td></tr>
+                <tr><td><div style="font-weight:600">25 Jun 2025, 14:00</div></td><td>Dr. Abena Martin</td><td>Centre Médical Yaoundé</td><td>General</td><td><span class="badge badge-warn">Pending</span></td><td><button class="btn btn-secondary btn-xs">Details</button></td></tr>
+                <tr><td><div style="font-weight:600">02 Jul 2025, 10:00</div></td><td>Dr. Fopa Isabelle</td><td>Hôpital Central</td><td>Paediatrics</td><td><span class="badge badge-ok">Confirmed</span></td><td><button class="btn btn-secondary btn-xs">Details</button> <button class="btn btn-xs" style="background:var(--dangerl);color:var(--danger);border:1px solid rgba(185,28,28,.2)">Cancel</button></td></tr>
+                <tr><td><div style="font-weight:600">05 May 2025, 11:30</div></td><td>Dr. Ndongo Emmanuel</td><td>CHU de Yaoundé</td><td>Cardiology</td><td><span class="badge badge-muted">Completed</span></td><td><button class="btn btn-secondary btn-xs">Summary</button></td></tr>
+                <tr><td><div style="font-weight:600">12 Apr 2025, 09:00</div></td><td>Dr. Essomba Christine</td><td>CHU de Yaoundé</td><td>Gynaecology</td><td><span class="badge badge-danger">Cancelled</span></td><td><button class="btn btn-secondary btn-xs">Rebook</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--muted)">
+            <span>Showing 5 of 18 appointments</span>
+            <div style="display:flex;gap:4px"><button class="btn btn-secondary btn-xs">Previous</button><button class="btn btn-secondary btn-xs" style="background:var(--b);color:#fff;border-color:var(--b)">1</button><button class="btn btn-secondary btn-xs">2</button><button class="btn btn-secondary btn-xs">3</button><button class="btn btn-secondary btn-xs">Next</button></div>
+          </div>
+        </div>
+        <!-- BOOK APPOINTMENT -->
+        <div class="portal-page" id="pat-page-book">
+          <div class="page-header"><div><h2>Book Appointment</h2><p>Schedule a visit at any registered facility</p></div></div>
+          <div class="step-indicator">
+            <div class="step-item active" id="book-step-1"><div class="step-num">1</div><div class="step-lbl">Facility</div></div>
+            <div class="step-line"></div>
+            <div class="step-item" id="book-step-2"><div class="step-num">2</div><div class="step-lbl">Doctor</div></div>
+            <div class="step-line"></div>
+            <div class="step-item" id="book-step-3"><div class="step-num">3</div><div class="step-lbl">Date & Time</div></div>
+            <div class="step-line"></div>
+            <div class="step-item" id="book-step-4"><div class="step-num">4</div><div class="step-lbl">Details</div></div>
+            <div class="step-line"></div>
+            <div class="step-item" id="book-step-5"><div class="step-num">5</div><div class="step-lbl">Confirm</div></div>
+          </div>
+          <!-- Step 1 -->
+          <div id="book-s1" style="display:block">
+            <div class="panel"><div class="panel-hd"><span class="panel-title">Select a Facility</span></div>
+            <div class="panel-body">
+              <div class="search-bar-lg" style="margin-bottom:14px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input placeholder="Search facilities..."></div>
+              <div class="card-grid">
+                <div class="card-item selected" onclick="this.parentElement.querySelectorAll('.card-item').forEach(c=>c.classList.remove('selected'));this.classList.add('selected')"><h4>CHU de Yaoundé</h4><p>University Hospital · Yaoundé Centre</p><div style="margin-top:8px"><span class="badge badge-ok">Open</span></div></div>
+                <div class="card-item" onclick="this.parentElement.querySelectorAll('.card-item').forEach(c=>c.classList.remove('selected'));this.classList.add('selected')"><h4>Hôpital Central Yaoundé</h4><p>General Hospital · Yaoundé Centre</p><div style="margin-top:8px"><span class="badge badge-ok">Open</span></div></div>
+                <div class="card-item" onclick="this.parentElement.querySelectorAll('.card-item').forEach(c=>c.classList.remove('selected'));this.classList.add('selected')"><h4>Centre Médical Yaoundé</h4><p>Clinic · Bastos, Yaoundé</p><div style="margin-top:8px"><span class="badge badge-ok">Open</span></div></div>
+                <div class="card-item" onclick="this.parentElement.querySelectorAll('.card-item').forEach(c=>c.classList.remove('selected'));this.classList.add('selected')"><h4>Clinique de la Paix</h4><p>Private Clinic · Bonanjo, Douala</p><div style="margin-top:8px"><span class="badge badge-warn">Limited</span></div></div>
+              </div>
+            </div></div>
+            <div style="display:flex;justify-content:flex-end"><button class="btn btn-primary" onclick="goBookStep(2)">Next: Choose Doctor →</button></div>
+          </div>
+          <!-- Step 2 -->
+          <div id="book-s2" style="display:none">
+            <div class="panel"><div class="panel-hd"><span class="panel-title">Select a Doctor at CHU de Yaoundé</span></div>
+            <div class="panel-body">
+              <div class="card-grid">
+                <div class="card-item selected" onclick="this.parentElement.querySelectorAll('.card-item').forEach(c=>c.classList.remove('selected'));this.classList.add('selected')">
+                  <div style="width:48px;height:48px;background:var(--sur2);border-radius:50%;margin-bottom:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--b)">NE</div>
+                  <h4>Dr. Ndongo Emmanuel</h4><p>Cardiology</p><div style="margin-top:8px"><span class="badge badge-ok">Available</span></div>
+                </div>
+                <div class="card-item" onclick="this.parentElement.querySelectorAll('.card-item').forEach(c=>c.classList.remove('selected'));this.classList.add('selected')">
+                  <div style="width:48px;height:48px;background:var(--sur2);border-radius:50%;margin-bottom:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--b)">FI</div>
+                  <h4>Dr. Fopa Isabelle</h4><p>Paediatrics</p><div style="margin-top:8px"><span class="badge badge-ok">Available</span></div>
+                </div>
+                <div class="card-item" onclick="this.parentElement.querySelectorAll('.card-item').forEach(c=>c.classList.remove('selected'));this.classList.add('selected')">
+                  <div style="width:48px;height:48px;background:var(--sur2);border-radius:50%;margin-bottom:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--b)">AM</div>
+                  <h4>Dr. Abena Martin</h4><p>General Medicine</p><div style="margin-top:8px"><span class="badge badge-warn">Busy</span></div>
+                </div>
+                <div class="card-item" onclick="this.parentElement.querySelectorAll('.card-item').forEach(c=>c.classList.remove('selected'));this.classList.add('selected')">
+                  <div style="width:48px;height:48px;background:var(--sur2);border-radius:50%;margin-bottom:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--b)">EC</div>
+                  <h4>Dr. Essomba Christine</h4><p>Gynaecology</p><div style="margin-top:8px"><span class="badge badge-ok">Available</span></div>
+                </div>
+              </div>
+            </div></div>
+            <div style="display:flex;justify-content:space-between"><button class="btn btn-secondary" onclick="goBookStep(1)">← Back</button><button class="btn btn-primary" onclick="goBookStep(3)">Next: Pick Date →</button></div>
+          </div>
+          <!-- Step 3 -->
+          <div id="book-s3" style="display:none">
+            <div class="panel"><div class="panel-hd"><span class="panel-title">Choose Date & Time</span></div>
+            <div class="panel-body">
+              <div class="two-col">
+                <div>
+                  <label class="form-label">Select Date</label>
+                  <div style="background:var(--sur2);border:1px solid var(--bdr);border-radius:var(--rad);padding:14px">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+                      <button class="btn btn-secondary btn-xs">◀</button>
+                      <span style="font-size:14px;font-weight:700">June 2025</span>
+                      <button class="btn btn-secondary btn-xs">▶</button>
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center">
+                      <div style="font-size:10px;font-weight:700;color:var(--muted);padding:4px">Su</div><div style="font-size:10px;font-weight:700;color:var(--muted);padding:4px">Mo</div><div style="font-size:10px;font-weight:700;color:var(--muted);padding:4px">Tu</div><div style="font-size:10px;font-weight:700;color:var(--muted);padding:4px">We</div><div style="font-size:10px;font-weight:700;color:var(--muted);padding:4px">Th</div><div style="font-size:10px;font-weight:700;color:var(--muted);padding:4px">Fr</div><div style="font-size:10px;font-weight:700;color:var(--muted);padding:4px">Sa</div>
+                      <div style="padding:5px;font-size:12px;color:var(--muted)">1</div><div style="padding:5px;font-size:12px;color:var(--muted)">2</div><div style="padding:5px;font-size:12px;color:var(--muted)">3</div><div style="padding:5px;font-size:12px;color:var(--muted)">4</div><div style="padding:5px;font-size:12px;color:var(--muted)">5</div><div style="padding:5px;font-size:12px;color:var(--muted)">6</div><div style="padding:5px;font-size:12px;color:var(--muted)">7</div>
+                      <div style="padding:5px;font-size:12px;color:var(--muted)">8</div><div style="padding:5px;font-size:12px;color:var(--muted)">9</div><div style="padding:5px;font-size:12px;color:var(--muted)">10</div><div style="padding:5px;font-size:12px;color:var(--muted)">11</div><div style="padding:5px;font-size:12px;color:var(--muted)">12</div><div style="padding:5px;font-size:12px;color:var(--muted)">13</div><div style="padding:5px;font-size:12px;font-weight:700;color:var(--b);background:var(--infol);border-radius:50%">14</div>
+                      <div style="padding:5px;font-size:12px;color:var(--txt)">15</div><div style="padding:5px;font-size:12px;color:var(--txt)">16</div><div style="padding:5px;font-size:12px;color:var(--txt)">17</div><div style="padding:5px;font-size:12px;color:var(--txt)">18</div><div style="padding:5px;font-size:12px;color:var(--txt)">19</div><div style="padding:5px;font-size:12px;font-weight:700;color:#fff;background:var(--b);border-radius:50%">20</div><div style="padding:5px;font-size:12px;color:var(--muted)">21</div>
+                      <div style="padding:5px;font-size:12px;color:var(--txt)">22</div><div style="padding:5px;font-size:12px;color:var(--txt)">23</div><div style="padding:5px;font-size:12px;color:var(--txt)">24</div><div style="padding:5px;font-size:12px;color:var(--txt)">25</div><div style="padding:5px;font-size:12px;color:var(--txt)">26</div><div style="padding:5px;font-size:12px;color:var(--txt)">27</div><div style="padding:5px;font-size:12px;color:var(--muted)">28</div>
+                      <div style="padding:5px;font-size:12px;color:var(--muted)">29</div><div style="padding:5px;font-size:12px;color:var(--muted)">30</div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <label class="form-label">Available Time Slots — Fri 20 Jun</label>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                    <div style="padding:8px;border:1px solid var(--bdr);border-radius:var(--rads);text-align:center;font-size:12px;color:var(--muted);cursor:not-allowed;background:var(--sur2)">08:00 — Booked</div>
+                    <div style="padding:8px;border:1px solid var(--b);border-radius:var(--rads);text-align:center;font-size:12px;font-weight:600;color:#fff;background:var(--b);cursor:pointer">09:30 — Selected</div>
+                    <div style="padding:8px;border:1px solid var(--bdr);border-radius:var(--rads);text-align:center;font-size:12px;color:var(--txt);cursor:pointer">10:00</div>
+                    <div style="padding:8px;border:1px solid var(--bdr);border-radius:var(--rads);text-align:center;font-size:12px;color:var(--txt);cursor:pointer">10:30</div>
+                    <div style="padding:8px;border:1px solid var(--bdr);border-radius:var(--rads);text-align:center;font-size:12px;color:var(--muted);cursor:not-allowed;background:var(--sur2)">11:00 — Booked</div>
+                    <div style="padding:8px;border:1px solid var(--bdr);border-radius:var(--rads);text-align:center;font-size:12px;color:var(--txt);cursor:pointer">14:00</div>
+                    <div style="padding:8px;border:1px solid var(--bdr);border-radius:var(--rads);text-align:center;font-size:12px;color:var(--txt);cursor:pointer">14:30</div>
+                    <div style="padding:8px;border:1px solid var(--bdr);border-radius:var(--rads);text-align:center;font-size:12px;color:var(--txt);cursor:pointer">15:00</div>
+                    <div style="padding:8px;border:1px solid var(--bdr);border-radius:var(--rads);text-align:center;font-size:12px;color:var(--muted);cursor:not-allowed;background:var(--sur2)">15:30 — Booked</div>
+                    <div style="padding:8px;border:1px solid var(--bdr);border-radius:var(--rads);text-align:center;font-size:12px;color:var(--txt);cursor:pointer">16:00</div>
+                  </div>
+                </div>
+              </div>
+            </div></div>
+            <div style="display:flex;justify-content:space-between"><button class="btn btn-secondary" onclick="goBookStep(2)">← Back</button><button class="btn btn-primary" onclick="goBookStep(4)">Next: Details →</button></div>
+          </div>
+          <!-- Step 4 -->
+          <div id="book-s4" style="display:none">
+            <div class="panel"><div class="panel-hd"><span class="panel-title">Appointment Details</span></div>
+            <div class="panel-body">
+              <div class="form-row cols-2">
+                <div class="form-group"><label class="form-label">Appointment Type <span>*</span></label><select class="form-control"><option>Consultation</option><option>Follow-up</option><option>Emergency</option><option>Specialist Referral</option></select></div>
+                <div class="form-group"><label class="form-label">Insurance Policy</label><select class="form-control"><option>CNPS — Plan Standard (POL-CM-00234)</option><option>Pay out of pocket</option></select></div>
+              </div>
+              <div class="form-group"><label class="form-label">Reason for Visit <span>*</span></label><textarea class="form-control" rows="3" placeholder="Describe your symptoms or reason for visit...">Chest pain and shortness of breath since last week. Following up on hypertension management.</textarea></div>
+              <div class="form-group"><label class="form-label">Special Notes for Doctor</label><textarea class="form-control" placeholder="Allergies, current medications, special requirements..."></textarea></div>
+            </div></div>
+            <div style="display:flex;justify-content:space-between"><button class="btn btn-secondary" onclick="goBookStep(3)">← Back</button><button class="btn btn-primary" onclick="goBookStep(5)">Next: Confirm →</button></div>
+          </div>
+          <!-- Step 5 -->
+          <div id="book-s5" style="display:none">
+            <div class="panel"><div class="panel-hd"><span class="panel-title">Confirm Appointment</span></div>
+            <div class="panel-body">
+              <div class="alert alert-info"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><div>Please review your appointment details. An SMS confirmation will be sent to +237 6•• ••• 42.</div></div>
+              <div style="background:var(--sur2);border:1px solid var(--bdr);border-radius:var(--rad);padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px">
+                <div><span style="color:var(--muted)">Facility:</span><br><strong>CHU de Yaoundé</strong></div>
+                <div><span style="color:var(--muted)">Doctor:</span><br><strong>Dr. Ndongo Emmanuel</strong></div>
+                <div><span style="color:var(--muted)">Specialty:</span><br><strong>Cardiology</strong></div>
+                <div><span style="color:var(--muted)">Date & Time:</span><br><strong>Fri, 20 Jun 2025 — 09:30 AM</strong></div>
+                <div><span style="color:var(--muted)">Type:</span><br><strong>Consultation</strong></div>
+                <div><span style="color:var(--muted)">Insurance:</span><br><strong>CNPS — Plan Standard</strong></div>
+                <div style="grid-column:span 2"><span style="color:var(--muted)">Reason:</span><br><strong>Chest pain and shortness of breath since last week.</strong></div>
+              </div>
+            </div></div>
+            <div style="display:flex;justify-content:space-between"><button class="btn btn-secondary" onclick="goBookStep(4)">← Back</button><button class="btn btn-ok">Confirm Booking</button></div>
+          </div>
+        </div>
+        <!-- LAB RESULTS -->
+        <div class="portal-page" id="pat-page-lab-results">
+          <div class="page-header"><div><h2>Lab Results</h2><p>Your laboratory test results from all facilities</p></div></div>
+          <div class="filter-bar">
+            <input class="form-control" type="date" style="width:150px">
+            <select class="form-control"><option>All Tests</option><option>Blood</option><option>Urine</option><option>Culture</option></select>
+            <select class="form-control"><option>All Statuses</option><option>Released</option><option>Pending</option></select>
+            <button class="btn btn-secondary btn-sm">Filter</button>
+          </div>
+          <div class="panel">
+            <table class="data-table">
+              <thead><tr><th>Test Name</th><th>Ordered By</th><th>Facility</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><div style="font-weight:600">CBC (NFS)</div><div style="font-size:11px;color:var(--muted)">Complete Blood Count</div></td>
+                  <td>Dr. Ndongo Emmanuel</td><td>CHU de Yaoundé</td><td>10 Jun 2025</td><td><span class="badge badge-ok">Released</span></td>
+                  <td><button class="btn btn-secondary btn-xs">View</button> <button class="btn btn-secondary btn-xs">PDF</button></td>
+                </tr>
+                <tr>
+                  <td><div style="font-weight:600">HbA1c</div><div style="font-size:11px;color:var(--muted)">Glycated Hemoglobin</div></td>
+                  <td>Dr. Abena Martin</td><td>Centre Médical Yaoundé</td><td>08 Jun 2025</td><td><span class="badge badge-ok">Released</span></td>
+                  <td><button class="btn btn-secondary btn-xs">View</button> <button class="btn btn-secondary btn-xs">PDF</button></td>
+                </tr>
+                <tr>
+                  <td><div style="font-weight:600">Lipid Panel</div><div style="font-size:11px;color:var(--muted)">Cholesterol Screen</div></td>
+                  <td>Dr. Ndongo Emmanuel</td><td>CHU de Yaoundé</td><td>08 Jun 2025</td><td><span class="badge badge-warn">Pending</span></td>
+                  <td><button class="btn btn-secondary btn-xs" disabled>Pending</button></td>
+                </tr>
+                <tr>
+                  <td><div style="font-weight:600">Malaria RDT</div><div style="font-size:11px;color:var(--muted)">Rapid Diagnostic Test</div></td>
+                  <td>Dr. Abena Martin</td><td>Hôpital Central</td><td>01 Jun 2025</td><td><span class="badge badge-ok">Released</span></td>
+                  <td><button class="btn btn-secondary btn-xs">View</button> <button class="btn btn-secondary btn-xs">PDF</button></td>
+                </tr>
+                <tr>
+                  <td><div style="font-weight:600">Urinalysis</div></td>
+                  <td>Dr. Fopa Isabelle</td><td>CHU de Yaoundé</td><td>20 May 2025</td><td><span class="badge badge-ok">Released</span></td>
+                  <td><button class="btn btn-secondary btn-xs">View</button> <button class="btn btn-secondary btn-xs">PDF</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <!-- Expanded result detail -->
+          <div class="panel" style="border-left:3px solid var(--b)">
+            <div class="panel-hd"><span class="panel-title">CBC (NFS) — 10 Jun 2025 · CHU de Yaoundé</span><button class="btn btn-primary btn-sm">Download PDF</button></div>
+            <div class="panel-body">
+              <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Ordered by: Dr. Ndongo Emmanuel · Validated by: Lab Tech Kouam · Released: 10 Jun 2025 14:42</div>
+              <table class="data-table">
+                <thead><tr><th>Parameter</th><th>Value</th><th>Unit</th><th>Reference Range</th><th>Flag</th></tr></thead>
+                <tbody>
+                  <tr><td>Hemoglobin</td><td><strong>12.8</strong></td><td>g/dL</td><td>13.0 – 17.0</td><td><span class="badge badge-warn">L</span></td></tr>
+                  <tr><td>Hematocrit</td><td><strong>38.2</strong></td><td>%</td><td>40 – 52</td><td><span class="badge badge-warn">L</span></td></tr>
+                  <tr><td>WBC</td><td><strong>7.4</strong></td><td>×10³/μL</td><td>4.5 – 11.0</td><td><span class="badge badge-ok">N</span></td></tr>
+                  <tr><td>Platelets</td><td><strong>245</strong></td><td>×10³/μL</td><td>150 – 400</td><td><span class="badge badge-ok">N</span></td></tr>
+                  <tr><td>RBC</td><td><strong>4.1</strong></td><td>×10⁶/μL</td><td>4.5 – 5.9</td><td><span class="badge badge-warn">L</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <!-- PRESCRIPTIONS -->
+        <div class="portal-page" id="pat-page-prescriptions">
+          <div class="page-header"><div><h2>Prescriptions</h2><p>Medications prescribed by your doctors</p></div></div>
+          <div class="panel">
+            <table class="data-table">
+              <thead><tr><th>Medication</th><th>Dosage</th><th>Frequency</th><th>Prescribed By</th><th>Date</th><th>Refills</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td><div style="font-weight:600">Amlodipine</div><div style="font-size:11px;color:var(--muted)">Calcium channel blocker</div></td><td>5mg</td><td>Once daily</td><td>Dr. Ndongo Emmanuel</td><td>10 Jun 2025</td><td>2 remaining</td><td><span class="badge badge-ok">Active</span></td></tr>
+                <tr><td><div style="font-weight:600">Metformine</div><div style="font-size:11px;color:var(--muted)">Antidiabetic</div></td><td>850mg</td><td>Twice daily</td><td>Dr. Abena Martin</td><td>08 Jun 2025</td><td>1 remaining</td><td><span class="badge badge-ok">Active</span></td></tr>
+                <tr><td><div style="font-weight:600">Artémether-Luméfantrine</div><div style="font-size:11px;color:var(--muted)">Antimalarial</div></td><td>80/480mg</td><td>Twice daily × 3d</td><td>Dr. Abena Martin</td><td>01 Jun 2025</td><td>0</td><td><span class="badge badge-muted">Completed</span></td></tr>
+                <tr><td><div style="font-weight:600">Paracétamol</div><div style="font-size:11px;color:var(--muted)">Analgesic</div></td><td>500mg</td><td>As needed (max 3/d)</td><td>Dr. Fopa Isabelle</td><td>20 May 2025</td><td>0</td><td><span class="badge badge-muted">Expired</span></td></tr>
+                <tr><td><div style="font-weight:600">Cotrimoxazole</div><div style="font-size:11px;color:var(--muted)">Antibiotic</div></td><td>480mg</td><td>Twice daily</td><td>Dr. Abena Martin</td><td>15 Apr 2025</td><td>0</td><td><span class="badge badge-muted">Completed</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="panel" style="border-left:3px solid var(--b)">
+            <div class="panel-hd"><span class="panel-title">Prescription Details — Amlodipine 5mg</span></div>
+            <div class="panel-body">
+              <div class="two-col">
+                <div>
+                  <div style="font-size:12px;color:var(--muted)">Drug</div><div style="font-size:15px;font-weight:700;color:var(--txt);margin-bottom:8px">Amlodipine 5mg (tablet)</div>
+                  <div style="font-size:12px;color:var(--muted)">Indication</div><div style="font-size:13px;margin-bottom:8px">Hypertension (I10)</div>
+                  <div style="font-size:12px;color:var(--muted)">Instructions</div><div style="font-size:13px;margin-bottom:8px">Take 1 tablet once daily, preferably in the morning with water</div>
+                  <div style="font-size:12px;color:var(--muted)">Duration</div><div style="font-size:13px">90 days (ongoing chronic)</div>
+                </div>
+                <div>
+                  <div class="alert alert-warn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg><div><strong>Warnings:</strong><br>May cause ankle swelling. Avoid grapefruit juice. Do not stop suddenly without medical advice.</div></div>
+                  <div class="alert alert-info"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg><div>2 refills remaining. Your pharmacy is Pharmacie Centrale, Yaoundé.</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- IMMUNIZATIONS -->
+        <div class="portal-page" id="pat-page-immunizations">
+          <div class="page-header"><div><h2>Immunizations</h2><p>Vaccination records and upcoming schedules</p></div><button class="btn btn-secondary btn-sm">Download Certificate</button></div>
+          <div class="panel">
+            <table class="data-table">
+              <thead><tr><th>Vaccine</th><th>Type</th><th>Date Given</th><th>Lot #</th><th>Provider</th><th>Next Due</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Yellow Fever</strong></td><td>Live attenuated</td><td>15 Jan 2022</td><td class="mono">YF-CM-2892</td><td>CHU de Yaoundé</td><td>Lifetime</td><td><span class="badge badge-ok">Complete</span></td></tr>
+                <tr><td><strong>COVID-19 (AstraZeneca)</strong></td><td>Viral vector</td><td>12 Aug 2021</td><td class="mono">AZ-4819KL</td><td>Hôpital Central</td><td>Booster due</td><td><span class="badge badge-warn">Booster needed</span></td></tr>
+                <tr><td><strong>Hepatitis B</strong></td><td>Recombinant</td><td>03 Mar 2019</td><td class="mono">HB-992MN</td><td>Centre Médical</td><td>10 yr recall</td><td><span class="badge badge-ok">Complete</span></td></tr>
+                <tr><td><strong>Meningitis A</strong></td><td>Conjugate</td><td>22 Oct 2020</td><td class="mono">MCA-7731</td><td>Hôpital Central</td><td>2030</td><td><span class="badge badge-ok">Complete</span></td></tr>
+                <tr><td><strong>Tetanus (DT)</strong></td><td>Toxoid</td><td>30 Jun 2023</td><td class="mono">DT-4401CM</td><td>Centre Médical</td><td>Jun 2033</td><td><span class="badge badge-ok">Complete</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- DOCUMENTS -->
+        <div class="portal-page" id="pat-page-documents">
+          <div class="page-header"><div><h2>Documents</h2><p>Medical files, reports, and personal documents</p></div><button class="btn btn-primary">Upload Document</button></div>
+          <div class="tab-nav">
+            <div class="tab active">All (12)</div>
+            <div class="tab">Medical (4)</div>
+            <div class="tab">Lab Reports (3)</div>
+            <div class="tab">Prescriptions (3)</div>
+            <div class="tab">Legal (2)</div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+            <div class="panel" style="margin-bottom:0;cursor:pointer"><div class="panel-body" style="padding:14px">
+              <div style="width:40px;height:40px;background:var(--dangerl);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div>
+              <div style="font-size:13px;font-weight:600;color:var(--txt);margin-bottom:2px">CBC_Results_Jun2025.pdf</div>
+              <div style="font-size:11px;color:var(--muted)">Lab Report · 10 Jun 2025 · 245 KB</div>
+              <div style="display:flex;gap:6px;margin-top:10px"><button class="btn btn-secondary btn-xs">Download</button><button class="btn btn-secondary btn-xs">Preview</button></div>
+            </div></div>
+            <div class="panel" style="margin-bottom:0;cursor:pointer"><div class="panel-body" style="padding:14px">
+              <div style="width:40px;height:40px;background:var(--infol);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--info)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div>
+              <div style="font-size:13px;font-weight:600;color:var(--txt);margin-bottom:2px">Discharge_Summary_May25.pdf</div>
+              <div style="font-size:11px;color:var(--muted)">Medical · 28 May 2025 · 188 KB</div>
+              <div style="display:flex;gap:6px;margin-top:10px"><button class="btn btn-secondary btn-xs">Download</button><button class="btn btn-secondary btn-xs">Preview</button></div>
+            </div></div>
+            <div class="panel" style="margin-bottom:0;cursor:pointer"><div class="panel-body" style="padding:14px">
+              <div style="width:40px;height:40px;background:var(--okl);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div>
+              <div style="font-size:13px;font-weight:600;color:var(--txt);margin-bottom:2px">Rx_Amlodipine_Jun25.pdf</div>
+              <div style="font-size:11px;color:var(--muted)">Prescription · 10 Jun 2025 · 89 KB</div>
+              <div style="display:flex;gap:6px;margin-top:10px"><button class="btn btn-secondary btn-xs">Download</button><button class="btn btn-secondary btn-xs">Preview</button></div>
+            </div></div>
+            <div class="panel" style="margin-bottom:0;cursor:pointer"><div class="panel-body" style="padding:14px">
+              <div style="width:40px;height:40px;background:var(--warnl);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
+              <div style="font-size:13px;font-weight:600;color:var(--txt);margin-bottom:2px">Insurance_Card_CNPS.jpg</div>
+              <div style="font-size:11px;color:var(--muted)">Insurance · 01 Jan 2025 · 340 KB</div>
+              <div style="display:flex;gap:6px;margin-top:10px"><button class="btn btn-secondary btn-xs">Download</button><button class="btn btn-secondary btn-xs">Preview</button></div>
+            </div></div>
+          </div>
+        </div>
+        <!-- PATIENT CARE MAP -->
+        <div class="portal-page" id="pat-page-care-map">
+          <div class="page-header"><div><h2>Care Map</h2><p>Nearby healthcare facilities</p></div></div>
+          <div style="display:grid;grid-template-columns:1fr 300px;gap:16px;height:450px">
+            <div class="map-placeholder" style="height:100%"><span>📍 Care Map — Yaoundé Area Facilities</span></div>
+            <div style="background:#fff;border:1px solid var(--bdr);border-radius:var(--rad);overflow-y:auto;padding:12px">
+              <div style="font-size:13px;font-weight:700;margin-bottom:10px">Nearby Facilities</div>
+              <div style="border-bottom:1px solid var(--bdr);padding-bottom:10px;margin-bottom:10px"><div style="font-size:13px;font-weight:600">Hôpital Central Yaoundé</div><div style="font-size:12px;color:var(--muted)">0.8 km · 5 min drive</div><span class="badge badge-ok">Open</span></div>
+              <div style="border-bottom:1px solid var(--bdr);padding-bottom:10px;margin-bottom:10px"><div style="font-size:13px;font-weight:600">Centre Médical Yaoundé</div><div style="font-size:12px;color:var(--muted)">1.2 km · 8 min drive</div><span class="badge badge-ok">Open</span></div>
+              <div style="border-bottom:1px solid var(--bdr);padding-bottom:10px;margin-bottom:10px"><div style="font-size:13px;font-weight:600">CHU de Yaoundé</div><div style="font-size:12px;color:var(--muted)">2.1 km · 12 min drive</div><span class="badge badge-ok">Open</span></div>
+            </div>
+          </div>
+        </div>
+        <!-- PATIENT INSURANCE -->
+        <div class="portal-page" id="pat-page-insurance">
+          <div class="page-header"><div><h2>Insurance</h2><p>Your linked health insurance policies</p></div><button class="btn btn-primary">Link New Insurance</button></div>
+          <div class="tab-nav">
+            <div class="tab active">Active Policies</div>
+            <div class="tab">Claim History</div>
+          </div>
+          <div class="panel">
+            <table class="data-table">
+              <thead><tr><th>Provider</th><th>Plan</th><th>Policy #</th><th>Coverage</th><th>Valid Until</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody>
+                <tr><td><strong>CNPS Cameroun</strong></td><td>Plan Standard Maladie</td><td class="mono">POL-CM-00234</td><td>80%</td><td>31 Dec 2025</td><td><span class="badge badge-ok">Active</span></td><td><button class="btn btn-secondary btn-xs">View</button></td></tr>
+                <tr><td><strong>Activa Assurances</strong></td><td>Santé Plus</td><td class="mono">ACT-20298-CM</td><td>60%</td><td>30 Jun 2025</td><td><span class="badge badge-warn">Expiring</span></td><td><button class="btn btn-secondary btn-xs">Renew</button></td></tr>
+                <tr><td><strong>Sanlam Cameroun</strong></td><td>Assurance Hospitalisation</td><td class="mono">SAN-CM-9081</td><td>90%</td><td>31 Dec 2024</td><td><span class="badge badge-danger">Expired</span></td><td><button class="btn btn-secondary btn-xs">Renew</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- PROFILE -->
+        <div class="portal-page" id="pat-page-profile">
+          <div class="page-header"><div><h2>My Profile</h2><p>Manage your personal information</p></div></div>
+          <div class="two-col">
+            <div class="panel">
+              <div class="panel-body" style="text-align:center">
+                <div style="width:80px;height:80px;background:var(--b);border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#fff">MA</div>
+                <div style="font-size:16px;font-weight:700;color:var(--txt)">Mbarga Alain Christophe</div>
+                <div class="mono" style="color:var(--b);margin-top:4px">CM-HID-7KQ9-MP42-X8D1</div>
+                <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;text-align:left">
+                  <div style="background:var(--sur2);border-radius:var(--rads);padding:10px"><div style="font-size:10px;color:var(--muted)">Blood Type</div><div style="font-size:14px;font-weight:700;color:var(--danger)">O+</div></div>
+                  <div style="background:var(--sur2);border-radius:var(--rads);padding:10px"><div style="font-size:10px;color:var(--muted)">Age</div><div style="font-size:14px;font-weight:700">40 yrs</div></div>
+                  <div style="background:var(--sur2);border-radius:var(--rads);padding:10px"><div style="font-size:10px;color:var(--muted)">Visits</div><div style="font-size:14px;font-weight:700">18</div></div>
+                  <div style="background:var(--sur2);border-radius:var(--rads);padding:10px"><div style="font-size:10px;color:var(--muted)">Conditions</div><div style="font-size:14px;font-weight:700">2</div></div>
+                </div>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="tab-nav" style="padding:0 16px;margin-bottom:0"><div class="tab active">Personal Info</div><div class="tab">Contact</div><div class="tab">Emergency</div><div class="tab">Medical</div></div>
+              <div class="panel-body">
+                <div class="form-row cols-2">
+                  <div class="form-group"><label class="form-label">First Name</label><input class="form-control" value="Alain Christophe"></div>
+                  <div class="form-group"><label class="form-label">Last Name</label><input class="form-control" value="Mbarga"></div>
+                </div>
+                <div class="form-row cols-2">
+                  <div class="form-group"><label class="form-label">Date of Birth</label><input class="form-control" type="date" value="1985-03-15"></div>
+                  <div class="form-group"><label class="form-label">Gender</label><select class="form-control"><option selected>Male</option><option>Female</option><option>Other</option></select></div>
+                </div>
+                <div class="form-row cols-2">
+                  <div class="form-group"><label class="form-label">Nationality</label><select class="form-control"><option selected>Cameroonian</option></select></div>
+                  <div class="form-group"><label class="form-label">National ID</label><input class="form-control" placeholder="NIN / CNI number" value="CM-NID-842039"></div>
+                </div>
+                <div class="form-group"><label class="form-label">Occupation</label><input class="form-control" value="Ingénieur Informatique"></div>
+                <button class="btn btn-primary">Save Changes</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- FAMILY -->
+        <div class="portal-page" id="pat-page-family">
+          <div class="page-header"><div><h2>Family Members</h2><p>Manage linked family dependents</p></div><button class="btn btn-primary">Add Dependent</button></div>
+          <div class="panel">
+            <table class="data-table">
+              <thead><tr><th>Name</th><th>Relation</th><th>Date of Birth</th><th>Health ID</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody>
+                <tr><td><div style="font-weight:600">Mbarga Sophie</div></td><td>Spouse</td><td>22 Aug 1988</td><td class="mono">CM-HID-3RT8-KP11-W2X4</td><td><span class="badge badge-ok">Linked</span></td><td><button class="btn btn-secondary btn-xs">View</button></td></tr>
+                <tr><td><div style="font-weight:600">Mbarga Junior</div></td><td>Son</td><td>14 Sep 2015</td><td class="mono">CM-HID-8KM2-QR44-N7B9</td><td><span class="badge badge-ok">Linked</span></td><td><button class="btn btn-secondary btn-xs">View</button></td></tr>
+                <tr><td><div style="font-weight:600">Mbarga Elodie</div></td><td>Daughter</td><td>30 Mar 2018</td><td class="mono">Pending generation</td><td><span class="badge badge-warn">Pending</span></td><td><button class="btn btn-secondary btn-xs">Complete</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- CONSENT -->
+        <div class="portal-page" id="pat-page-consent">
+          <div class="page-header"><div><h2>Consent Management</h2><p>Control who can access your health data</p></div></div>
+          <div class="panel">
+            <div class="panel-hd"><span class="panel-title">Clinical Data Sharing</span></div>
+            <div class="panel-body">
+              <div class="toggle-wrap"><div class="toggle-info"><h4>Share with Referring Doctors</h4><p>Allow doctors who receive referrals to access your full medical history</p></div><div class="toggle on"></div></div>
+              <div class="toggle-wrap"><div class="toggle-info"><h4>Share with Laboratories</h4><p>Laboratories can view relevant clinical data to provide better test interpretation</p></div><div class="toggle on"></div></div>
+              <div class="toggle-wrap"><div class="toggle-info"><h4>Share with Pharmacy</h4><p>Pharmacies can access prescription history to detect interactions</p></div><div class="toggle"></div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-hd"><span class="panel-title">Research Consent</span></div>
+            <div class="panel-body">
+              <div class="toggle-wrap"><div class="toggle-info"><h4>Anonymized Health Research</h4><p>Allow anonymized (de-identified) data use for public health research programs</p></div><div class="toggle on"></div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-hd"><span class="panel-title">Emergency Access</span></div>
+            <div class="panel-body">
+              <div class="toggle-wrap"><div class="toggle-info"><h4>Break-Glass Emergency Access</h4><p>In life-threatening emergencies, any registered provider can access critical info. All access is logged.</p></div><div class="toggle on"></div></div>
+            </div>
+          </div>
+        </div>
+        <!-- ACCESS LOGS -->
+        <div class="portal-page" id="pat-page-access-logs">
+          <div class="page-header"><div><h2>Access Logs</h2><p>Who accessed your health data and when</p></div><button class="btn btn-secondary btn-sm">Export CSV</button></div>
+          <div class="filter-bar">
+            <input class="form-control" type="date" style="width:150px">
+            <select class="form-control"><option>All Purposes</option><option>Consultation</option><option>Emergency</option><option>Lab</option></select>
+            <button class="btn btn-secondary btn-sm">Filter</button>
+          </div>
+          <div class="panel">
+            <table class="data-table">
+              <thead><tr><th>Date & Time</th><th>Actor</th><th>Role</th><th>Facility</th><th>Purpose</th><th>Result</th></tr></thead>
+              <tbody>
+                <tr><td class="mono" style="font-size:12px">2025-06-14 10:42</td><td>Dr. Ndongo Emmanuel</td><td><span class="badge badge-b">Doctor</span></td><td>CHU de Yaoundé</td><td>Outpatient Consultation</td><td><span class="badge badge-ok">Granted</span></td></tr>
+                <tr><td class="mono" style="font-size:12px">2025-06-10 09:15</td><td>Lab Tech Kouam</td><td><span class="badge badge-muted">Lab Tech</span></td><td>CHU de Yaoundé</td><td>Lab Order</td><td><span class="badge badge-ok">Granted</span></td></tr>
+                <tr><td class="mono" style="font-size:12px">2025-06-08 14:30</td><td>Dr. Abena Martin</td><td><span class="badge badge-b">Doctor</span></td><td>Centre Médical</td><td>Consultation</td><td><span class="badge badge-ok">Granted</span></td></tr>
+                <tr><td class="mono" style="font-size:12px">2025-06-01 08:55</td><td>Unknown System</td><td><span class="badge badge-muted">System</span></td><td>External</td><td>API Query</td><td><span class="badge badge-danger">Denied</span></td></tr>
+                <tr><td class="mono" style="font-size:12px">2025-05-28 16:20</td><td>Pharmacie Centrale</td><td><span class="badge badge-muted">Pharmacy</span></td><td>Pharmacie Centrale</td><td>Prescription Dispense</td><td><span class="badge badge-ok">Granted</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- portal-content -->
+    </div><!-- portal-main -->
+  </div><!-- portal-wrap -->
+</div><!-- patient portal -->

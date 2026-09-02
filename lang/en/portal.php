@@ -1,0 +1,66 @@
+<?php
+
+/**
+ * Portal role-badge labels, rendered in every sidebar partial via
+ * {{ __('portal.<profile>_role', [], $l) ?: 'Fallback' }}.
+ *
+ * This namespace was previously missing entirely, so every sidebar role badge
+ * rendered the raw key (e.g. "portal.doctor_role") in both locales. EN and FR
+ * MUST keep identical keys (enforced by scripts/i18n-audit.php).
+ */
+return [
+    'api_partner_admin_role'        => 'API Partner Admin',
+    'appointment_coordinator_role'  => 'Appointment Coordinator',
+    'billing_officer_role'          => 'Billing Officer',
+    'bridge_agent_admin_role'       => 'Bridge Agent Admin',
+    'caregiver_role'                => 'Caregiver',
+    'cashier_role'                  => 'Cashier',
+    'compliance_audit_role'         => 'Compliance Auditor',
+    'country_regional_admin_role'   => 'Country / Regional Admin',
+    'data_import_role'              => 'Data Import Officer',
+    'data_steward_role'             => 'Data Steward',
+    'demo_role'                     => 'Demo Mode',
+    'department_manager_role'       => 'Department Manager',
+    'dependent_manager_role'        => 'Dependent Manager',
+    'developer_role'                => 'Developer',
+    'device_kiosk_role'             => 'Device / Kiosk',
+    'disease_surveillance_role'     => 'Disease Surveillance',
+    'doctor_role'                   => 'Doctor',
+    'emergency_access_reviewer_role' => 'Emergency Access Reviewer',
+    'facility_admin_role'           => 'Facility Admin',
+    'facility_executive_role'       => 'Facility Executive',
+    'finance_manager_role'          => 'Finance Manager',
+    'guardian_role'                 => 'Guardian / Parent',
+    'implementation_lead_role'      => 'Implementation Lead',
+    'lab_manager_role'              => 'Lab Manager',
+    'labtech_role'                  => 'Lab Technician',
+    'lite_role'                     => 'Lite Access',
+    'medical_supervisor_role'       => 'Medical Supervisor',
+    'medicine_stock_role'           => 'Medicine Stock',
+    'midwife_role'                  => 'Midwife',
+    'multi_facility_admin_role'     => 'Multi-Facility Admin',
+    'ngo_health_org_role'           => 'NGO Health Org',
+    'nurse_role'                    => 'Nurse',
+    'nurse_supervisor_role'         => 'Nurse Supervisor',
+    'outreach_mobile_role'          => 'Outreach / Mobile',
+    'partner_admin_role'            => 'Partner Admin',
+    'partner_review_role'           => 'Partner Reviewer',
+    'pharmacist_role'               => 'Pharmacist',
+    'pharmacy_manager_role'         => 'Pharmacy Manager',
+    'privacy_officer_role'          => 'Privacy Officer',
+    'public_health_admin_role'      => 'Public Health Admin',
+    'public_health_officer_role'    => 'Public Health Officer',
+    'queue_manager_role'            => 'Queue Manager',
+    'receptionist_role'             => 'Receptionist',
+    'records_officer_role'          => 'Records Officer',
+    'resident_doctor_role'          => 'Resident Doctor',
+    'sample_collection_role'        => 'Sample Collection',
+    'security_officer_role'         => 'Security Officer',
+    'specialist_role'               => 'Specialist Doctor',
+    'student_clinical_role'         => 'Student / Intern',
+    'support_agent_role'            => 'Support Agent',
+    'support_manager_role'          => 'Support Manager',
+    'triage_nurse_role'             => 'Triage Nurse',
+    'ward_nurse_role'               => 'Ward Nurse',
+    'webhook_manager_role'          => 'Webhook Manager',
+];

@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpesCare Helix v2 — Mobile Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --b:#0F4C81;--t:#0F766E;--sur:#F8FAFC;--bdr:#E2E8F0;
+  --txt:#1E293B;--muted:#64748B;--white:#fff;
+  --urgent:#EF4444;--high:#F97316;--normal:#0F766E;--success:#22C55E;
+}
+body{
+  font-family:'Inter',sans-serif;background:#1a1a2e;
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  padding:40px 20px;
+}
+.scene{display:flex;flex-direction:column;align-items:center;gap:24px}
+.scene-label{color:rgba(255,255,255,.4);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+
+/* Phone shell */
+.phone{
+  width:393px;height:852px;
+  border-radius:44px;
+  box-shadow:0 0 0 12px #2d2d3a,0 0 0 14px #111,0 40px 80px rgba(0,0,0,.8);
+  background:#f1f5f9;
+  display:flex;flex-direction:column;
+  overflow:hidden;position:relative;
+}
+.notch-bar{
+  position:absolute;top:12px;left:50%;transform:translateX(-50%);
+  width:120px;height:30px;border-radius:20px;background:#2d2d3a;z-index:100;
+}
+.home-bar{
+  position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+  width:120px;height:5px;border-radius:3px;background:rgba(255,255,255,.3);z-index:100;
+}
+
+/* Portal switcher */
+.portal-switcher{
+  background:#0B1F3A;padding:8px 0 8px 12px;padding-top:50px;
+  flex-shrink:0;display:flex;align-items:center;gap:10px;
+  overflow-x:auto;scrollbar-width:none;
+}
+.portal-switcher::-webkit-scrollbar{display:none}
+.ps-logo{display:flex;align-items:center;gap:6px;margin-right:4px;flex-shrink:0}
+.ps-logo-icon{width:26px;height:26px;border-radius:7px;background:var(--b);display:flex;align-items:center;justify-content:center}
+.ps-logo-icon svg{width:14px;height:14px;stroke:#fff;fill:none}
+.ps-brand{font-size:12px;font-weight:700;color:#fff;line-height:1}
+.ps-tag{font-size:9px;color:rgba(255,255,255,.5);font-weight:500}
+.ps-divider{width:1px;height:20px;background:rgba(255,255,255,.15);flex-shrink:0}
+.ps-tabs{display:flex;gap:6px;padding-right:12px}
+.ps-tab{
+  flex-shrink:0;padding:5px 12px;border-radius:20px;
+  font-size:11px;font-weight:500;color:rgba(255,255,255,.5);
+  cursor:pointer;border:1px solid transparent;transition:.15s;white-space:nowrap;
+}
+.ps-tab.active{background:var(--b);color:#fff;border-color:var(--b)}
+.ps-tab:not(.active):hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.8)}
+
+/* Phone content scroll container */
+.phone-body{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  display:flex;flex-direction:column;scrollbar-width:none;
+  position:relative;
+}
+.phone-body::-webkit-scrollbar{display:none}
+
+/* Portal screens */
+.portal-screen{display:none;flex-direction:column;min-height:100%;flex:1}
+.portal-screen.active{display:flex}
+
+/* Mobile topbar */
+.topbar{
+  background:#fff;height:50px;display:flex;align-items:center;
+  padding:0 14px;gap:10px;
+  border-bottom:1px solid var(--bdr);
+  position:sticky;top:0;z-index:50;flex-shrink:0;
+}
+.topbar-icon{width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:8px}
+.topbar-icon:hover{background:var(--sur)}
+.topbar-icon svg{width:20px;height:20px;stroke:var(--txt);fill:none}
+.topbar-center{flex:1;text-align:center}
+.topbar-title{font-size:14px;font-weight:700;color:var(--txt)}
+.topbar-sub{font-size:10px;color:var(--muted)}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--b);display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;flex-shrink:0}
+
+/* Content area */
+.content{flex:1;padding:12px 12px 80px;background:var(--sur)}
+
+/* Page header */
+.page-header{margin-bottom:14px}
+.page-header h2{font-size:16px;font-weight:700;color:var(--txt)}
+.page-header p{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* Stat grid */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.stat-card{
+  background:#fff;border-radius:10px;padding:12px;
+  border-left:4px solid var(--b);
+  box-shadow:0 1px 4px rgba(0,0,0,.06);
+}
+.stat-card.teal{border-left-color:var(--t)}
+.stat-card.green{border-left-color:#22C55E}
+.stat-card.orange{border-left-color:#F97316}
+.stat-card.red{border-left-color:#EF4444}
+.stat-card.purple{border-left-color:#8B5CF6}
+.stat-label{font-size:10px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+.stat-value{font-size:20px;font-weight:700;color:var(--txt);margin-top:2px;line-height:1}
+.stat-sub{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* Panel card */
+.panel{background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.panel-title{font-size:13px;font-weight:600;color:var(--txt)}
+.panel-action{font-size:11px;color:var(--b);font-weight:500;cursor:pointer}
+
+/* Quick actions */
+.qa-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.qa-btn{
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  background:#fff;border-radius:10px;padding:10px 4px;
+  box-shadow:0 1px 4px rgba(0,0,0,.06);cursor:pointer;
+}
+.qa-btn:active{transform:scale(.97)}
+.qa-icon{width:34px;height:34px;border-radius:10px;background:#EFF6FF;display:flex;align-items:center;justify-content:center}
+.qa-icon svg{width:16px;height:16px;stroke:var(--b);fill:none}
+.qa-icon.teal{background:#F0FDF9}
+.qa-icon.teal svg{stroke:var(--t)}
+.qa-icon.green{background:#F0FDF4}
+.qa-icon.green svg{stroke:#16A34A}
+.qa-icon.orange{background:#FFF7ED}
+.qa-icon.orange svg{stroke:#EA580C}
+.qa-label{font-size:10px;color:var(--txt);font-weight:500;text-align:center}
+
+/* List items */
+.list-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--bdr)}
+.list-item:last-child{border-bottom:none;padding-bottom:0}
+.li-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.li-body{flex:1;min-width:0}
+.li-name{font-size:13px;font-weight:600;color:var(--txt)}
+.li-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.li-right{text-align:right;flex-shrink:0}
+.li-meta{font-size:11px;color:var(--muted)}
+.li-val{font-size:12px;font-weight:600;color:var(--txt)}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600}
+.badge.urgent{background:#FEF2F2;color:#DC2626}
+.badge.high{background:#FFF7ED;color:#C2410C}
+.badge.normal{background:#F0FDF9;color:#0F766E}
+.badge.success{background:#F0FDF4;color:#15803D}
+.badge.info{background:#EFF6FF;color:#1D4ED8}
+.badge.purple{background:#F5F3FF;color:#6D28D9}
+.badge.pending{background:#FFFBEB;color:#B45309}
+
+/* Bottom tab bar */
+.bottom-nav{
+  background:#fff;height:60px;display:flex;align-items:stretch;
+  border-top:1px solid var(--bdr);
+  position:sticky;bottom:0;z-index:50;flex-shrink:0;
+}
+.bn-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;cursor:pointer;color:#94a3b8;
+  border-top:2px solid transparent;transition:.15s;padding-top:2px;
+}
+.bn-item.active{color:var(--b);border-top-color:var(--b)}
+.bn-item svg{width:18px;height:18px;stroke:currentColor;fill:none}
+.bn-label{font-size:9px;font-weight:500}
+
+/* Special cards */
+.hid-card{
+  background:linear-gradient(135deg,#0B1F3A 0%,#1a3a6e 100%);
+  border-radius:14px;padding:16px;margin-bottom:12px;
+  position:relative;overflow:hidden;
+}
+.hid-card::before{
+  content:'';position:absolute;right:-20px;top:-20px;
+  width:100px;height:100px;border-radius:50%;
+  background:rgba(255,255,255,.05);
+}
+.hid-card::after{
+  content:'';position:absolute;right:20px;bottom:-30px;
+  width:80px;height:80px;border-radius:50%;
+  background:rgba(255,255,255,.04);
+}
+.hid-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.hid-brand{font-size:11px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.06em}
+.hid-chip{width:28px;height:20px;border-radius:4px;background:rgba(255,215,0,.7)}
+.hid-num{font-size:11px;font-weight:600;color:rgba(255,255,255,.9);letter-spacing:.12em;margin-bottom:8px}
+.hid-name{font-size:15px;font-weight:700;color:#fff}
+.hid-dob{font-size:10px;color:rgba(255,255,255,.5);margin-top:2px}
+.hid-logo{font-size:18px;font-weight:800;color:rgba(255,255,255,.15);letter-spacing:-.02em}
+
+/* Alert card */
+.alert-card{border-radius:10px;padding:12px;margin-bottom:8px;border-left:4px solid}
+.alert-card.red{background:#FEF2F2;border-color:#EF4444}
+.alert-card.orange{background:#FFF7ED;border-color:#F97316}
+.alert-card.green{background:#F0FDF4;border-color:#22C55E}
+.alert-card.blue{background:#EFF6FF;border-color:#3B82F6}
+.alert-title{font-size:12px;font-weight:700;color:var(--txt)}
+.alert-sub{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* Appointment card */
+.appt-card{background:#EFF6FF;border-radius:10px;padding:12px;display:flex;gap:10px;align-items:center}
+.appt-date{background:var(--b);color:#fff;border-radius:8px;padding:8px 10px;text-align:center;flex-shrink:0}
+.appt-day{font-size:18px;font-weight:800;line-height:1}
+.appt-mon{font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.appt-body{flex:1}
+.appt-doc{font-size:13px;font-weight:600;color:var(--txt)}
+.appt-info{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* Progress bar */
+.progress-row{margin-bottom:8px}
+.progress-label{display:flex;justify-content:space-between;font-size:11px;color:var(--txt);margin-bottom:4px}
+.progress-bar{height:6px;border-radius:3px;background:#E2E8F0;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;background:var(--b)}
+
+/* MoMo banner */
+.momo-banner{
+  background:linear-gradient(135deg,#FFCC00 0%,#FF9900 100%);
+  border-radius:10px;padding:12px 14px;margin-bottom:12px;
+  display:flex;align-items:center;gap:10px;
+}
+.momo-icon{width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center}
+.momo-icon svg{width:18px;height:18px;stroke:#fff;fill:none}
+.momo-body{flex:1}
+.momo-title{font-size:12px;font-weight:700;color:#1a0a00}
+.momo-sub{font-size:10px;color:rgba(0,0,0,.6)}
+.momo-btn{background:rgba(0,0,0,.15);color:#1a0a00;font-size:10px;font-weight:700;padding:5px 10px;border-radius:6px;cursor:pointer}
+
+/* App card */
+.app-card{display:flex;align-items:center;gap:10px;padding:10px;background:var(--sur);border-radius:10px;margin-bottom:8px}
+.app-icon{width:40px;height:40px;border-radius:12px;background:var(--b);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.app-icon svg{width:20px;height:20px;stroke:#fff;fill:none}
+.app-name{font-size:13px;font-weight:600;color:var(--txt)}
+.app-meta{font-size:11px;color:var(--muted);margin-top:1px}
+.app-right{margin-left:auto;text-align:right}
+
+/* Dev link grid */
+.dev-links{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.dev-link{background:#fff;border-radius:10px;padding:12px;border:1px solid var(--bdr);cursor:pointer}
+.dev-link-icon{margin-bottom:6px}
+.dev-link-icon svg{width:20px;height:20px;stroke:var(--b);fill:none}
+.dev-link-title{font-size:12px;font-weight:600;color:var(--txt)}
+.dev-link-sub{font-size:10px;color:var(--muted)}
+
+/* Scroll hint on switcher */
+.switcher-wrapper{position:relative;flex-shrink:0}
+
+/* Facility row */
+.fac-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bdr)}
+.fac-row:last-child{border-bottom:none}
+.fac-name{font-size:12px;color:var(--txt);font-weight:500}
+.fac-count{font-size:13px;font-weight:700;color:var(--b)}
+</style>
+</head>
+<body>
+<div class="scene">
+  <div class="scene-label">OpesCare Helix v2 — Mobile Design Preview</div>
+  <div class="phone">
+    <div class="notch-bar"></div>
+    <div class="home-bar"></div>
+
+    <!-- Portal Switcher -->
+    <div class="portal-switcher">
+      <div class="ps-logo">
+        <div class="ps-logo-icon">
+          <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.5 12.75l7.5-7.5 7.5 7.5m-15 6l7.5-7.5 7.5 7.5"/></svg>
+        </div>
+        <div>
+          <div class="ps-brand">OpesCare</div>
+          <div class="ps-tag">Helix v2</div>
+        </div>
+      </div>
+      <div class="ps-divider"></div>
+      <div class="ps-tabs">
+        <div class="ps-tab active" onclick="showPortal('patient')">Patient</div>
+        <div class="ps-tab" onclick="showPortal('staff')">Staff</div>
+        <div class="ps-tab" onclick="showPortal('admin')">Admin</div>
+        <div class="ps-tab" onclick="showPortal('insurance')">Insurance</div>
+        <div class="ps-tab" onclick="showPortal('lab')">Lab</div>
+        <div class="ps-tab" onclick="showPortal('pharmacy')">Pharmacy</div>
+        <div class="ps-tab" onclick="showPortal('healthorg')">Health Org</div>
+        <div class="ps-tab" onclick="showPortal('developer')">Developer</div>
+        <div class="ps-tab" onclick="showPortal('lite')">Lite</div>
+      </div>
+    </div>
+
+    <!-- Phone body scrolls -->
+    <div class="phone-body">
+
+      <!-- ===== PATIENT PORTAL ===== -->
+      <div class="portal-screen active" id="portal-patient">
+        <div class="topbar">
+          <div class="topbar-icon"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
+          <div class="topbar-center">
+            <div class="topbar-title">Patient Portal</div>
+            <div class="topbar-sub">Dashboard</div>
+          </div>
+          <div class="avatar">MA</div>
+        </div>
+        <div class="content">
+          <div class="page-header">
+            <h2>Bonjour, Mbarga 👋</h2>
+            <p>Lundi 15 Juin 2026 · Yaoundé</p>
+          </div>
+
+          <!-- HID Card -->
+          <div class="hid-card">
+            <div class="hid-top">
+              <div class="hid-brand">OPESCARE · HID</div>
+              <div class="hid-chip"></div>
+            </div>
+            <div class="hid-num">CM-HID-7KQ9-MP42-X8D1</div>
+            <div class="hid-name">Mbarga Alain</div>
+            <div class="hid-dob">Né le 12 Mars 1985 · Groupe O+</div>
+            <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:14px">
+              <span style="font-size:9px;color:rgba(255,255,255,.4);font-weight:500">VALIDE JUSQU'AU 12/2028</span>
+              <span class="hid-logo">OC</span>
+            </div>
+          </div>
+
+          <!-- Stats -->
+          <div class="stat-grid">
+            <div class="stat-card"><div class="stat-label">Rendez-vous</div><div class="stat-value">3</div><div class="stat-sub">1 cette semaine</div></div>
+            <div class="stat-card teal"><div class="stat-label">Résultats Lab</div><div class="stat-value">8</div><div class="stat-sub">2 nouveaux</div></div>
+            <div class="stat-card orange"><div class="stat-label">Ordonnances</div><div class="stat-value">2</div><div class="stat-sub">1 active</div></div>
+            <div class="stat-card green"><div class="stat-label">Vaccinations</div><div class="stat-value">12</div><div class="stat-sub">À jour</div></div>
+          </div>
+
+          <!-- Quick actions -->
+          <div class="qa-row">
+            <div class="qa-btn"><div class="qa-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div class="qa-label">Réserver</div></div>
+            <div class="qa-btn"><div class="qa-icon teal"><svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg></div><div class="qa-label">Lab</div></div>
+            <div class="qa-btn"><div class="qa-icon orange"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></div><div class="qa-label">Rx</div></div>
+            <div class="qa-btn"><div class="qa-icon green"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="qa-label">Docs</div></div>
+          </div>
+
+          <!-- Upcoming appointment -->
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Prochain Rendez-vous</span><span class="panel-action">Voir tout</span></div>
+            <div class="appt-card">
+              <div class="appt-date"><div class="appt-day">18</div><div class="appt-mon">Juin</div></div>
+              <div class="appt-body">
+                <div class="appt-doc">Dr. Nkemdirim Chidi</div>
+                <div class="appt-info">10:00 · Yaoundé Central Hospital</div>
+                <div style="margin-top:5px"><span class="badge info">Consultation générale</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active prescription -->
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Ordonnance Active</span><span class="panel-action">Détails</span></div>
+            <div class="list-item" style="border-bottom:none;padding:0">
+              <div class="li-avatar" style="background:#FFF7ED;color:#C2410C">Rx</div>
+              <div class="li-body">
+                <div class="li-name">Amoxicillin 500mg</div>
+                <div class="li-sub">3×/jour · 7 jours · Dr. Nkemdirim</div>
+                <div style="margin-top:4px"><span class="badge pending">Exp. 01 Juillet 2026</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bottom-nav" id="bn-patient">
+          <div class="bn-item active" onclick="showPortalTab('patient','dashboard')"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span class="bn-label">Dashboard</span></div>
+          <div class="bn-item" onclick="showPortalTab('patient','appts')"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="bn-label">Rendez-vous</span></div>
+          <div class="bn-item" onclick="showPortalTab('patient','lab')"><svg viewBox="0 0 24 24"><path d="M9 3l-1 9H6l-2 9h16l-2-9h-2L15 3z"/></svg><span class="bn-label">Lab</span></div>
+          <div class="bn-item" onclick="showPortalTab('patient','rx')"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"/></svg><span class="bn-label">Ordonnances</span></div>
+          <div class="bn-item" onclick="showPortalTab('patient','profile')"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span class="bn-label">Profil</span></div>
+        </div>
+      </div>
+
+      <!-- ===== STAFF PORTAL ===== -->
+      <div class="portal-screen" id="portal-staff">
+        <div class="topbar">
+          <div class="topbar-icon"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
+          <div class="topbar-center"><div class="topbar-title">Staff Portal</div><div class="topbar-sub">Yaoundé Central Hospital</div></div>
+          <div class="avatar" style="background:#0F766E">KR</div>
+        </div>
+        <div class="content">
+          <div class="page-header"><h2>Tableau de bord</h2><p>Lundi 15 Juin 2026 · Matin</p></div>
+          <div class="stat-grid">
+            <div class="stat-card red"><div class="stat-label">File d'attente</div><div class="stat-value">7</div><div class="stat-sub">2 urgents</div></div>
+            <div class="stat-card"><div class="stat-label">Visites / Jour</div><div class="stat-value">23</div><div class="stat-sub">+4 vs hier</div></div>
+            <div class="stat-card orange"><div class="stat-label">Rx en attente</div><div class="stat-value">5</div><div class="stat-sub">À valider</div></div>
+            <div class="stat-card teal"><div class="stat-label">Référencements</div><div class="stat-value">2</div><div class="stat-sub">Aujourd'hui</div></div>
+          </div>
+
+          <div class="qa-row">
+            <div class="qa-btn"><div class="qa-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg></div><div class="qa-label">Nouvelle visite</div></div>
+            <div class="qa-btn"><div class="qa-icon teal"><svg viewBox="0 0 24 24"><path d="M9 3l-1 9H6l-2 9h16l-2-9h-2L15 3z"/></svg></div><div class="qa-label">Ordre Lab</div></div>
+            <div class="qa-btn"><div class="qa-icon orange"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg></div><div class="qa-label">Prescrire</div></div>
+            <div class="qa-btn"><div class="qa-icon green"><svg viewBox="0 0 24 24"><polyline points="22 2 15 22 11 13 2 9 22 2"/></svg></div><div class="qa-label">Référer</div></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">File d'attente</span><span class="panel-action">Gérer</span></div>
+            <div class="list-item">
+              <div class="li-avatar" style="background:#FEF2F2;color:#DC2626">FM</div>
+              <div class="li-body"><div class="li-name">Fouda Marie</div><div class="li-sub">F · 34 ans · Douleurs thoraciques</div></div>
+              <div class="li-right"><span class="badge urgent">Urgent</span><div class="li-meta" style="margin-top:3px">08:12</div></div>
+            </div>
+            <div class="list-item">
+              <div class="li-avatar" style="background:#FFF7ED;color:#C2410C">BJ</div>
+              <div class="li-body"><div class="li-name">Biya Jean</div><div class="li-sub">M · 52 ans · Diabète suivi</div></div>
+              <div class="li-right"><span class="badge high">Élevé</span><div class="li-meta" style="margin-top:3px">08:30</div></div>
+            </div>
+            <div class="list-item">
+              <div class="li-avatar" style="background:#F0FDF9;color:#0F766E">NP</div>
+              <div class="li-body"><div class="li-name">Nkeng Paul</div><div class="li-sub">M · 28 ans · Consultation générale</div></div>
+              <div class="li-right"><span class="badge normal">Normal</span><div class="li-meta" style="margin-top:3px">09:00</div></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Visite Récente</span><span class="panel-action">Voir tout</span></div>
+            <div style="padding:4px 0">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                <div class="li-avatar" style="background:#F5F3FF;color:#6D28D9;width:32px;height:32px;font-size:11px">KR</div>
+                <div>
+                  <div style="font-size:13px;font-weight:600;color:var(--txt)">Kamga Rose</div>
+                  <div style="font-size:10px;color:var(--muted)">ICD-10: J06.9 · IRAS aiguës</div>
+                </div>
+                <span class="badge success" style="margin-left:auto">Complété</span>
+              </div>
+              <div style="background:var(--sur);border-radius:8px;padding:8px;font-size:11px;color:var(--muted);line-height:1.5">
+                <strong style="color:var(--txt)">S:</strong> Fièvre 38.5°C, toux sèche depuis 3 jours<br>
+                <strong style="color:var(--txt)">O:</strong> TA 120/80, FR 18/min, SpO2 98%<br>
+                <strong style="color:var(--txt)">A:</strong> IRAS sans complications<br>
+                <strong style="color:var(--txt)">P:</strong> Paracétamol + repos 3j
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="bn-item active"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span class="bn-label">Dashboard</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg><span class="bn-label">File</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg><span class="bn-label">Visites</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg><span class="bn-label">Facturation</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span class="bn-label">Analytics</span></div>
+        </div>
+      </div>
+
+      <!-- ===== ADMIN PORTAL ===== -->
+      <div class="portal-screen" id="portal-admin">
+        <div class="topbar">
+          <div class="topbar-icon"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
+          <div class="topbar-center"><div class="topbar-title">Admin Portal</div><div class="topbar-sub">OpesCare National</div></div>
+          <div class="avatar" style="background:#7C3AED">AD</div>
+        </div>
+        <div class="content">
+          <div class="page-header"><h2>Vue Nationale</h2><p>Cameroun · Réseau OpesCare 2026</p></div>
+          <div class="stat-grid">
+            <div class="stat-card"><div class="stat-label">Établissements</div><div class="stat-value">247</div><div class="stat-sub">10 régions</div></div>
+            <div class="stat-card teal"><div class="stat-label">Utilisateurs actifs</div><div class="stat-value">1,842</div><div class="stat-sub">+12 ce mois</div></div>
+            <div class="stat-card green"><div class="stat-label">Revenus (XAF)</div><div class="stat-value">45.2M</div><div class="stat-sub">Juin 2026</div></div>
+            <div class="stat-card orange"><div class="stat-label">Tickets ouverts</div><div class="stat-value">12</div><div class="stat-sub">3 critiques</div></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Répartition des établissements</span><span class="panel-action">Carte</span></div>
+            <div class="fac-row"><span class="fac-name">🏥 Gouvernementaux</span><span class="fac-count">89</span></div>
+            <div class="fac-row"><span class="fac-name">🏨 Privés</span><span class="fac-count">124</span></div>
+            <div class="fac-row"><span class="fac-name">🌿 ONG / Confessionnels</span><span class="fac-count">34</span></div>
+            <div style="margin-top:10px">
+              <div class="progress-row">
+                <div class="progress-label"><span>Gouvernementaux</span><span style="color:var(--b);font-weight:600">36%</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:36%;background:var(--b)"></div></div>
+              </div>
+              <div class="progress-row">
+                <div class="progress-label"><span>Privés</span><span style="color:#F97316;font-weight:600">50%</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:50%;background:#F97316"></div></div>
+              </div>
+              <div class="progress-row">
+                <div class="progress-label"><span>ONG</span><span style="color:var(--t);font-weight:600">14%</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:14%;background:var(--t)"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Onboarding en cours</span><span class="panel-action">Tous</span></div>
+            <div style="padding:4px 0">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                <div class="li-avatar" style="background:#EFF6FF;color:#1D4ED8;width:36px;height:36px;font-size:10px">HB</div>
+                <div style="flex:1">
+                  <div style="font-size:13px;font-weight:600;color:var(--txt)">Hôpital de Bafoussam</div>
+                  <div style="font-size:10px;color:var(--muted)">Région de l'Ouest · Privé · Étape 3/9</div>
+                </div>
+                <span class="badge info">En cours</span>
+              </div>
+              <div style="margin-top:6px">
+                <div class="progress-label"><span style="font-size:10px">Progression onboarding</span><span style="font-size:10px;color:var(--b);font-weight:600">33%</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:33%"></div></div>
+              </div>
+              <div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap">
+                <span class="badge success">✓ Inscription</span>
+                <span class="badge success">✓ Documents</span>
+                <span class="badge success">✓ Contacts</span>
+                <span class="badge info">◷ Configuration</span>
+                <span class="badge" style="background:#F1F5F9;color:#94a3b8">Formation</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="bn-item active"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span class="bn-label">Dashboard</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg><span class="bn-label">Établissements</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span class="bn-label">Utilisateurs</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg><span class="bn-label">Financier</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span class="bn-label">Support</span></div>
+        </div>
+      </div>
+
+      <!-- ===== INSURANCE PORTAL ===== -->
+      <div class="portal-screen" id="portal-insurance">
+        <div class="topbar">
+          <div class="topbar-icon"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
+          <div class="topbar-center"><div class="topbar-title">Assurance</div><div class="topbar-sub">Activa Santé · Cameroun</div></div>
+          <div class="avatar" style="background:#1D4ED8">AS</div>
+        </div>
+        <div class="content">
+          <div class="page-header"><h2>Tableau de bord</h2><p>Portefeuille assurance santé</p></div>
+          <div class="stat-grid">
+            <div class="stat-card"><div class="stat-label">Polices actives</div><div class="stat-value">1,247</div><div class="stat-sub">+23 ce mois</div></div>
+            <div class="stat-card orange"><div class="stat-label">Sinistres en attente</div><div class="stat-value">34</div><div class="stat-sub">8 urgents</div></div>
+            <div class="stat-card purple"><div class="stat-label">Pré-auths</div><div class="stat-value">8</div><div class="stat-sub">3 en révision</div></div>
+            <div class="stat-card teal"><div class="stat-label">Paiements (XAF)</div><div class="stat-value">12.4M</div><div class="stat-sub">Juin 2026</div></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Sinistres récents</span><span class="panel-action">Voir tout</span></div>
+            <div class="list-item">
+              <div class="li-avatar" style="background:#FEF3C7;color:#92400E;font-size:10px">CLM</div>
+              <div class="li-body">
+                <div class="li-name">CLM-2026-0441</div>
+                <div class="li-sub">Activa Santé · Hospitalisation 5j</div>
+                <div style="margin-top:3px;font-size:11px;font-weight:600;color:var(--txt)">85,000 XAF</div>
+              </div>
+              <div class="li-right"><span class="badge pending">En attente</span></div>
+            </div>
+            <div class="list-item">
+              <div class="li-avatar" style="background:#F0FDF4;color:#15803D;font-size:10px">CLM</div>
+              <div class="li-body">
+                <div class="li-name">CLM-2026-0440</div>
+                <div class="li-sub">BEAC Mutuelle · Chirurgie</div>
+                <div style="margin-top:3px;font-size:11px;font-weight:600;color:var(--txt)">320,000 XAF</div>
+              </div>
+              <div class="li-right"><span class="badge success">Approuvé</span></div>
+            </div>
+            <div class="list-item" style="border-bottom:none">
+              <div class="li-avatar" style="background:#FEF2F2;color:#DC2626;font-size:10px">CLM</div>
+              <div class="li-body">
+                <div class="li-name">CLM-2026-0438</div>
+                <div class="li-sub">CNPS · Maternité</div>
+                <div style="margin-top:3px;font-size:11px;font-weight:600;color:var(--txt)">145,000 XAF</div>
+              </div>
+              <div class="li-right"><span class="badge urgent">Rejeté</span></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Pré-autorisations</span><span class="panel-action">Créer</span></div>
+            <div class="alert-card blue">
+              <div class="alert-title">PA-2026-089 — Chirurgie cardiaque</div>
+              <div class="alert-sub">Hôpital Général Douala · 1,200,000 XAF · En révision médicale</div>
+            </div>
+            <div class="alert-card" style="background:#F0FDF9;border-color:var(--t);margin-bottom:0">
+              <div class="alert-title">PA-2026-088 — IRM cérébrale</div>
+              <div class="alert-sub">Clinique de la Cité YDE · 85,000 XAF · Approuvé auto</div>
+            </div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="bn-item active"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span class="bn-label">Dashboard</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg><span class="bn-label">Prestataires</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg><span class="bn-label">Sinistres</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg><span class="bn-label">Pré-auth</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span class="bn-label">Analytics</span></div>
+        </div>
+      </div>
+
+      <!-- ===== LAB PORTAL ===== -->
+      <div class="portal-screen" id="portal-lab">
+        <div class="topbar">
+          <div class="topbar-icon"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
+          <div class="topbar-center"><div class="topbar-title">Laboratoire</div><div class="topbar-sub">Labo Central · Yaoundé</div></div>
+          <div class="avatar" style="background:#0F766E">LC</div>
+        </div>
+        <div class="content">
+          <div class="page-header"><h2>Tableau de bord Lab</h2><p>15 Juin 2026 · Shift matin</p></div>
+
+          <div class="alert-card red" style="margin-bottom:12px">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <span style="font-size:12px;font-weight:700;color:#DC2626">VALEUR CRITIQUE</span>
+            </div>
+            <div class="alert-title">Fouda Jean — Potassium 6.8 mmol/L</div>
+            <div class="alert-sub">Norme: 3.5–5.0 mmol/L · Médecin notifié il y a 3min</div>
+          </div>
+
+          <div class="stat-grid">
+            <div class="stat-card orange"><div class="stat-label">Ordres en attente</div><div class="stat-value">18</div><div class="stat-sub">5 prioritaires</div></div>
+            <div class="stat-card red"><div class="stat-label">Valeurs critiques</div><div class="stat-value">2</div><div class="stat-sub">Notification requise</div></div>
+            <div class="stat-card teal"><div class="stat-label">Résultats / Jour</div><div class="stat-value">43</div><div class="stat-sub">Aujourd'hui</div></div>
+            <div class="stat-card green"><div class="stat-label">Taux QC</div><div class="stat-value">98.2%</div><div class="stat-sub">Contrôle qualité</div></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Ordres récents</span><span class="panel-action">Tous</span></div>
+            <div class="list-item">
+              <div class="li-avatar" style="background:#FEF2F2;color:#DC2626">FJ</div>
+              <div class="li-body"><div class="li-name">Fouda Jean</div><div class="li-sub">Ionogramme sanguin · Urgent</div></div>
+              <div class="li-right"><span class="badge urgent">Critique</span><div class="li-meta">08:45</div></div>
+            </div>
+            <div class="list-item">
+              <div class="li-avatar" style="background:#EFF6FF;color:#1D4ED8">NK</div>
+              <div class="li-body"><div class="li-name">Nguema Karine</div><div class="li-sub">NFS complète · Normal</div></div>
+              <div class="li-right"><span class="badge info">En cours</span><div class="li-meta">09:10</div></div>
+            </div>
+            <div class="list-item" style="border-bottom:none">
+              <div class="li-avatar" style="background:#F0FDF4;color:#15803D">OB</div>
+              <div class="li-body"><div class="li-name">Onana Berthe</div><div class="li-sub">Glycémie à jeun · Routine</div></div>
+              <div class="li-right"><span class="badge success">Validé</span><div class="li-meta">09:30</div></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Contrôle qualité du jour</span></div>
+            <div class="progress-row">
+              <div class="progress-label"><span>Hématologie</span><span style="color:#22C55E;font-weight:600">100%</span></div>
+              <div class="progress-bar"><div class="progress-fill" style="width:100%;background:#22C55E"></div></div>
+            </div>
+            <div class="progress-row">
+              <div class="progress-label"><span>Biochimie</span><span style="color:#22C55E;font-weight:600">98%</span></div>
+              <div class="progress-bar"><div class="progress-fill" style="width:98%;background:#22C55E"></div></div>
+            </div>
+            <div class="progress-row">
+              <div class="progress-label"><span>Microbiologie</span><span style="color:#F97316;font-weight:600">96%</span></div>
+              <div class="progress-bar"><div class="progress-fill" style="width:96%;background:#F97316"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="bn-item active"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span class="bn-label">Dashboard</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/></svg><span class="bn-label">Ordres</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><path d="M9 3l-1 9H6l-2 9h16l-2-9h-2L15 3z"/></svg><span class="bn-label">Échantillons</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg><span class="bn-label">Résultats</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span class="bn-label">Rapports</span></div>
+        </div>
+      </div>
+
+      <!-- ===== PHARMACY PORTAL ===== -->
+      <div class="portal-screen" id="portal-pharmacy">
+        <div class="topbar">
+          <div class="topbar-icon"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
+          <div class="topbar-center"><div class="topbar-title">Pharmacie</div><div class="topbar-sub">Pharmacie Centrale · YDE</div></div>
+          <div class="avatar" style="background:#15803D">PH</div>
+        </div>
+        <div class="content">
+          <div class="page-header"><h2>Gestion Pharmacie</h2><p>15 Juin 2026 · Stock & Dispensation</p></div>
+
+          <div class="momo-banner">
+            <div class="momo-icon"><svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.311a14.998 14.998 0 00-4.5 0"/></svg></div>
+            <div class="momo-body">
+              <div class="momo-title">MTN MoMo activé ✓</div>
+              <div class="momo-sub">Paiements mobile money acceptés</div>
+            </div>
+            <div class="momo-btn">Détails</div>
+          </div>
+
+          <div class="stat-grid">
+            <div class="stat-card orange"><div class="stat-label">Rx en attente</div><div class="stat-value">12</div><div class="stat-sub">3 urgentes</div></div>
+            <div class="stat-card teal"><div class="stat-label">Dispensés/Jour</div><div class="stat-value">67</div><div class="stat-sub">Aujourd'hui</div></div>
+            <div class="stat-card red"><div class="stat-label">Stock faible</div><div class="stat-value">5</div><div class="stat-sub">Articles</div></div>
+            <div class="stat-card purple"><div class="stat-label">Expirent bientôt</div><div class="stat-value">8</div><div class="stat-sub">< 30 jours</div></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Alertes stock faible</span><span class="panel-action">Commander</span></div>
+            <div class="alert-card red">
+              <div class="alert-title">Paracétamol 500mg — 23 unités restantes</div>
+              <div class="alert-sub">Seuil minimum: 200 · Commande suggérée: 500 unités</div>
+            </div>
+            <div class="alert-card orange">
+              <div class="alert-title">Amoxicillin 250mg — 45 unités restantes</div>
+              <div class="alert-sub">Seuil minimum: 100 · Fournisseur: CENAME</div>
+            </div>
+            <div class="alert-card orange" style="margin-bottom:0">
+              <div class="alert-title">Métronidazole 500mg — 18 unités restantes</div>
+              <div class="alert-sub">Seuil minimum: 50 · Réapprovisionnement urgent</div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Ordonnances récentes</span><span class="panel-action">Voir tout</span></div>
+            <div class="list-item">
+              <div class="li-avatar" style="background:#F0FDF9;color:#0F766E">BM</div>
+              <div class="li-body"><div class="li-name">Bello Marie</div><div class="li-sub">Amoxicillin + Ibuprofène · Dr. Kamga</div></div>
+              <div class="li-right"><span class="badge normal">Dispensé</span><div class="li-meta">2,500 XAF</div></div>
+            </div>
+            <div class="list-item" style="border-bottom:none">
+              <div class="li-avatar" style="background:#FFF7ED;color:#C2410C">TK</div>
+              <div class="li-body"><div class="li-name">Tchamba Kevin</div><div class="li-sub">Metformine 500mg · Dr. Nkemdirim</div></div>
+              <div class="li-right"><span class="badge pending">En attente</span><div class="li-meta">1,800 XAF</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="bn-item active"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span class="bn-label">Dashboard</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/></svg><span class="bn-label">Rx en attente</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><span class="bn-label">Dispenser</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg><span class="bn-label">Stock</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span class="bn-label">Rapports</span></div>
+        </div>
+      </div>
+
+      <!-- ===== HEALTH ORG PORTAL ===== -->
+      <div class="portal-screen" id="portal-healthorg">
+        <div class="topbar">
+          <div class="topbar-icon"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
+          <div class="topbar-center"><div class="topbar-title">Health Org</div><div class="topbar-sub">MINSANTÉ Cameroun</div></div>
+          <div class="avatar" style="background:#15803D">MS</div>
+        </div>
+        <div class="content">
+          <div class="page-header"><h2>Programmes de santé</h2><p>Surveillance épidémiologique nationale</p></div>
+
+          <div class="alert-card red" style="margin-bottom:12px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+              <span style="font-size:11px;font-weight:700;color:#DC2626;letter-spacing:.04em">SIGNAL ÉPIDÉMIQUE</span>
+              <span class="badge urgent">SIG-2026-041</span>
+            </div>
+            <div class="alert-title">Choléra — Région Extrême-Nord · Maroua</div>
+            <div class="alert-sub">12 cas confirmés · 1 décès · Déclaré le 14 Juin 2026</div>
+            <div style="display:flex;gap:6px;margin-top:6px">
+              <div style="flex:1;background:rgba(239,68,68,.15);border-radius:6px;padding:6px;text-align:center">
+                <div style="font-size:16px;font-weight:800;color:#DC2626">12</div>
+                <div style="font-size:9px;color:#991B1B">Cas confirmés</div>
+              </div>
+              <div style="flex:1;background:rgba(239,68,68,.15);border-radius:6px;padding:6px;text-align:center">
+                <div style="font-size:16px;font-weight:800;color:#DC2626">1</div>
+                <div style="font-size:9px;color:#991B1B">Décès</div>
+              </div>
+              <div style="flex:1;background:rgba(239,68,68,.15);border-radius:6px;padding:6px;text-align:center">
+                <div style="font-size:16px;font-weight:800;color:#DC2626">R0</div>
+                <div style="font-size:9px;color:#991B1B">Calcul en cours</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="stat-grid">
+            <div class="stat-card"><div class="stat-label">Programmes actifs</div><div class="stat-value">8</div><div class="stat-sub">Nationaux</div></div>
+            <div class="stat-card teal"><div class="stat-label">Sites terrain</div><div class="stat-value">34</div><div class="stat-sub">8 régions</div></div>
+            <div class="stat-card green"><div class="stat-label">Bénéficiaires</div><div class="stat-value">12,450</div><div class="stat-sub">Enregistrés</div></div>
+            <div class="stat-card red"><div class="stat-label">Signaux actifs</div><div class="stat-value">3</div><div class="stat-sub">À surveiller</div></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Programme vedette</span><span class="panel-action">Détails</span></div>
+            <div style="background:linear-gradient(135deg,#0B1F3A,#0F4C81);border-radius:10px;padding:14px;color:#fff">
+              <div style="font-size:11px;color:rgba(255,255,255,.6);font-weight:500;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Programme national</div>
+              <div style="font-size:15px;font-weight:700;margin-bottom:4px">Vaccination Nationale 2026</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:10px">Rougeole · Polio · Méningite A · DTC-HepB-Hib</div>
+              <div style="display:flex;gap:8px;margin-bottom:10px">
+                <div style="flex:1;text-align:center"><div style="font-size:18px;font-weight:800">78%</div><div style="font-size:9px;color:rgba(255,255,255,.5)">Couverture</div></div>
+                <div style="flex:1;text-align:center"><div style="font-size:18px;font-weight:800">9,710</div><div style="font-size:9px;color:rgba(255,255,255,.5)">Vaccinés</div></div>
+                <div style="flex:1;text-align:center"><div style="font-size:18px;font-weight:800">26</div><div style="font-size:9px;color:rgba(255,255,255,.5)">Sites actifs</div></div>
+              </div>
+              <div style="background:rgba(255,255,255,.1);border-radius:6px;height:6px;overflow:hidden">
+                <div style="width:78%;height:100%;background:#22C55E;border-radius:6px"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="bn-item active"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span class="bn-label">Dashboard</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg><span class="bn-label">Programmes</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="bn-label">Planning</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span class="bn-label">Rapports</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span class="bn-label">Signaux</span></div>
+        </div>
+      </div>
+
+      <!-- ===== DEVELOPER PORTAL ===== -->
+      <div class="portal-screen" id="portal-developer">
+        <div class="topbar">
+          <div class="topbar-icon"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
+          <div class="topbar-center"><div class="topbar-title">Developer Portal</div><div class="topbar-sub">OpesCare API Platform</div></div>
+          <div class="avatar" style="background:#374151">DV</div>
+        </div>
+        <div class="content">
+          <div class="page-header"><h2>Espace développeur</h2><p>API Helix v2 · FHIR R4 compliant</p></div>
+          <div class="stat-grid">
+            <div class="stat-card"><div class="stat-label">Apps actives</div><div class="stat-value">3</div><div class="stat-sub">Toutes en prod</div></div>
+            <div class="stat-card teal"><div class="stat-label">Appels API/Jour</div><div class="stat-value">8,432</div><div class="stat-sub">+12% vs hier</div></div>
+            <div class="stat-card green"><div class="stat-label">Taux d'erreur</div><div class="stat-value">0.3%</div><div class="stat-sub">SLA 99.9% ✓</div></div>
+            <div class="stat-card purple"><div class="stat-label">Webhooks</div><div class="stat-value">12</div><div class="stat-sub">8 actifs</div></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Applications</span><span class="panel-action">+ Nouvelle app</span></div>
+            <div class="app-card">
+              <div class="app-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+              <div>
+                <div class="app-name">OpesCare Connect v2.1</div>
+                <div class="app-meta">Production · Dernière requête: il y a 2min</div>
+              </div>
+              <div class="app-right"><span class="badge success">Actif</span></div>
+            </div>
+            <div class="app-card">
+              <div class="app-icon" style="background:#7C3AED"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
+              <div>
+                <div class="app-name">LabSync Integration</div>
+                <div class="app-meta">Production · Dernière requête: il y a 8min</div>
+              </div>
+              <div class="app-right"><span class="badge success">Actif</span></div>
+            </div>
+            <div class="app-card" style="margin-bottom:0">
+              <div class="app-icon" style="background:#F97316"><svg viewBox="0 0 24 24"><path d="M3 3h18v18H3z"/></svg></div>
+              <div>
+                <div class="app-name">InsurBridge SDK</div>
+                <div class="app-meta">Staging · Tests en cours</div>
+              </div>
+              <div class="app-right"><span class="badge pending">Staging</span></div>
+            </div>
+          </div>
+
+          <div class="dev-links">
+            <div class="dev-link">
+              <div class="dev-link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#0F4C81" stroke-width="1.8" width="20" height="20"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+              <div class="dev-link-title">FHIR R4 Docs</div>
+              <div class="dev-link-sub">OpenAPI · Swagger</div>
+            </div>
+            <div class="dev-link">
+              <div class="dev-link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#0F4C81" stroke-width="1.8" width="20" height="20"><path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg></div>
+              <div class="dev-link-title">Sandbox</div>
+              <div class="dev-link-sub">Test environment</div>
+            </div>
+            <div class="dev-link">
+              <div class="dev-link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#0F4C81" stroke-width="1.8" width="20" height="20"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+              <div class="dev-link-title">Webhooks</div>
+              <div class="dev-link-sub">12 endpoints</div>
+            </div>
+            <div class="dev-link">
+              <div class="dev-link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#0F4C81" stroke-width="1.8" width="20" height="20"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+              <div class="dev-link-title">Status Page</div>
+              <div class="dev-link-sub">99.9% uptime</div>
+            </div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="bn-item active"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span class="bn-label">Dashboard</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/></svg><span class="bn-label">Apps</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span class="bn-label">Analytics</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg><span class="bn-label">FHIR</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg><span class="bn-label">Sandbox</span></div>
+        </div>
+      </div>
+
+      <!-- ===== LITE PORTAL ===== -->
+      <div class="portal-screen" id="portal-lite">
+        <div class="topbar">
+          <div class="topbar-icon"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
+          <div class="topbar-center"><div class="topbar-title">OpesCare Lite</div><div class="topbar-sub">Clinique Bethesda · Bafoussam</div></div>
+          <div class="avatar" style="background:#0F766E">CB</div>
+        </div>
+        <div class="content">
+          <div class="page-header"><h2>Gestion Clinique</h2><p>15 Juin 2026 · Ouvert depuis 07:00</p></div>
+
+          <div class="momo-banner">
+            <div class="momo-icon"><svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.05 4.575a1.575 1.575 0 10-3.15 0v3m3.15-3v-1.5a1.575 1.575 0 013.15 0v1.5m-3.15 0l.075 5.925m3.075.75V4.575m0 0a1.575 1.575 0 013.15 0V15M6.9 7.575a1.575 1.575 0 10-3.15 0v8.175a6.75 6.75 0 006.75 6.75h2.018a5.25 5.25 0 003.712-1.538l1.732-1.732a5.25 5.25 0 001.538-3.712l.003-2.024a.668.668 0 01.198-.471 1.575 1.575 0 10-2.228-2.228 3.818 3.818 0 00-1.12 2.687M6.9 7.575V12m6.27 4.318A4.49 4.49 0 0116.35 15m0 0l.106-.967"/></svg></div>
+            <div class="momo-body">
+              <div class="momo-title">MTN MoMo + Orange Money actifs</div>
+              <div class="momo-sub">Paiements sans frais supplémentaires</div>
+            </div>
+            <div class="momo-btn">Configurer</div>
+          </div>
+
+          <div class="stat-grid">
+            <div class="stat-card"><div class="stat-label">Patients</div><div class="stat-value">142</div><div class="stat-sub">Total enregistrés</div></div>
+            <div class="stat-card teal"><div class="stat-label">Walk-ins / Jour</div><div class="stat-value">8</div><div class="stat-sub">Aujourd'hui</div></div>
+            <div class="stat-card orange"><div class="stat-label">Factures</div><div class="stat-value">23</div><div class="stat-sub">5 impayées</div></div>
+            <div class="stat-card green"><div class="stat-label">Collecté (XAF)</div><div class="stat-value">185K</div><div class="stat-sub">Ce mois</div></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Patients récents</span><span class="panel-action">Voir tout</span></div>
+            <div class="list-item">
+              <div class="li-avatar" style="background:#F0FDF9;color:#0F766E">NS</div>
+              <div class="li-body"><div class="li-name">Nguema Sophie</div><div class="li-sub">F · 29 ans · Dernière visite: 15 Juin 2026</div></div>
+              <div class="li-right"><span class="badge success">Payé</span><div class="li-meta">3,500 XAF</div></div>
+            </div>
+            <div class="list-item">
+              <div class="li-avatar" style="background:#EFF6FF;color:#1D4ED8">MK</div>
+              <div class="li-body"><div class="li-name">Manga Koffi</div><div class="li-sub">M · 45 ans · Consultation + Rx</div></div>
+              <div class="li-right"><span class="badge pending">En attente</span><div class="li-meta">5,200 XAF</div></div>
+            </div>
+            <div class="list-item" style="border-bottom:none">
+              <div class="li-avatar" style="background:#FFF7ED;color:#C2410C">EB</div>
+              <div class="li-body"><div class="li-name">Essomba Brigitte</div><div class="li-sub">F · 61 ans · Suivi HTA</div></div>
+              <div class="li-right"><span class="badge success">Payé</span><div class="li-meta">2,000 XAF</div></div>
+            </div>
+          </div>
+
+          <div class="qa-row">
+            <div class="qa-btn"><div class="qa-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div><div class="qa-label">Nouveau patient</div></div>
+            <div class="qa-btn"><div class="qa-icon teal"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></div><div class="qa-label">Walk-in</div></div>
+            <div class="qa-btn"><div class="qa-icon orange"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg></div><div class="qa-label">Facture</div></div>
+            <div class="qa-btn"><div class="qa-icon green"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="qa-label">Rapport</div></div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="bn-item active"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span class="bn-label">Dashboard</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span class="bn-label">Patients</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg><span class="bn-label">Walk-ins</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg><span class="bn-label">Factures</span></div>
+          <div class="bn-item"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span class="bn-label">Rapports</span></div>
+        </div>
+      </div>
+
+    </div><!-- /phone-body -->
+  </div><!-- /phone -->
+  <div class="scene-label" style="font-size:11px">Click portal tabs above to switch · 393×852px · Inter + Lucide</div>
+</div>
+
+<script>
+const PORTALS = ['patient','staff','admin','insurance','lab','pharmacy','healthorg','developer','lite'];
+
+function showPortal(id) {
+  PORTALS.forEach(p => {
+    const el = document.getElementById('portal-' + p);
+    if (el) el.classList.toggle('active', p === id);
+  });
+  document.querySelectorAll('.ps-tab').forEach((t, i) => {
+    t.classList.toggle('active', PORTALS[i] === id);
+  });
+  const body = document.querySelector('.phone-body');
+  if (body) body.scrollTop = 0;
+}
+
+function showPortalTab(portalId, tabId) {
+  const nav = document.querySelector('#portal-' + portalId + ' .bottom-nav');
+  if (!nav) return;
+  nav.querySelectorAll('.bn-item').forEach(item => item.classList.remove('active'));
+  const items = nav.querySelectorAll('.bn-item');
+  const tabMap = {
+    patient: ['dashboard','appts','lab','rx','profile'],
+    staff: ['dashboard','queue','visits','billing','analytics'],
+  };
+  const tabs = tabMap[portalId];
+  if (tabs) {
+    const idx = tabs.indexOf(tabId);
+    if (idx >= 0 && items[idx]) items[idx].classList.add('active');
+  }
+}
+
+if (typeof lucide !== 'undefined') lucide.createIcons();
+</script>
+</body>
+</html>

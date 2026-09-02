@@ -1,0 +1,1206 @@
+<!-- ============================================================
+     PORTAL: LITE  id="portal-lite"
+     ============================================================ -->
+<div id="portal-lite" class="portal-wrap" style="display:none">
+
+  <!-- SIDEBAR -->
+  <aside class="portal-sidebar">
+    <div style="padding:20px 16px 12px">
+      <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.5px">OpesCare</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.55);margin-top:2px">Simple. Fast. Affordable.</div>
+      <span class="badge" style="margin-top:8px;background:rgba(255,255,255,.15);color:#fff;font-size:10px;display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px">
+        <i data-lucide="zap" style="width:11px;height:11px"></i> Lite
+      </span>
+    </div>
+    <nav style="padding:0 8px">
+      <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.4);padding:12px 8px 4px;letter-spacing:.08em">HOME</div>
+      <a class="sidebar-link" href="#" onclick="goPage('lite','dashboard');return false"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+
+      <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.4);padding:12px 8px 4px;letter-spacing:.08em">PATIENTS</div>
+      <a class="sidebar-link" href="#" onclick="goPage('lite','register');return false"><i data-lucide="user-plus"></i> Register Patient</a>
+      <a class="sidebar-link" href="#" onclick="goPage('lite','patients');return false"><i data-lucide="users"></i> Patient List</a>
+
+      <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.4);padding:12px 8px 4px;letter-spacing:.08em">VISITS</div>
+      <a class="sidebar-link" href="#" onclick="goPage('lite','appointments');return false"><i data-lucide="calendar"></i> Appointments</a>
+      <a class="sidebar-link" href="#" onclick="goPage('lite','walkins');return false"><i data-lucide="footprints"></i> Walk-ins</a>
+
+      <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.4);padding:12px 8px 4px;letter-spacing:.08em">BILLING</div>
+      <a class="sidebar-link" href="#" onclick="goPage('lite','invoices');return false"><i data-lucide="file-text"></i> Invoices</a>
+      <a class="sidebar-link" href="#" onclick="goPage('lite','receipts');return false"><i data-lucide="receipt"></i> Receipts</a>
+
+      <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.4);padding:12px 8px 4px;letter-spacing:.08em">REPORTS</div>
+      <a class="sidebar-link" href="#" onclick="goPage('lite','daily');return false"><i data-lucide="bar-chart-2"></i> Daily Report</a>
+      <a class="sidebar-link" href="#" onclick="goPage('lite','summary');return false"><i data-lucide="trending-up"></i> Summary</a>
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="portal-main">
+    <div class="portal-topbar">
+      <div style="font-weight:700;font-size:15px;color:var(--txt)" id="lite-page-title">Dashboard</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:13px;color:var(--muted)">Centre Médical de Yaoundé</span>
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--b);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">A</div>
+      </div>
+    </div>
+    <div class="portal-content">
+
+      <!-- ── DASHBOARD ── -->
+      <div id="lite-dashboard" class="portal-page">
+        <!-- KPI cards (full-color for Lite) -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">
+          <div class="stat-card" style="background:var(--b);color:#fff;border:none">
+            <div style="font-size:13px;font-weight:600;opacity:.85;margin-bottom:6px">Patients Today</div>
+            <div style="font-size:42px;font-weight:800;line-height:1">23</div>
+          </div>
+          <div class="stat-card" style="background:#B45309;color:#fff;border:none">
+            <div style="font-size:13px;font-weight:600;opacity:.85;margin-bottom:6px">Pending Bills</div>
+            <div style="font-size:42px;font-weight:800;line-height:1">7</div>
+          </div>
+          <div class="stat-card" style="background:var(--t);color:#fff;border:none">
+            <div style="font-size:13px;font-weight:600;opacity:.85;margin-bottom:6px">Next Appointment</div>
+            <div style="font-size:42px;font-weight:800;line-height:1">14:30</div>
+          </div>
+        </div>
+
+        <!-- Search -->
+        <div class="panel" style="margin-bottom:20px">
+          <div class="panel-hd">Find Patient</div>
+          <p style="font-size:13px;color:var(--muted);margin:0 0 12px">Enter name, phone or Health ID</p>
+          <div style="display:flex;gap:10px">
+            <input class="form-control" style="flex:1;font-size:15px;padding:10px 14px" type="text" placeholder="Search patients…">
+            <button class="btn btn-primary" style="padding:10px 20px;display:inline-flex;align-items:center;gap:6px"><i data-lucide="search" style="width:16px;height:16px"></i> Search</button>
+          </div>
+        </div>
+
+        <!-- MoMo banner -->
+        <div style="background:#FEF3C7;border:1px solid #F59E0B;border-radius:var(--rad);padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px">
+          <i data-lucide="smartphone" style="width:22px;height:22px;color:#B45309;flex-shrink:0"></i>
+          <span style="font-size:13px;color:#92400E;font-weight:500">Accept MTN MoMo payments — Dial <strong>*126#</strong> or share code <strong>7891234</strong></span>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="panel">
+          <div class="panel-hd">Recent Activity</div>
+          <ul style="list-style:none;padding:0;margin:0">
+            <li style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--bdr)">
+              <span style="font-size:12px;color:var(--muted);width:38px;flex-shrink:0">14:05</span>
+              <i data-lucide="user" style="width:15px;height:15px;color:var(--b);flex-shrink:0"></i>
+              <span style="font-size:13px;color:var(--txt)">Fouda Marie Claire registered (new patient)</span>
+            </li>
+            <li style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--bdr)">
+              <span style="font-size:12px;color:var(--muted);width:38px;flex-shrink:0">13:48</span>
+              <i data-lucide="calendar" style="width:15px;height:15px;color:var(--t);flex-shrink:0"></i>
+              <span style="font-size:13px;color:var(--txt)">Biya Jean-Pierre appointment confirmed for 15 Jun</span>
+            </li>
+            <li style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--bdr)">
+              <span style="font-size:12px;color:var(--muted);width:38px;flex-shrink:0">13:22</span>
+              <i data-lucide="receipt" style="width:15px;height:15px;color:var(--ok);flex-shrink:0"></i>
+              <span style="font-size:13px;color:var(--txt)">Invoice #INV-0234 paid — 12,500 XAF via MTN MoMo</span>
+            </li>
+            <li style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--bdr)">
+              <span style="font-size:12px;color:var(--muted);width:38px;flex-shrink:0">12:55</span>
+              <i data-lucide="user" style="width:15px;height:15px;color:var(--b);flex-shrink:0"></i>
+              <span style="font-size:13px;color:var(--txt)">Ngono Suzanne registered</span>
+            </li>
+            <li style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--bdr)">
+              <span style="font-size:12px;color:var(--muted);width:38px;flex-shrink:0">12:30</span>
+              <i data-lucide="calendar" style="width:15px;height:15px;color:var(--t);flex-shrink:0"></i>
+              <span style="font-size:13px;color:var(--txt)">Kamga Patrick appointment booked for 16 Jun 09:00</span>
+            </li>
+            <li style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--bdr)">
+              <span style="font-size:12px;color:var(--muted);width:38px;flex-shrink:0">12:10</span>
+              <i data-lucide="receipt" style="width:15px;height:15px;color:var(--muted);flex-shrink:0"></i>
+              <span style="font-size:13px;color:var(--txt)">Invoice #INV-0233 created — 8,000 XAF</span>
+            </li>
+            <li style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--bdr)">
+              <span style="font-size:12px;color:var(--muted);width:38px;flex-shrink:0">11:45</span>
+              <i data-lucide="user" style="width:15px;height:15px;color:var(--b);flex-shrink:0"></i>
+              <span style="font-size:13px;color:var(--txt)">Tchouangang Noel registered</span>
+            </li>
+            <li style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--bdr)">
+              <span style="font-size:12px;color:var(--muted);width:38px;flex-shrink:0">11:20</span>
+              <i data-lucide="receipt" style="width:15px;height:15px;color:var(--ok);flex-shrink:0"></i>
+              <span style="font-size:13px;color:var(--txt)">Invoice #INV-0232 paid — 25,000 XAF via Cash</span>
+            </li>
+            <li style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--bdr)">
+              <span style="font-size:12px;color:var(--muted);width:38px;flex-shrink:0">10:50</span>
+              <i data-lucide="calendar" style="width:15px;height:15px;color:var(--t);flex-shrink:0"></i>
+              <span style="font-size:13px;color:var(--txt)">Dr. Abena Martin clinic session started</span>
+            </li>
+            <li style="display:flex;align-items:center;gap:12px;padding:10px 0">
+              <span style="font-size:12px;color:var(--muted);width:38px;flex-shrink:0">10:00</span>
+              <i data-lucide="activity" style="width:15px;height:15px;color:var(--muted);flex-shrink:0"></i>
+              <span style="font-size:13px;color:var(--txt)">Day started. 0 patients seen.</span>
+            </li>
+          </ul>
+        </div>
+      </div><!-- /lite-dashboard -->
+
+      <!-- ── REGISTER PATIENT ── -->
+      <div id="lite-register" class="portal-page" style="display:none">
+        <div class="panel" style="max-width:680px">
+          <div class="panel-hd">New Patient Registration</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div class="form-group" style="grid-column:1/-1">
+              <label class="form-label">Full Name <span style="color:var(--danger)">*</span></label>
+              <input class="form-control" style="font-size:16px;padding:12px 14px" type="text" placeholder="Enter full name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number <span style="color:var(--danger)">*</span></label>
+              <input class="form-control" type="tel" placeholder="+237 6XX XXX XXX">
+              <div style="font-size:11px;color:var(--muted);margin-top:4px">Will receive appointment reminders</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date of Birth</label>
+              <input class="form-control" type="date">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Gender</label>
+              <select class="form-control">
+                <option>Male</option><option>Female</option><option>Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Village / Neighbourhood</label>
+              <input class="form-control" type="text" placeholder="e.g., Bastos, Mvan">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Nearest Landmark</label>
+              <input class="form-control" type="text" placeholder="e.g., Near the market">
+              <div style="font-size:11px;color:var(--muted);margin-top:4px">e.g., Near the market, Opposite the school</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Emergency Contact Name</label>
+              <input class="form-control" type="text" placeholder="Full name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Emergency Contact Phone</label>
+              <input class="form-control" type="tel" placeholder="+237 6XX XXX XXX">
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+              <label class="form-label">Chief Complaint</label>
+              <textarea class="form-control" rows="3" placeholder="Main health concern today"></textarea>
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+              <label class="form-label">Health Insurance</label>
+              <select class="form-control">
+                <option>None</option><option>CNPS</option><option>Mutual Health</option><option>Other</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top:20px">
+            <button class="btn btn-primary" style="width:100%;padding:14px;font-size:15px;justify-content:center">
+              <i data-lucide="user-plus" style="width:18px;height:18px"></i> Register Patient &amp; Generate Health ID
+            </button>
+            <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:8px">A Health ID card will be generated automatically</p>
+          </div>
+        </div>
+      </div><!-- /lite-register -->
+
+      <!-- ── PATIENT LIST ── -->
+      <div id="lite-patients" class="portal-page" style="display:none">
+        <div style="display:flex;gap:10px;margin-bottom:16px">
+          <input class="form-control" style="flex:1" type="text" placeholder="Search patients…">
+          <button class="btn btn-primary" style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="user-plus" style="width:15px;height:15px"></i> Register New Patient</button>
+        </div>
+        <div class="panel" style="overflow-x:auto">
+          <table class="data-table" style="min-width:780px">
+            <thead><tr>
+              <th>Name</th><th>Health ID</th><th>Phone</th><th>DOB</th><th>Last Visit</th><th>Outstanding XAF</th><th></th>
+            </tr></thead>
+            <tbody>
+              <tr>
+                <td>Fouda Marie Claire</td>
+                <td><code style="font-size:11px">CM-HID-3FP7-KL19-R4Q2</code></td>
+                <td>+237 699 123 456</td><td>12 Mar 1982</td><td>14 Jun 2026</td>
+                <td>0</td>
+                <td><button class="btn btn-secondary" style="padding:4px 10px" onclick="goPage('lite','patient-detail')"><i data-lucide="eye" style="width:14px;height:14px"></i></button></td>
+              </tr>
+              <tr>
+                <td>Biya Jean-Pierre</td>
+                <td><code style="font-size:11px">CM-HID-9MN2-XT84-W7K5</code></td>
+                <td>+237 677 234 567</td><td>05 Aug 1966</td><td>12 Jun 2026</td>
+                <td><span style="color:var(--warn);font-weight:600">8,500</span></td>
+                <td><button class="btn btn-secondary" style="padding:4px 10px" onclick="goPage('lite','patient-detail')"><i data-lucide="eye" style="width:14px;height:14px"></i></button></td>
+              </tr>
+              <tr>
+                <td>Ngono Suzanne</td>
+                <td><code style="font-size:11px">CM-HID-5QR8-BV31-Y2N9</code></td>
+                <td>+237 655 345 678</td><td>28 Feb 1997</td><td>14 Jun 2026</td>
+                <td>0</td>
+                <td><button class="btn btn-secondary" style="padding:4px 10px" onclick="goPage('lite','patient-detail')"><i data-lucide="eye" style="width:14px;height:14px"></i></button></td>
+              </tr>
+              <tr>
+                <td>Kamga Patrick</td>
+                <td><code style="font-size:11px">CM-HID-1DH4-SJ72-C8M3</code></td>
+                <td>+237 670 456 789</td><td>19 Nov 2008</td><td>10 Jun 2026</td>
+                <td><span style="color:var(--warn);font-weight:600">12,500</span></td>
+                <td><button class="btn btn-secondary" style="padding:4px 10px" onclick="goPage('lite','patient-detail')"><i data-lucide="eye" style="width:14px;height:14px"></i></button></td>
+              </tr>
+              <tr>
+                <td>Mbarga Alain</td>
+                <td><code style="font-size:11px">CM-HID-7KQ9-MP42-X8D1</code></td>
+                <td>+237 691 567 890</td><td>14 Mar 1989</td><td>08 Jun 2026</td>
+                <td>0</td>
+                <td><button class="btn btn-secondary" style="padding:4px 10px" onclick="goPage('lite','patient-detail')"><i data-lucide="eye" style="width:14px;height:14px"></i></button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div><!-- /lite-patients -->
+
+      <!-- ── PATIENT DETAIL ── -->
+      <div id="lite-patient-detail" class="portal-page" style="display:none">
+        <!-- Header card -->
+        <div class="panel" style="margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div>
+              <div style="font-size:20px;font-weight:700;color:var(--txt)">Biya Jean-Pierre</div>
+              <div style="font-family:monospace;font-size:13px;color:var(--muted);margin:4px 0">CM-HID-9MN2-XT84-W7K5</div>
+              <div style="font-size:13px;color:var(--txt2)">+237 677 234 567 &nbsp;·&nbsp; Male &nbsp;·&nbsp; DOB: 05 Aug 1966</div>
+            </div>
+            <button class="btn btn-secondary" style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="pencil" style="width:14px;height:14px"></i> Edit</button>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:14px">
+            <button class="btn btn-primary" style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="calendar-plus" style="width:15px;height:15px"></i> Book Appointment</button>
+            <button class="btn btn-secondary" style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="file-plus" style="width:15px;height:15px"></i> Create Invoice</button>
+          </div>
+        </div>
+
+        <!-- Outstanding balance -->
+        <div class="alert" style="background:var(--warnl);border-color:#F59E0B;color:#92400E;display:flex;align-items:center;gap:10px;margin-bottom:16px">
+          <i data-lucide="alert-triangle" style="width:18px;height:18px;flex-shrink:0"></i>
+          Outstanding balance: <strong>8,500 XAF</strong>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <!-- Visit History -->
+          <div class="panel">
+            <div class="panel-hd">Visit History</div>
+            <table class="data-table">
+              <thead><tr><th>Date</th><th>Reason</th><th>Doctor</th><th>Billed XAF</th></tr></thead>
+              <tbody>
+                <tr><td>12 Jun 2026</td><td>General checkup</td><td>Dr. Abena</td><td>8,000</td></tr>
+                <tr><td>01 May 2026</td><td>Hypertension review</td><td>Dr. Fopa</td><td>12,500</td></tr>
+                <tr><td>15 Mar 2026</td><td>Cardiology</td><td>Dr. Ndongo</td><td>25,000</td></tr>
+                <tr><td>10 Jan 2026</td><td>CBC test</td><td>Dr. Abena</td><td>5,000</td></tr>
+                <tr><td>20 Nov 2025</td><td>Malaria treatment</td><td>Dr. Essomba</td><td>9,500</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <!-- Invoice History -->
+          <div class="panel">
+            <div class="panel-hd">Invoice History</div>
+            <table class="data-table">
+              <thead><tr><th>Invoice#</th><th>Date</th><th>Amount XAF</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>INV-0233</td><td>14 Jun 2026</td><td>8,000</td><td><span class="badge badge-danger">Unpaid</span></td></tr>
+                <tr><td>INV-0201</td><td>01 May 2026</td><td>12,500</td><td><span class="badge badge-success">Paid</span></td></tr>
+                <tr><td>INV-0174</td><td>15 Mar 2026</td><td>25,000</td><td><span class="badge badge-success">Paid</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /lite-patient-detail -->
+
+      <!-- ── APPOINTMENTS ── -->
+      <div id="lite-appointments" class="portal-page" style="display:none">
+        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+          <input class="form-control" type="date" value="2026-06-14" style="width:160px">
+          <button class="btn btn-primary" style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="calendar-plus" style="width:15px;height:15px"></i> Book Appointment</button>
+        </div>
+
+        <!-- Table -->
+        <div class="panel" style="overflow-x:auto;margin-bottom:20px">
+          <div class="panel-hd">Upcoming Appointments</div>
+          <table class="data-table" style="min-width:700px">
+            <thead><tr><th>Patient</th><th>Date</th><th>Time</th><th>Doctor</th><th>Reason</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>Biya Jean-Pierre</td><td>15 Jun 2026</td><td>09:00</td><td>Dr. Abena</td><td>General checkup</td><td><span class="badge badge-success">Confirmed</span></td></tr>
+              <tr><td>Kamga Patrick</td><td>16 Jun 2026</td><td>09:00</td><td>Dr. Fopa</td><td>Pediatrics consult</td><td><span class="badge badge-success">Confirmed</span></td></tr>
+              <tr><td>Fouda Marie Claire</td><td>16 Jun 2026</td><td>10:30</td><td>Dr. Ndongo</td><td>Cardiology follow-up</td><td><span class="badge badge-success">Confirmed</span></td></tr>
+              <tr><td>Ngono Suzanne</td><td>17 Jun 2026</td><td>08:00</td><td>Dr. Essomba</td><td>ANC visit</td><td><span class="badge badge-success">Confirmed</span></td></tr>
+              <tr><td>Tchouangang Noel</td><td>17 Jun 2026</td><td>14:00</td><td>Dr. Abena</td><td>Fever consultation</td><td><span class="badge badge-warning">Pending</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Booking form -->
+        <div class="panel" style="max-width:560px">
+          <div class="panel-hd">Book Appointment</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div class="form-group" style="grid-column:1/-1">
+              <label class="form-label">Patient</label>
+              <div style="position:relative">
+                <i data-lucide="search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--muted)"></i>
+                <input class="form-control" style="padding-left:34px" type="text" placeholder="Search by name or HID…">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date</label>
+              <input class="form-control" type="date">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Time</label>
+              <select class="form-control">
+                <option>08:00</option><option>08:30</option><option>09:00</option><option>09:30</option>
+                <option>10:00</option><option>10:30</option><option>11:00</option><option>11:30</option>
+                <option>12:00</option><option>12:30</option><option>13:00</option><option>13:30</option>
+                <option>14:00</option><option>14:30</option><option>15:00</option><option>15:30</option>
+                <option>16:00</option><option>16:30</option><option>17:00</option>
+              </select>
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+              <label class="form-label">Doctor</label>
+              <select class="form-control">
+                <option>Dr. Abena Martin</option><option>Dr. Fopa</option><option>Dr. Ndongo</option><option>Dr. Essomba</option>
+              </select>
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+              <label class="form-label">Reason / Chief Complaint</label>
+              <input class="form-control" type="text" placeholder="e.g., General checkup, fever">
+            </div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:8px;display:inline-flex;align-items:center;gap:6px"><i data-lucide="calendar-check" style="width:15px;height:15px"></i> Book</button>
+        </div>
+      </div><!-- /lite-appointments -->
+
+      <!-- ── WALK-INS ── -->
+      <div id="lite-walkins" class="portal-page" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:15px;font-weight:700;color:var(--txt)">Walk-in Queue — 14 Jun 2026</span>
+            <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--ok);font-weight:600">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--ok);display:inline-block;animation:pulse 1.5s infinite"></span> Live
+            </span>
+          </div>
+          <button class="btn btn-primary" style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="plus" style="width:15px;height:15px"></i> Add Walk-in</button>
+        </div>
+
+        <!-- Add to queue form -->
+        <div class="panel" style="max-width:480px;margin-bottom:20px">
+          <div class="panel-hd">Add to Queue</div>
+          <div class="form-group">
+            <label class="form-label">Patient HID or Name</label>
+            <input class="form-control" type="text" placeholder="Search or enter name…">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Chief Complaint</label>
+            <input class="form-control" type="text" placeholder="e.g., Fever, headache">
+          </div>
+          <button class="btn btn-primary" style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="plus-circle" style="width:15px;height:15px"></i> Add to Queue</button>
+        </div>
+
+        <!-- Queue list -->
+        <div class="panel" style="max-width:620px">
+          <div class="panel-hd">Current Queue</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:center;gap:14px;padding:12px;background:var(--infol);border-radius:var(--rad)">
+              <span style="width:32px;height:32px;border-radius:50%;background:var(--b);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">1</span>
+              <div style="flex:1">
+                <div style="font-weight:600;font-size:14px;color:var(--txt)">Mbarga Alain Christophe</div>
+                <div style="font-size:12px;color:var(--muted)">Hypertension check &nbsp;·&nbsp; waiting <strong>12 min</strong></div>
+              </div>
+              <button class="btn btn-primary" style="padding:6px 14px;font-size:12px">Call</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;padding:12px;background:var(--bg);border:1px solid var(--bdr);border-radius:var(--rad)">
+              <span style="width:32px;height:32px;border-radius:50%;background:var(--b);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">2</span>
+              <div style="flex:1">
+                <div style="font-weight:600;font-size:14px;color:var(--txt)">Tchouangang Noel</div>
+                <div style="font-size:12px;color:var(--muted)">Fever &nbsp;·&nbsp; waiting <strong>8 min</strong></div>
+              </div>
+              <button class="btn btn-primary" style="padding:6px 14px;font-size:12px">Call</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;padding:12px;border:1px dashed var(--bdr);border-radius:var(--rad)">
+              <span style="width:32px;height:32px;border-radius:50%;background:var(--bdr);color:var(--muted);display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">3</span>
+              <div style="font-size:13px;color:var(--muted)">Empty slot</div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /lite-walkins -->
+
+      <!-- ── INVOICES ── -->
+      <div id="lite-invoices" class="portal-page" style="display:none">
+        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+          <button class="btn btn-primary" style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="plus" style="width:15px;height:15px"></i> New Invoice</button>
+          <select class="form-control" style="width:160px">
+            <option>All</option><option>Paid</option><option>Unpaid</option><option>Partial</option>
+          </select>
+        </div>
+
+        <div class="panel" style="overflow-x:auto;margin-bottom:20px">
+          <div class="panel-hd">Invoices</div>
+          <table class="data-table" style="min-width:760px">
+            <thead><tr><th>Invoice#</th><th>Patient</th><th>Services</th><th>Amount XAF</th><th>Date</th><th>Payment</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>INV-0234</td><td>Fouda Marie Claire</td><td>Consultation, Malaria test</td><td>12,500</td><td>14 Jun 2026</td><td>MTN MoMo</td>
+                <td><span class="badge badge-success">Paid</span></td>
+              </tr>
+              <tr>
+                <td>INV-0233</td><td>Biya Jean-Pierre</td><td>Consultation</td><td>8,000</td><td>14 Jun 2026</td><td>Pending</td>
+                <td><span class="badge badge-danger">Unpaid</span></td>
+              </tr>
+              <tr>
+                <td>INV-0232</td><td>Ngono Suzanne</td><td>ANC visit, Ultrasound</td><td>25,000</td><td>13 Jun 2026</td><td>Cash</td>
+                <td><span class="badge badge-success">Paid</span></td>
+              </tr>
+              <tr>
+                <td>INV-0231</td><td>Kamga Patrick</td><td>Consultation, CBC test</td><td>15,000</td><td>12 Jun 2026</td><td>Orange Money</td>
+                <td><span class="badge badge-success">Paid</span></td>
+              </tr>
+              <tr>
+                <td>INV-0230</td><td>Tchouangang Noel</td><td>Consultation</td><td>8,500</td><td>12 Jun 2026</td><td>Pending</td>
+                <td><span class="badge badge-danger">Unpaid</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Create Invoice form -->
+        <div class="panel" style="max-width:640px">
+          <div class="panel-hd">Create Invoice</div>
+          <div class="form-group">
+            <label class="form-label">Patient</label>
+            <input class="form-control" type="text" placeholder="Search patient by name or HID…">
+          </div>
+          <!-- Line items -->
+          <div style="margin:16px 0">
+            <div style="font-size:13px;font-weight:600;color:var(--txt2);margin-bottom:8px">Line Items</div>
+            <table class="data-table">
+              <thead><tr><th>Service Name</th><th>Qty</th><th>Unit Price XAF</th><th>Total XAF</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><input class="form-control" style="padding:5px 8px;font-size:13px" value="Consultation"></td>
+                  <td><input class="form-control" style="padding:5px 8px;font-size:13px;width:60px" value="1"></td>
+                  <td><input class="form-control" style="padding:5px 8px;font-size:13px;width:100px" value="5,000"></td>
+                  <td style="font-weight:600">5,000</td>
+                </tr>
+                <tr>
+                  <td><input class="form-control" style="padding:5px 8px;font-size:13px" value="Malaria RDT"></td>
+                  <td><input class="form-control" style="padding:5px 8px;font-size:13px;width:60px" value="1"></td>
+                  <td><input class="form-control" style="padding:5px 8px;font-size:13px;width:100px" value="2,500"></td>
+                  <td style="font-weight:600">2,500</td>
+                </tr>
+              </tbody>
+            </table>
+            <button class="btn btn-secondary" style="margin-top:8px;font-size:12px;padding:5px 12px;display:inline-flex;align-items:center;gap:5px"><i data-lucide="plus" style="width:13px;height:13px"></i> Add Line</button>
+          </div>
+          <!-- Totals -->
+          <div style="background:var(--bg);border-radius:var(--rad);padding:12px 14px;margin-bottom:16px">
+            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="color:var(--muted)">Subtotal</span><span>7,500 XAF</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="color:var(--muted)">Discount</span><span>0</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;border-top:1px solid var(--bdr);padding-top:8px;margin-top:8px"><span>Total</span><span style="color:var(--b)">7,500 XAF</span></div>
+          </div>
+          <!-- Payment method -->
+          <div class="form-group">
+            <label class="form-label">Payment Method</label>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
+              <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="radio" name="pay" checked> <i data-lucide="smartphone" style="width:14px;height:14px;color:#F59E0B"></i> MTN MoMo</label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="radio" name="pay"> <i data-lucide="smartphone" style="width:14px;height:14px;color:#F97316"></i> Orange Money</label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="radio" name="pay"> <i data-lucide="banknote" style="width:14px;height:14px;color:var(--ok)"></i> Cash</label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="radio" name="pay"> <i data-lucide="building-2" style="width:14px;height:14px;color:var(--b)"></i> CNPS</label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="radio" name="pay"> <i data-lucide="shield" style="width:14px;height:14px;color:var(--t)"></i> Insurance</label>
+            </div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:8px;display:inline-flex;align-items:center;gap:6px"><i data-lucide="file-check" style="width:15px;height:15px"></i> Create Invoice</button>
+        </div>
+      </div><!-- /lite-invoices -->
+
+      <!-- ── RECEIPTS ── -->
+      <div id="lite-receipts" class="portal-page" style="display:none">
+        <div style="display:flex;justify-content:center">
+          <div>
+            <!-- Print card -->
+            <div style="max-width:400px;border:1px solid var(--bdr);border-radius:var(--rad);background:#fff;padding:28px 24px;font-size:13px">
+              <div style="text-align:center;margin-bottom:16px">
+                <div style="font-size:18px;font-weight:800;color:var(--b)">OpesCare</div>
+                <div style="font-size:13px;color:var(--txt2);font-weight:600">Centre Médical de Yaoundé</div>
+                <div style="font-size:22px;font-weight:800;letter-spacing:4px;margin:10px 0 2px;color:var(--txt)">RECEIPT</div>
+                <div style="height:2px;background:var(--bdr);margin:8px 0"></div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;font-size:12px">
+                <div><span style="color:var(--muted)">Receipt#</span><br><strong>INV-0234</strong></div>
+                <div><span style="color:var(--muted)">Date</span><br><strong>14 Jun 2026</strong></div>
+                <div><span style="color:var(--muted)">Patient</span><br><strong>Fouda Marie Claire</strong></div>
+                <div><span style="color:var(--muted)">HID</span><br><code style="font-size:10px">CM-HID-3FP7-KL19-R4Q2</code></div>
+              </div>
+              <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:12px">
+                <thead><tr style="border-bottom:1px solid var(--bdr)">
+                  <th style="text-align:left;padding:4px 0;color:var(--muted)">Service</th>
+                  <th style="text-align:right;padding:4px 0;color:var(--muted)">XAF</th>
+                </tr></thead>
+                <tbody>
+                  <tr><td style="padding:4px 0">Consultation</td><td style="text-align:right">5,000</td></tr>
+                  <tr><td style="padding:4px 0">Malaria Test</td><td style="text-align:right">2,500</td></tr>
+                  <tr><td style="padding:4px 0">Paracétamol 500mg (×10)</td><td style="text-align:right">500</td></tr>
+                </tbody>
+              </table>
+              <div style="font-size:12px;margin-bottom:4px;display:flex;justify-content:space-between"><span style="color:var(--muted)">Subtotal</span><span>8,000 XAF</span></div>
+              <div style="font-size:12px;margin-bottom:8px;display:flex;justify-content:space-between"><span style="color:var(--muted)">Discount</span><span>−0</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:800;border-top:2px solid var(--txt);padding-top:8px;margin-bottom:12px">
+                <span>TOTAL</span><span>8,000 XAF</span>
+              </div>
+              <div style="font-size:12px;margin-bottom:4px"><i data-lucide="check-circle" style="width:13px;height:13px;color:var(--ok);vertical-align:middle"></i> <strong>MTN MoMo</strong> &nbsp;|&nbsp; Ref: MoMo-78912345</div>
+              <!-- QR placeholder -->
+              <div style="display:flex;justify-content:center;margin:14px 0">
+                <div style="width:80px;height:80px;border:2px dashed var(--bdr);display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:12px;color:var(--muted);font-weight:700">QR</div>
+              </div>
+              <div style="text-align:center;font-size:11px;color:var(--muted)">Thank you for choosing OpesCare Lite</div>
+            </div>
+            <!-- Print button (outside print area) -->
+            <div style="text-align:center;margin-top:14px">
+              <button class="btn btn-secondary" style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="printer" style="width:15px;height:15px"></i> Print Receipt</button>
+            </div>
+          </div>
+        </div>
+      </div><!-- /lite-receipts -->
+
+      <!-- ── DAILY REPORT ── -->
+      <div id="lite-daily" class="portal-page" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+          <div style="font-size:17px;font-weight:700;color:var(--txt)">14 June 2026</div>
+          <button class="btn btn-secondary" style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="download" style="width:15px;height:15px"></i> Export PDF</button>
+        </div>
+
+        <!-- Summary KPIs -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px">
+          <div class="stat-card"><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Patients Seen</div><div style="font-size:32px;font-weight:800;color:var(--b)">23</div></div>
+          <div class="stat-card"><div style="font-size:12px;color:var(--muted);margin-bottom:4px">New Registrations</div><div style="font-size:32px;font-weight:800;color:var(--t)">4</div></div>
+          <div class="stat-card"><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Revenue</div><div style="font-size:28px;font-weight:800;color:var(--ok)">187,500 <span style="font-size:14px">XAF</span></div></div>
+          <div class="stat-card"><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Pending Payments</div><div style="font-size:28px;font-weight:800;color:var(--warn)">20,500 <span style="font-size:14px">XAF</span></div></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <!-- Services breakdown -->
+          <div class="panel">
+            <div class="panel-hd">Services Breakdown</div>
+            <table class="data-table">
+              <thead><tr><th>Service</th><th>Count</th><th>Revenue XAF</th></tr></thead>
+              <tbody>
+                <tr><td>General Consultation</td><td>15</td><td>75,000</td></tr>
+                <tr><td>Malaria RDT</td><td>8</td><td>20,000</td></tr>
+                <tr><td>CBC Test</td><td>5</td><td>25,000</td></tr>
+                <tr><td>ANC Visit</td><td>3</td><td>45,000</td></tr>
+                <tr><td>Ultrasound</td><td>1</td><td>15,000</td></tr>
+                <tr><td>Medications</td><td>12</td><td>7,500</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <!-- Payment methods -->
+          <div class="panel">
+            <div class="panel-hd">Payment Methods</div>
+            <div style="display:flex;flex-direction:column;gap:14px;padding:4px 0">
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px">
+                  <span style="font-weight:600"><i data-lucide="smartphone" style="width:13px;height:13px;vertical-align:middle;color:#F59E0B"></i> MTN MoMo</span>
+                  <span style="color:var(--muted)">62% &nbsp;· 116,250 XAF</span>
+                </div>
+                <div style="height:8px;background:var(--bdr);border-radius:4px;overflow:hidden"><div style="width:62%;height:100%;background:#F59E0B;border-radius:4px"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px">
+                  <span style="font-weight:600"><i data-lucide="smartphone" style="width:13px;height:13px;vertical-align:middle;color:#F97316"></i> Orange Money</span>
+                  <span style="color:var(--muted)">18% &nbsp;· 33,750 XAF</span>
+                </div>
+                <div style="height:8px;background:var(--bdr);border-radius:4px;overflow:hidden"><div style="width:18%;height:100%;background:#F97316;border-radius:4px"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px">
+                  <span style="font-weight:600"><i data-lucide="banknote" style="width:13px;height:13px;vertical-align:middle;color:var(--ok)"></i> Cash</span>
+                  <span style="color:var(--muted)">20% &nbsp;· 37,500 XAF</span>
+                </div>
+                <div style="height:8px;background:var(--bdr);border-radius:4px;overflow:hidden"><div style="width:20%;height:100%;background:var(--ok);border-radius:4px"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /lite-daily -->
+
+      <!-- ── SUMMARY ── -->
+      <div id="lite-summary" class="portal-page" style="display:none">
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:20px;flex-wrap:wrap">
+          <input class="form-control" type="date" style="width:160px" value="2026-06-01">
+          <span style="color:var(--muted)">to</span>
+          <input class="form-control" type="date" style="width:160px" value="2026-06-14">
+          <button class="btn btn-primary" style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="bar-chart-2" style="width:15px;height:15px"></i> Generate</button>
+        </div>
+
+        <div class="panel" style="margin-bottom:20px;overflow-x:auto">
+          <div class="panel-hd">Period Summary</div>
+          <table class="data-table" style="min-width:560px">
+            <thead><tr><th>Period</th><th>Patients</th><th>New Reg.</th><th>Revenue XAF</th><th>Avg. Invoice XAF</th></tr></thead>
+            <tbody>
+              <tr><td>This Week</td><td>89</td><td>14</td><td>742,500</td><td>8,342</td></tr>
+              <tr><td>Last Week</td><td>76</td><td>11</td><td>623,000</td><td>8,197</td></tr>
+              <tr><td>This Month</td><td>312</td><td>48</td><td>2,614,500</td><td>8,380</td></tr>
+              <tr><td>Last Month</td><td>287</td><td>39</td><td>2,341,000</td><td>8,157</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel" style="overflow-x:auto">
+          <div class="panel-hd">Top Services — This Month</div>
+          <table class="data-table">
+            <thead><tr><th>Service</th><th>Count</th><th>Revenue XAF</th></tr></thead>
+            <tbody>
+              <tr><td>General Consultation</td><td>198</td><td>990,000</td></tr>
+              <tr><td>Malaria RDT</td><td>87</td><td>217,500</td></tr>
+              <tr><td>ANC Visit</td><td>45</td><td>675,000</td></tr>
+              <tr><td>CBC Test</td><td>62</td><td>310,000</td></tr>
+              <tr><td>Ultrasound</td><td>28</td><td>420,000</td></tr>
+              <tr><td>Medications</td><td>143</td><td>89,375</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div><!-- /lite-summary -->
+
+    </div><!-- /portal-content -->
+  </div><!-- /portal-main -->
+</div><!-- /portal-lite -->
+
+
+<!-- ============================================================
+     PORTAL: ONBOARDING  id="portal-onboarding"
+     Full-page wizard — no sidebar
+     ============================================================ -->
+<div id="portal-onboarding" style="display:none;min-height:100vh;background:var(--bg);flex-direction:column">
+
+  <!-- Top header bar -->
+  <div style="background:#fff;border-bottom:1px solid var(--bdr);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100">
+    <div style="font-size:20px;font-weight:800;color:var(--b)">OpesCare</div>
+    <div style="font-size:14px;font-weight:600;color:var(--txt)">Facility Registration</div>
+    <div style="font-size:13px;color:var(--muted)">Need help? <strong style="color:var(--b)">+237 6XX XXX XXX</strong></div>
+  </div>
+
+  <!-- Step indicator -->
+  <div style="background:#fff;border-bottom:1px solid var(--bdr);padding:16px 32px;display:flex;align-items:center;justify-content:center">
+    <div id="onb-step-indicator" style="display:flex;align-items:center;gap:0">
+      <!-- Steps 1–9 generated inline -->
+      <div class="onb-step-dot" data-step="1" style="display:flex;align-items:center">
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--b);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer" onclick="goStep(1)">1</div>
+        <div style="width:40px;height:2px;background:var(--bdr)"></div>
+      </div>
+      <div class="onb-step-dot" data-step="2" style="display:flex;align-items:center">
+        <div id="onb-dot-2" style="width:32px;height:32px;border-radius:50%;background:var(--bdr);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer" onclick="goStep(2)">2</div>
+        <div style="width:40px;height:2px;background:var(--bdr)"></div>
+      </div>
+      <div class="onb-step-dot" data-step="3" style="display:flex;align-items:center">
+        <div id="onb-dot-3" style="width:32px;height:32px;border-radius:50%;background:var(--bdr);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer" onclick="goStep(3)">3</div>
+        <div style="width:40px;height:2px;background:var(--bdr)"></div>
+      </div>
+      <div class="onb-step-dot" data-step="4" style="display:flex;align-items:center">
+        <div id="onb-dot-4" style="width:32px;height:32px;border-radius:50%;background:var(--bdr);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer" onclick="goStep(4)">4</div>
+        <div style="width:40px;height:2px;background:var(--bdr)"></div>
+      </div>
+      <div class="onb-step-dot" data-step="5" style="display:flex;align-items:center">
+        <div id="onb-dot-5" style="width:32px;height:32px;border-radius:50%;background:var(--bdr);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer" onclick="goStep(5)">5</div>
+        <div style="width:40px;height:2px;background:var(--bdr)"></div>
+      </div>
+      <div class="onb-step-dot" data-step="6" style="display:flex;align-items:center">
+        <div id="onb-dot-6" style="width:32px;height:32px;border-radius:50%;background:var(--bdr);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer" onclick="goStep(6)">6</div>
+        <div style="width:40px;height:2px;background:var(--bdr)"></div>
+      </div>
+      <div class="onb-step-dot" data-step="7" style="display:flex;align-items:center">
+        <div id="onb-dot-7" style="width:32px;height:32px;border-radius:50%;background:var(--bdr);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer" onclick="goStep(7)">7</div>
+        <div style="width:40px;height:2px;background:var(--bdr)"></div>
+      </div>
+      <div class="onb-step-dot" data-step="8" style="display:flex;align-items:center">
+        <div id="onb-dot-8" style="width:32px;height:32px;border-radius:50%;background:var(--bdr);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer" onclick="goStep(8)">8</div>
+        <div style="width:40px;height:2px;background:var(--bdr)"></div>
+      </div>
+      <div class="onb-step-dot" data-step="9" style="display:flex;align-items:center">
+        <div id="onb-dot-9" style="width:32px;height:32px;border-radius:50%;background:var(--bdr);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer" onclick="goStep(9)">9</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Wizard body -->
+  <div style="flex:1;padding:32px 16px;display:flex;justify-content:center">
+    <div style="width:100%;max-width:720px">
+
+      <!-- ── STEP 1: Account Type ── -->
+      <div id="onb-step-1">
+        <h2 style="font-size:22px;font-weight:800;color:var(--txt);margin:0 0 6px">What type of facility are you registering?</h2>
+        <p style="color:var(--muted);font-size:14px;margin:0 0 24px">Select the option that best describes your organisation</p>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px" id="onb-type-grid">
+          <div class="onb-type-card" onclick="selectFacType(this)" style="border:2px solid var(--bdr);border-radius:var(--rad);padding:20px;text-align:center;cursor:pointer;background:#fff;transition:border-color .15s">
+            <i data-lucide="hospital" style="width:32px;height:32px;color:var(--b);margin-bottom:10px"></i>
+            <div style="font-weight:700;font-size:14px;color:var(--txt)">Hospital</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px">Full inpatient and emergency services</div>
+          </div>
+          <div class="onb-type-card" onclick="selectFacType(this)" style="border:2px solid var(--bdr);border-radius:var(--rad);padding:20px;text-align:center;cursor:pointer;background:#fff;transition:border-color .15s">
+            <i data-lucide="activity" style="width:32px;height:32px;color:var(--b);margin-bottom:10px"></i>
+            <div style="font-weight:700;font-size:14px;color:var(--txt)">Clinic</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px">Outpatient consultations and basic services</div>
+          </div>
+          <div class="onb-type-card" onclick="selectFacType(this)" style="border:2px solid var(--bdr);border-radius:var(--rad);padding:20px;text-align:center;cursor:pointer;background:#fff;transition:border-color .15s">
+            <i data-lucide="flask-conical" style="width:32px;height:32px;color:var(--b);margin-bottom:10px"></i>
+            <div style="font-weight:700;font-size:14px;color:var(--txt)">Laboratory</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px">Diagnostic testing services</div>
+          </div>
+          <div class="onb-type-card" onclick="selectFacType(this)" style="border:2px solid var(--bdr);border-radius:var(--rad);padding:20px;text-align:center;cursor:pointer;background:#fff;transition:border-color .15s">
+            <i data-lucide="pill" style="width:32px;height:32px;color:var(--b);margin-bottom:10px"></i>
+            <div style="font-weight:700;font-size:14px;color:var(--txt)">Pharmacy</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px">Medication dispensing</div>
+          </div>
+          <div class="onb-type-card" onclick="selectFacType(this)" style="border:2px solid var(--bdr);border-radius:var(--rad);padding:20px;text-align:center;cursor:pointer;background:#fff;transition:border-color .15s">
+            <i data-lucide="heart-handshake" style="width:32px;height:32px;color:var(--b);margin-bottom:10px"></i>
+            <div style="font-weight:700;font-size:14px;color:var(--txt)">Health Organisation</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px">NGO, ministry, or public health body</div>
+          </div>
+          <div class="onb-type-card" onclick="selectFacType(this)" style="border:2px solid var(--bdr);border-radius:var(--rad);padding:20px;text-align:center;cursor:pointer;background:#fff;transition:border-color .15s">
+            <i data-lucide="scan" style="width:32px;height:32px;color:var(--b);margin-bottom:10px"></i>
+            <div style="font-weight:700;font-size:14px;color:var(--txt)">Imaging Centre</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px">Radiology and imaging services</div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end">
+          <button class="btn btn-primary" onclick="goStep(2)" style="display:inline-flex;align-items:center;gap:6px">Next <i data-lucide="arrow-right" style="width:15px;height:15px"></i></button>
+        </div>
+      </div><!-- /onb-step-1 -->
+
+      <!-- ── STEP 2: Basic Information ── -->
+      <div id="onb-step-2" style="display:none">
+        <h2 style="font-size:22px;font-weight:800;color:var(--txt);margin:0 0 20px">Basic Information</h2>
+        <div class="panel">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div class="form-group" style="grid-column:1/-1">
+              <label class="form-label">Facility Name <span style="color:var(--danger)">*</span></label>
+              <input class="form-control" type="text" placeholder="e.g., Centre Médical de Yaoundé">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Common Name / Abbreviation</label>
+              <input class="form-control" type="text" placeholder="e.g., CMY">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Registration Number</label>
+              <input class="form-control" type="text" placeholder="e.g., MINSAN-2024-0123">
+              <div style="font-size:11px;color:var(--muted);margin-top:4px">e.g., MINSAN-2024-0123</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Year Established</label>
+              <input class="form-control" type="number" placeholder="2005" min="1800" max="2030">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Number of Beds</label>
+              <input class="form-control" type="number" placeholder="e.g., 45">
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+              <label class="form-label">Description</label>
+              <textarea class="form-control" rows="3" placeholder="Brief description of your facility and its mission"></textarea>
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+              <label class="form-label">Website <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+              <input class="form-control" type="url" placeholder="https://www.example.cm">
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:20px">
+          <button class="btn btn-secondary" onclick="goStep(1)" style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="arrow-left" style="width:15px;height:15px"></i> Back</button>
+          <button class="btn btn-primary" onclick="goStep(3)" style="display:inline-flex;align-items:center;gap:6px">Next <i data-lucide="arrow-right" style="width:15px;height:15px"></i></button>
+        </div>
+      </div><!-- /onb-step-2 -->
+
+      <!-- ── STEP 3: Location ── -->
+      <div id="onb-step-3" style="display:none">
+        <h2 style="font-size:22px;font-weight:800;color:var(--txt);margin:0 0 20px">Location Details</h2>
+        <div class="panel">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div class="form-group">
+              <label class="form-label">Country</label>
+              <select class="form-control"><option>Cameroon 🇨🇲</option></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Region</label>
+              <select class="form-control">
+                <option>Centre</option><option>Littoral</option><option>Nord</option><option>Adamaoua</option>
+                <option>Est</option><option>Ouest</option><option>Nord-Ouest</option><option>Sud-Ouest</option>
+                <option>Sud</option><option>Extrême-Nord</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Division</label>
+              <input class="form-control" type="text" placeholder="e.g., Mfoundi">
+            </div>
+            <div class="form-group">
+              <label class="form-label">City / Town</label>
+              <input class="form-control" type="text" placeholder="e.g., Yaoundé">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Quarter / Neighbourhood</label>
+              <input class="form-control" type="text" placeholder="e.g., Bastos">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Street Address</label>
+              <input class="form-control" type="text" placeholder="Street name and number">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Postal Code</label>
+              <input class="form-control" type="text" placeholder="e.g., BP 1234">
+            </div>
+            <div class="form-group"></div>
+            <div class="form-group">
+              <label class="form-label">GPS Latitude</label>
+              <input class="form-control" type="number" step="0.0001" placeholder="3.8667">
+            </div>
+            <div class="form-group">
+              <label class="form-label">GPS Longitude</label>
+              <input class="form-control" type="number" step="0.0001" placeholder="11.5167">
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+              <button class="btn btn-secondary" style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="map-pin" style="width:15px;height:15px"></i> Use My Location</button>
+            </div>
+          </div>
+          <!-- Mini map placeholder -->
+          <div style="margin-top:12px;height:200px;background:#1e293b;border-radius:var(--rad);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.45);font-size:13px">
+            <i data-lucide="map" style="width:20px;height:20px;margin-right:8px;opacity:.5"></i>
+            Location will appear on the OpesCare Care Map
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:20px">
+          <button class="btn btn-secondary" onclick="goStep(2)" style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="arrow-left" style="width:15px;height:15px"></i> Back</button>
+          <button class="btn btn-primary" onclick="goStep(4)" style="display:inline-flex;align-items:center;gap:6px">Next <i data-lucide="arrow-right" style="width:15px;height:15px"></i></button>
+        </div>
+      </div><!-- /onb-step-3 -->
+
+      <!-- ── STEP 4: Licence & Accreditation ── -->
+      <div id="onb-step-4" style="display:none">
+        <h2 style="font-size:22px;font-weight:800;color:var(--txt);margin:0 0 20px">Licence &amp; Accreditation</h2>
+        <div class="panel">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div class="form-group" style="grid-column:1/-1">
+              <label class="form-label">Operating Licence Number <span style="color:var(--danger)">*</span></label>
+              <input class="form-control" type="text" placeholder="e.g., LIC-2024-00123">
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+              <label class="form-label">Issuing Authority</label>
+              <input class="form-control" type="text" placeholder="e.g., Ministère de la Santé Publique">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Licence Issue Date</label>
+              <input class="form-control" type="date">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Licence Expiry Date</label>
+              <input class="form-control" type="date">
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+              <label class="form-label">Upload Licence Document</label>
+              <div style="border:2px dashed var(--bdr);border-radius:var(--rad);padding:28px;text-align:center;background:var(--bg)">
+                <i data-lucide="upload-cloud" style="width:32px;height:32px;color:var(--muted);margin-bottom:8px"></i>
+                <div style="font-size:13px;color:var(--muted)">Drag &amp; drop or <span style="color:var(--b);cursor:pointer;text-decoration:underline">browse files</span></div>
+                <div style="font-size:11px;color:var(--muted);margin-top:4px">PDF, JPG or PNG — max 5 MB</div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Accreditation Body <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+              <input class="form-control" type="text" placeholder="e.g., ISO, JCI">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Accreditation Number</label>
+              <input class="form-control" type="text" placeholder="optional">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Accreditation Expiry</label>
+              <input class="form-control" type="date">
+            </div>
+            <div class="form-group"></div>
+            <div class="form-group" style="grid-column:1/-1">
+              <label class="form-label">Upload Accreditation Certificate</label>
+              <div style="border:2px dashed var(--bdr);border-radius:var(--rad);padding:28px;text-align:center;background:var(--bg)">
+                <i data-lucide="upload-cloud" style="width:32px;height:32px;color:var(--muted);margin-bottom:8px"></i>
+                <div style="font-size:13px;color:var(--muted)">Drag &amp; drop or <span style="color:var(--b);cursor:pointer;text-decoration:underline">browse files</span></div>
+                <div style="font-size:11px;color:var(--muted);margin-top:4px">PDF, JPG or PNG — max 5 MB</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:20px">
+          <button class="btn btn-secondary" onclick="goStep(3)" style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="arrow-left" style="width:15px;height:15px"></i> Back</button>
+          <button class="btn btn-primary" onclick="goStep(5)" style="display:inline-flex;align-items:center;gap:6px">Next <i data-lucide="arrow-right" style="width:15px;height:15px"></i></button>
+        </div>
+      </div><!-- /onb-step-4 -->
+
+      <!-- ── STEP 5: Services ── -->
+      <div id="onb-step-5" style="display:none">
+        <h2 style="font-size:22px;font-weight:800;color:var(--txt);margin:0 0 6px">Services Offered</h2>
+        <p style="color:var(--muted);font-size:14px;margin:0 0 20px">Select all services your facility provides</p>
+        <div class="panel">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+            <label style="display:flex;align-items:center;gap:8px;padding:12px;border:1px solid var(--bdr);border-radius:var(--rad);cursor:pointer;background:#fff;font-size:13px"><input type="checkbox"> <i data-lucide="ambulance" style="width:16px;height:16px;color:var(--b);flex-shrink:0"></i> Emergency Care</label>
+            <label style="display:flex;align-items:center;gap:8px;padding:12px;border:1px solid var(--bdr);border-radius:var(--rad);cursor:pointer;background:#fff;font-size:13px"><input type="checkbox"> <i data-lucide="bed" style="width:16px;height:16px;color:var(--b);flex-shrink:0"></i> Inpatient Care</label>
+            <label style="display:flex;align-items:center;gap:8px;padding:12px;border:1px solid var(--bdr);border-radius:var(--rad);cursor:pointer;background:#fff;font-size:13px"><input type="checkbox"> <i data-lucide="stethoscope" style="width:16px;height:16px;color:var(--b);flex-shrink:0"></i> Outpatient Consultations</label>
+            <label style="display:flex;align-items:center;gap:8px;padding:12px;border:1px solid var(--bdr);border-radius:var(--rad);cursor:pointer;background:#fff;font-size:13px"><input type="checkbox"> <i data-lucide="scissors" style="width:16px;height:16px;color:var(--b);flex-shrink:0"></i> Surgery</label>
+            <label style="display:flex;align-items:center;gap:8px;padding:12px;border:1px solid var(--bdr);border-radius:var(--rad);cursor:pointer;background:#fff;font-size:13px"><input type="checkbox"> <i data-lucide="baby" style="width:16px;height:16px;color:var(--b);flex-shrink:0"></i> Maternity &amp; Obstetrics</label>
+            <label style="display:flex;align-items:center;gap:8px;padding:12px;border:1px solid var(--bdr);border-radius:var(--rad);cursor:pointer;background:#fff;font-size:13px"><input type="checkbox"> <i data-lucide="smile" style="width:16px;height:16px;color:var(--b);flex-shrink:0"></i> Paediatrics</label>
+            <label style="display:flex;align-items:center;gap:8px;padding:12px;border:1px solid var(--bdr);border-radius:var(--rad);cursor:pointer;background:#fff;font-size:13px"><input type="checkbox"> <i data-lucide="flask-conical" style="width:16px;height:16px;color:var(--b);flex-shrink:0"></i> Laboratory / Diagnostics</label>
+            <label style="display:flex;align-items:center;gap:8px;padding:12px;border:1px solid var(--bdr);border-radius:var(--rad);cursor:pointer;background:#fff;font-size:13px"><input type="checkbox"> <i data-lucide="pill" style="width:16px;height:16px;color:var(--b);flex-shrink:0"></i> Pharmacy</label>
+            <label style="display:flex;align-items:center;gap:8px;padding:12px;border:1px solid var(--bdr);border-radius:var(--rad);cursor:pointer;background:#fff;font-size:13px"><input type="checkbox"> <i data-lucide="scan" style="width:16px;height:16px;color:var(--b);flex-shrink:0"></i> Medical Imaging / Radiology</label>
+            <label style="display:flex;align-items:center;gap:8px;padding:12px;border:1px solid var(--bdr);border-radius:var(--rad);cursor:pointer;background:#fff;font-size:13px"><input type="checkbox"> <i data-lucide="video" style="width:16px;height:16px;color:var(--b);flex-shrink:0"></i> Telemedicine</label>
+            <label style="display:flex;align-items:center;gap:8px;padding:12px;border:1px solid var(--bdr);border-radius:var(--rad);cursor:pointer;background:#fff;font-size:13px"><input type="checkbox"> <i data-lucide="brain" style="width:16px;height:16px;color:var(--b);flex-shrink:0"></i> Mental Health</label>
+            <label style="display:flex;align-items:center;gap:8px;padding:12px;border:1px solid var(--bdr);border-radius:var(--rad);cursor:pointer;background:#fff;font-size:13px"><input type="checkbox"> <i data-lucide="activity" style="width:16px;height:16px;color:var(--b);flex-shrink:0"></i> Physiotherapy</label>
+            <label style="display:flex;align-items:center;gap:8px;padding:12px;border:1px solid var(--bdr);border-radius:var(--rad);cursor:pointer;background:#fff;font-size:13px"><input type="checkbox"> <i data-lucide="smile" style="width:16px;height:16px;color:var(--b);flex-shrink:0"></i> Dental</label>
+            <label style="display:flex;align-items:center;gap:8px;padding:12px;border:1px solid var(--bdr);border-radius:var(--rad);cursor:pointer;background:#fff;font-size:13px"><input type="checkbox"> <i data-lucide="eye" style="width:16px;height:16px;color:var(--b);flex-shrink:0"></i> Eye Care</label>
+            <label style="display:flex;align-items:center;gap:8px;padding:12px;border:1px solid var(--bdr);border-radius:var(--rad);cursor:pointer;background:#fff;font-size:13px"><input type="checkbox"> <i data-lucide="heart-pulse" style="width:16px;height:16px;color:var(--b);flex-shrink:0"></i> HIV/AIDS Care</label>
+            <label style="display:flex;align-items:center;gap:8px;padding:12px;border:1px solid var(--bdr);border-radius:var(--rad);cursor:pointer;background:#fff;font-size:13px"><input type="checkbox"> <i data-lucide="wind" style="width:16px;height:16px;color:var(--b);flex-shrink:0"></i> Tuberculosis Care</label>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:20px">
+          <button class="btn btn-secondary" onclick="goStep(4)" style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="arrow-left" style="width:15px;height:15px"></i> Back</button>
+          <button class="btn btn-primary" onclick="goStep(6)" style="display:inline-flex;align-items:center;gap:6px">Next <i data-lucide="arrow-right" style="width:15px;height:15px"></i></button>
+        </div>
+      </div><!-- /onb-step-5 -->
+
+      <!-- ── STEP 6: Administrator Account ── -->
+      <div id="onb-step-6" style="display:none">
+        <h2 style="font-size:22px;font-weight:800;color:var(--txt);margin:0 0 6px">Primary Administrator</h2>
+        <p style="color:var(--muted);font-size:14px;margin:0 0 20px">This person will manage the OpesCare account for your facility</p>
+        <div class="panel">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div class="form-group">
+              <label class="form-label">First Name <span style="color:var(--danger)">*</span></label>
+              <input class="form-control" type="text" placeholder="Jean">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name <span style="color:var(--danger)">*</span></label>
+              <input class="form-control" type="text" placeholder="Dupont">
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+              <label class="form-label">Job Title / Position</label>
+              <input class="form-control" type="text" placeholder="e.g., Hospital Director, IT Manager">
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+              <label class="form-label">Email Address <span style="color:var(--danger)">*</span></label>
+              <input class="form-control" type="email" placeholder="director@facility.cm">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number <span style="color:var(--danger)">*</span></label>
+              <input class="form-control" type="tel" placeholder="+237 6XX XXX XXX">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Alternative Phone</label>
+              <input class="form-control" type="tel" placeholder="+237 6XX XXX XXX">
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:20px">
+          <button class="btn btn-secondary" onclick="goStep(5)" style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="arrow-left" style="width:15px;height:15px"></i> Back</button>
+          <button class="btn btn-primary" onclick="goStep(7)" style="display:inline-flex;align-items:center;gap:6px">Next <i data-lucide="arrow-right" style="width:15px;height:15px"></i></button>
+        </div>
+      </div><!-- /onb-step-6 -->
+
+      <!-- ── STEP 7: Plan Selection ── -->
+      <div id="onb-step-7" style="display:none">
+        <h2 style="font-size:22px;font-weight:800;color:var(--txt);margin:0 0 6px">Choose Your Plan</h2>
+        <p style="color:var(--muted);font-size:14px;margin:0 0 24px">All plans include a 30-day free trial</p>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px">
+
+          <!-- Lite -->
+          <div style="border:2px solid var(--bdr);border-radius:var(--rad);padding:24px;background:#fff">
+            <div style="font-size:16px;font-weight:800;color:var(--txt);margin-bottom:4px">Lite</div>
+            <div style="font-size:26px;font-weight:800;color:var(--b);margin-bottom:4px">FREE</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:14px">forever</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Best for: <strong style="color:var(--txt2)">Small clinics, rural health posts</strong></div>
+            <ul style="list-style:none;padding:0;margin:0 0 20px;font-size:13px;display:flex;flex-direction:column;gap:6px">
+              <li style="color:var(--ok)"><i data-lucide="check" style="width:13px;height:13px;vertical-align:middle"></i> Patient registration</li>
+              <li style="color:var(--ok)"><i data-lucide="check" style="width:13px;height:13px;vertical-align:middle"></i> Appointments</li>
+              <li style="color:var(--ok)"><i data-lucide="check" style="width:13px;height:13px;vertical-align:middle"></i> Basic billing (XAF)</li>
+              <li style="color:var(--ok)"><i data-lucide="check" style="width:13px;height:13px;vertical-align:middle"></i> MTN MoMo &amp; Orange Money</li>
+              <li style="color:var(--ok)"><i data-lucide="check" style="width:13px;height:13px;vertical-align:middle"></i> Up to 3 users</li>
+              <li style="color:var(--muted)"><i data-lucide="x" style="width:13px;height:13px;vertical-align:middle"></i> Insurance module</li>
+              <li style="color:var(--muted)"><i data-lucide="x" style="width:13px;height:13px;vertical-align:middle"></i> Lab integration</li>
+              <li style="color:var(--muted)"><i data-lucide="x" style="width:13px;height:13px;vertical-align:middle"></i> API access</li>
+            </ul>
+            <button class="btn btn-secondary" style="width:100%;justify-content:center">Select Lite</button>
+          </div>
+
+          <!-- Standard (highlighted) -->
+          <div style="border:2px solid var(--b);border-radius:var(--rad);padding:24px;background:#fff;position:relative">
+            <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--b);color:#fff;font-size:11px;font-weight:700;padding:3px 12px;border-radius:20px;white-space:nowrap">Most Popular</div>
+            <div style="font-size:16px;font-weight:800;color:var(--txt);margin-bottom:4px">Standard</div>
+            <div style="font-size:26px;font-weight:800;color:var(--b);margin-bottom:4px">15,000 <span style="font-size:14px;font-weight:600">XAF</span></div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:14px">per month</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Best for: <strong style="color:var(--txt2)">Clinics &amp; hospitals</strong></div>
+            <ul style="list-style:none;padding:0;margin:0 0 20px;font-size:13px;display:flex;flex-direction:column;gap:6px">
+              <li style="color:var(--ok)"><i data-lucide="check" style="width:13px;height:13px;vertical-align:middle"></i> Everything in Lite</li>
+              <li style="color:var(--ok)"><i data-lucide="check" style="width:13px;height:13px;vertical-align:middle"></i> Insurance &amp; preauth</li>
+              <li style="color:var(--ok)"><i data-lucide="check" style="width:13px;height:13px;vertical-align:middle"></i> Lab portal</li>
+              <li style="color:var(--ok)"><i data-lucide="check" style="width:13px;height:13px;vertical-align:middle"></i> Pharmacy module</li>
+              <li style="color:var(--ok)"><i data-lucide="check" style="width:13px;height:13px;vertical-align:middle"></i> CDSS alerts</li>
+              <li style="color:var(--ok)"><i data-lucide="check" style="width:13px;height:13px;vertical-align:middle"></i> Up to 20 users</li>
+              <li style="color:var(--ok)"><i data-lucide="check" style="width:13px;height:13px;vertical-align:middle"></i> API sandbox access</li>
+              <li style="color:var(--muted)"><i data-lucide="x" style="width:13px;height:13px;vertical-align:middle"></i> Dedicated support</li>
+              <li style="color:var(--muted)"><i data-lucide="x" style="width:13px;height:13px;vertical-align:middle"></i> Custom FHIR</li>
+            </ul>
+            <button class="btn btn-primary" style="width:100%;justify-content:center">Select Standard</button>
+          </div>
+
+          <!-- Enterprise -->
+          <div style="border:2px solid var(--bdr);border-radius:var(--rad);padding:24px;background:#fff">
+            <div style="font-size:16px;font-weight:800;color:var(--txt);margin-bottom:4px">Enterprise</div>
+            <div style="font-size:26px;font-weight:800;color:var(--b);margin-bottom:4px">Custom</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:14px">pricing</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Best for: <strong style="color:var(--txt2)">Hospital chains, health orgs</strong></div>
+            <ul style="list-style:none;padding:0;margin:0 0 20px;font-size:13px;display:flex;flex-direction:column;gap:6px">
+              <li style="color:var(--ok)"><i data-lucide="check" style="width:13px;height:13px;vertical-align:middle"></i> Everything in Standard</li>
+              <li style="color:var(--ok)"><i data-lucide="check" style="width:13px;height:13px;vertical-align:middle"></i> Unlimited users</li>
+              <li style="color:var(--ok)"><i data-lucide="check" style="width:13px;height:13px;vertical-align:middle"></i> Production API access</li>
+              <li style="color:var(--ok)"><i data-lucide="check" style="width:13px;height:13px;vertical-align:middle"></i> Custom FHIR endpoints</li>
+              <li style="color:var(--ok)"><i data-lucide="check" style="width:13px;height:13px;vertical-align:middle"></i> Dedicated account manager</li>
+              <li style="color:var(--ok)"><i data-lucide="check" style="width:13px;height:13px;vertical-align:middle"></i> SLA guarantee</li>
+              <li style="color:var(--ok)"><i data-lucide="check" style="width:13px;height:13px;vertical-align:middle"></i> On-premise option</li>
+              <li style="color:var(--ok)"><i data-lucide="check" style="width:13px;height:13px;vertical-align:middle"></i> Custom integrations</li>
+            </ul>
+            <button class="btn btn-secondary" style="width:100%;justify-content:center">Contact Sales</button>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <button class="btn btn-secondary" onclick="goStep(6)" style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="arrow-left" style="width:15px;height:15px"></i> Back</button>
+          <button class="btn btn-primary" onclick="goStep(8)" style="display:inline-flex;align-items:center;gap:6px">Next <i data-lucide="arrow-right" style="width:15px;height:15px"></i></button>
+        </div>
+      </div><!-- /onb-step-7 -->
+
+      <!-- ── STEP 8: Review & Submit ── -->
+      <div id="onb-step-8" style="display:none">
+        <h2 style="font-size:22px;font-weight:800;color:var(--txt);margin:0 0 20px">Review Your Application</h2>
+        <div class="panel" style="margin-bottom:16px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg);border-radius:var(--rad)">
+              <i data-lucide="hospital" style="width:20px;height:20px;color:var(--b);flex-shrink:0"></i>
+              <div><div style="font-size:11px;color:var(--muted)">Account Type</div><div style="font-size:13px;font-weight:600;color:var(--txt)">Hospital</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg);border-radius:var(--rad)">
+              <i data-lucide="building-2" style="width:20px;height:20px;color:var(--b);flex-shrink:0"></i>
+              <div><div style="font-size:11px;color:var(--muted)">Facility Name</div><div style="font-size:13px;font-weight:600;color:var(--txt)">Centre Médical de Yaoundé</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg);border-radius:var(--rad)">
+              <i data-lucide="map-pin" style="width:20px;height:20px;color:var(--b);flex-shrink:0"></i>
+              <div><div style="font-size:11px;color:var(--muted)">Region</div><div style="font-size:13px;font-weight:600;color:var(--txt)">Centre, Yaoundé</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg);border-radius:var(--rad)">
+              <i data-lucide="file-check" style="width:20px;height:20px;color:var(--b);flex-shrink:0"></i>
+              <div><div style="font-size:11px;color:var(--muted)">Licence</div><div style="font-size:13px;font-weight:600;color:var(--txt)">MINSAN-2024-0123, exp. 31 Dec 2026</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg);border-radius:var(--rad)">
+              <i data-lucide="user" style="width:20px;height:20px;color:var(--b);flex-shrink:0"></i>
+              <div><div style="font-size:11px;color:var(--muted)">Administrator</div><div style="font-size:13px;font-weight:600;color:var(--txt)">Jean Dupont</div><div style="font-size:11px;color:var(--muted)">director@cmyaounde.cm</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg);border-radius:var(--rad)">
+              <i data-lucide="star" style="width:20px;height:20px;color:var(--b);flex-shrink:0"></i>
+              <div><div style="font-size:11px;color:var(--muted)">Plan</div><div style="font-size:13px;font-weight:600;color:var(--txt)">Standard — 15,000 XAF/month</div></div>
+            </div>
+          </div>
+          <!-- Services chips -->
+          <div style="margin-top:14px">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Services (8 selected)</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              <span class="badge badge-info">Emergency</span>
+              <span class="badge badge-info">Inpatient</span>
+              <span class="badge badge-info">Outpatient</span>
+              <span class="badge badge-info">Lab</span>
+              <span class="badge badge-info">Pharmacy</span>
+              <span class="badge badge-info">Surgery</span>
+              <span class="badge badge-info">Maternity</span>
+              <span class="badge badge-info">Telemedicine</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Terms -->
+        <div class="panel" style="margin-bottom:20px">
+          <label style="display:flex;align-items:flex-start;gap:10px;font-size:13px;cursor:pointer;margin-bottom:10px">
+            <input type="checkbox" style="margin-top:2px">
+            <span>I have read and agree to the OpesCare <a href="#" style="color:var(--b)">Terms of Service</a> and <a href="#" style="color:var(--b)">Data Processing Agreement</a></span>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:10px;font-size:13px;cursor:pointer">
+            <input type="checkbox" style="margin-top:2px">
+            <span>I confirm this facility will handle patient data in accordance with Cameroonian health data regulations</span>
+          </label>
+        </div>
+
+        <button class="btn btn-primary" onclick="goStep(9)" style="width:100%;padding:14px;font-size:15px;justify-content:center;margin-bottom:10px">
+          <i data-lucide="send" style="width:18px;height:18px"></i> Submit Application
+        </button>
+        <p style="text-align:center;font-size:12px;color:var(--muted);margin:0 0 20px">Your application will be reviewed within 2-3 business days</p>
+
+        <div style="display:flex;justify-content:flex-start">
+          <button class="btn btn-secondary" onclick="goStep(7)" style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="arrow-left" style="width:15px;height:15px"></i> Back</button>
+        </div>
+      </div><!-- /onb-step-8 -->
+
+      <!-- ── STEP 9: Submitted ── -->
+      <div id="onb-step-9" style="display:none;text-align:center;padding:40px 0">
+        <i data-lucide="check-circle-2" style="width:80px;height:80px;color:var(--ok);margin-bottom:20px"></i>
+        <h2 style="font-size:26px;font-weight:800;color:var(--txt);margin:0 0 8px">Application Submitted!</h2>
+        <p style="font-size:15px;color:var(--muted);margin:0 0 24px">Thank you for registering Centre Médical de Yaoundé</p>
+
+        <!-- Reference number -->
+        <div style="display:inline-block;border:2px solid var(--b);border-radius:var(--rad);padding:12px 28px;margin-bottom:28px;background:#fff">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Your Reference Number</div>
+          <div style="font-family:monospace;font-size:20px;font-weight:800;color:var(--b);letter-spacing:2px">OPC-FAC-2026-08341</div>
+        </div>
+
+        <!-- Next steps -->
+        <div class="panel" style="text-align:left;max-width:520px;margin:0 auto 24px">
+          <div class="panel-hd">Next Steps</div>
+          <ol style="padding-left:20px;margin:0;font-size:13px;color:var(--txt2);display:flex;flex-direction:column;gap:10px">
+            <li>You will receive a confirmation email at <strong>director@cmyaounde.cm</strong> within 30 minutes</li>
+            <li>Our team will review your application within 2-3 business days</li>
+            <li>You may be asked to submit additional documents</li>
+            <li>Once approved, you will receive login credentials for your facility admin account</li>
+            <li>A 30-day free trial begins on your first login</li>
+          </ol>
+        </div>
+
+        <div style="display:flex;justify-content:center;gap:12px;margin-bottom:20px">
+          <button class="btn btn-primary" style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="log-in" style="width:15px;height:15px"></i> Go to Login</button>
+          <button class="btn btn-secondary" onclick="goStep(1)" style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="plus-circle" style="width:15px;height:15px"></i> Register Another Facility</button>
+        </div>
+        <p style="font-size:12px;color:var(--muted)">Questions? <a href="mailto:support@opescare.cloud" style="color:var(--b)">support@opescare.cloud</a> or call <strong>+237 6XX XXX XXX</strong></p>
+      </div><!-- /onb-step-9 -->
+
+    </div><!-- /max-width container -->
+  </div><!-- /wizard body -->
+</div><!-- /portal-onboarding -->
+
+<!-- Wizard JS helpers (scoped to onboarding) -->
+<script>
+function goStep(n) {
+  for (var i = 1; i <= 9; i++) {
+    var el = document.getElementById('onb-step-' + i);
+    if (el) el.style.display = (i === n) ? '' : 'none';
+    var dot = document.getElementById('onb-dot-' + i);
+    if (dot) {
+      if (i === n) {
+        dot.style.background = 'var(--b)';
+        dot.style.color = '#fff';
+      } else if (i < n) {
+        dot.style.background = 'var(--ok)';
+        dot.style.color = '#fff';
+      } else {
+        dot.style.background = 'var(--bdr)';
+        dot.style.color = 'var(--muted)';
+      }
+    }
+  }
+  // dot-1 is inline styled, update manually
+  var d1 = document.querySelector('[data-step="1"] div');
+  if (d1) {
+    if (n === 1) { d1.style.background = 'var(--b)'; d1.style.color = '#fff'; }
+    else { d1.style.background = 'var(--ok)'; d1.style.color = '#fff'; }
+  }
+  // scroll wizard body to top
+  var wb = document.querySelector('#portal-onboarding > div:last-child');
+  if (wb) wb.scrollTop = 0;
+  window.scrollTo(0,0);
+}
+
+function selectFacType(el) {
+  var cards = document.querySelectorAll('.onb-type-card');
+  cards.forEach(function(c) { c.style.borderColor = 'var(--bdr)'; c.style.background = '#fff'; });
+  el.style.borderColor = 'var(--b)';
+  el.style.background = 'var(--infol)';
+}
+</script>
