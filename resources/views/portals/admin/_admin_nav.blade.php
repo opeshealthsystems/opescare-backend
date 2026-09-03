@@ -6,9 +6,8 @@
 --}}
 @php $l = app()->getLocale(); @endphp
 
-{{-- Overview --}}
+{{-- Dashboard (standalone) --}}
 <div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.portal.nav_platform', [], $l) ?: 'Platform' }}</div>
     <a href="{{ route('portals.admin') }}" class="sidebar-link {{ request()->routeIs('portals.admin') && ! request()->routeIs('portals.admin.*') ? 'active' : '' }}">
         <i data-lucide="layout-dashboard"></i><span>{{ __('public.portal.nav_dashboard', [], $l) ?: 'Dashboard' }}</span>
     </a>

@@ -6,10 +6,13 @@
 <div class="sidebar-spacer"></div>
 
 <div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.portal.nav_developer', [], $l) ?: 'Developer' }}</div>
     <a href="{{ route('portals.developer.dashboard') }}" class="sidebar-link {{ request()->routeIs('portals.developer.dashboard') ? 'active' : '' }}">
         <i data-lucide="layout-dashboard"></i><span>{{ __('public.portal.nav_dashboard', [], $l) ?: 'Dashboard' }}</span>
     </a>
+</div>
+
+<div class="sidebar-nav-section">
+    <div class="sidebar-nav-label">{{ __('public.portal.nav_developer', [], $l) ?: 'Developer' }}</div>
     <a href="{{ route('portals.developer.apps') }}" class="sidebar-link {{ request()->routeIs('portals.developer.apps*') ? 'active' : '' }}">
         <i data-lucide="app-window"></i><span>{{ __('public.portal.nav_apps', [], $l) ?: 'My Apps' }}</span>
     </a>

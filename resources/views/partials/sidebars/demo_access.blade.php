@@ -4,22 +4,17 @@
     {{ __('portal.demo_role', [], $l) ?: 'Demo Mode' }}
 </div>
 <div class="sidebar-spacer"></div>
+
 <div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.portal.nav_dashboard', [], $l) ?: 'Overview' }}</div>
-    <a href="{{ route('portals.staff') }}" class="sidebar-link">
-        <i data-lucide="layout-dashboard"></i>
-        <span>{{ __('public.portal.nav_dashboard', [], $l) ?: 'Dashboard' }}</span>
+    <a href="{{ route('portals.staff') }}" class="sidebar-link {{ request()->routeIs('portals.staff') ? 'active' : '' }}">
+        <i data-lucide="layout-dashboard"></i><span>{{ __('public.portal.nav_dashboard', [], $l) ?: 'Dashboard' }}</span>
     </a>
 </div>
+
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_clinical', [], $l) ?: 'Clinical' }}</div>
-        <a href="{{ route('portals.staff.appointments') }}" class="sidebar-link">
+    <a href="{{ route('portals.staff.appointments') }}" class="sidebar-link">
         <i data-lucide="calendar-check-2"></i>
         <span>{{ __('public.portal.nav_appointments', [], $l) ?: 'Appointments' }}</span>
     </a>
-            </div>
-<div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.portal.nav_operations', [], $l) ?: 'Operations' }}</div>
-    @feature('billing')
-        @endfeature
-    </div>
+</div>

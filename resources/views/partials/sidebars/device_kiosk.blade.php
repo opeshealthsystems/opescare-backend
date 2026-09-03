@@ -4,21 +4,18 @@
     {{ __('portal.device_kiosk_role', [], $l) ?: 'Device / Kiosk' }}
 </div>
 <div class="sidebar-spacer"></div>
+
 <div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.portal.nav_dashboard', [], $l) ?: 'Overview' }}</div>
-    <a href="{{ route('portals.staff') }}" class="sidebar-link">
+    <a href="{{ route('portals.staff') }}" class="sidebar-link {{ request()->routeIs('portals.staff') && !request()->routeIs('portals.staff.*') ? 'active' : '' }}">
         <i data-lucide="layout-dashboard"></i>
         <span>{{ __('public.portal.nav_dashboard', [], $l) ?: 'Dashboard' }}</span>
     </a>
 </div>
+
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_clinical', [], $l) ?: 'Clinical' }}</div>
-        <a href="{{ route('portals.staff.appointments') }}" class="sidebar-link">
+    <a href="{{ route('portals.staff.appointments') }}" class="sidebar-link {{ request()->routeIs('portals.staff.appointments*') ? 'active' : '' }}">
         <i data-lucide="calendar-check-2"></i>
         <span>{{ __('public.portal.nav_appointments', [], $l) ?: 'Appointments' }}</span>
-    </a>
-    <a href="{{ route('public.help') }}" class="sidebar-link">
-        <i data-lucide="help-circle"></i>
-        <span>{{ __('public.portal.nav_help', [], $l) ?: 'Help' }}</span>
     </a>
 </div>

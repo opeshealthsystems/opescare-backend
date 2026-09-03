@@ -5,19 +5,8 @@
 </div>
 <div class="sidebar-spacer"></div>
 <div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.portal.nav_dashboard', [], $l) ?: 'Overview' }}</div>
-    <a href="{{ route('portals.staff') }}" class="sidebar-link">
+    <a href="{{ route('portals.staff') }}" class="sidebar-link {{ request()->routeIs('portals.staff') ? 'active' : '' }}">
         <i data-lucide="layout-dashboard"></i>
         <span>{{ __('public.portal.nav_dashboard', [], $l) ?: 'Dashboard' }}</span>
     </a>
 </div>
-<div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.portal.nav_clinical', [], $l) ?: 'Clinical' }}</div>
-                    @feature('clinical_decision_support')
-    @endfeature
-</div>
-<div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.portal.nav_operations', [], $l) ?: 'Operations' }}</div>
-    @feature('analytics_dashboards')
-    @endfeature
-    </div>

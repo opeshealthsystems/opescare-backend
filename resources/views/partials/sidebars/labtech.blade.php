@@ -4,16 +4,13 @@
     {{ __('portal.labtech_role', [], $l) ?: 'Lab Technician' }}
 </div>
 <div class="sidebar-spacer"></div>
+
 <div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.portal.nav_lab_portal', [], $l) ?: 'Lab Portal' }}</div>
-    </div>
-<div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.portal.nav_dashboard', [], $l) ?: 'Overview' }}</div>
-    <a href="{{ route('portals.staff') }}" class="sidebar-link">
-        <i data-lucide="layout-dashboard"></i>
-        <span>{{ __('public.portal.nav_dashboard', [], $l) ?: 'Dashboard' }}</span>
+    <a href="{{ route('portals.staff') }}" class="sidebar-link {{ request()->routeIs('portals.staff') ? 'active' : '' }}">
+        <i data-lucide="layout-dashboard"></i><span>{{ __('public.portal.nav_dashboard', [], $l) ?: 'Dashboard' }}</span>
     </a>
 </div>
+
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_lab', [], $l) ?: 'Laboratory' }}</div>
             {{-- Blood Bank is NOT behind @feature('inventory_ops'). It is carved out of
@@ -24,6 +21,4 @@
         <i data-lucide="droplets"></i>
         <span>{{ __('public.portal.nav_inventory_blood', [], $l) ?: 'Blood Bank' }}</span>
     </a>
-    @feature('inventory_ops')
-        @endfeature
-    </div>
+</div>
