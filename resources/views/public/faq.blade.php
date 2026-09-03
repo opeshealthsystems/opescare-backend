@@ -1,101 +1,89 @@
-@extends('layouts.public')
+@extends('layouts.finder')
 
-@section('title', __('public.faq.page_title'))
-@section('meta_description', __('public.faq.meta_description'))
+@section('title', __('finder_story.faq.page_title'))
+@section('description', __('finder_story.faq.meta_description'))
 
 {{--
-    FAQPage schema. This is the single highest-value structured-data block
-    on the site for answer engines: ChatGPT, Perplexity and AI Overviews
-    lift Q&A pairs almost verbatim when they are marked up, and infer them
-    unreliably when they are not. Built from the same lang array the page
-    renders, so the markup can never drift from the visible answers.
+    FAQPage schema, built from the same lang array the page renders so the
+    markup can never drift from the visible answers. Answer engines lift Q&A
+    pairs almost verbatim when they are marked up, and infer them unreliably
+    when they are not. (tests/Feature/Seo/DiscoverabilityTest expects at least
+    ten marked-up questions here.)
 --}}
 @push('schema')
-@php
-    $faqEntities = [];
-    foreach (__('public.faq.categories', [], app()->getLocale()) as $faqCat) {
-        foreach ($faqCat['items'] ?? [] as $faqItem) {
-            $faqEntities[] = [
-                '@type'          => 'Question',
-                'name'           => $faqItem['q'],
-                'acceptedAnswer' => ['@type' => 'Answer', 'text' => $faqItem['a']],
-            ];
-        }
-    }
-@endphp
-<script type="application/ld+json">
-{!! json_encode([
-    '@context'   => 'https://schema.org',
-    '@type'      => 'FAQPage',
-    'inLanguage' => app()->getLocale(),
-    'mainEntity' => $faqEntities,
-], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
-</script>
+{{-- FAQPage JSON-LD, built from the same lang array the page renders --}}
+@include('partials.finder.schema.faq')
 @endpush
 
 @section('content')
 
-<section class="content-header" style="background:linear-gradient(135deg,#0F2744 0%,#0F4C81 100%);padding:4rem 0 3rem;color:#fff;">
-    <div class="container" style="text-align:center;">
-        <div style="display:inline-flex;align-items:center;gap:0.5rem;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:2rem;padding:0.35rem 1rem;font-size:0.75rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#BAE6FD;margin-bottom:1.5rem;">
-            <i data-lucide="help-circle" style="width:0.875rem;height:0.875rem;"></i>
-            {{ __('public.faq.badge') }}
+    {{--
+        Consumer questions, answered plainly and honestly — free, where the
+        data comes from, listed-not-verified, how to report an error, how a
+        pharmacy claims its listing, privacy.
+
+        Each Q/A is one <details>/<summary> pair with an <h3> question — the
+        clean semantic structure an SEO pass can wrap FAQPage markup around
+        (and this view already emits that markup from the same array).
+    --}}
+    <style>
+        .fs-narrow { max-width: 720px; }
+        .fs-qa { border-bottom: 1px solid var(--f-line); }
+        .fs-qa summary {
+            display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+            padding: 1rem 0; cursor: pointer; list-style: none;
+        }
+        .fs-qa summary::-webkit-details-marker { display: none; }
+        .fs-qa summary h3 { margin: 0; font-size: 1rem; }
+        .fs-qa summary svg { flex-shrink: 0; transition: transform 0.15s ease; }
+        .fs-qa[open] summary svg { transform: rotate(180deg); }
+        .fs-qa > p { padding: 0 0 1rem; margin: 0; }
+        .fs-cta-row { display: flex; flex-wrap: wrap; gap: 0.625rem; }
+    </style>
+
+    {{-- 01 · Hero --}}
+    <section class="f-section f-section--surface f-section--tight">
+        <div class="f-container">
+            <div class="fs-narrow">
+                <p class="f-eyebrow">{{ __('finder_story.faq.eyebrow') }}</p>
+                <h1 class="f-h1">{{ __('finder_story.faq.title') }}</h1>
+                <p class="f-lead">{{ __('finder_story.faq.lead') }}</p>
+            </div>
         </div>
-        <h1 style="font-size:clamp(2rem,4vw,3rem);font-weight:900;margin:0 0 1rem;">{{ __('public.faq.heading') }}</h1>
-        <p style="font-size:1.125rem;color:#BAE6FD;max-width:560px;margin:0 auto;">{{ __('public.faq.subheading') }}</p>
-    </div>
-</section>
+    </section>
 
-<section style="padding:4rem 0;">
-    <div class="container" style="max-width:820px;">
-
-        @foreach(__('public.faq.categories', [], app()->getLocale()) as $cat)
-        <div style="margin-bottom:3rem;">
-            <h2 style="display:flex;align-items:center;gap:0.625rem;font-size:1.0625rem;font-weight:800;color:var(--color-text-primary);margin:0 0 1.25rem;padding-bottom:0.75rem;border-bottom:2px solid var(--color-border);">
-                <i data-lucide="{{ $cat['icon'] }}" style="width:1.125rem;height:1.125rem;color:#0F4C81;flex-shrink:0;"></i>
-                {{ $cat['title'] }}
-            </h2>
-            <div style="display:flex;flex-direction:column;gap:0.75rem;">
-                @foreach($cat['items'] as $i => $item)
-                <details style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:0.75rem;overflow:hidden;" {{ $loop->first && $loop->parent->first ? 'open' : '' }}>
-                    <summary style="display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.125rem 1.25rem;cursor:pointer;font-size:0.9375rem;font-weight:700;color:var(--color-text-primary);list-style:none;user-select:none;">
-                        {{ $item['q'] }}
-                        <i data-lucide="chevron-down" style="width:1rem;height:1rem;flex-shrink:0;color:var(--color-text-muted);transition:transform .2s;" class="faq-chevron"></i>
-                    </summary>
-                    <div style="padding:0 1.25rem 1.25rem;font-size:0.9rem;color:var(--color-text-muted);line-height:1.7;border-top:1px solid var(--color-border);">
-                        <p style="margin:1rem 0 0;">{{ $item['a'] }}</p>
-                    </div>
-                </details>
+    {{-- 02 · The questions --}}
+    <section class="f-section f-section--tight">
+        <div class="f-container">
+            <div class="fs-narrow">
+                @foreach (__('finder_story.faq.items') as $fsItem)
+                    <details class="fs-qa" @if ($loop->first) open @endif>
+                        <summary>
+                            <h3>{{ $fsItem['q'] }}</h3>
+                            @include('partials.finder.icon', ['name' => 'chevron-down', 'size' => 18])
+                        </summary>
+                        <p class="f-muted">{{ $fsItem['a'] }}</p>
+                    </details>
                 @endforeach
             </div>
         </div>
-        @endforeach
+    </section>
 
-        <!-- Still need help CTA -->
-        <div style="margin-top:3rem;background:linear-gradient(135deg,#EFF6FF 0%,#F0FDF9 100%);border:1px solid #BFDBFE;border-radius:1rem;padding:2.5rem;text-align:center;">
-            <div style="width:3rem;height:3rem;border-radius:50%;background:#0F4C81;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
-                <i data-lucide="headset" style="width:1.25rem;height:1.25rem;color:#fff;"></i>
+    {{-- 03 · Still stuck --}}
+    <section class="f-section f-section--tight">
+        <div class="f-container">
+            <div class="fs-narrow">
+                <h2 class="f-h2">{{ __('finder_story.faq.still_title') }}</h2>
+                <p class="f-muted">{{ __('finder_story.faq.still_p') }}</p>
+                <div class="fs-cta-row">
+                    <a class="f-btn f-btn--primary" href="{{ route('public.contact') }}">
+                        {{ __('finder_story.faq.still_cta') }}
+                        @include('partials.finder.icon', ['name' => 'arrow-right', 'size' => 16])
+                    </a>
+                    <a class="f-btn f-btn--ghost" href="{{ route('public.how-it-works') }}">{{ __('finder_story.cta.how') }}</a>
+                </div>
             </div>
-            <h3 style="font-size:1.25rem;font-weight:800;color:var(--color-text-primary);margin:0 0 0.5rem;">{{ __('public.faq.cta_title') }}</h3>
-            <p style="font-size:0.9rem;color:var(--color-text-muted);margin:0 0 1.5rem;">{{ __('public.faq.cta_body') }}</p>
-            <a href="{{ route('public.contact') }}" style="display:inline-flex;align-items:center;gap:0.5rem;background:#0F4C81;color:#fff;font-size:0.875rem;font-weight:700;border-radius:0.5rem;padding:0.75rem 1.75rem;text-decoration:none;transition:background .2s;" onmouseover="this.style.background='#0E3F6C'" onmouseout="this.style.background='#0F4C81'">
-                <i data-lucide="send" style="width:1rem;height:1rem;"></i>
-                {{ __('public.faq.cta_button') }}
-            </a>
         </div>
+    </section>
 
-    </div>
-</section>
-
-@endsection
-
-@section('footer_scripts')
-<script>
-document.querySelectorAll('details').forEach(function(el) {
-    el.addEventListener('toggle', function() {
-        var chevron = el.querySelector('.faq-chevron');
-        if (chevron) chevron.style.transform = el.open ? 'rotate(180deg)' : '';
-    });
-});
-</script>
 @endsection

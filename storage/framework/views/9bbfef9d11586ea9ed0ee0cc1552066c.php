@@ -4,113 +4,86 @@
 <?php $__env->startSection('breadcrumb_home_url', route('portals.patient')); ?>
 <?php $__env->startSection('breadcrumb_section', __('messaging.thread_breadcrumb')); ?>
 
+<?php $__env->startSection('head'); ?>
+    <?php echo $__env->make('portals.patient._finder_head', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+<?php $__env->stopSection(); ?>
+
 <?php $__env->startSection('content'); ?>
 
-<div class="page-header">
-    <div>
-        <h1 class="page-title"><?php echo e($thread->title ?: __('messaging.conversation')); ?></h1>
-        <p class="page-subtitle">
-            <span class="badge badge-<?php echo e($thread->status === 'closed' ? 'muted' : 'success'); ?>">
-                <?php echo e($thread->status === 'closed' ? __('messaging.status_closed') : __('messaging.status_open')); ?>
+<div class="pf">
 
-            </span>
-        </p>
-    </div>
-    <div>
-        <a href="<?php echo e(route('portals.patient.messages')); ?>" class="btn btn-secondary">
-            <i data-lucide="arrow-left"></i> <?php echo e(__('messaging.thread_breadcrumb')); ?>
+    <div class="pf-head">
+        <div>
+            <h1><?php echo e($thread->title ?: __('messaging.conversation')); ?></h1>
+            <p class="pf-sub">
+                <span class="f-badge <?php echo e($thread->status === 'closed' ? 'pf-badge--muted' : 'f-badge--good'); ?>">
+                    <?php echo e($thread->status === 'closed' ? __('messaging.status_closed') : __('messaging.status_open')); ?>
+
+                </span>
+            </p>
+        </div>
+        <a href="<?php echo e(route('portals.patient.messages')); ?>" class="f-btn">
+            <?php echo $__env->make('partials.finder.icon', ['name' => 'chevron-left', 'size' => 18], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+            <?php echo e(__('messaging.thread_breadcrumb')); ?>
 
         </a>
     </div>
-</div>
 
-<?php if(session('success')): ?>
-<div class="alert alert-info mb-4"><i data-lucide="check-circle"></i><div><?php echo e(session('success')); ?></div></div>
-<?php endif; ?>
-<?php if(session('error')): ?>
-<div class="alert alert-danger mb-4"><i data-lucide="alert-circle"></i><div><?php echo e(session('error')); ?></div></div>
-<?php endif; ?>
-
-<?php if(!empty($context)): ?>
-<div class="panel mb-4" style="border-left:4px solid #0F4C81;">
-    <div class="panel-body" style="display:flex;align-items:center;gap:.6rem;padding:.75rem 1rem;">
-        <i data-lucide="paperclip" style="color:#0F4C81;"></i>
-        <div>
-            <div style="font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;color:#64748b;"><?php echo e(__('messaging.ctx_about')); ?></div>
-            <strong><?php echo e($context['label']); ?></strong>
-        </div>
+    <?php if(!empty($context)): ?>
+    <div class="pf-alert">
+        <?php echo $__env->make('partials.finder.icon', ['name' => 'info', 'size' => 18], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+        <p><span class="f-small" style="text-transform:uppercase;letter-spacing:.04em;font-weight:700;display:block;"><?php echo e(__('messaging.ctx_about')); ?></span>
+        <strong><?php echo e($context['label']); ?></strong></p>
     </div>
-</div>
-<?php endif; ?>
+    <?php endif; ?>
 
-<div class="panel mb-4">
-    <div class="panel-header">
-        <h3 class="panel-title"><i data-lucide="messages-square"></i> <?php echo e(__('messaging.conversation')); ?></h3>
-    </div>
-    <div class="panel-body">
+    <div class="f-card" style="margin-bottom:12px;">
         <?php if($messages->isEmpty()): ?>
-            <div class="empty-state">
-                <i data-lucide="message-square"></i>
-                <p><?php echo e(__('messaging.no_messages')); ?></p>
-            </div>
+            <p class="f-muted" style="text-align:center;margin:20px 0;"><?php echo e(__('messaging.no_messages')); ?></p>
         <?php else: ?>
-            <div style="display:grid;gap:1rem;">
+            <div class="pf-msgs">
                 <?php $__currentLoopData = $messages; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $msg): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                     <?php $mine = $msg['sender_id'] === $userId; ?>
-                    <div style="display:flex;<?php echo e($mine ? 'justify-content:flex-end;' : 'justify-content:flex-start;'); ?>">
-                        <div class="panel" style="margin:0;max-width:75%;<?php echo e($mine ? 'border-left:4px solid #0F4C81;' : ''); ?>">
-                            <div class="panel-body" style="padding:.75rem 1rem;">
-                                <div style="font-weight:700;font-size:.85rem;margin-bottom:.25rem;">
-                                    <?php echo e($mine ? __('messaging.you') : __('messaging.participant')); ?>
-
-                                </div>
-                                <div style="white-space:pre-wrap;"><?php echo e($msg['body']); ?></div>
-                                <?php if($msg['sent_at']): ?>
-                                    <div class="page-subtitle" style="font-size:.75rem;margin-top:.4rem;">
-                                        <?php echo e(__('messaging.sent_at')); ?> <?php echo e($msg['sent_at']->isoFormat('LLL')); ?>
-
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
+                    <div class="pf-msg <?php echo e($mine ? 'pf-msg--mine' : ''); ?>">
+                        <div class="pf-msg__who"><?php echo e($mine ? __('messaging.you') : __('messaging.participant')); ?></div>
+                        <div class="pf-msg__body"><?php echo e($msg['body']); ?></div>
+                        <?php if($msg['sent_at']): ?>
+                            <div class="pf-msg__at"><?php echo e($msg['sent_at']->isoFormat('LLL')); ?></div>
+                        <?php endif; ?>
                     </div>
                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </div>
         <?php endif; ?>
     </div>
-</div>
 
-<div class="panel">
-    <div class="panel-body">
-        <?php if($thread->status === 'closed'): ?>
-            <div class="alert alert-info" style="margin:0;">
-                <i data-lucide="lock"></i><div><?php echo e(__('messaging.closed_notice')); ?></div>
-            </div>
-        <?php else: ?>
-            <form method="POST" action="<?php echo e(route('portals.patient.messages.send', $thread->uuid)); ?>">
-                <?php echo csrf_field(); ?>
-                <label class="form-label" for="body"><?php echo e(__('messaging.reply_label')); ?></label>
-                <textarea id="body" name="body" class="form-control" rows="3" maxlength="5000"
+    <?php if($thread->status === 'closed'): ?>
+        <div class="pf-alert">
+            <?php echo $__env->make('partials.finder.icon', ['name' => 'info', 'size' => 18], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+            <p><?php echo e(__('messaging.closed_notice')); ?></p>
+        </div>
+    <?php else: ?>
+        <form method="POST" action="<?php echo e(route('portals.patient.messages.send', $thread->uuid)); ?>" class="f-card">
+            <?php echo csrf_field(); ?>
+            <div class="f-field" style="margin-bottom:12px;">
+                <label class="f-label" for="body"><?php echo e(__('messaging.reply_label')); ?></label>
+                <textarea id="body" name="body" class="f-input" rows="3" maxlength="5000"
                           placeholder="<?php echo e(__('messaging.reply_placeholder')); ?>" required><?php echo e(old('body')); ?></textarea>
                 <?php $__errorArgs = ['body'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?>
-                    <p class="page-subtitle" style="color:#b91c1c;margin:.35rem 0 0;"><?php echo e($message); ?></p>
-                <?php unset($message);
+$message = $__bag->first($__errorArgs[0]); ?><p class="f-error"><?php echo e($message); ?></p><?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?>
-                <div style="margin-top:.75rem;">
-                    <button type="submit" class="btn btn-primary">
-                        <i data-lucide="send"></i> <?php echo e(__('messaging.send')); ?>
+            </div>
+            <button type="submit" class="f-btn f-btn--primary" style="min-height:48px;">
+                <?php echo e(__('messaging.send')); ?>
 
-                    </button>
-                </div>
-            </form>
-        <?php endif; ?>
-    </div>
+                <?php echo $__env->make('partials.finder.icon', ['name' => 'arrow-right', 'size' => 16], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+            </button>
+        </form>
+    <?php endif; ?>
 </div>
 
 <?php $__env->stopSection(); ?>

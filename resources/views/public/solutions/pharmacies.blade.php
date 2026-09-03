@@ -1,62 +1,110 @@
-@extends('layouts.public')
+@extends('layouts.finder')
 
-@section('title', __('public.sol_pharmacies.page_title'))
-@section('meta_description', __('seo.meta.sol_pharmacies'))
+@section('title', __('finder_story.pharmacies.page_title'))
+@section('description', __('finder_story.pharmacies.meta_description'))
 
 @section('content')
-    <header class="content-header">
-        <div class="container">
-            <div class="badge" style="background-color: var(--color-primary-light); color: var(--color-primary); margin-bottom: 1rem;">{{ __('public.sol_pharmacies.badge') }}</div>
-            <h1>{{ __('public.sol_pharmacies.hero_title') }}</h1>
-            <p class="text-muted" style="max-width: 800px; margin: 0 auto; font-size: 1.25rem;">
-                {{ __('public.sol_pharmacies.hero_subtitle') }}
-            </p>
-        </div>
-    </header>
 
-    <section class="content-body">
-        <div class="container">
-            <div class="card-grid">
-                <div class="card">
-                    <div class="card-icon"><i data-lucide="file-plus-2"></i></div>
-                    <h3>{{ __('public.sol_pharmacies.card_rx_title') }}</h3>
-                    <p>{{ __('public.sol_pharmacies.card_rx_desc') }}</p>
-                </div>
-                <div class="card">
-                    <div class="card-icon"><i data-lucide="store"></i></div>
-                    <h3>{{ __('public.sol_pharmacies.card_avail_title') }}</h3>
-                    <p>{{ __('public.sol_pharmacies.card_avail_desc') }}</p>
-                </div>
-                <div class="card">
-                    <div class="card-icon"><i data-lucide="bookmark-check"></i></div>
-                    <h3>{{ __('public.sol_pharmacies.card_reserve_title') }}</h3>
-                    <p>{{ __('public.sol_pharmacies.card_reserve_desc') }}</p>
-                </div>
-                <div class="card">
-                    <div class="card-icon"><i data-lucide="shield-alert"></i></div>
-                    <h3>{{ __('public.sol_pharmacies.card_safety_title') }}</h3>
-                    <p>{{ __('public.sol_pharmacies.card_safety_desc') }}</p>
-                </div>
-            </div>
-            
-            <div style="margin-top: 4rem; padding: 1.5rem 2rem; background-color: var(--color-primary-light); border-radius: 1rem; display:flex; align-items:flex-start; gap:1rem;">
-                <i data-lucide="plug-zap" style="width:1.5rem;height:1.5rem;color:#0F4C81;flex-shrink:0;margin-top:.1rem;"></i>
-                <div>
-                    <p class="text-sm font-bold uppercase tracking-widest text-primary" style="margin-bottom: 0.5rem;">{{ __('public.sol_pharmacies.integration_label') }}</p>
-                    <p style="margin:0;">{{ __('public.sol_pharmacies.integration_body') }}</p>
+    {{--
+        The "for pharmacies" claim-your-listing pitch. The brief asked for a
+        new public/for-pharmacies page; this existing route IS that page —
+        public.solutions.pharmacies is already wired into the finder shell's
+        header nav and footer as "For pharmacies", so the content lives here
+        rather than at a new, unrouted view.
+
+        CTA targets are the real flows: the directory filtered to pharmacies
+        (claims start from a facility's own page) and the free signup.
+    --}}
+    <style>
+        .fs-narrow { max-width: 720px; }
+        .fs-steps { list-style: none; padding: 0; margin: 0 0 0.75rem; counter-reset: fs-step; }
+        .fs-steps li { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.375rem 0; }
+        .fs-steps li::before {
+            counter-increment: fs-step;
+            content: counter(fs-step);
+            flex-shrink: 0;
+            width: 1.75rem; height: 1.75rem;
+            display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 50%;
+            background: var(--f-wash); color: var(--f-brand-ink);
+            font-weight: 600; font-size: 0.875rem;
+        }
+        .fs-cta-row { display: flex; flex-wrap: wrap; gap: 0.625rem; }
+        .fs-note { display: flex; align-items: flex-start; gap: 0.625rem; }
+        .fs-note > svg { flex-shrink: 0; margin-top: 0.2rem; }
+        .fs-benefit > svg { color: var(--f-brand); }
+    </style>
+
+    {{-- 01 · Hero --}}
+    <section class="f-section f-section--surface">
+        <div class="f-container">
+            <div class="fs-narrow">
+                <p class="f-eyebrow">{{ __('finder_story.pharmacies.eyebrow') }}</p>
+                <h1 class="f-h1">{{ __('finder_story.pharmacies.title') }}</h1>
+                <p class="f-lead">{{ __('finder_story.pharmacies.lead') }}</p>
+                <div class="fs-cta-row">
+                    <a class="f-btn f-btn--primary" href="{{ route('public.care-map', ['facility_type' => 'pharmacy']) }}">
+                        {{ __('finder_story.pharmacies.cta_primary') }}
+                        @include('partials.finder.icon', ['name' => 'arrow-right', 'size' => 16])
+                    </a>
+                    <a class="f-btn" href="{{ route('register') }}">{{ __('finder_story.pharmacies.cta_secondary') }}</a>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="section" style="background:#0F2744;color:#fff;text-align:center;">
-        <div class="container" style="max-width:640px;">
-            <h2 style="color:#fff;margin-bottom:1rem;">{{ __('public.sol_pharmacies.cta_title') }}</h2>
-            <p style="color:rgba(255,255,255,.75);margin-bottom:2rem;">{{ __('public.sol_pharmacies.cta_body') }}</p>
-            <div style="display:flex;justify-content:center;flex-wrap:wrap;gap:1rem;">
-                <a href="{{ route('register.organization') }}" class="btn btn-primary">{{ __('public.sol_pharmacies.btn_register') }}</a>
-                <a href="{{ route('public.contact') }}" class="btn" style="background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.25);">{{ __('public.sol_pharmacies.btn_contact') }}</a>
+    {{-- 02 · What claiming gets you --}}
+    <section class="f-section">
+        <div class="f-container">
+            <div class="f-grid">
+                <div class="f-card fs-benefit">
+                    @include('partials.finder.icon', ['name' => 'search', 'size' => 22])
+                    <h2>{{ __('finder_story.pharmacies.found_title') }}</h2>
+                    <p class="f-muted">{{ __('finder_story.pharmacies.found_p') }}</p>
+                </div>
+                <div class="f-card fs-benefit">
+                    @include('partials.finder.icon', ['name' => 'phone', 'size' => 22])
+                    <h2>{{ __('finder_story.pharmacies.edit_title') }}</h2>
+                    <p class="f-muted">{{ __('finder_story.pharmacies.edit_p') }}</p>
+                </div>
+                <div class="f-card fs-benefit">
+                    @include('partials.finder.icon', ['name' => 'pill', 'size' => 22])
+                    <h2>{{ __('finder_story.pharmacies.stock_title') }}</h2>
+                    <p class="f-muted">{{ __('finder_story.pharmacies.stock_p') }}</p>
+                </div>
+                <div class="f-card fs-benefit">
+                    @include('partials.finder.icon', ['name' => 'check', 'size' => 22])
+                    <h2>{{ __('finder_story.pharmacies.free_title') }}</h2>
+                    <p class="f-muted">{{ __('finder_story.pharmacies.free_p') }}</p>
+                </div>
             </div>
         </div>
     </section>
+
+    {{-- 03 · How to claim --}}
+    <section class="f-section f-section--wash f-section--tight">
+        <div class="f-container">
+            <div class="fs-narrow">
+                <h2 class="f-h2">{{ __('finder_story.pharmacies.steps_title') }}</h2>
+                <ol class="fs-steps">
+                    <li><span>{{ __('finder_story.pharmacies.step1') }}</span></li>
+                    <li><span>{{ __('finder_story.pharmacies.step2') }}</span></li>
+                    <li><span>{{ __('finder_story.pharmacies.step3') }}</span></li>
+                    <li><span>{{ __('finder_story.pharmacies.step4') }}</span></li>
+                </ol>
+                <p class="f-small f-muted fs-note">
+                    @include('partials.finder.icon', ['name' => 'info', 'size' => 16])
+                    <span>{{ __('finder_story.pharmacies.note') }}</span>
+                </p>
+                <div class="fs-cta-row">
+                    <a class="f-btn f-btn--primary" href="{{ route('public.care-map', ['facility_type' => 'pharmacy']) }}">
+                        {{ __('finder_story.pharmacies.cta_primary') }}
+                        @include('partials.finder.icon', ['name' => 'arrow-right', 'size' => 16])
+                    </a>
+                    <a class="f-btn f-btn--ghost" href="{{ route('public.contact') }}">{{ __('finder_shell.footer.contact') }}</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
 @endsection

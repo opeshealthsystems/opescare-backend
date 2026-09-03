@@ -397,16 +397,88 @@ class CareMapController extends Controller
         ], 501);
     }
 
+    /** Cards per directory page. 24 divides evenly into 1/2/3-column grids. */
+    private const DIRECTORY_PER_PAGE = 24;
+
     /**
-     * Web: Render Public Interactive Directory Map
+     * Web: Render Public Interactive Directory Map.
+     *
+     * PAGINATED, deliberately. This page used to render every one of the 2,728
+     * active listings into a single ~9 MB HTML document (measured 2026-09-03:
+     * 9,246,224 bytes) — unusable on the 3G connections most of its users are
+     * on. It now renders 24 cards per page; search / type / region / geo
+     * parameters carry across pages via the paginator's query string.
+     *
+     * Filtering still goes through CareMapSearchService so the web page and
+     * the JSON API can never disagree about which facilities match. The extra
+     * `region` filter (a directory-only chip) is applied in-memory on the
+     * service's result — the collection is already loaded, so this adds no
+     * query — before the page slice is taken.
      */
     public function publicDirectory(Request $request)
     {
-        $facilities = $this->searchService->searchNearby($request->all());
-        
+        $page   = max(1, (int) $request->query('page', 1));
+        $region = trim((string) $request->query('region', ''));
+
+        $all = collect($this->searchService->searchNearby($request->all()));
+
+        if ($region !== '') {
+            $all = $all->filter(
+                fn ($f) => strcasecmp(trim((string) $f->region), $region) === 0
+            )->values();
+        }
+
+        $total = $all->count();
+
+        $facilities = new \Illuminate\Pagination\LengthAwarePaginator(
+            $all->slice(($page - 1) * self::DIRECTORY_PER_PAGE, self::DIRECTORY_PER_PAGE)->values(),
+            $total,
+            self::DIRECTORY_PER_PAGE,
+            $page,
+            [
+                'path'  => $request->url(),
+                'query' => \Illuminate\Support\Arr::except($request->query(), 'page'),
+            ]
+        );
+
+        // Directory-wide counts for the filter chips. Scalars only — never
+        // cache models/Carbon here (opcache serializable_classes=false turns a
+        // cached object into __PHP_Incomplete_Class on the first hit).
+        $typeCounts = \Illuminate\Support\Facades\Cache::remember(
+            'care-map:directory:type-counts',
+            300,
+            fn () => CareFacility::query()
+                ->where('listing_status', 'active')
+                ->selectRaw('facility_type, COUNT(*) AS n')
+                ->groupBy('facility_type')
+                ->orderByDesc('n')
+                ->pluck('n', 'facility_type')
+                ->map(fn ($n) => (int) $n)
+                ->all()
+        );
+
+        $regions = \Illuminate\Support\Facades\Cache::remember(
+            'care-map:directory:regions',
+            300,
+            fn () => CareFacility::query()
+                ->where('listing_status', 'active')
+                ->whereNotNull('region')
+                ->where('region', '!=', '')
+                ->distinct()
+                ->orderBy('region')
+                ->pluck('region')
+                ->all()
+        );
+
         return view('care_map.directory', [
             'facilities' => $facilities,
-            'locale' => session('locale', 'en'),
+            'total'      => $total,
+            'typeCounts' => $typeCounts,
+            'regions'    => $regions,
+            'activeType'   => trim((string) $request->query('facility_type', '')),
+            'activeRegion' => $region,
+            'queryText'    => trim((string) $request->query('query', '')),
+            'locale'     => app()->getLocale(),
         ]);
     }
 
@@ -420,8 +492,31 @@ class CareMapController extends Controller
 
         return view('care_map.profile', [
             'facility' => $facility,
-            'locale' => session('locale', 'en'),
+            'bookable' => $this->listingAcceptsBookings($facility),
+            'locale'   => app()->getLocale(),
         ]);
+    }
+
+    /**
+     * May a patient book an appointment at this listing?
+     *
+     * Mirrors MobileAppointmentController::facilityAcceptsBookings(), read
+     * from the listing side: the listing must link to an operational tenant
+     * (`care_facilities.facility_id`), that tenant must be live
+     * ('active' / 'active_demo'), and the listing itself must still be an
+     * active publication. A registry-only listing with no tenant has nobody
+     * behind it to receive a booking, so it gets no CTA.
+     */
+    private function listingAcceptsBookings(CareFacility $listing): bool
+    {
+        if ($listing->facility_id === null || $listing->listing_status !== 'active') {
+            return false;
+        }
+
+        return \App\Models\Facility::query()
+            ->whereKey($listing->facility_id)
+            ->whereIn('status', ['active', 'active_demo'])
+            ->exists();
     }
 
     /**

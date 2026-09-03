@@ -2893,7 +2893,7 @@ return [
 
     /* ── Help page ───────────────────────────────────── */
     'help_page' => [
-        'page_title'          => 'Help Center | OpesCare Support',
+        'page_title'          => 'Help Center',
         'meta_description'    => 'Find guides, tutorials, and support resources for patients, healthcare institutions, and developers using the OpesCare platform.',
         'badge'               => 'Help & Support',
         'hero_title'          => 'How can we help you?',
@@ -3023,7 +3023,7 @@ return [
 
     /* ── Consent page ───────────────────────────────── */
     'consent_page' => [
-        'page_title'          => 'Consent and Patient Rights | OpesCare',
+        'page_title'          => 'Consent and Patient Rights',
         'meta_description'    => 'Understand how OpesCare puts patients in control of their health information through consent, scoped access, audit logs, and the right to revoke.',
         'badge'               => 'Consent-First by Design',
         'hero_title'          => 'You stay in control of your health information.',
@@ -3066,6 +3066,9 @@ return [
         'emerg_identity'      => 'Patient Identity',
         'emerg_allergies'     => 'Critical Allergies',
         'emerg_conditions'    => 'Active Chronic Conditions',
+        'emerg_sample_identity' => 'Full name & blood group',
+        'emerg_sample_allergy' => 'Penicillin — contraindicated',
+        'emerg_sample_conditions' => 'Type 2 diabetes, hypertension',
         'rights_title'        => 'Your rights under OpesCare',
         'rights_subtitle'     => 'These rights apply to every patient registered on the platform.',
         'right_know_title'    => 'Right to Know',

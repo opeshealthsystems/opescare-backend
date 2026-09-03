@@ -1,10 +1,10 @@
 <?php $l = app()->getLocale(); ?>
-<div class="sidebar-role-badge" style="background:rgba(15,118,110,.3);border-color:rgba(15,118,110,.5);color:#5EEAD4;">
-    <i data-lucide="heart-handshake" style="width:.75rem;height:.75rem;display:inline;vertical-align:middle;margin-right:4px;"></i>
+<div class="sidebar-role-badge">
+    <i data-lucide="heart-handshake"></i>
     <?php echo e(__('portal.caregiver_role', [], $l) ?: 'Caregiver'); ?>
 
 </div>
-<div style="margin-bottom:var(--p-space-3);"></div>
+<div class="sidebar-spacer"></div>
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label"><?php echo e(__('public.portal.nav_my_health', [], $l) ?: 'My Health'); ?></div>
     <a href="<?php echo e(route('portals.patient')); ?>" class="sidebar-link">

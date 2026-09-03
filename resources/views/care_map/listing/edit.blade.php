@@ -15,12 +15,13 @@
 @endphp
 
 @section('head')
+@include('portals.pharmacy._supply_styles')
 <style>
   .lst-badges{display:flex;gap:.45rem;flex-wrap:wrap;margin-bottom:var(--p-space-3)}
   .lst-badge{display:inline-flex;align-items:center;gap:.3rem;padding:.25rem .65rem;border-radius:999px;font-size:.72rem;font-weight:700}
   .lst-badge i{width:12px;height:12px}
   .lst-badge--claimed{background:rgba(15,76,129,.1);color:#0F4C81;border:1px solid rgba(15,76,129,.25)}
-  .lst-badge--unverified{background:#F1F5F9;color:#64748B;border:1px solid #E2E8F0}
+  .lst-badge--unverified{background:var(--f-wash, #F1F5F9);color:var(--f-muted, #64748B);border:1px solid var(--f-line, #E2E8F0)}
   .lst-note{font-size:.8rem;color:var(--p-text-muted);line-height:1.55;margin-bottom:var(--p-space-4)}
   .lst-hours-table td{padding:.4rem .5rem;vertical-align:middle}
   .lst-hours-table .form-control{padding:.35rem .5rem;font-size:.8rem}
@@ -58,6 +59,18 @@
     <div class="panel-body">
         <p class="lst-note">{{ __('caremap_claim.audit_note') }}</p>
 
+        @if($phonePrimary === null)
+        {{-- The registry's 'N/A' means patients literally cannot call. Make
+             fixing it the loudest thing on the page. --}}
+        <div class="fs-callout">
+            @include('partials.finder.icon', ['name' => 'phone', 'size' => 18])
+            <div>
+                <strong>{{ __('finder_supply.phone_missing_title') }}</strong>
+                <p>{{ __('finder_supply.phone_missing_body') }}</p>
+            </div>
+        </div>
+        @endif
+
         <form method="POST" action="{{ route('portals.listing.update') }}">
             @csrf
 
@@ -65,6 +78,7 @@
                 <div class="form-group">
                     <label class="form-label form-label-required" for="phone_primary">{{ __('caremap_claim.label_phone_primary') }}</label>
                     <input type="tel" id="phone_primary" name="phone_primary" class="form-control" maxlength="40"
+                           inputmode="tel" placeholder="{{ __('finder_supply.phone_placeholder') }}"
                            value="{{ old('phone_primary', $phonePrimary) }}">
                     @if($phonePrimary === null)
                         <div class="form-hint">{{ __('caremap_claim.hint_phone_placeholder') }}</div>
@@ -104,7 +118,7 @@
             </div>
 
             <div style="margin-top:var(--p-space-5)">
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn btn-primary fs-tap">
                     <i data-lucide="save"></i> {{ __('caremap_claim.btn_save') }}
                 </button>
             </div>
@@ -163,7 +177,7 @@
             </div>
 
             <div style="margin-top:var(--p-space-5)">
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn btn-primary fs-tap">
                     <i data-lucide="save"></i> {{ __('caremap_claim.btn_save_hours') }}
                 </button>
             </div>
@@ -266,7 +280,7 @@
             </div>
 
             <div style="margin-top:var(--p-space-5)">
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn btn-primary fs-tap">
                     <i data-lucide="plus"></i> {{ __('caremap_claim.btn_add_service') }}
                 </button>
             </div>

@@ -6,6 +6,10 @@
 @section('breadcrumb_home_url', route('portals.admin'))
 @section('breadcrumb_section', __('team.page_title'))
 
+@section('head')
+@include('portals.pharmacy._supply_styles')
+@endsection
+
 @section('content')
 
 @php
@@ -75,13 +79,13 @@
                     <label class="form-label" for="email">{{ __('team.field_email') }}</label>
                     <input type="email" id="email" name="email" class="form-control" required
                            maxlength="255" value="{{ old('email') }}">
-                    @error('email')<p class="page-subtitle" style="color:#b91c1c;margin:.35rem 0 0;">{{ $message }}</p>@enderror
+                    @error('email')<p class="page-subtitle" style="color:var(--p-danger);margin:.35rem 0 0;">{{ $message }}</p>@enderror
                 </div>
                 <div>
                     <label class="form-label" for="name">{{ __('team.field_name') }}</label>
                     <input type="text" id="name" name="name" class="form-control"
                            maxlength="255" value="{{ old('name') }}">
-                    @error('name')<p class="page-subtitle" style="color:#b91c1c;margin:.35rem 0 0;">{{ $message }}</p>@enderror
+                    @error('name')<p class="page-subtitle" style="color:var(--p-danger);margin:.35rem 0 0;">{{ $message }}</p>@enderror
                 </div>
                 <div>
                     <label class="form-label" for="role">{{ __('team.field_role') }}</label>
@@ -93,11 +97,11 @@
                             </option>
                         @endforeach
                     </select>
-                    @error('role')<p class="page-subtitle" style="color:#b91c1c;margin:.35rem 0 0;">{{ $message }}</p>@enderror
+                    @error('role')<p class="page-subtitle" style="color:var(--p-danger);margin:.35rem 0 0;">{{ $message }}</p>@enderror
                 </div>
             </div>
             <div style="margin-top:1rem;">
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn btn-primary fs-tap">
                     <i data-lucide="send"></i> {{ __('team.invite_submit') }}
                 </button>
             </div>
@@ -149,14 +153,14 @@
                             @unless($invite->isAccepted())
                                 <form method="POST" action="{{ route('portals.facility.team.invite.reissue', $invite->id) }}" style="display:inline;">
                                     @csrf
-                                    <button type="submit" class="btn btn-secondary btn-sm">
+                                    <button type="submit" class="btn btn-secondary btn-sm fs-tap">
                                         <i data-lucide="refresh-cw"></i> {{ __('team.action_reissue') }}
                                     </button>
                                 </form>
                                 @unless($invite->isRevoked())
                                     <form method="POST" action="{{ route('portals.facility.team.invite.revoke', $invite->id) }}" style="display:inline;">
                                         @csrf
-                                        <button type="submit" class="btn btn-danger btn-sm">
+                                        <button type="submit" class="btn btn-danger btn-sm fs-tap">
                                             <i data-lucide="ban"></i> {{ __('team.action_revoke') }}
                                         </button>
                                     </form>

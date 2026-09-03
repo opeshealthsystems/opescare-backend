@@ -3,97 +3,93 @@
 @section('title', __('onboarding.login.head_title'))
 
 @section('content')
-    <div class="auth-card">
-        <div class="auth-card__head">
-            <h1 class="auth-card__title">{{ __('onboarding.login.welcome_back') }}</h1>
-            <p class="auth-card__sub">{{ __('onboarding.login.subheadline') }}</p>
-        </div>
+    <div class="f-auth-col">
+        <div class="f-auth-card">
+            <h1 class="f-auth-title">{{ __('onboarding.login.welcome_back') }}</h1>
+            <p class="f-auth-sub">{{ __('onboarding.login.subheadline') }}</p>
 
-        @if(session('success'))
-            <div class="auth-alert auth-alert-success">
-                <i data-lucide="badge-check"></i>
-                <div>{{ session('success') }}</div>
-            </div>
-        @endif
+            @if(session('success'))
+                <div class="f-auth-alert f-auth-alert--success" role="status">
+                    @include('partials.finder.icon', ['name' => 'check', 'size' => 18])
+                    <div>{{ session('success') }}</div>
+                </div>
+            @endif
 
-        @if(session('error'))
-            <div class="auth-alert auth-alert-danger">
-                <i data-lucide="alert-circle"></i>
-                <div>{{ session('error') }}</div>
-            </div>
-        @endif
+            @if(session('error'))
+                <div class="f-auth-alert f-auth-alert--danger" role="alert">
+                    @include('partials.finder.icon', ['name' => 'alert-circle', 'size' => 18])
+                    <div>{{ session('error') }}</div>
+                </div>
+            @endif
 
-        <form action="{{ route('login.submit') }}" method="POST" class="auth-form">
-            @csrf
+            <form action="{{ route('login.submit') }}" method="POST" novalidate>
+                @csrf
 
-            <div class="auth-form-group">
-                <label for="email" class="auth-label">{{ __('onboarding.login.email_or_phone') }}</label>
-                <div class="auth-input-icon-wrap">
-                    <i data-lucide="mail" class="auth-input-icon"></i>
+                <div class="f-field">
+                    <label for="email" class="f-label">{{ __('onboarding.login.email_or_phone') }}</label>
                     <input
                         type="text"
                         id="email"
                         name="email"
-                        class="auth-input auth-input--icon{{ $errors->has('email') ? ' auth-input-error' : '' }}"
-                        placeholder="name@facility.org or +123..."
+                        class="f-input{{ $errors->has('email') ? ' f-input--invalid' : '' }}"
                         required
                         autofocus
+                        autocomplete="username"
                         value="{{ old('email') }}"
                     >
+                    @error('email')
+                        <span class="f-error f-auth-error">@include('partials.finder.icon', ['name' => 'alert-circle', 'size' => 15]){{ $message }}</span>
+                    @enderror
                 </div>
-                @error('email')<div class="auth-field-error">{{ $message }}</div>@enderror
-            </div>
 
-            <div class="auth-form-group">
-                <div class="auth-label auth-label--row">
-                    <span>{{ __('onboarding.common.password') }}</span>
-                    <a href="{{ route('password.request') }}" class="auth-label-link">
-                        {{ __('onboarding.login.forgot') }}
-                    </a>
+                <div class="f-field">
+                    <div class="f-auth-labelrow">
+                        <label for="password" class="f-label">{{ __('onboarding.common.password') }}</label>
+                        <a href="{{ route('password.request') }}">{{ __('onboarding.login.forgot') }}</a>
+                    </div>
+                    <div class="f-auth-pass">
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            class="f-input{{ $errors->has('password') ? ' f-input--invalid' : '' }}"
+                            required
+                            autocomplete="current-password"
+                        >
+                        @include('auth.partials.password_toggle', ['for' => 'password'])
+                    </div>
+                    @error('password')
+                        <span class="f-error f-auth-error">@include('partials.finder.icon', ['name' => 'alert-circle', 'size' => 15]){{ $message }}</span>
+                    @enderror
                 </div>
-                <div class="auth-pass-wrapper auth-input-icon-wrap">
-                    <i data-lucide="lock" class="auth-input-icon"></i>
-                    <input
-                        type="password"
-                        id="password"
-                        name="password"
-                        class="auth-input auth-input--icon{{ $errors->has('password') ? ' auth-input-error' : '' }}"
-                        required
-                        placeholder="••••••••"
-                    >
-                    <button type="button" class="auth-pass-toggle" data-toggle-password="password">
-                        <i data-lucide="eye" id="password-toggle-icon"></i>
-                    </button>
+
+                <div class="f-auth-check">
+                    <input type="checkbox" id="remember" name="remember">
+                    <label for="remember">{{ __('onboarding.login.remember') }}</label>
                 </div>
-                @error('password')<div class="auth-field-error">{{ $message }}</div>@enderror
+
+                <button type="submit" class="f-btn f-btn--primary f-btn--block">
+                    @include('partials.finder.icon', ['name' => 'log-in', 'size' => 18])
+                    {{ __('onboarding.login.submit_signin') }}
+                </button>
+            </form>
+
+            <div class="f-auth-note">
+                @include('partials.finder.icon', ['name' => 'shield-check', 'size' => 16])
+                <p>{{ __('onboarding.login.security_note') }}</p>
             </div>
+        </div>
 
-            <div class="auth-checkbox-group">
-                <input type="checkbox" id="remember" name="remember">
-                <label for="remember" class="auth-checkbox-label">{{ __('onboarding.login.remember') }}</label>
-            </div>
-
-            <button type="submit" class="auth-btn auth-btn-primary auth-btn--mt">
-                <i data-lucide="log-in"></i>
-                <span>{{ __('onboarding.login.submit_signin') }}</span>
-            </button>
-        </form>
-
-        <div class="auth-security-block">
-            <i data-lucide="shield-check"></i>
-            <p>{{ __('onboarding.login.security_note') }}</p>
+        <div class="f-auth-alt">
+            <p>{{ __('onboarding.login.no_account') }}
+                <a href="{{ route('register') }}">{{ __('onboarding.login.create_account') }}</a>
+            </p>
         </div>
     </div>
 
-    <div class="auth-footer-links auth-footer-links--mt">
-        <p>{{ __('onboarding.login.no_account') }}
-            <a href="{{ route('register') }}" class="auth-footer-link">
-                {{ __('onboarding.login.create_account') }}
-            </a>
-        </p>
-    </div>
-
-    {{-- Demo One-Click Login Panel — visible only when OPESCARE_DEMO_MODE=true --}}
+    {{-- Demo One-Click Login Panel — visible only when OPESCARE_DEMO_MODE=true.
+         Legacy block: styled by css/auth.css, wired by js/auth.js + lucide;
+         markup, ids and data-* attributes are load-bearing — do not rename. --}}
     @if(config('demo.enabled'))
     <form id="demoLoginForm" method="POST" action="{{ route('demo.login-as') }}" class="auth-hidden">
         @csrf
@@ -255,7 +251,3 @@
     </div>{{-- /demo-panel --}}
     @endif
 @endsection
-
-{{-- Behaviour (password toggle, demo panel/tabs/login, icon rendering) lives in
-     public/js/auth.js, loaded by layouts.auth. Inline scripts are blocked by the
-     strict CSP (script-src 'self'), so handlers use data-* attributes instead. --}}

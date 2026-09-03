@@ -4,46 +4,53 @@
    DESIGN TOKENS
    ═══════════════════════════════════════════ */
 :root {
+  /*
+   * Foundation bridge: the platform palette is defined once as --f-* tokens
+   * in /assets/finder.css. The portal chrome consumes them here, keeping the
+   * historical values as fallbacks so the shell renders identically until
+   * the foundation sheet is present.
+   */
+
   /* Brand */
-  --p-primary:        #0F4C81;
-  --p-primary-dark:   #0A3560;
-  --p-primary-light:  #1A6AAF;
-  --p-teal:           #0F766E;
-  --p-teal-dark:      #0A5951;
-  --p-teal-light:     #14B8A6;
+  --p-primary:        var(--f-brand, #0F4C81);
+  --p-primary-dark:   var(--f-brand-ink, #0A3560);
+  --p-primary-light:  var(--f-brand, #1A6AAF);
+  --p-teal:           var(--f-brand, #0F766E);
+  --p-teal-dark:      var(--f-brand-ink, #0A5951);
+  --p-teal-light:     var(--f-good-wash, #14B8A6);
 
   /* Semantic */
-  --p-danger:         #B91C1C;
-  --p-danger-light:   #EF4444;
-  --p-warning:        #B45309;
-  --p-warning-light:  #F59E0B;
-  --p-success:        #15803D;
-  --p-success-light:  #22C55E;
+  --p-danger:         var(--f-danger, #B91C1C);
+  --p-danger-light:   var(--f-danger, #EF4444);
+  --p-warning:        var(--f-warn, #B45309);
+  --p-warning-light:  var(--f-warn, #F59E0B);
+  --p-success:        var(--f-good, #15803D);
+  --p-success-light:  var(--f-good, #22C55E);
 
   /* Sidebar */
-  --p-sidebar-bg:     #0F2744;
+  --p-sidebar-bg:     var(--f-brand-ink, #0F2744);
   --p-sidebar-width:  260px;
   --p-sidebar-text:   #94A3B8;
-  --p-sidebar-text-active: #F1F5F9;
-  --p-sidebar-active-bg: rgba(56,189,248,0.1);
-  --p-sidebar-active-border: #38BDF8;
+  --p-sidebar-text-active: var(--f-surface, #F1F5F9);
+  --p-sidebar-active-bg: rgba(255,255,255,0.08);
+  --p-sidebar-active-border: var(--f-wash, #38BDF8);
 
   /* Surfaces */
-  --p-bg:             #F8FAFC;
-  --p-surface:        #FFFFFF;
-  --p-surface-2:      #F1F5F9;
-  --p-border:         #E2E8F0;
-  --p-border-focus:   #0F4C81;
+  --p-bg:             var(--f-ground, #F8FAFC);
+  --p-surface:        var(--f-surface, #FFFFFF);
+  --p-surface-2:      var(--f-wash, #F1F5F9);
+  --p-border:         var(--f-line, #E2E8F0);
+  --p-border-focus:   var(--f-brand, #0F4C81);
 
   /* Text */
-  --p-text:           #0F172A;
-  --p-text-2:         #334155;
-  --p-text-muted:     #64748B;
+  --p-text:           var(--f-ink, #0F172A);
+  --p-text-2:         var(--f-ink-soft, #334155);
+  --p-text-muted:     var(--f-muted, #64748B);
 
   /* Topbar */
   --p-topbar-h:       60px;
-  --p-topbar-bg:      #FFFFFF;
-  --p-topbar-border:  #E2E8F0;
+  --p-topbar-bg:      var(--f-surface, #FFFFFF);
+  --p-topbar-border:  var(--f-line, #E2E8F0);
 
   /* Spacing */
   --p-space-1:  0.25rem;
@@ -214,14 +221,26 @@ body.portal-body {
   align-items: center;
   gap: 4px;
   padding: 0.2rem 0.6rem;
-  background: rgba(30,58,138,.3);
-  border: 1px solid rgba(59,130,246,.3);
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.14);
   border-radius: 9999px;
   font-size: 0.6875rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #93C5FD;
+  color: rgba(255,255,255,.75);
+}
+
+.sidebar-role-badge svg,
+.sidebar-role-badge [data-lucide] {
+  width: 0.75rem;
+  height: 0.75rem;
+  flex-shrink: 0;
+}
+
+/* A pruned section that kept only its label carries no information — hide it. */
+.sidebar-nav-section:not(:has(.sidebar-link)) {
+  display: none;
 }
 
 .sidebar-footer {
@@ -429,6 +448,137 @@ body.portal-body {
   color: var(--p-text);
 }
 
+/* ── Topbar: facility identity (slim bar, shown under 960px) ── */
+.topbar-facility {
+  display: none;
+  align-items: center;
+  gap: var(--p-space-2);
+  flex: 1;
+  min-width: 0;
+  color: var(--p-text-2);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.topbar-facility svg {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  color: var(--p-text-muted);
+}
+
+.topbar-facility span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Topbar: user menu ── */
+.topbar-user {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.topbar-user-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 9999px;
+  color: var(--p-text-muted);
+}
+
+.topbar-user-btn:hover {
+  background: var(--p-surface-2);
+}
+
+.topbar-avatar {
+  width: 1.75rem;
+  height: 1.75rem;
+  background: var(--p-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.topbar-user-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  min-width: 13rem;
+  max-width: 18rem;
+  background: var(--p-surface);
+  border: 1px solid var(--p-border);
+  border-radius: var(--p-radius);
+  box-shadow: var(--p-shadow-lg);
+  padding: var(--p-space-2);
+  z-index: 60;
+}
+
+.topbar-user-menu[hidden] {
+  display: none;
+}
+
+.topbar-user-meta {
+  padding: var(--p-space-2) var(--p-space-3);
+  border-bottom: 1px solid var(--p-border);
+  margin-bottom: var(--p-space-2);
+  min-width: 0;
+}
+
+.topbar-user-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--p-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topbar-user-role,
+.topbar-user-facility {
+  font-size: 0.75rem;
+  color: var(--p-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topbar-user-signout {
+  display: flex;
+  align-items: center;
+  gap: var(--p-space-2);
+  width: 100%;
+  padding: 0.5rem var(--p-space-3);
+  border: none;
+  background: none;
+  border-radius: var(--p-radius-sm);
+  color: var(--p-danger);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.topbar-user-signout:hover {
+  background: rgba(185,28,28,.08);
+}
+
+.topbar-user-signout svg {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex-shrink: 0;
+}
+
 .notification-dot {
   position: absolute;
   top: 4px;
@@ -580,10 +730,10 @@ body.portal-body {
 }
 
 .kpi-icon.blue    { background: rgba(15,76,129,.1);  color: var(--p-primary); }
-.kpi-icon.teal    { background: rgba(15,118,110,.1); color: var(--p-teal); }
+.kpi-icon.teal    { background: rgba(15,76,129,.1);  color: var(--p-teal); }
 .kpi-icon.danger  { background: rgba(185,28,28,.1);  color: var(--p-danger); }
 .kpi-icon.warning { background: rgba(180,83,9,.1);   color: var(--p-warning); }
-.kpi-icon.purple  { background: rgba(109,40,217,.1); color: #7C3AED; }
+.kpi-icon.purple  { background: rgba(15,76,129,.1);  color: var(--p-primary-light); }
 .kpi-icon.success { background: rgba(21,128,61,.1);  color: var(--p-success); }
 
 .kpi-body {}
@@ -690,7 +840,7 @@ body.portal-body {
 .badge-warning  { background: rgba(180,83,9,.12);   color: #B45309; border: 1px solid rgba(180,83,9,.25); }
 .badge-critical { background: #7F1D1D; color: #FEE2E2; border: 1px solid #991B1B; }
 .badge-neutral  { background: var(--p-surface-2);  color: var(--p-text-muted); border: 1px solid var(--p-border); }
-.badge-purple   { background: rgba(109,40,217,.12); color: #6D28D9; border: 1px solid rgba(109,40,217,.25); }
+.badge-purple   { background: rgba(15,76,129,.12); color: var(--p-primary); border: 1px solid rgba(15,76,129,.25); }
 
 /* ═══════════════════════════════════════════
    ALERTS
@@ -1200,9 +1350,23 @@ textarea.form-control {
 }
 
 /* ═══════════════════════════════════════════
-   RESPONSIVE — 1024px (sidebar collapses)
+   RESPONSIVE — 1024px (content narrows)
    ═══════════════════════════════════════════ */
 @media (max-width: 1024px) {
+  .grid-main-side {
+    grid-template-columns: 1fr;
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE — 960px (shell: off-canvas drawer,
+   hamburger + slim top bar)
+   ═══════════════════════════════════════════ */
+@media (max-width: 960px) {
   .portal-sidebar {
     transform: translateX(-100%);
   }
@@ -1228,12 +1392,13 @@ textarea.form-control {
     padding: var(--p-space-6) var(--p-space-5);
   }
 
-  .grid-main-side {
-    grid-template-columns: 1fr;
+  /* Slim bar: the breadcrumb yields to the facility identity. */
+  .topbar-breadcrumb {
+    display: none;
   }
 
-  .kpi-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .topbar-facility {
+    display: flex;
   }
 }
 
@@ -1438,7 +1603,7 @@ textarea.form-control {
 .badge--danger  { background: rgba(185,28,28,.12);  color: #B91C1C; border: 1px solid rgba(185,28,28,.25); }
 .badge--info    { background: rgba(15,76,129,.12);  color: #0F4C81; border: 1px solid rgba(15,76,129,.25); }
 .badge--neutral { background: var(--p-surface-2);  color: var(--p-text-muted); border: 1px solid var(--p-border); }
-.badge--purple  { background: rgba(109,40,217,.12); color: #6D28D9; border: 1px solid rgba(109,40,217,.25); }
+.badge--purple  { background: rgba(15,76,129,.12); color: var(--p-primary); border: 1px solid rgba(15,76,129,.25); }
 .badge--outline { background: transparent; color: var(--p-text-muted); border: 1px solid var(--p-border); }
 .badge--default { background: var(--p-surface-2); color: var(--p-text-muted); border: 1px solid var(--p-border); }
 

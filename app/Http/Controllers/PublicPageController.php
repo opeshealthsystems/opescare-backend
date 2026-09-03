@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\OpesCareNotificationMail;
+use App\Models\CareFacility;
 use App\Models\Facility;
 use App\Models\Lead;
 use App\Models\Patient;
@@ -17,6 +18,7 @@ use Illuminate\Auth\Events\PasswordReset as PasswordResetEvent;
 use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -27,23 +29,111 @@ class PublicPageController extends Controller
 {
     public function index()
     {
-        return view('public.landing');
+        /*
+         * The homepage is the most-hit page in the product, so the one number
+         * it shows — active listings in the directory — is a cached scalar,
+         * never a live COUNT(*) per request. Plain integers only in this
+         * cache entry: never objects (serializable_classes is off).
+         *
+         * 'regions' is NOT derived from rows: the 10 administrative regions
+         * of Cameroon are a fact of geography, and an empty database must
+         * not make the page claim "all 0 regions".
+         */
+        $stats = Cache::remember('finder.home.stats', 3600, function () {
+            return [
+                'facilities' => CareFacility::where('listing_status', 'active')->count(),
+            ];
+        });
+
+        return view('public.landing', [
+            'stats' => [
+                'facilities' => $stats['facilities'],
+                'regions'    => 10,
+            ],
+        ]);
     }
 
     /*
-     * Network services — the destination pages for the medicine and blood
-     * availability detail that used to occupy two full sections of the
-     * homepage. They are network capabilities, not the definition of OpesCare,
-     * so the homepage carries a card each and the substance lives here.
+     * Network services — the medicine and blood TASK pages. Both render
+     * server-side through the same CareMap search services the JSON API uses
+     * (provenance gates included), so the page and the API can never disagree
+     * about what a facility reported. A GET back to the same route carries
+     * the search; no client-side data fetching.
      */
-    public function networkMedicineFinder()
+    public function networkMedicineFinder(Request $request)
     {
-        return view('public.network.medicine_finder');
+        $query = trim((string) $request->query('q', ''));
+        [$lat, $lng] = $this->finderCoordinates($request);
+
+        $results = null;
+        if ($query !== '' && mb_strlen($query) >= 2) {
+            $results = collect(
+                app(\App\Modules\CareMap\Services\PharmacyStockSearchService::class)
+                    ->searchMedicine($query, $lat, $lng, 50)
+            );
+        }
+
+        return view('care_map.medicine_finder', [
+            'query'   => $query,
+            'lat'     => $lat,
+            'lng'     => $lng,
+            'results' => $results,
+        ]);
     }
 
-    public function networkBloodFinder()
+    public function networkBloodFinder(Request $request)
     {
-        return view('public.network.blood_finder');
+        $group = (string) $request->query('group', '');
+        $group = in_array($group, \App\Enums\BloodGroup::values(), true) ? $group : null;
+
+        $component = (string) $request->query('component', 'whole_blood');
+        if (! in_array($component, \App\Enums\BloodComponentType::values(), true)) {
+            $component = \App\Enums\BloodComponentType::WholeBlood->value;
+        }
+
+        [$lat, $lng] = $this->finderCoordinates($request);
+
+        $results = null;
+        if ($group !== null) {
+            $results = collect(
+                app(\App\Modules\CareMap\Services\BloodAvailabilitySearchService::class)
+                    ->searchBlood($group, $component, $lat, $lng, 50)
+            );
+        }
+
+        return view('care_map.blood_finder', [
+            'group'     => $group,
+            'component' => $component,
+            'lat'       => $lat,
+            'lng'       => $lng,
+            'results'   => $results,
+        ]);
+    }
+
+    /**
+     * Optional viewer coordinates for the finder pages: both must be numeric
+     * and inside plausible bounds, or the pair is discarded. Garbage in the
+     * query string must never reach the Haversine formula.
+     *
+     * @return array{0: float|null, 1: float|null}
+     */
+    private function finderCoordinates(Request $request): array
+    {
+        $lat = $request->query('lat');
+        $lng = $request->query('lng');
+
+        if (! is_numeric($lat) || ! is_numeric($lng)) {
+            return [null, null];
+        }
+
+        $lat = (float) $lat;
+        $lng = (float) $lng;
+
+        if ($lat < -90 || $lat > 90 || $lng < -180 || $lng > 180) {
+            return [null, null];
+        }
+
+        return [$lat, $lng];
     }
 
     /**

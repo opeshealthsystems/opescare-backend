@@ -54,6 +54,10 @@
 <?php $__env->startSection('breadcrumb_home_url', route('portals.staff')); ?>
 <?php $__env->startSection('breadcrumb_section', __('public.staff_portal.btn_book_appointment', [], app()->getLocale()) ?: 'Book Appointment'); ?>
 
+<?php $__env->startSection('head'); ?>
+<?php echo $__env->make('portals.pharmacy._supply_styles', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+<?php $__env->stopSection(); ?>
+
 <?php $__env->startSection('content'); ?>
 
 <div class="page-header">
@@ -171,7 +175,7 @@ unset($__errorArgs, $__bag); ?>
             </div>
 
             <div class="row-actions-inline">
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn btn-primary fs-tap">
                     <i data-lucide="calendar-plus"></i>
                     <?php echo e(__('public.staff_portal.btn_book_appointment', [], app()->getLocale()) ?: 'Book Appointment'); ?>
 

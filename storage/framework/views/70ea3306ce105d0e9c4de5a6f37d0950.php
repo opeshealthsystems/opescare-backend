@@ -4,6 +4,10 @@
 <?php $__env->startSection('breadcrumb_home_url', route('portals.admin')); ?>
 <?php $__env->startSection('breadcrumb_section', __('team.page_title')); ?>
 
+<?php $__env->startSection('head'); ?>
+<?php echo $__env->make('portals.pharmacy._supply_styles', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+<?php $__env->stopSection(); ?>
+
 <?php $__env->startSection('content'); ?>
 
 <?php
@@ -78,7 +82,7 @@
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?><p class="page-subtitle" style="color:#b91c1c;margin:.35rem 0 0;"><?php echo e($message); ?></p><?php unset($message);
+$message = $__bag->first($__errorArgs[0]); ?><p class="page-subtitle" style="color:var(--p-danger);margin:.35rem 0 0;"><?php echo e($message); ?></p><?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?>
@@ -91,7 +95,7 @@ unset($__errorArgs, $__bag); ?>
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?><p class="page-subtitle" style="color:#b91c1c;margin:.35rem 0 0;"><?php echo e($message); ?></p><?php unset($message);
+$message = $__bag->first($__errorArgs[0]); ?><p class="page-subtitle" style="color:var(--p-danger);margin:.35rem 0 0;"><?php echo e($message); ?></p><?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?>
@@ -111,14 +115,14 @@ unset($__errorArgs, $__bag); ?>
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?><p class="page-subtitle" style="color:#b91c1c;margin:.35rem 0 0;"><?php echo e($message); ?></p><?php unset($message);
+$message = $__bag->first($__errorArgs[0]); ?><p class="page-subtitle" style="color:var(--p-danger);margin:.35rem 0 0;"><?php echo e($message); ?></p><?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?>
                 </div>
             </div>
             <div style="margin-top:1rem;">
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn btn-primary fs-tap">
                     <i data-lucide="send"></i> <?php echo e(__('team.invite_submit')); ?>
 
                 </button>
@@ -171,7 +175,7 @@ unset($__errorArgs, $__bag); ?>
                             <?php if (! ($invite->isAccepted())): ?>
                                 <form method="POST" action="<?php echo e(route('portals.facility.team.invite.reissue', $invite->id)); ?>" style="display:inline;">
                                     <?php echo csrf_field(); ?>
-                                    <button type="submit" class="btn btn-secondary btn-sm">
+                                    <button type="submit" class="btn btn-secondary btn-sm fs-tap">
                                         <i data-lucide="refresh-cw"></i> <?php echo e(__('team.action_reissue')); ?>
 
                                     </button>
@@ -179,7 +183,7 @@ unset($__errorArgs, $__bag); ?>
                                 <?php if (! ($invite->isRevoked())): ?>
                                     <form method="POST" action="<?php echo e(route('portals.facility.team.invite.revoke', $invite->id)); ?>" style="display:inline;">
                                         <?php echo csrf_field(); ?>
-                                        <button type="submit" class="btn btn-danger btn-sm">
+                                        <button type="submit" class="btn btn-danger btn-sm fs-tap">
                                             <i data-lucide="ban"></i> <?php echo e(__('team.action_revoke')); ?>
 
                                         </button>

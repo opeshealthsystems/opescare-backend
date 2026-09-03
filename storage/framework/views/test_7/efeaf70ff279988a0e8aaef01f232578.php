@@ -1,10 +1,10 @@
 <?php $l = app()->getLocale(); ?>
-<div class="sidebar-role-badge" style="background:rgba(15,76,129,.3);border-color:rgba(15,76,129,.5);color:#9DC3E6;">
-    <i data-lucide="building-2" style="width:.75rem;height:.75rem;display:inline;vertical-align:middle;margin-right:4px;"></i>
+<div class="sidebar-role-badge">
+    <i data-lucide="building-2"></i>
     <?php echo e(__('portal.facility_admin_role', [], $l) ?: 'Facility Admin'); ?>
 
 </div>
-<div style="margin-bottom:var(--p-space-3);"></div>
+<div class="sidebar-spacer"></div>
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label"><?php echo e(__('public.portal.nav_administration', [], $l) ?: 'My Facility'); ?></div>
     <a href="<?php echo e(route('portals.admin')); ?>" class="sidebar-link">

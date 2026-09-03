@@ -6,101 +6,76 @@
 @section('breadcrumb_home_url', route('portals.patient'))
 @section('breadcrumb_section', __('messaging.thread_breadcrumb'))
 
+@section('head')
+    @include('portals.patient._finder_head')
+@endsection
+
 @section('content')
 
-<div class="page-header">
-    <div>
-        <h1 class="page-title">{{ $thread->title ?: __('messaging.conversation') }}</h1>
-        <p class="page-subtitle">
-            <span class="badge badge-{{ $thread->status === 'closed' ? 'muted' : 'success' }}">
-                {{ $thread->status === 'closed' ? __('messaging.status_closed') : __('messaging.status_open') }}
-            </span>
-        </p>
-    </div>
-    <div>
-        <a href="{{ route('portals.patient.messages') }}" class="btn btn-secondary">
-            <i data-lucide="arrow-left"></i> {{ __('messaging.thread_breadcrumb') }}
+<div class="pf">
+
+    <div class="pf-head">
+        <div>
+            <h1>{{ $thread->title ?: __('messaging.conversation') }}</h1>
+            <p class="pf-sub">
+                <span class="f-badge {{ $thread->status === 'closed' ? 'pf-badge--muted' : 'f-badge--good' }}">
+                    {{ $thread->status === 'closed' ? __('messaging.status_closed') : __('messaging.status_open') }}
+                </span>
+            </p>
+        </div>
+        <a href="{{ route('portals.patient.messages') }}" class="f-btn">
+            @include('partials.finder.icon', ['name' => 'chevron-left', 'size' => 18])
+            {{ __('messaging.thread_breadcrumb') }}
         </a>
     </div>
-</div>
 
-@if(session('success'))
-<div class="alert alert-info mb-4"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>
-@endif
-@if(session('error'))
-<div class="alert alert-danger mb-4"><i data-lucide="alert-circle"></i><div>{{ session('error') }}</div></div>
-@endif
-
-@if(!empty($context))
-<div class="panel mb-4" style="border-left:4px solid #0F4C81;">
-    <div class="panel-body" style="display:flex;align-items:center;gap:.6rem;padding:.75rem 1rem;">
-        <i data-lucide="paperclip" style="color:#0F4C81;"></i>
-        <div>
-            <div style="font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;color:#64748b;">{{ __('messaging.ctx_about') }}</div>
-            <strong>{{ $context['label'] }}</strong>
-        </div>
+    @if(!empty($context))
+    <div class="pf-alert">
+        @include('partials.finder.icon', ['name' => 'info', 'size' => 18])
+        <p><span class="f-small" style="text-transform:uppercase;letter-spacing:.04em;font-weight:700;display:block;">{{ __('messaging.ctx_about') }}</span>
+        <strong>{{ $context['label'] }}</strong></p>
     </div>
-</div>
-@endif
+    @endif
 
-<div class="panel mb-4">
-    <div class="panel-header">
-        <h3 class="panel-title"><i data-lucide="messages-square"></i> {{ __('messaging.conversation') }}</h3>
-    </div>
-    <div class="panel-body">
+    <div class="f-card" style="margin-bottom:12px;">
         @if($messages->isEmpty())
-            <div class="empty-state">
-                <i data-lucide="message-square"></i>
-                <p>{{ __('messaging.no_messages') }}</p>
-            </div>
+            <p class="f-muted" style="text-align:center;margin:20px 0;">{{ __('messaging.no_messages') }}</p>
         @else
-            <div style="display:grid;gap:1rem;">
+            <div class="pf-msgs">
                 @foreach($messages as $msg)
                     @php $mine = $msg['sender_id'] === $userId; @endphp
-                    <div style="display:flex;{{ $mine ? 'justify-content:flex-end;' : 'justify-content:flex-start;' }}">
-                        <div class="panel" style="margin:0;max-width:75%;{{ $mine ? 'border-left:4px solid #0F4C81;' : '' }}">
-                            <div class="panel-body" style="padding:.75rem 1rem;">
-                                <div style="font-weight:700;font-size:.85rem;margin-bottom:.25rem;">
-                                    {{ $mine ? __('messaging.you') : __('messaging.participant') }}
-                                </div>
-                                <div style="white-space:pre-wrap;">{{ $msg['body'] }}</div>
-                                @if($msg['sent_at'])
-                                    <div class="page-subtitle" style="font-size:.75rem;margin-top:.4rem;">
-                                        {{ __('messaging.sent_at') }} {{ $msg['sent_at']->isoFormat('LLL') }}
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
+                    <div class="pf-msg {{ $mine ? 'pf-msg--mine' : '' }}">
+                        <div class="pf-msg__who">{{ $mine ? __('messaging.you') : __('messaging.participant') }}</div>
+                        <div class="pf-msg__body">{{ $msg['body'] }}</div>
+                        @if($msg['sent_at'])
+                            <div class="pf-msg__at">{{ $msg['sent_at']->isoFormat('LLL') }}</div>
+                        @endif
                     </div>
                 @endforeach
             </div>
         @endif
     </div>
-</div>
 
-<div class="panel">
-    <div class="panel-body">
-        @if($thread->status === 'closed')
-            <div class="alert alert-info" style="margin:0;">
-                <i data-lucide="lock"></i><div>{{ __('messaging.closed_notice') }}</div>
-            </div>
-        @else
-            <form method="POST" action="{{ route('portals.patient.messages.send', $thread->uuid) }}">
-                @csrf
-                <label class="form-label" for="body">{{ __('messaging.reply_label') }}</label>
-                <textarea id="body" name="body" class="form-control" rows="3" maxlength="5000"
+    @if($thread->status === 'closed')
+        <div class="pf-alert">
+            @include('partials.finder.icon', ['name' => 'info', 'size' => 18])
+            <p>{{ __('messaging.closed_notice') }}</p>
+        </div>
+    @else
+        <form method="POST" action="{{ route('portals.patient.messages.send', $thread->uuid) }}" class="f-card">
+            @csrf
+            <div class="f-field" style="margin-bottom:12px;">
+                <label class="f-label" for="body">{{ __('messaging.reply_label') }}</label>
+                <textarea id="body" name="body" class="f-input" rows="3" maxlength="5000"
                           placeholder="{{ __('messaging.reply_placeholder') }}" required>{{ old('body') }}</textarea>
-                @error('body')
-                    <p class="page-subtitle" style="color:#b91c1c;margin:.35rem 0 0;">{{ $message }}</p>
-                @enderror
-                <div style="margin-top:.75rem;">
-                    <button type="submit" class="btn btn-primary">
-                        <i data-lucide="send"></i> {{ __('messaging.send') }}
-                    </button>
-                </div>
-            </form>
-        @endif
-    </div>
+                @error('body')<p class="f-error">{{ $message }}</p>@enderror
+            </div>
+            <button type="submit" class="f-btn f-btn--primary" style="min-height:48px;">
+                {{ __('messaging.send') }}
+                @include('partials.finder.icon', ['name' => 'arrow-right', 'size' => 16])
+            </button>
+        </form>
+    @endif
 </div>
 
 @endsection

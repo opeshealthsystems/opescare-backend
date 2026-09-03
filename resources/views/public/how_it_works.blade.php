@@ -1,106 +1,163 @@
-@extends('layouts.public')
+@extends('layouts.finder')
 
-@section('title', __('public.how_page.page_title'))
-@section('meta_description', __('seo.meta.how_it_works'))
+@section('title', __('finder_story.how.page_title'))
+@section('description', __('finder_story.how.meta_description'))
 
 @section('content')
-    <header class="content-header">
-        <div class="container">
-            <div class="badge" style="background-color: var(--color-teal-light); color: var(--color-teal); margin-bottom: 1rem;">{{ __('public.how_page.badge') }}</div>
-            <h1>{{ __('public.how_it_works.hero_title') }}</h1>
-            <p class="text-muted" style="max-width: 800px; margin: 0 auto; font-size: 1.25rem;">
-                {{ __('public.how_it_works.hero_subtitle') }}
-            </p>
-        </div>
-    </header>
 
-    <section class="content-body" style="background-color: var(--color-background);">
-        <div class="container">
-            <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));">
-                <!-- Step 1 -->
-                <div class="card">
-                    <div class="card-icon" style="background-color: var(--color-primary); color: white;">1</div>
-                    <h3>{{ __('public.how_it_works.step1_title') }}</h3>
-                    <p>{{ __('public.how_it_works.step1_desc') }}</p>
+    {{--
+        A patient walkthrough of the three finders plus booking — each one as
+        three concrete steps, ending with the honest-limits box. The limits are
+        not small print: stock is pharmacy-reported, listings are not vetted,
+        and the page says "call ahead" wherever a trip could be wasted.
+
+        Styling: layouts.finder contract only; the <style> block is layout glue.
+    --}}
+    <style>
+        .fs-narrow { max-width: 720px; }
+        .fs-steps { list-style: none; padding: 0; margin: 0 0 0.75rem; counter-reset: fs-step; }
+        .fs-steps li { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.375rem 0; }
+        .fs-steps li::before {
+            counter-increment: fs-step;
+            content: counter(fs-step);
+            flex-shrink: 0;
+            width: 1.75rem; height: 1.75rem;
+            display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 50%;
+            background: var(--f-wash); color: var(--f-brand-ink);
+            font-weight: 600; font-size: 0.875rem;
+        }
+        .fs-tool-head { display: flex; align-items: center; gap: 0.625rem; }
+        .fs-tool-head > svg { color: var(--f-brand); flex-shrink: 0; }
+        .fs-limit { display: flex; align-items: flex-start; gap: 0.625rem; padding: 0.375rem 0; }
+        .fs-limit > svg { flex-shrink: 0; margin-top: 0.2rem; color: var(--f-warn); }
+        .fs-cta-row { display: flex; flex-wrap: wrap; gap: 0.625rem; }
+        .fs-note { display: flex; align-items: flex-start; gap: 0.625rem; }
+        .fs-note > svg { flex-shrink: 0; margin-top: 0.2rem; }
+    </style>
+
+    {{-- 01 · Hero --}}
+    <section class="f-section f-section--surface">
+        <div class="f-container">
+            <div class="fs-narrow">
+                <p class="f-eyebrow">{{ __('finder_story.how.eyebrow') }}</p>
+                <h1 class="f-h1">{{ __('finder_story.how.title') }}</h1>
+                <p class="f-lead">{{ __('finder_story.how.lead') }}</p>
+            </div>
+        </div>
+    </section>
+
+    {{-- 02 · The three finders + booking, each in three steps --}}
+    <section class="f-section">
+        <div class="f-container">
+            <div class="f-grid">
+
+                <div class="f-card">
+                    <h2 class="fs-tool-head">
+                        @include('partials.finder.icon', ['name' => 'pill', 'size' => 22])
+                        {{ __('finder_story.how.medicine_title') }}
+                    </h2>
+                    <ol class="fs-steps">
+                        <li><span>{{ __('finder_story.how.medicine_step1') }}</span></li>
+                        <li><span>{{ __('finder_story.how.medicine_step2') }}</span></li>
+                        <li><span>{{ __('finder_story.how.medicine_step3') }}</span></li>
+                    </ol>
+                    <p class="f-small f-muted fs-note">
+                        @include('partials.finder.icon', ['name' => 'info', 'size' => 16])
+                        <span>{{ __('finder_story.how.medicine_note') }}</span>
+                    </p>
+                    <a class="f-btn f-btn--ghost" href="{{ route('public.network.medicine-finder') }}">
+                        {{ __('finder_story.cta.medicine') }}
+                        @include('partials.finder.icon', ['name' => 'arrow-right', 'size' => 16])
+                    </a>
                 </div>
-                <!-- Step 2 -->
-                <div class="card">
-                    <div class="card-icon" style="background-color: var(--color-primary); color: white;">2</div>
-                    <h3>{{ __('public.how_it_works.step2_title') }}</h3>
-                    <p>{{ __('public.how_it_works.step2_desc') }}</p>
+
+                <div class="f-card">
+                    <h2 class="fs-tool-head">
+                        @include('partials.finder.icon', ['name' => 'droplet', 'size' => 22])
+                        {{ __('finder_story.how.blood_title') }}
+                    </h2>
+                    <ol class="fs-steps">
+                        <li><span>{{ __('finder_story.how.blood_step1') }}</span></li>
+                        <li><span>{{ __('finder_story.how.blood_step2') }}</span></li>
+                        <li><span>{{ __('finder_story.how.blood_step3') }}</span></li>
+                    </ol>
+                    <a class="f-btn f-btn--ghost" href="{{ route('public.network.blood-finder') }}">
+                        {{ __('finder_story.cta.blood') }}
+                        @include('partials.finder.icon', ['name' => 'arrow-right', 'size' => 16])
+                    </a>
                 </div>
-                <!-- Step 3 -->
-                <div class="card">
-                    <div class="card-icon" style="background-color: var(--color-primary); color: white;">3</div>
-                    <h3>{{ __('public.how_it_works.step3_title') }}</h3>
-                    <p>{{ __('public.how_it_works.step3_desc') }}</p>
+
+                <div class="f-card">
+                    <h2 class="fs-tool-head">
+                        @include('partials.finder.icon', ['name' => 'map-pin', 'size' => 22])
+                        {{ __('finder_story.how.facility_title') }}
+                    </h2>
+                    <ol class="fs-steps">
+                        <li><span>{{ __('finder_story.how.facility_step1') }}</span></li>
+                        <li><span>{{ __('finder_story.how.facility_step2') }}</span></li>
+                        <li><span>{{ __('finder_story.how.facility_step3') }}</span></li>
+                    </ol>
+                    <a class="f-btn f-btn--ghost" href="{{ route('public.care-map') }}">
+                        {{ __('finder_story.cta.directory') }}
+                        @include('partials.finder.icon', ['name' => 'arrow-right', 'size' => 16])
+                    </a>
                 </div>
-                <!-- Step 4 -->
-                <div class="card">
-                    <div class="card-icon" style="background-color: var(--color-primary); color: white;">4</div>
-                    <h3>{{ __('public.how_it_works.step4_title') }}</h3>
-                    <p>{{ __('public.how_it_works.step4_desc') }}</p>
+
+                <div class="f-card">
+                    <h2 class="fs-tool-head">
+                        @include('partials.finder.icon', ['name' => 'calendar', 'size' => 22])
+                        {{ __('finder_story.how.booking_title') }}
+                    </h2>
+                    <ol class="fs-steps">
+                        <li><span>{{ __('finder_story.how.booking_step1') }}</span></li>
+                        <li><span>{{ __('finder_story.how.booking_step2') }}</span></li>
+                        <li><span>{{ __('finder_story.how.booking_step3') }}</span></li>
+                    </ol>
+                    <a class="f-btn f-btn--ghost" href="{{ route('public.care-map') }}">
+                        {{ __('finder_shell.nav.book_appointment') }}
+                        @include('partials.finder.icon', ['name' => 'arrow-right', 'size' => 16])
+                    </a>
                 </div>
-                <!-- Step 5 -->
-                <div class="card">
-                    <div class="card-icon" style="background-color: var(--color-primary); color: white;">5</div>
-                    <h3>{{ __('public.how_it_works.step5_title') }}</h3>
-                    <p>{{ __('public.how_it_works.step5_desc') }}</p>
-                </div>
-                <!-- Step 6 -->
-                <div class="card">
-                    <div class="card-icon" style="background-color: var(--color-primary); color: white;">6</div>
-                    <h3>{{ __('public.how_it_works.step6_title') }}</h3>
-                    <p>{{ __('public.how_it_works.step6_desc') }}</p>
+
+            </div>
+        </div>
+    </section>
+
+    {{-- 03 · The honest-limits box --}}
+    <section class="f-section f-section--wash f-section--tight">
+        <div class="f-container">
+            <div class="fs-narrow">
+                <h2 class="f-h2">{{ __('finder_story.how.limits_title') }}</h2>
+                <p class="f-lead">{{ __('finder_story.how.limits_lead') }}</p>
+                <div class="f-card">
+                    <p class="fs-limit">
+                        @include('partials.finder.icon', ['name' => 'phone', 'size' => 18])
+                        <span>{{ __('finder_story.how.limit_1') }}</span>
+                    </p>
+                    <p class="fs-limit">
+                        @include('partials.finder.icon', ['name' => 'clock', 'size' => 18])
+                        <span>{{ __('finder_story.how.limit_2') }}</span>
+                    </p>
+                    <p class="fs-limit">
+                        @include('partials.finder.icon', ['name' => 'info', 'size' => 18])
+                        <span>{{ __('finder_story.how.limit_3') }}</span>
+                    </p>
+                    <p class="fs-limit">
+                        @include('partials.finder.icon', ['name' => 'alert-circle', 'size' => 18])
+                        <span>{{ __('finder_story.how.limit_4') }}</span>
+                    </p>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="section">
-        <div class="container">
-            <div class="hero-grid">
-                <div class="hero-content">
-                    <h2>{{ __('public.how_it_works.integration_title') }}</h2>
-                    <p class="text-muted">{{ __('public.how_it_works.integration_desc') }}</p>
-                    <div class="feature-list mt-6" style="margin-top: 1.5rem; display: grid; gap: 1rem;">
-                        <div class="feature-item"><i data-lucide="braces"></i> Direct API Integration</div>
-                        <div class="feature-item"><i data-lucide="code"></i> Connect SDK</div>
-                        <div class="feature-item"><i data-lucide="panel-top"></i> Connect Widget</div>
-                        <div class="feature-item"><i data-lucide="network"></i> Bridge Agent</div>
-                    </div>
-                </div>
-                <div class="hero-visual">
-                    <div style="background:#0F2744;border-radius:1.5rem;padding:2rem;color:#fff;">
-                        <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#38BDF8;margin-bottom:1.25rem;">{{ __('public.how_page.integration_options') }}</div>
-                        <div style="display:grid;gap:.75rem;">
-                            @foreach([
-                                ['icon'=>'braces','label'=>__('public.how_page.integration_api')],
-                                ['icon'=>'code-2','label'=>__('public.how_page.integration_sdk')],
-                                ['icon'=>'panel-top','label'=>__('public.how_page.integration_widget')],
-                                ['icon'=>'cpu','label'=>__('public.how_page.integration_bridge')],
-                                ['icon'=>'layout-dashboard','label'=>'OpesCare Lite'],
-                            ] as $item)
-                            <a href="{{ route('public.developers') }}" style="display:flex;align-items:center;gap:.875rem;background:rgba(255,255,255,.07);border-radius:.75rem;padding:.875rem 1rem;text-decoration:none;">
-                                <i data-lucide="{{ $item['icon'] }}" style="width:1rem;height:1rem;color:#14B8A6;flex-shrink:0;"></i>
-                                <span style="font-size:.875rem;color:#e2e8f0;">{{ $item['label'] }}</span>
-                            </a>
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
-            </div>
+    {{-- 04 · Try it --}}
+    <section class="f-section f-section--tight">
+        <div class="f-container">
+            <h2 class="f-h2">{{ __('finder_story.how.cta_title') }}</h2>
+            @include('public.partials._finder_ctas', ['primary' => 'medicine'])
         </div>
     </section>
 
-    <section class="section" style="background:#0F2744;color:#fff;text-align:center;">
-        <div class="container" style="max-width:640px;">
-            <h2 style="color:#fff;margin-bottom:1rem;">{{ __('public.how_page.cta_title') }}</h2>
-            <p style="color:rgba(255,255,255,.75);margin-bottom:2rem;">{{ __('public.how_page.cta_body') }}</p>
-            <div style="display:flex;justify-content:center;flex-wrap:wrap;gap:1rem;">
-                <a href="{{ route('public.contact') }}" class="btn btn-primary">{{ __('public.how_page.cta_demo') }}</a>
-                <a href="{{ route('public.developers') }}" class="btn" style="background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.25);">{{ __('public.how_page.cta_dev_docs') }}</a>
-            </div>
-        </div>
-    </section>
 @endsection

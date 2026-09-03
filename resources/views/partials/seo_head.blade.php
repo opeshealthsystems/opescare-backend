@@ -93,8 +93,12 @@
     and it carries the service-area and language fields that matter for a
     country-specific bilingual platform.
 --}}
-<script type="application/ld+json">
-{!! json_encode([
+@php
+    // json_encode lives in a @php block on purpose: Blade compiles
+    // directives before echos, so a literal "@context" inside {!! !!}
+    // is eaten by Blade's @context directive and the schema key becomes
+    // garbage while the JSON stays syntactically valid.
+    $seoHeadJsonLd = json_encode([
     '@context' => 'https://schema.org',
     '@graph'   => array_merge([
         [
@@ -157,7 +161,10 @@
         ],
         'inLanguage'  => $seoLocale,
     ]]),
-], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+@endphp
+<script type="application/ld+json">
+{!! $seoHeadJsonLd !!}
 </script>
 
 @stack('schema')

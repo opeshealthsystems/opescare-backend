@@ -14,12 +14,13 @@
 ?>
 
 <?php $__env->startSection('head'); ?>
+<?php echo $__env->make('portals.pharmacy._supply_styles', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 <style>
   .lst-badges{display:flex;gap:.45rem;flex-wrap:wrap;margin-bottom:var(--p-space-3)}
   .lst-badge{display:inline-flex;align-items:center;gap:.3rem;padding:.25rem .65rem;border-radius:999px;font-size:.72rem;font-weight:700}
   .lst-badge i{width:12px;height:12px}
   .lst-badge--claimed{background:rgba(15,76,129,.1);color:#0F4C81;border:1px solid rgba(15,76,129,.25)}
-  .lst-badge--unverified{background:#F1F5F9;color:#64748B;border:1px solid #E2E8F0}
+  .lst-badge--unverified{background:var(--f-wash, #F1F5F9);color:var(--f-muted, #64748B);border:1px solid var(--f-line, #E2E8F0)}
   .lst-note{font-size:.8rem;color:var(--p-text-muted);line-height:1.55;margin-bottom:var(--p-space-4)}
   .lst-hours-table td{padding:.4rem .5rem;vertical-align:middle}
   .lst-hours-table .form-control{padding:.35rem .5rem;font-size:.8rem}
@@ -58,6 +59,17 @@
     <div class="panel-body">
         <p class="lst-note"><?php echo e(__('caremap_claim.audit_note')); ?></p>
 
+        <?php if($phonePrimary === null): ?>
+        
+        <div class="fs-callout">
+            <?php echo $__env->make('partials.finder.icon', ['name' => 'phone', 'size' => 18], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+            <div>
+                <strong><?php echo e(__('finder_supply.phone_missing_title')); ?></strong>
+                <p><?php echo e(__('finder_supply.phone_missing_body')); ?></p>
+            </div>
+        </div>
+        <?php endif; ?>
+
         <form method="POST" action="<?php echo e(route('portals.listing.update')); ?>">
             <?php echo csrf_field(); ?>
 
@@ -65,6 +77,7 @@
                 <div class="form-group">
                     <label class="form-label form-label-required" for="phone_primary"><?php echo e(__('caremap_claim.label_phone_primary')); ?></label>
                     <input type="tel" id="phone_primary" name="phone_primary" class="form-control" maxlength="40"
+                           inputmode="tel" placeholder="<?php echo e(__('finder_supply.phone_placeholder')); ?>"
                            value="<?php echo e(old('phone_primary', $phonePrimary)); ?>">
                     <?php if($phonePrimary === null): ?>
                         <div class="form-hint"><?php echo e(__('caremap_claim.hint_phone_placeholder')); ?></div>
@@ -139,7 +152,7 @@ unset($__errorArgs, $__bag); ?>
             </div>
 
             <div style="margin-top:var(--p-space-5)">
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn btn-primary fs-tap">
                     <i data-lucide="save"></i> <?php echo e(__('caremap_claim.btn_save')); ?>
 
                 </button>
@@ -199,7 +212,7 @@ unset($__errorArgs, $__bag); ?>
             </div>
 
             <div style="margin-top:var(--p-space-5)">
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn btn-primary fs-tap">
                     <i data-lucide="save"></i> <?php echo e(__('caremap_claim.btn_save_hours')); ?>
 
                 </button>
@@ -306,7 +319,7 @@ unset($__errorArgs, $__bag); ?>
             </div>
 
             <div style="margin-top:var(--p-space-5)">
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn btn-primary fs-tap">
                     <i data-lucide="plus"></i> <?php echo e(__('caremap_claim.btn_add_service')); ?>
 
                 </button>

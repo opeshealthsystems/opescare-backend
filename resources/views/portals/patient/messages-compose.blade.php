@@ -6,79 +6,83 @@
 @section('breadcrumb_home_url', route('portals.patient'))
 @section('breadcrumb_section', __('messaging.compose_title'))
 
+@section('head')
+    @include('portals.patient._finder_head')
+@endsection
+
 @section('content')
 
-<div class="page-header">
-    <div>
-        <h1 class="page-title">{{ __('messaging.compose_title') }}</h1>
-        <p class="page-subtitle">{{ __('messaging.compose_subtitle') }}</p>
+<div class="pf pf--form">
+
+    <div class="pf-head">
+        <div>
+            <h1>{{ __('messaging.compose_title') }}</h1>
+            <p class="pf-sub">{{ __('messaging.compose_subtitle') }}</p>
+        </div>
+        <a href="{{ route('portals.patient.messages') }}" class="f-btn">
+            @include('partials.finder.icon', ['name' => 'chevron-left', 'size' => 18])
+            {{ __('messaging.thread_breadcrumb') }}
+        </a>
     </div>
-    <a href="{{ route('portals.patient.messages') }}" class="btn btn-secondary">
-        <i data-lucide="arrow-left"></i> {{ __('messaging.thread_breadcrumb') }}
-    </a>
-</div>
 
-@if(session('error'))
-<div class="alert alert-danger mb-4"><i data-lucide="alert-circle"></i><div>{{ session('error') }}</div></div>
-@endif
+    @unless($hasTeam)
+    <div class="pf-alert">
+        @include('partials.finder.icon', ['name' => 'info', 'size' => 18])
+        <p>{{ __('messaging.no_care_team') }}</p>
+    </div>
+    @endunless
 
-@unless($hasTeam)
-<div class="alert alert-info mb-4"><i data-lucide="info"></i><div>{{ __('messaging.no_care_team') }}</div></div>
-@endunless
+    <form method="POST" action="{{ route('portals.patient.messages.store') }}" class="f-card">
+        @csrf
 
-<div class="panel" style="max-width:680px;">
-    <div class="panel-body">
-        <form method="POST" action="{{ route('portals.patient.messages.store') }}">
-            @csrf
+        <div class="f-field">
+            <label class="f-label" for="title">{{ __('messaging.compose_subject') }}</label>
+            <input type="text" id="title" name="title" class="f-input" maxlength="150"
+                   value="{{ old('title') }}" required>
+            @error('title')<p class="f-error">{{ $message }}</p>@enderror
+        </div>
 
-            <div style="margin-bottom:1rem;">
-                <label class="form-label" for="title">{{ __('messaging.compose_subject') }}</label>
-                <input type="text" id="title" name="title" class="form-control" maxlength="150"
-                       value="{{ old('title') }}" required>
-                @error('title')<p class="page-subtitle" style="color:#b91c1c;margin:.35rem 0 0;">{{ $message }}</p>@enderror
-            </div>
+        <div class="f-field">
+            <label class="f-label" for="context_type">{{ __('messaging.compose_about') }}</label>
+            <select id="context_type" name="context_type" class="f-input" onchange="pfFilterCtx(this.value)">
+                <option value="">{{ __('messaging.compose_about_none') }}</option>
+                <option value="appointment">{{ __('messaging.ctx_appt') }}</option>
+                <option value="lab_result">{{ __('messaging.ctx_lab') }}</option>
+                <option value="prescription">{{ __('messaging.ctx_rx') }}</option>
+                <option value="visit">{{ __('messaging.ctx_visit') }}</option>
+                <option value="insurance_policy">{{ __('messaging.ctx_insurance') }}</option>
+            </select>
+            <p class="f-hint">{{ __('messaging.compose_about_hint') }}</p>
+        </div>
 
-            <div style="margin-bottom:1rem;">
-                <label class="form-label" for="context_type">{{ __('messaging.compose_about') }}</label>
-                <select id="context_type" name="context_type" class="form-control" onchange="ocFilterCtx(this.value)">
-                    <option value="">{{ __('messaging.compose_about_none') }}</option>
-                    <option value="appointment">{{ __('messaging.ctx_appt') }}</option>
-                    <option value="lab_result">{{ __('messaging.ctx_lab') }}</option>
-                    <option value="prescription">{{ __('messaging.ctx_rx') }}</option>
-                    <option value="visit">{{ __('messaging.ctx_visit') }}</option>
-                    <option value="insurance_policy">{{ __('messaging.ctx_insurance') }}</option>
-                </select>
-                <p class="page-subtitle" style="margin:.4rem 0 0;font-size:.82rem;">{{ __('messaging.compose_about_hint') }}</p>
-            </div>
-
-            <div id="ctx-item-wrap" style="margin-bottom:1rem;display:none;">
-                <label class="form-label" for="context_id">{{ __('messaging.compose_select_item') }}</label>
-                <select id="context_id" name="context_id" class="form-control">
-                    <option value="">—</option>
-                    @foreach($catalog as $type => $items)
-                        @foreach($items as $item)
-                            <option value="{{ $item['id'] }}" data-ctx="{{ $type }}" style="display:none;">{{ $item['label'] }}</option>
-                        @endforeach
+        <div class="f-field" id="ctx-item-wrap" style="display:none;">
+            <label class="f-label" for="context_id">{{ __('messaging.compose_select_item') }}</label>
+            <select id="context_id" name="context_id" class="f-input">
+                <option value="">—</option>
+                @foreach($catalog as $type => $items)
+                    @foreach($items as $item)
+                        <option value="{{ $item['id'] }}" data-ctx="{{ $type }}" style="display:none;">{{ $item['label'] }}</option>
                     @endforeach
-                </select>
-            </div>
+                @endforeach
+            </select>
+        </div>
 
-            <div style="margin-bottom:1rem;">
-                <label class="form-label" for="body">{{ __('messaging.compose_message') }}</label>
-                <textarea id="body" name="body" class="form-control" rows="5" maxlength="5000"
-                          placeholder="{{ __('messaging.reply_placeholder') }}" required>{{ old('body') }}</textarea>
-                @error('body')<p class="page-subtitle" style="color:#b91c1c;margin:.35rem 0 0;">{{ $message }}</p>@enderror
-            </div>
+        <div class="f-field">
+            <label class="f-label" for="body">{{ __('messaging.compose_message') }}</label>
+            <textarea id="body" name="body" class="f-input" rows="5" maxlength="5000"
+                      placeholder="{{ __('messaging.reply_placeholder') }}" required>{{ old('body') }}</textarea>
+            @error('body')<p class="f-error">{{ $message }}</p>@enderror
+        </div>
 
-            <button type="submit" class="btn btn-primary" {{ $hasTeam ? '' : 'disabled' }}>
-                <i data-lucide="send"></i> {{ __('messaging.compose_send') }}
-            </button>
-        </form>
-    </div>
+        <button type="submit" class="f-btn f-btn--primary f-btn--block" style="min-height:48px;" {{ $hasTeam ? '' : 'disabled' }}>
+            {{ __('messaging.compose_send') }}
+            @include('partials.finder.icon', ['name' => 'send', 'size' => 16])
+        </button>
+    </form>
 </div>
 
 <script>
-function ocFilterCtx(type) {
+function pfFilterCtx(type) {
     var wrap = document.getElementById('ctx-item-wrap');
     var sel  = document.getElementById('context_id');
     if (!type) { wrap.style.display = 'none'; sel.value = ''; return; }

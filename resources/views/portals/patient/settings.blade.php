@@ -8,88 +8,89 @@
 @section('breadcrumb_home_url', route('portals.patient'))
 @section('breadcrumb_section', __('public.pat_settings_breadcrumb', [], $l))
 
+@section('head')
+    @include('portals.patient._finder_head')
+@endsection
+
 @section('patient_banner')
     @include('partials.guardian-context-banner')
 @endsection
 
 @section('content')
 
-<div class="page-header">
-    <div>
-        <h1 class="page-title">{{ __('public.pat_settings_title', [], $l) }}</h1>
-        <p class="page-subtitle">{{ __('public.pat_settings_subtitle', [], $l) }}</p>
-    </div>
-</div>
+<div class="pf pf--form">
 
-@if(session('success'))
-<div class="alert alert-info mb-4"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>
-@endif
-
-@if(!$patient)
-<div class="panel">
-    <div class="empty-state">
-        <div class="empty-state-icon"><i data-lucide="alert-circle"></i></div>
-        <h3>{{ __('public.portal.no_profile_found_title', [], $l) ?: 'No Patient Profile Found' }}</h3>
-        <p>{{ __('public.portal.no_profile_found_desc', [], $l) ?: 'Your patient profile could not be loaded. Please contact support.' }}</p>
-    </div>
-</div>
-@else
-<form method="POST" action="{{ route('portals.patient.settings.update') }}">
-    @csrf
-
-    @php
-        $prefs = [
-            'push_appointments'     => ['icon' => 'calendar-check-2', 'label' => __('public.pat_settings_appointments', [], $l)],
-            'push_lab_results'      => ['icon' => 'flask-conical',    'label' => __('public.pat_settings_lab_results', [], $l)],
-            'push_prescriptions'    => ['icon' => 'pill',             'label' => __('public.pat_settings_prescriptions', [], $l)],
-            'push_billing'          => ['icon' => 'credit-card',      'label' => __('public.pat_settings_billing', [], $l)],
-            'push_consent_requests' => ['icon' => 'shield-check',     'label' => __('public.pat_settings_consent', [], $l)],
-        ];
-    @endphp
-
-    <div class="panel mb-4">
-        <div class="panel-header">
-            <h2 class="panel-title"><i data-lucide="bell"></i> {{ __('public.pat_settings_notif_title', [], $l) }}</h2>
+    <div class="pf-head">
+        <div>
+            <h1>{{ __('public.pat_settings_title', [], $l) }}</h1>
+            <p class="pf-sub">{{ __('public.pat_settings_subtitle', [], $l) }}</p>
         </div>
-        <div class="panel-body">
-            <ul style="list-style:none;margin:0;padding:0;display:grid;gap:.25rem;">
+    </div>
+
+    @if(!$patient)
+    <div class="f-card" style="text-align:center;padding:40px 20px;">
+        <div class="pf-qa__icon" style="margin:0 auto 12px;width:48px;height:48px;">
+            @include('partials.finder.icon', ['name' => 'alert-triangle', 'size' => 24])
+        </div>
+        <h2 style="font-size:1.125rem;font-weight:750;margin:0 0 6px;">{{ __('public.portal.no_profile_found_title', [], $l) ?: 'No Patient Profile Found' }}</h2>
+        <p class="f-muted" style="margin:0;">{{ __('public.portal.no_profile_found_desc', [], $l) ?: 'Your patient profile could not be loaded. Please contact support.' }}</p>
+    </div>
+    @else
+    <form method="POST" action="{{ route('portals.patient.settings.update') }}">
+        @csrf
+
+        @php
+            $prefs = [
+                'push_appointments'     => ['icon' => 'calendar',     'label' => __('public.pat_settings_appointments', [], $l)],
+                'push_lab_results'      => ['icon' => 'droplet',      'label' => __('public.pat_settings_lab_results', [], $l)],
+                'push_prescriptions'    => ['icon' => 'pill',         'label' => __('public.pat_settings_prescriptions', [], $l)],
+                'push_billing'          => ['icon' => 'info',         'label' => __('public.pat_settings_billing', [], $l)],
+                'push_consent_requests' => ['icon' => 'shield-check', 'label' => __('public.pat_settings_consent', [], $l)],
+            ];
+        @endphp
+
+        <div class="f-card" style="margin-bottom:12px;">
+            <h2 class="pf-card-head">
+                @include('partials.finder.icon', ['name' => 'bell', 'size' => 18])
+                {{ __('public.pat_settings_notif_title', [], $l) }}
+            </h2>
+            <div>
                 @foreach($prefs as $field => $meta)
-                <li style="display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.85rem 0;border-bottom:1px solid var(--p-border, #e5e7eb);">
-                    <span style="display:flex;align-items:center;gap:.6rem;">
-                        <i data-lucide="{{ $meta['icon'] }}" style="width:1.1rem;height:1.1rem;color:#0F4C81;"></i>
-                        <span class="td-strong">{{ $meta['label'] }}</span>
+                <div class="pf-setting">
+                    <span class="pf-setting__label">
+                        @include('partials.finder.icon', ['name' => $meta['icon'], 'size' => 18])
+                        {{ $meta['label'] }}
                     </span>
-                    <label class="switch">
+                    <label class="pf-switch">
                         <input type="checkbox" name="{{ $field }}" value="1" {{ $settings?->{$field} ? 'checked' : '' }} aria-label="{{ $meta['label'] }}">
-                        <span class="switch__track"></span>
+                        <i></i>
                     </label>
-                </li>
+                </div>
                 @endforeach
-            </ul>
+            </div>
         </div>
-    </div>
 
-    <div class="panel mb-4">
-        <div class="panel-header">
-            <h2 class="panel-title"><i data-lucide="palette"></i> {{ __('public.pat_settings_appearance_title', [], $l) }}</h2>
+        <div class="f-card" style="margin-bottom:16px;">
+            <h2 class="pf-card-head">{{ __('public.pat_settings_appearance_title', [], $l) }}</h2>
+            <div class="f-field" style="margin-bottom:0;">
+                <label class="f-label" for="preferred_theme">{{ __('public.pat_settings_theme', [], $l) }}</label>
+                <select id="preferred_theme" name="preferred_theme" class="f-input" style="max-width:280px;">
+                    <option value="system" {{ ($settings?->preferred_theme ?? 'system') === 'system' ? 'selected' : '' }}>{{ __('public.pat_settings_theme_system', [], $l) }}</option>
+                    <option value="light"  {{ $settings?->preferred_theme === 'light' ? 'selected' : '' }}>{{ __('public.pat_settings_theme_light', [], $l) }}</option>
+                    <option value="dark"   {{ $settings?->preferred_theme === 'dark' ? 'selected' : '' }}>{{ __('public.pat_settings_theme_dark', [], $l) }}</option>
+                </select>
+            </div>
         </div>
-        <div class="panel-body">
-            <label class="td-strong" for="preferred_theme" style="display:block;margin-bottom:.4rem;">{{ __('public.pat_settings_theme', [], $l) }}</label>
-            <select id="preferred_theme" name="preferred_theme" class="form-control" style="max-width:260px;">
-                <option value="system" {{ ($settings?->preferred_theme ?? 'system') === 'system' ? 'selected' : '' }}>{{ __('public.pat_settings_theme_system', [], $l) }}</option>
-                <option value="light"  {{ $settings?->preferred_theme === 'light' ? 'selected' : '' }}>{{ __('public.pat_settings_theme_light', [], $l) }}</option>
-                <option value="dark"   {{ $settings?->preferred_theme === 'dark' ? 'selected' : '' }}>{{ __('public.pat_settings_theme_dark', [], $l) }}</option>
-            </select>
-        </div>
-    </div>
 
-    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:1rem;">
-        <button type="submit" class="btn btn-primary">
-            <i data-lucide="save"></i> {{ __('public.pat_settings_save', [], $l) }}
-        </button>
-        <span class="page-subtitle" style="margin:0;">{{ __('public.pat_settings_save_hint', [], $l) }}</span>
-    </div>
-</form>
-@endif
+        <div class="pf-actions">
+            <button type="submit" class="f-btn f-btn--primary" style="min-height:48px;">
+                @include('partials.finder.icon', ['name' => 'check', 'size' => 16])
+                {{ __('public.pat_settings_save', [], $l) }}
+            </button>
+            <span class="f-small f-muted">{{ __('public.pat_settings_save_hint', [], $l) }}</span>
+        </div>
+    </form>
+    @endif
+</div>
 
 @endsection

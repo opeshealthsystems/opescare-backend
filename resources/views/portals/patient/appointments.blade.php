@@ -6,147 +6,161 @@
 @section('breadcrumb_home_url', route('portals.patient'))
 @section('breadcrumb_section', __('public.portal.nav_appointments', [], app()->getLocale()) ?: 'Appointments')
 
+@section('head')
+    @include('portals.patient._finder_head')
+@endsection
 
 @section('patient_banner')
     @include('partials.guardian-context-banner')
 @endsection
 
+@php
+    $l = app()->getLocale();
+    $apptCount = method_exists($appointments, 'total') ? $appointments->total() : $appointments->count();
+@endphp
+
 @section('content')
 
-<div class="page-header">
-    <div>
-        <h1 class="page-title">{{ __('public.portal.nav_appointments', [], app()->getLocale()) ?: 'My Appointments' }}</h1>
-        <p class="page-subtitle">{{ __('public.portal.appointments_subtitle', [], app()->getLocale()) ?: 'View your upcoming and past appointments.' }}</p>
-    </div>
-    <a href="{{ route('portals.patient.appointments.book') }}" class="btn btn-primary">
-        <i data-lucide="calendar-plus"></i> {{ __('public.appt_book_btn') }}
-    </a>
-</div>
+<div class="pf">
 
-@if(session('success'))
-<div class="alert alert-info mb-4"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>
-@endif
-
-@php $apptCount = method_exists($appointments, 'total') ? $appointments->total() : $appointments->count(); @endphp
-
-@if($apptCount === 0)
-<div class="panel">
-    <div class="empty-state">
-        <div class="empty-state-icon"><i data-lucide="calendar-check-2"></i></div>
-        <h3>{{ __('public.portal.no_appointments_title', [], app()->getLocale()) ?: 'No Appointments' }}</h3>
-        <p>{{ __('public.portal.no_appointments_desc', [], app()->getLocale()) ?: 'You don\'t have any appointments scheduled at this time.' }}</p>
-        <a href="{{ route('public.care-map') }}" class="btn btn-primary">
-            <i data-lucide="map-pin"></i>
-            {{ __('public.portal.nav_care_map', [], app()->getLocale()) ?: 'Find a Provider' }}
+    <div class="pf-head">
+        <div>
+            <h1>{{ __('public.portal.nav_appointments', [], $l) ?: 'My Appointments' }}</h1>
+            <p class="pf-sub">{{ __('public.portal.appointments_subtitle', [], $l) ?: 'View your upcoming and past appointments.' }}</p>
+        </div>
+        <a href="{{ route('portals.patient.appointments.book') }}" class="f-btn f-btn--primary">
+            @include('partials.finder.icon', ['name' => 'calendar-plus', 'size' => 18])
+            {{ __('public.appt_book_btn') }}
         </a>
     </div>
-</div>
-@else
-<div class="panel">
-    <div class="panel-header">
-        <h2 class="panel-title"><i data-lucide="calendar-check-2"></i> {{ __('public.portal.nav_appointments', [], app()->getLocale()) ?: 'Appointments' }}</h2>
-        <span class="badge badge-primary">{{ $apptCount }}</span>
+
+    @if($apptCount === 0)
+    <div class="f-card" style="text-align:center;padding:40px 20px;">
+        <div class="pf-qa__icon" style="margin:0 auto 12px;width:48px;height:48px;">
+            @include('partials.finder.icon', ['name' => 'calendar', 'size' => 24])
+        </div>
+        <h2 style="font-size:1.125rem;font-weight:750;margin:0 0 6px;">{{ __('public.portal.no_appointments_title', [], $l) ?: 'No Appointments' }}</h2>
+        <p class="f-muted" style="margin:0 0 18px;">{{ __('public.portal.no_appointments_desc', [], $l) ?: 'You don\'t have any appointments scheduled at this time.' }}</p>
+        <div class="pf-actions" style="justify-content:center;">
+            <a href="{{ route('portals.patient.appointments.book') }}" class="f-btn f-btn--primary" style="min-height:48px;">
+                @include('partials.finder.icon', ['name' => 'calendar-plus', 'size' => 18])
+                {{ __('public.appt_book_btn') }}
+            </a>
+            <a href="{{ route('public.care-map') }}" class="f-btn">
+                @include('partials.finder.icon', ['name' => 'map-pin', 'size' => 18])
+                {{ __('public.portal.nav_care_map', [], $l) ?: 'Find a Provider' }}
+            </a>
+        </div>
     </div>
-    <div class="table-wrapper">
-        <table class="data-table" aria-label="{{ __('public.aria_appointments_list') }}">
-            <thead>
-                <tr>
-                    <th>{{ __('public.portal.date_time', [], app()->getLocale()) ?: 'Date & Time' }}</th>
-                    <th>{{ __('public.portal.provider', [], app()->getLocale()) ?: 'Provider' }}</th>
-                    <th>{{ __('public.portal.appointment_type', [], app()->getLocale()) ?: 'Type' }}</th>
-                    <th>{{ __('public.portal.facility', [], app()->getLocale()) ?: 'Facility' }}</th>
-                    <th>{{ __('public.portal.status', [], app()->getLocale()) ?: 'Status' }}</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($appointments as $appt)
-                <tr>
-                    <td data-label="{{ __('public.portal.date_time', [], app()->getLocale()) ?: 'Date & Time' }}">
-                        <span class="td-strong">
-                            {{ $appt->scheduled_at?->format('d M Y') ?? '—' }}
-                        </span>
+    @else
+
+    <div class="pf-stack">
+        @foreach($appointments as $appt)
+        @php
+            $status = $appt->status ?? 'scheduled';
+            $badgeCls = match($status) {
+                'requested'                             => 'f-badge--warn',
+                'confirmed', 'scheduled', 'checked_in'  => 'f-badge--good',
+                'cancelled'                             => 'pf-badge--muted',
+                'no_show'                               => 'f-badge--danger',
+                default                                 => '',
+            };
+            $providerName = trim($appt->provider?->name
+                ?? (($appt->provider?->first_name ?? '') . ' ' . ($appt->provider?->last_name ?? '')));
+            $isActionable = in_array($status, ['requested', 'scheduled', 'confirmed']);
+        @endphp
+        <div class="f-card">
+            <div class="pf-appt">
+                <div class="pf-appt__date" aria-hidden="true">
+                    <div class="d">{{ $appt->scheduled_at?->format('d') ?? '—' }}</div>
+                    <div class="m">{{ $appt->scheduled_at?->isoFormat('MMM') ?? '' }}</div>
+                </div>
+                <div class="pf-appt__body">
+                    <p class="pf-appt__title">
+                        @enum($appt->appointment_type ?? 'General')
+                        <span class="f-badge {{ $badgeCls }}">@enum($status)</span>
+                    </p>
+                    <div class="pf-appt__meta">
                         @if($appt->scheduled_at)
-                        <div class="td-muted">{{ $appt->scheduled_at->format('H:i') }}</div>
+                        <span>
+                            @include('partials.finder.icon', ['name' => 'clock', 'size' => 15])
+                            {{ $appt->scheduled_at->isoFormat('ddd D MMM YYYY, HH:mm') }}
+                        </span>
                         @endif
-                    </td>
-                    <td data-label="{{ __('public.portal.provider', [], app()->getLocale()) ?: 'Provider' }}">
-                        @php
-                            $providerName = $appt->provider?->name
-                                ?? (($appt->provider?->first_name ?? '') . ' ' . ($appt->provider?->last_name ?? ''))
-                                ?: '—';
-                        @endphp
-                        <span class="td-strong">{{ trim($providerName) ?: '—' }}</span>
-                    </td>
-                    <td data-label="{{ __('public.portal.appointment_type', [], app()->getLocale()) ?: 'Type' }}">
-                        <span class="badge badge-primary">@enum($appt->appointment_type ?? 'General')</span>
-                    </td>
-                    <td data-label="{{ __('public.portal.facility', [], app()->getLocale()) ?: 'Facility' }}">
-                        <span class="td-muted">{{ $appt->facility?->name ?? __('public.portal.unknown_facility', [], app()->getLocale()) ?: 'Unknown Facility' }}</span>
-                    </td>
-                    <td data-label="{{ __('public.portal.status', [], app()->getLocale()) ?: 'Status' }}">
-                        @php
-                            $stCls = match($appt->status ?? 'scheduled') {
-                                'completed'  => 'badge-success',
-                                'cancelled'  => 'badge-danger',
-                                'no_show'    => 'badge-warning',
-                                'checked_in' => 'badge-teal',
-                                default      => 'badge-primary',
-                            };
-                        @endphp
-                        <span class="badge {{ $stCls }}">@enum($appt->status ?? 'Scheduled')</span>
-                    </td>
-                    <td class="row-actions">
-                        @if(in_array($appt->status, ['requested', 'scheduled', 'confirmed']))
-                        <a href="{{ route('portals.patient.appointments.reschedule', $appt->id) }}" class="btn btn-secondary btn-sm">
-                            <i data-lucide="calendar-clock"></i> {{ __('public.appt_reschedule_btn') }}
+                        <span>
+                            @include('partials.finder.icon', ['name' => 'map-pin', 'size' => 15])
+                            {{ $appt->facility?->name ?? (__('public.portal.unknown_facility', [], $l) ?: 'Unknown Facility') }}
+                        </span>
+                        @if($providerName !== '')
+                        <span>
+                            @include('partials.finder.icon', ['name' => 'users', 'size' => 15])
+                            {{ __('finder_patient.with_provider', ['name' => $providerName]) }}
+                        </span>
+                        @endif
+                    </div>
+                    @if($status === 'requested')
+                    <p class="f-small" style="color:var(--f-warn);margin:8px 0 0;display:flex;align-items:center;gap:6px;">
+                        @include('partials.finder.icon', ['name' => 'clock', 'size' => 15])
+                        {{ __('finder_patient.requested_hint') }}
+                    </p>
+                    @endif
+                    @if($isActionable)
+                    <div class="pf-appt__actions">
+                        <a href="{{ route('portals.patient.appointments.reschedule', $appt->id) }}" class="f-btn">
+                            @include('partials.finder.icon', ['name' => 'refresh-cw', 'size' => 16])
+                            {{ __('public.appt_reschedule_btn') }}
                         </a>
-                        <button type="button" class="btn btn-danger btn-sm" onclick="opOpenModal('cancel-appt-{{ $appt->id }}')">
-                            <i data-lucide="x-circle"></i> {{ __('public.portal.btn_cancel_appointment', [], app()->getLocale()) ?: 'Cancel' }}
+                        <button type="button" class="f-btn pf-btn--danger-ghost" onclick="pfOpenModal('cancel-appt-{{ $appt->id }}')">
+                            @include('partials.finder.icon', ['name' => 'x', 'size' => 16])
+                            {{ __('public.portal.btn_cancel_appointment', [], $l) ?: 'Cancel' }}
                         </button>
-                        @endif
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+                    </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+        @endforeach
     </div>
+
     @if(method_exists($appointments, 'links'))
-    <div class="panel-body">
+    <div class="pf-pagination">
         {{ $appointments->links() }}
     </div>
     @endif
-</div>
 
-@foreach($appointments as $appt)
-    @if(in_array($appt->status, ['requested', 'scheduled', 'confirmed']))
-    <div id="cancel-appt-{{ $appt->id }}" class="modal-backdrop mt-6" hidden>
-        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="cancel-appt-{{ $appt->id }}-title">
-            <h3 class="modal__title" id="cancel-appt-{{ $appt->id }}-title"><i data-lucide="x-circle"></i> {{ __('public.portal.modal_cancel_appt_title', [], app()->getLocale()) ?: 'Cancel appointment' }}</h3>
-            <form method="POST" action="{{ route('portals.patient.appointments.cancel', $appt->id) }}">
-                @csrf
-                <div class="modal__body">
-                    <p>{{ __('public.portal.modal_cancel_appt_body', [], app()->getLocale()) ?: 'Cancel this appointment? This action cannot be undone.' }}</p>
-                </div>
-                <div class="modal__footer">
-                    <button type="button" class="btn btn-ghost" onclick="opCloseModal('cancel-appt-{{ $appt->id }}')">{{ __('public.portal.btn_keep_appointment', [], app()->getLocale()) ?: 'Keep appointment' }}</button>
-                    <button type="submit" class="btn btn-danger">{{ __('public.portal.btn_cancel_appointment', [], app()->getLocale()) ?: 'Cancel appointment' }}</button>
-                </div>
-            </form>
+    {{-- Cancel confirmations --}}
+    @foreach($appointments as $appt)
+        @if(in_array($appt->status, ['requested', 'scheduled', 'confirmed']))
+        <div id="cancel-appt-{{ $appt->id }}" class="pf-modal-backdrop" hidden>
+            <div class="pf-modal" role="dialog" aria-modal="true" aria-labelledby="cancel-appt-{{ $appt->id }}-title">
+                <h3 id="cancel-appt-{{ $appt->id }}-title">
+                    @include('partials.finder.icon', ['name' => 'alert-circle', 'size' => 18])
+                    {{ __('public.portal.modal_cancel_appt_title', [], $l) ?: 'Cancel appointment' }}
+                </h3>
+                <form method="POST" action="{{ route('portals.patient.appointments.cancel', $appt->id) }}">
+                    @csrf
+                    <p>{{ __('public.portal.modal_cancel_appt_body', [], $l) ?: 'Cancel this appointment? This action cannot be undone.' }}</p>
+                    <div class="pf-modal__actions">
+                        <button type="button" class="f-btn" onclick="pfCloseModal('cancel-appt-{{ $appt->id }}')">{{ __('public.portal.btn_keep_appointment', [], $l) ?: 'Keep appointment' }}</button>
+                        <button type="submit" class="f-btn pf-btn--danger">{{ __('public.portal.btn_cancel_appointment', [], $l) ?: 'Cancel appointment' }}</button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
+        @endif
+    @endforeach
+
     @endif
-@endforeach
-@endif
+</div>
 
 @endsection
 
 @section('scripts')
 <script>
-function opOpenModal(id){ document.getElementById(id).removeAttribute('hidden'); }
-function opCloseModal(id){ document.getElementById(id).setAttribute('hidden',''); }
+function pfOpenModal(id){ document.getElementById(id).removeAttribute('hidden'); }
+function pfCloseModal(id){ document.getElementById(id).setAttribute('hidden',''); }
 document.addEventListener('keydown', function(e){
-    if(e.key==='Escape'){ document.querySelectorAll('.modal-backdrop').forEach(function(m){ m.setAttribute('hidden',''); }); }
+    if(e.key==='Escape'){ document.querySelectorAll('.pf-modal-backdrop').forEach(function(m){ m.setAttribute('hidden',''); }); }
 });
 </script>
 @endsection

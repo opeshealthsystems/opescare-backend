@@ -154,7 +154,7 @@ class PatientPortalController extends Controller
 
         $upcomingAppointments = $patient
             ? Appointment::where('patient_id', $patient->id)
-                ->whereIn('status', ['scheduled', 'confirmed', 'rescheduled'])
+                ->whereIn('status', ['requested', 'scheduled', 'confirmed', 'rescheduled']) // 'requested' included deliberately: a just-booked appointment that vanishes from the dashboard reads as a failed booking to the patient
                 ->whereNotNull('scheduled_at')
                 ->where('scheduled_at', '>=', now())
                 ->with(['facility:id,name', 'provider:id,name'])

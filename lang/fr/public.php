@@ -2894,7 +2894,7 @@ return [
 
     /* ── Page Aide ──────────────────────────────────── */
     'help_page' => [
-        'page_title'          => 'Centre d\'aide | Support OpesCare',
+        'page_title'          => 'Centre d\'aide',
         'meta_description'    => 'Trouvez des guides, tutoriels et ressources de support pour les patients, les institutions de santé et les développeurs utilisant OpesCare.',
         'badge'               => 'Aide & Support',
         'hero_title'          => 'Comment pouvons-nous vous aider ?',
@@ -3024,7 +3024,7 @@ return [
 
     /* ── Page Consentement ──────────────────────────── */
     'consent_page' => [
-        'page_title'          => 'Consentement et Droits des Patients | OpesCare',
+        'page_title'          => 'Consentement et Droits des Patients',
         'meta_description'    => 'Comprenez comment OpesCare donne aux patients le contrôle de leurs informations de santé grâce au consentement, à l\'accès limité, aux journaux d\'audit et au droit de révoquer.',
         'badge'               => 'Consentement en Priorité par Conception',
         'hero_title'          => 'Vous gardez le contrôle de vos informations de santé.',
@@ -3067,6 +3067,9 @@ return [
         'emerg_identity'      => 'Identité du Patient',
         'emerg_allergies'     => 'Allergies Critiques',
         'emerg_conditions'    => 'Affections Chroniques Actives',
+        'emerg_sample_identity' => 'Nom complet et groupe sanguin',
+        'emerg_sample_allergy' => 'Pénicilline — contre-indiquée',
+        'emerg_sample_conditions' => 'Diabète de type 2, hypertension',
         'rights_title'        => 'Vos droits avec OpesCare',
         'rights_subtitle'     => 'Ces droits s\'appliquent à chaque patient inscrit sur la plateforme.',
         'right_know_title'    => 'Droit de Savoir',

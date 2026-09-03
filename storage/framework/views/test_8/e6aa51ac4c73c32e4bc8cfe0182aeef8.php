@@ -13,13 +13,20 @@
 <?php $__env->startSection('breadcrumb_home', __('public.pharmacy_portal.breadcrumb_home', [], app()->getLocale()) ?: 'Pharmacy Portal'); ?>
 <?php $__env->startSection('breadcrumb_home_url', route('portals.pharmacy.dashboard')); ?>
 <?php $__env->startSection('breadcrumb_section', __('public.pharmacy_portal.breadcrumb_section_stock', [], app()->getLocale()) ?: 'Public Availability'); ?>
+
+<?php $__env->startSection('head'); ?>
+<?php echo $__env->make('portals.pharmacy._supply_styles', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+<?php $__env->stopSection(); ?>
+
 <?php
     $l = app()->getLocale();
-    $badgeFor = fn ($v) => match ($v) {
-        'in_stock'     => 'badge-success',
-        'low_stock'    => 'badge-warning',
-        'out_of_stock' => 'badge-danger',
-        default        => 'badge-neutral',
+    // Availability semantics on the segmented control — colors only ever mean
+    // state: good = in stock, warn = low, danger = out, neutral = unknown.
+    $segFor = fn (string $v) => match ($v) {
+        'in_stock'     => 'fs-seg__opt--good',
+        'low_stock'    => 'fs-seg__opt--warn',
+        'out_of_stock' => 'fs-seg__opt--danger',
+        default        => '',
     };
 ?>
 
@@ -77,9 +84,36 @@
 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 
 <?php if($listing): ?>
-<div class="banner banner--info">
-    <i data-lucide="search"></i>
-    <div>
+
+
+<form method="GET" class="fs-search" role="search">
+    <label class="fs-search__box">
+        <?php echo $__env->make('partials.finder.icon', ['name' => 'search', 'size' => 18], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+        <input type="text" name="search" class="fs-search__input" inputmode="search" autocomplete="off"
+               placeholder="<?php echo e(__('public.pharmacy_portal.ph_search_drug', [], $l) ?: 'Drug or generic name…'); ?>"
+               value="<?php echo e(request('search')); ?>" aria-label="<?php echo e(__('public.aria_search_drugs')); ?>">
+    </label>
+    <select name="stock_status" class="filter-select" aria-label="<?php echo e(__('public.aria_stock_status')); ?>" onchange="this.form.submit()">
+        <option value=""><?php echo e(__('public.pharmacy_portal.filter_all_stock', [], $l) ?: 'All stock'); ?></option>
+        <?php $__currentLoopData = $statuses; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $s): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+        <option value="<?php echo e($s->value); ?>" <?php echo e(request('stock_status') === $s->value ? 'selected' : ''); ?>><?php echo e(\App\Support\Enums::label($s->value, 'stock_status')); ?></option>
+        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+    </select>
+    <button type="submit" class="btn btn-secondary btn-sm fs-tap"><i data-lucide="filter"></i> <?php echo e(__('public.pharmacy_portal.btn_filter', [], $l) ?: 'Filter'); ?></button>
+    <?php if(request()->hasAny(['stock_status','search'])): ?>
+        <a href="<?php echo e(route('portals.pharmacy.stock')); ?>" class="btn btn-ghost btn-sm fs-tap"><?php echo e(__('public.pharmacy_portal.btn_clear', [], $l) ?: 'Clear'); ?></a>
+    <?php endif; ?>
+</form>
+
+
+<?php $covPct = $coverage['total'] > 0 ? (int) round($coverage['reported'] / $coverage['total'] * 100) : 0; ?>
+<div class="fs-cov">
+    <div class="fs-cov__head">
+        <?php echo $__env->make('partials.finder.icon', ['name' => 'pill', 'size' => 14], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+        <?php echo e(__('finder_supply.cov_title')); ?>
+
+    </div>
+    <div class="fs-cov__count">
         <strong><?php echo e($listing->facility_name); ?></strong> —
         <?php echo e(__('public.pharmacy_portal.stock_cov_summary', [
             'reported' => $coverage['reported'],
@@ -87,6 +121,10 @@
         ], $l)); ?>
 
     </div>
+    <div class="fs-cov__bar" role="img" aria-label="<?php echo e($covPct); ?>%">
+        <div class="fs-cov__fill" style="width:<?php echo e($covPct); ?>%"></div>
+    </div>
+    <p class="fs-cov__hint"><?php echo e(__('finder_supply.cov_hint')); ?></p>
 </div>
 
 
@@ -126,7 +164,7 @@
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label" for="add-packs"><?php echo e(__('public.pharmacy_portal.stock_col_packs', [], $l)); ?></label>
-                    <input type="number" name="packs_available" id="add-packs" class="form-control" min="0" max="1000000" value="<?php echo e(old('packs_available')); ?>">
+                    <input type="number" name="packs_available" id="add-packs" class="form-control fs-num" min="0" max="1000000" inputmode="numeric" value="<?php echo e(old('packs_available')); ?>">
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="add-pack-size"><?php echo e(__('public.pharmacy_portal.stock_lbl_pack_size', [], $l)); ?></label>
@@ -134,7 +172,7 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="add-price"><?php echo e(__('public.pharmacy_portal.stock_col_price', [], $l)); ?></label>
-                    <input type="number" name="unit_price" id="add-price" class="form-control" min="0" step="0.01" value="<?php echo e(old('unit_price')); ?>">
+                    <input type="number" name="unit_price" id="add-price" class="form-control fs-num" min="0" step="0.01" inputmode="decimal" value="<?php echo e(old('unit_price')); ?>">
                 </div>
             </div>
             <label class="form-check">
@@ -143,7 +181,7 @@
 
             </label>
             <div class="mt-6">
-                <button type="submit" class="btn btn-primary btn-sm">
+                <button type="submit" class="btn btn-primary fs-tap">
                     <i data-lucide="megaphone"></i> <?php echo e(__('public.pharmacy_portal.stock_btn_report', [], $l)); ?>
 
                 </button>
@@ -152,23 +190,6 @@
         <?php endif; ?>
     </div>
 </details>
-
-<form method="GET" class="filter-bar">
-    <label class="filter-search">
-        <i data-lucide="search"></i>
-        <input type="text" name="search" placeholder="<?php echo e(__('public.pharmacy_portal.ph_search_drug', [], $l) ?: 'Drug or generic name…'); ?>" value="<?php echo e(request('search')); ?>" aria-label="<?php echo e(__('public.aria_search_drugs')); ?>">
-    </label>
-    <select name="stock_status" class="filter-select" aria-label="<?php echo e(__('public.aria_stock_status')); ?>" onchange="this.form.submit()">
-        <option value=""><?php echo e(__('public.pharmacy_portal.filter_all_stock', [], $l) ?: 'All stock'); ?></option>
-        <?php $__currentLoopData = $statuses; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $s): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-        <option value="<?php echo e($s->value); ?>" <?php echo e(request('stock_status') === $s->value ? 'selected' : ''); ?>><?php echo e(\App\Support\Enums::label($s->value, 'stock_status')); ?></option>
-        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-    </select>
-    <button type="submit" class="btn btn-secondary btn-sm"><i data-lucide="filter"></i> <?php echo e(__('public.pharmacy_portal.btn_filter', [], $l) ?: 'Filter'); ?></button>
-    <?php if(request()->hasAny(['stock_status','search'])): ?>
-        <a href="<?php echo e(route('portals.pharmacy.stock')); ?>" class="btn btn-ghost btn-sm"><?php echo e(__('public.pharmacy_portal.btn_clear', [], $l) ?: 'Clear'); ?></a>
-    <?php endif; ?>
-</form>
 
 <div class="panel">
     <div class="table-wrapper">
@@ -194,19 +215,23 @@
                         <div class="td-muted"><?php echo e($med?->generic_name); ?> <?php echo e($med?->strength); ?></div>
                     </td>
                     <td data-label="<?php echo e(__('public.pharmacy_portal.stock_col_status', [], $l)); ?>">
-                        <span class="badge <?php echo e($badgeFor($stock->stock_status->value)); ?>"><?php echo e(\App\Support\Enums::label($stock->stock_status->value, 'stock_status')); ?></span>
-                        <select name="stock_status" form="stock-<?php echo e($stock->id); ?>" class="form-control mt-6" required aria-label="<?php echo e(__('public.pharmacy_portal.stock_col_status', [], $l)); ?>">
+                        
+                        <div class="fs-seg" role="radiogroup" aria-label="<?php echo e(__('finder_supply.quick_status_label')); ?>">
                             <?php $__currentLoopData = $statuses; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $s): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                            <option value="<?php echo e($s->value); ?>" <?php echo e($stock->stock_status === $s ? 'selected' : ''); ?>><?php echo e(\App\Support\Enums::label($s->value, 'stock_status')); ?></option>
+                            <label class="fs-seg__opt <?php echo e($segFor($s->value)); ?>">
+                                <input type="radio" name="stock_status" form="stock-<?php echo e($stock->id); ?>" value="<?php echo e($s->value); ?>"
+                                       <?php echo e($stock->stock_status === $s ? 'checked' : ''); ?> required>
+                                <span><?php echo e(\App\Support\Enums::label($s->value, 'stock_status')); ?></span>
+                            </label>
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                        </select>
+                        </div>
                     </td>
                     <td data-label="<?php echo e(__('public.pharmacy_portal.stock_col_packs', [], $l)); ?>">
-                        <input type="number" name="packs_available" form="stock-<?php echo e($stock->id); ?>" class="form-control" min="0" max="1000000" value="<?php echo e($stock->packs_available); ?>" aria-label="<?php echo e(__('public.pharmacy_portal.stock_col_packs', [], $l)); ?>">
+                        <input type="number" name="packs_available" form="stock-<?php echo e($stock->id); ?>" class="form-control fs-num" min="0" max="1000000" inputmode="numeric" value="<?php echo e($stock->packs_available); ?>" aria-label="<?php echo e(__('public.pharmacy_portal.stock_col_packs', [], $l)); ?>">
                         <input type="text" name="pack_size" form="stock-<?php echo e($stock->id); ?>" class="form-control mt-6" maxlength="60" value="<?php echo e($stock->pack_size); ?>" placeholder="<?php echo e(__('public.pharmacy_portal.stock_lbl_pack_size', [], $l)); ?>" aria-label="<?php echo e(__('public.pharmacy_portal.stock_lbl_pack_size', [], $l)); ?>">
                     </td>
                     <td data-label="<?php echo e(__('public.pharmacy_portal.stock_col_price', [], $l)); ?>">
-                        <input type="number" name="unit_price" form="stock-<?php echo e($stock->id); ?>" class="form-control" min="0" step="0.01" value="<?php echo e($stock->unit_price); ?>" aria-label="<?php echo e(__('public.pharmacy_portal.stock_col_price', [], $l)); ?>">
+                        <input type="number" name="unit_price" form="stock-<?php echo e($stock->id); ?>" class="form-control fs-num" min="0" step="0.01" inputmode="decimal" value="<?php echo e($stock->unit_price); ?>" aria-label="<?php echo e(__('public.pharmacy_portal.stock_col_price', [], $l)); ?>">
                         <div class="td-muted"><?php echo e($stock->currency); ?></div>
                     </td>
                     <td data-label="<?php echo e(__('public.pharmacy_portal.stock_col_reserve', [], $l)); ?>">
@@ -223,6 +248,7 @@
                         <?php endif; ?>
                     </td>
                     <td data-label="<?php echo e(__('public.pharmacy_portal.stock_col_reported', [], $l)); ?>" class="td-muted">
+                        <?php echo $__env->make('partials.finder.icon', ['name' => 'clock', 'size' => 13], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
                         <?php echo e($stock->last_reported_at?->diffForHumans() ?? __('public.pharmacy_portal.stock_never', [], $l)); ?>
 
                     </td>
@@ -232,8 +258,8 @@
                             <input type="hidden" name="medicine_id" value="<?php echo e($stock->medicine_id); ?>">
                             <input type="hidden" name="search" value="<?php echo e(request('search')); ?>">
                             <input type="hidden" name="stock_status_filter" value="<?php echo e(request('stock_status')); ?>">
-                            <button type="submit" class="btn btn-primary btn-xs">
-                                <i data-lucide="save"></i> <?php echo e(__('public.pharmacy_portal.stock_btn_save', [], $l)); ?>
+                            <button type="submit" class="btn btn-primary fs-tap">
+                                <?php echo $__env->make('partials.finder.icon', ['name' => 'check', 'size' => 16], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?> <?php echo e(__('public.pharmacy_portal.stock_btn_save', [], $l)); ?>
 
                             </button>
                         </form>

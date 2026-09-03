@@ -3,83 +3,76 @@
 @section('title', __('onboarding.forgot.title'))
 
 @section('content')
-    <div class="auth-card">
-        <div class="auth-card__head">
-            <h1 class="auth-card__title">{{ __('onboarding.forgot.title') }}</h1>
+    <div class="f-auth-col">
+        <div class="f-auth-card">
+            <h1 class="f-auth-title">{{ __('onboarding.forgot.title') }}</h1>
             {{-- The old copy promised "email address or phone number". Recovery
                  goes out by email only, so the description is the email one. --}}
-            <p class="auth-card__sub">{{ __('passwords.request.desc') }}</p>
-        </div>
+            <p class="f-auth-sub">{{ __('passwords.request.desc') }}</p>
 
-        @if(session('success'))
-            <div class="auth-alert auth-alert-success">
-                <i data-lucide="badge-check"></i>
-                <div>{{ session('success') }}</div>
-            </div>
+            @if(session('success'))
+                {{-- The generic "if that address matches an account…" flash is a
+                     deliberate anti-enumeration device — rendered verbatim. --}}
+                <div class="f-auth-alert f-auth-alert--success" role="status">
+                    @include('partials.finder.icon', ['name' => 'check', 'size' => 18])
+                    <div>{{ session('success') }}</div>
+                </div>
 
-            <div class="auth-back-action">
-                <a href="{{ route('login') }}" class="auth-btn auth-btn-secondary">
-                    <i data-lucide="arrow-left"></i>
-                    <span>{{ __('onboarding.selector.signin') }}</span>
+                <a href="{{ route('login') }}" class="f-btn f-btn--block">
+                    @include('partials.finder.icon', ['name' => 'chevron-left', 'size' => 16])
+                    {{ __('onboarding.selector.signin') }}
                 </a>
-            </div>
-        @else
-            @if(session('error'))
-                <div class="auth-alert auth-alert-danger">
-                    <i data-lucide="alert-circle"></i>
-                    <div>{{ session('error') }}</div>
-                </div>
-            @endif
+            @else
+                @if(session('error'))
+                    <div class="f-auth-alert f-auth-alert--danger" role="alert">
+                        @include('partials.finder.icon', ['name' => 'alert-circle', 'size' => 18])
+                        <div>{{ session('error') }}</div>
+                    </div>
+                @endif
 
-            @if($errors->any())
-                <div class="auth-alert auth-alert-danger">
-                    <i data-lucide="alert-circle"></i>
-                    <ul class="auth-alert-list">
-                        @foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach
-                    </ul>
-                </div>
-            @endif
+                @if($errors->any())
+                    <div class="f-auth-alert f-auth-alert--danger" role="alert">
+                        @include('partials.finder.icon', ['name' => 'alert-circle', 'size' => 18])
+                        <ul>
+                            @foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach
+                        </ul>
+                    </div>
+                @endif
 
-            <form action="{{ route('password.email') }}" method="POST" class="auth-form">
-                @csrf
+                <form action="{{ route('password.email') }}" method="POST" novalidate>
+                    @csrf
 
-                <div class="auth-form-group">
-                    <label for="email" class="auth-label">{{ __('onboarding.common.email') }} *</label>
-                    <div class="auth-input-icon-wrap">
-                        <i data-lucide="mail" class="auth-input-icon"></i>
+                    <div class="f-field">
+                        <label for="email" class="f-label">{{ __('onboarding.common.email') }}</label>
                         <input
                             type="email"
                             id="email"
                             name="email"
-                            class="auth-input auth-input--icon{{ $errors->has('email') ? ' auth-input-error' : '' }}"
+                            class="f-input{{ $errors->has('email') ? ' f-input--invalid' : '' }}"
                             required
                             autofocus
                             autocomplete="email"
                             inputmode="email"
                             maxlength="180"
-                            placeholder="name@email.com"
                             value="{{ old('email') }}"
                         >
+                        @error('email')
+                            <span class="f-error f-auth-error">@include('partials.finder.icon', ['name' => 'alert-circle', 'size' => 15]){{ $message }}</span>
+                        @enderror
                     </div>
-                    @error('email')<div class="auth-field-error">{{ $message }}</div>@enderror
+
+                    <p class="f-auth-fine" style="margin:0 0 16px">{{ __('onboarding.forgot.privacy_note') }}</p>
+
+                    <button type="submit" class="f-btn f-btn--primary f-btn--block">
+                        {{ __('onboarding.forgot.cta') }}
+                        @include('partials.finder.icon', ['name' => 'arrow-right', 'size' => 18])
+                    </button>
+                </form>
+
+                <div class="f-auth-alt f-auth-alt--divide">
+                    <p><a href="{{ route('login') }}">{{ __('onboarding.selector.signin') }}</a></p>
                 </div>
-
-                <div class="auth-privacy-note">
-                    {{ __('onboarding.forgot.privacy_note') }}
-                </div>
-
-                <button type="submit" class="auth-btn auth-btn-primary auth-btn--mt">
-                    <i data-lucide="send"></i>
-                    <span>{{ __('onboarding.forgot.cta') }}</span>
-                </button>
-            </form>
-
-            <div class="auth-footer-links auth-footer-links--mt">
-                <a href="{{ route('login') }}" class="auth-back-link">
-                    <i data-lucide="arrow-left"></i>
-                    {{ __('onboarding.selector.signin') }}
-                </a>
-            </div>
-        @endif
+            @endif
+        </div>
     </div>
 @endsection

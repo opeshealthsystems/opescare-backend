@@ -56,6 +56,10 @@
 @section('breadcrumb_home_url', route('portals.staff'))
 @section('breadcrumb_section', __('public.staff_portal.btn_book_appointment', [], app()->getLocale()) ?: 'Book Appointment')
 
+@section('head')
+@include('portals.pharmacy._supply_styles')
+@endsection
+
 @section('content')
 
 <div class="page-header">
@@ -149,7 +153,7 @@
             </div>
 
             <div class="row-actions-inline">
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn btn-primary fs-tap">
                     <i data-lucide="calendar-plus"></i>
                     {{ __('public.staff_portal.btn_book_appointment', [], app()->getLocale()) ?: 'Book Appointment' }}
                 </button>

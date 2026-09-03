@@ -62,12 +62,13 @@
 <meta property="og:locale:alternate" content="<?php echo e($seoLocale === 'fr' ? 'en_CM' : 'fr_CM'); ?>">
 
 
-<script type="application/ld+json">
-<?php echo json_encode([
-    '<?php $__contextArgs = [];
-if (context()->has($__contextArgs[0])) :
-if (isset($value)) { $__contextPrevious[] = $value; }
-$value = context()->get($__contextArgs[0]); ?>' => 'https://schema.org',
+<?php
+    // json_encode lives in a @php block on purpose: Blade compiles
+    // directives before echos, so a literal "@context" inside {!! !!}
+    // is eaten by Blade's @context directive and the schema key becomes
+    // garbage while the JSON stays syntactically valid.
+    $seoHeadJsonLd = json_encode([
+    '@context' => 'https://schema.org',
     '@graph'   => array_merge([
         [
             '@type'       => 'MedicalOrganization',
@@ -129,7 +130,10 @@ $value = context()->get($__contextArgs[0]); ?>' => 'https://schema.org',
         ],
         'inLanguage'  => $seoLocale,
     ]]),
-], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>
+], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+?>
+<script type="application/ld+json">
+<?php echo $seoHeadJsonLd; ?>
 
 </script>
 

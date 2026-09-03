@@ -1,107 +1,164 @@
-<?php $__env->startSection('title', __('public.how_page.page_title')); ?>
-<?php $__env->startSection('meta_description', __('seo.meta.how_it_works')); ?>
+<?php $__env->startSection('title', __('finder_story.how.page_title')); ?>
+<?php $__env->startSection('description', __('finder_story.how.meta_description')); ?>
 
 <?php $__env->startSection('content'); ?>
-    <header class="content-header">
-        <div class="container">
-            <div class="badge" style="background-color: var(--color-teal-light); color: var(--color-teal); margin-bottom: 1rem;"><?php echo e(__('public.how_page.badge')); ?></div>
-            <h1><?php echo e(__('public.how_it_works.hero_title')); ?></h1>
-            <p class="text-muted" style="max-width: 800px; margin: 0 auto; font-size: 1.25rem;">
-                <?php echo e(__('public.how_it_works.hero_subtitle')); ?>
 
-            </p>
+    
+    <style>
+        .fs-narrow { max-width: 720px; }
+        .fs-steps { list-style: none; padding: 0; margin: 0 0 0.75rem; counter-reset: fs-step; }
+        .fs-steps li { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.375rem 0; }
+        .fs-steps li::before {
+            counter-increment: fs-step;
+            content: counter(fs-step);
+            flex-shrink: 0;
+            width: 1.75rem; height: 1.75rem;
+            display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 50%;
+            background: var(--f-wash); color: var(--f-brand-ink);
+            font-weight: 600; font-size: 0.875rem;
+        }
+        .fs-tool-head { display: flex; align-items: center; gap: 0.625rem; }
+        .fs-tool-head > svg { color: var(--f-brand); flex-shrink: 0; }
+        .fs-limit { display: flex; align-items: flex-start; gap: 0.625rem; padding: 0.375rem 0; }
+        .fs-limit > svg { flex-shrink: 0; margin-top: 0.2rem; color: var(--f-warn); }
+        .fs-cta-row { display: flex; flex-wrap: wrap; gap: 0.625rem; }
+        .fs-note { display: flex; align-items: flex-start; gap: 0.625rem; }
+        .fs-note > svg { flex-shrink: 0; margin-top: 0.2rem; }
+    </style>
+
+    
+    <section class="f-section f-section--surface">
+        <div class="f-container">
+            <div class="fs-narrow">
+                <p class="f-eyebrow"><?php echo e(__('finder_story.how.eyebrow')); ?></p>
+                <h1 class="f-h1"><?php echo e(__('finder_story.how.title')); ?></h1>
+                <p class="f-lead"><?php echo e(__('finder_story.how.lead')); ?></p>
+            </div>
         </div>
-    </header>
+    </section>
 
-    <section class="content-body" style="background-color: var(--color-background);">
-        <div class="container">
-            <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));">
-                <!-- Step 1 -->
-                <div class="card">
-                    <div class="card-icon" style="background-color: var(--color-primary); color: white;">1</div>
-                    <h3><?php echo e(__('public.how_it_works.step1_title')); ?></h3>
-                    <p><?php echo e(__('public.how_it_works.step1_desc')); ?></p>
+    
+    <section class="f-section">
+        <div class="f-container">
+            <div class="f-grid">
+
+                <div class="f-card">
+                    <h2 class="fs-tool-head">
+                        <?php echo $__env->make('partials.finder.icon', ['name' => 'pill', 'size' => 22], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+                        <?php echo e(__('finder_story.how.medicine_title')); ?>
+
+                    </h2>
+                    <ol class="fs-steps">
+                        <li><span><?php echo e(__('finder_story.how.medicine_step1')); ?></span></li>
+                        <li><span><?php echo e(__('finder_story.how.medicine_step2')); ?></span></li>
+                        <li><span><?php echo e(__('finder_story.how.medicine_step3')); ?></span></li>
+                    </ol>
+                    <p class="f-small f-muted fs-note">
+                        <?php echo $__env->make('partials.finder.icon', ['name' => 'info', 'size' => 16], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+                        <span><?php echo e(__('finder_story.how.medicine_note')); ?></span>
+                    </p>
+                    <a class="f-btn f-btn--ghost" href="<?php echo e(route('public.network.medicine-finder')); ?>">
+                        <?php echo e(__('finder_story.cta.medicine')); ?>
+
+                        <?php echo $__env->make('partials.finder.icon', ['name' => 'arrow-right', 'size' => 16], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+                    </a>
                 </div>
-                <!-- Step 2 -->
-                <div class="card">
-                    <div class="card-icon" style="background-color: var(--color-primary); color: white;">2</div>
-                    <h3><?php echo e(__('public.how_it_works.step2_title')); ?></h3>
-                    <p><?php echo e(__('public.how_it_works.step2_desc')); ?></p>
+
+                <div class="f-card">
+                    <h2 class="fs-tool-head">
+                        <?php echo $__env->make('partials.finder.icon', ['name' => 'droplet', 'size' => 22], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+                        <?php echo e(__('finder_story.how.blood_title')); ?>
+
+                    </h2>
+                    <ol class="fs-steps">
+                        <li><span><?php echo e(__('finder_story.how.blood_step1')); ?></span></li>
+                        <li><span><?php echo e(__('finder_story.how.blood_step2')); ?></span></li>
+                        <li><span><?php echo e(__('finder_story.how.blood_step3')); ?></span></li>
+                    </ol>
+                    <a class="f-btn f-btn--ghost" href="<?php echo e(route('public.network.blood-finder')); ?>">
+                        <?php echo e(__('finder_story.cta.blood')); ?>
+
+                        <?php echo $__env->make('partials.finder.icon', ['name' => 'arrow-right', 'size' => 16], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+                    </a>
                 </div>
-                <!-- Step 3 -->
-                <div class="card">
-                    <div class="card-icon" style="background-color: var(--color-primary); color: white;">3</div>
-                    <h3><?php echo e(__('public.how_it_works.step3_title')); ?></h3>
-                    <p><?php echo e(__('public.how_it_works.step3_desc')); ?></p>
+
+                <div class="f-card">
+                    <h2 class="fs-tool-head">
+                        <?php echo $__env->make('partials.finder.icon', ['name' => 'map-pin', 'size' => 22], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+                        <?php echo e(__('finder_story.how.facility_title')); ?>
+
+                    </h2>
+                    <ol class="fs-steps">
+                        <li><span><?php echo e(__('finder_story.how.facility_step1')); ?></span></li>
+                        <li><span><?php echo e(__('finder_story.how.facility_step2')); ?></span></li>
+                        <li><span><?php echo e(__('finder_story.how.facility_step3')); ?></span></li>
+                    </ol>
+                    <a class="f-btn f-btn--ghost" href="<?php echo e(route('public.care-map')); ?>">
+                        <?php echo e(__('finder_story.cta.directory')); ?>
+
+                        <?php echo $__env->make('partials.finder.icon', ['name' => 'arrow-right', 'size' => 16], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+                    </a>
                 </div>
-                <!-- Step 4 -->
-                <div class="card">
-                    <div class="card-icon" style="background-color: var(--color-primary); color: white;">4</div>
-                    <h3><?php echo e(__('public.how_it_works.step4_title')); ?></h3>
-                    <p><?php echo e(__('public.how_it_works.step4_desc')); ?></p>
+
+                <div class="f-card">
+                    <h2 class="fs-tool-head">
+                        <?php echo $__env->make('partials.finder.icon', ['name' => 'calendar', 'size' => 22], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+                        <?php echo e(__('finder_story.how.booking_title')); ?>
+
+                    </h2>
+                    <ol class="fs-steps">
+                        <li><span><?php echo e(__('finder_story.how.booking_step1')); ?></span></li>
+                        <li><span><?php echo e(__('finder_story.how.booking_step2')); ?></span></li>
+                        <li><span><?php echo e(__('finder_story.how.booking_step3')); ?></span></li>
+                    </ol>
+                    <a class="f-btn f-btn--ghost" href="<?php echo e(route('public.care-map')); ?>">
+                        <?php echo e(__('finder_shell.nav.book_appointment')); ?>
+
+                        <?php echo $__env->make('partials.finder.icon', ['name' => 'arrow-right', 'size' => 16], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+                    </a>
                 </div>
-                <!-- Step 5 -->
-                <div class="card">
-                    <div class="card-icon" style="background-color: var(--color-primary); color: white;">5</div>
-                    <h3><?php echo e(__('public.how_it_works.step5_title')); ?></h3>
-                    <p><?php echo e(__('public.how_it_works.step5_desc')); ?></p>
-                </div>
-                <!-- Step 6 -->
-                <div class="card">
-                    <div class="card-icon" style="background-color: var(--color-primary); color: white;">6</div>
-                    <h3><?php echo e(__('public.how_it_works.step6_title')); ?></h3>
-                    <p><?php echo e(__('public.how_it_works.step6_desc')); ?></p>
+
+            </div>
+        </div>
+    </section>
+
+    
+    <section class="f-section f-section--wash f-section--tight">
+        <div class="f-container">
+            <div class="fs-narrow">
+                <h2 class="f-h2"><?php echo e(__('finder_story.how.limits_title')); ?></h2>
+                <p class="f-lead"><?php echo e(__('finder_story.how.limits_lead')); ?></p>
+                <div class="f-card">
+                    <p class="fs-limit">
+                        <?php echo $__env->make('partials.finder.icon', ['name' => 'phone', 'size' => 18], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+                        <span><?php echo e(__('finder_story.how.limit_1')); ?></span>
+                    </p>
+                    <p class="fs-limit">
+                        <?php echo $__env->make('partials.finder.icon', ['name' => 'clock', 'size' => 18], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+                        <span><?php echo e(__('finder_story.how.limit_2')); ?></span>
+                    </p>
+                    <p class="fs-limit">
+                        <?php echo $__env->make('partials.finder.icon', ['name' => 'info', 'size' => 18], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+                        <span><?php echo e(__('finder_story.how.limit_3')); ?></span>
+                    </p>
+                    <p class="fs-limit">
+                        <?php echo $__env->make('partials.finder.icon', ['name' => 'alert-circle', 'size' => 18], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+                        <span><?php echo e(__('finder_story.how.limit_4')); ?></span>
+                    </p>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="section">
-        <div class="container">
-            <div class="hero-grid">
-                <div class="hero-content">
-                    <h2><?php echo e(__('public.how_it_works.integration_title')); ?></h2>
-                    <p class="text-muted"><?php echo e(__('public.how_it_works.integration_desc')); ?></p>
-                    <div class="feature-list mt-6" style="margin-top: 1.5rem; display: grid; gap: 1rem;">
-                        <div class="feature-item"><i data-lucide="braces"></i> Direct API Integration</div>
-                        <div class="feature-item"><i data-lucide="code"></i> Connect SDK</div>
-                        <div class="feature-item"><i data-lucide="panel-top"></i> Connect Widget</div>
-                        <div class="feature-item"><i data-lucide="network"></i> Bridge Agent</div>
-                    </div>
-                </div>
-                <div class="hero-visual">
-                    <div style="background:#0F2744;border-radius:1.5rem;padding:2rem;color:#fff;">
-                        <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#38BDF8;margin-bottom:1.25rem;"><?php echo e(__('public.how_page.integration_options')); ?></div>
-                        <div style="display:grid;gap:.75rem;">
-                            <?php $__currentLoopData = [
-                                ['icon'=>'braces','label'=>__('public.how_page.integration_api')],
-                                ['icon'=>'code-2','label'=>__('public.how_page.integration_sdk')],
-                                ['icon'=>'panel-top','label'=>__('public.how_page.integration_widget')],
-                                ['icon'=>'cpu','label'=>__('public.how_page.integration_bridge')],
-                                ['icon'=>'layout-dashboard','label'=>'OpesCare Lite'],
-                            ]; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                            <a href="<?php echo e(route('public.developers')); ?>" style="display:flex;align-items:center;gap:.875rem;background:rgba(255,255,255,.07);border-radius:.75rem;padding:.875rem 1rem;text-decoration:none;">
-                                <i data-lucide="<?php echo e($item['icon']); ?>" style="width:1rem;height:1rem;color:#14B8A6;flex-shrink:0;"></i>
-                                <span style="font-size:.875rem;color:#e2e8f0;"><?php echo e($item['label']); ?></span>
-                            </a>
-                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    
+    <section class="f-section f-section--tight">
+        <div class="f-container">
+            <h2 class="f-h2"><?php echo e(__('finder_story.how.cta_title')); ?></h2>
+            <?php echo $__env->make('public.partials._finder_ctas', ['primary' => 'medicine'], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
         </div>
     </section>
 
-    <section class="section" style="background:#0F2744;color:#fff;text-align:center;">
-        <div class="container" style="max-width:640px;">
-            <h2 style="color:#fff;margin-bottom:1rem;"><?php echo e(__('public.how_page.cta_title')); ?></h2>
-            <p style="color:rgba(255,255,255,.75);margin-bottom:2rem;"><?php echo e(__('public.how_page.cta_body')); ?></p>
-            <div style="display:flex;justify-content:center;flex-wrap:wrap;gap:1rem;">
-                <a href="<?php echo e(route('public.contact')); ?>" class="btn btn-primary"><?php echo e(__('public.how_page.cta_demo')); ?></a>
-                <a href="<?php echo e(route('public.developers')); ?>" class="btn" style="background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.25);"><?php echo e(__('public.how_page.cta_dev_docs')); ?></a>
-            </div>
-        </div>
-    </section>
 <?php $__env->stopSection(); ?>
 
-<?php echo $__env->make('layouts.public', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\laragon\www\opescare-finder\resources\views\public\how_it_works.blade.php ENDPATH**/ ?>
+<?php echo $__env->make('layouts.finder', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\laragon\www\opescare-finder\resources\views\public\how_it_works.blade.php ENDPATH**/ ?>

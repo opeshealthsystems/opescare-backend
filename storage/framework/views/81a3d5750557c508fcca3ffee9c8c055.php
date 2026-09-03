@@ -1,111 +1,104 @@
 <?php $__env->startSection('title', __('onboarding.login.head_title')); ?>
 
 <?php $__env->startSection('content'); ?>
-    <div class="auth-card">
-        <div class="auth-card__head">
-            <h1 class="auth-card__title"><?php echo e(__('onboarding.login.welcome_back')); ?></h1>
-            <p class="auth-card__sub"><?php echo e(__('onboarding.login.subheadline')); ?></p>
-        </div>
+    <div class="f-auth-col">
+        <div class="f-auth-card">
+            <h1 class="f-auth-title"><?php echo e(__('onboarding.login.welcome_back')); ?></h1>
+            <p class="f-auth-sub"><?php echo e(__('onboarding.login.subheadline')); ?></p>
 
-        <?php if(session('success')): ?>
-            <div class="auth-alert auth-alert-success">
-                <i data-lucide="badge-check"></i>
-                <div><?php echo e(session('success')); ?></div>
-            </div>
-        <?php endif; ?>
+            <?php if(session('success')): ?>
+                <div class="f-auth-alert f-auth-alert--success" role="status">
+                    <?php echo $__env->make('partials.finder.icon', ['name' => 'check', 'size' => 18], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+                    <div><?php echo e(session('success')); ?></div>
+                </div>
+            <?php endif; ?>
 
-        <?php if(session('error')): ?>
-            <div class="auth-alert auth-alert-danger">
-                <i data-lucide="alert-circle"></i>
-                <div><?php echo e(session('error')); ?></div>
-            </div>
-        <?php endif; ?>
+            <?php if(session('error')): ?>
+                <div class="f-auth-alert f-auth-alert--danger" role="alert">
+                    <?php echo $__env->make('partials.finder.icon', ['name' => 'alert-circle', 'size' => 18], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+                    <div><?php echo e(session('error')); ?></div>
+                </div>
+            <?php endif; ?>
 
-        <form action="<?php echo e(route('login.submit')); ?>" method="POST" class="auth-form">
-            <?php echo csrf_field(); ?>
+            <form action="<?php echo e(route('login.submit')); ?>" method="POST" novalidate>
+                <?php echo csrf_field(); ?>
 
-            <div class="auth-form-group">
-                <label for="email" class="auth-label"><?php echo e(__('onboarding.login.email_or_phone')); ?></label>
-                <div class="auth-input-icon-wrap">
-                    <i data-lucide="mail" class="auth-input-icon"></i>
+                <div class="f-field">
+                    <label for="email" class="f-label"><?php echo e(__('onboarding.login.email_or_phone')); ?></label>
                     <input
                         type="text"
                         id="email"
                         name="email"
-                        class="auth-input auth-input--icon<?php echo e($errors->has('email') ? ' auth-input-error' : ''); ?>"
-                        placeholder="name@facility.org or +123..."
+                        class="f-input<?php echo e($errors->has('email') ? ' f-input--invalid' : ''); ?>"
                         required
                         autofocus
+                        autocomplete="username"
                         value="<?php echo e(old('email')); ?>"
                     >
-                </div>
-                <?php $__errorArgs = ['email'];
+                    <?php $__errorArgs = ['email'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?><div class="auth-field-error"><?php echo e($message); ?></div><?php unset($message);
+$message = $__bag->first($__errorArgs[0]); ?>
+                        <span class="f-error f-auth-error"><?php echo $__env->make('partials.finder.icon', ['name' => 'alert-circle', 'size' => 15], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php echo e($message); ?></span>
+                    <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?>
-            </div>
-
-            <div class="auth-form-group">
-                <div class="auth-label auth-label--row">
-                    <span><?php echo e(__('onboarding.common.password')); ?></span>
-                    <a href="<?php echo e(route('password.request')); ?>" class="auth-label-link">
-                        <?php echo e(__('onboarding.login.forgot')); ?>
-
-                    </a>
                 </div>
-                <div class="auth-pass-wrapper auth-input-icon-wrap">
-                    <i data-lucide="lock" class="auth-input-icon"></i>
-                    <input
-                        type="password"
-                        id="password"
-                        name="password"
-                        class="auth-input auth-input--icon<?php echo e($errors->has('password') ? ' auth-input-error' : ''); ?>"
-                        required
-                        placeholder="••••••••"
-                    >
-                    <button type="button" class="auth-pass-toggle" data-toggle-password="password">
-                        <i data-lucide="eye" id="password-toggle-icon"></i>
-                    </button>
-                </div>
-                <?php $__errorArgs = ['password'];
+
+                <div class="f-field">
+                    <div class="f-auth-labelrow">
+                        <label for="password" class="f-label"><?php echo e(__('onboarding.common.password')); ?></label>
+                        <a href="<?php echo e(route('password.request')); ?>"><?php echo e(__('onboarding.login.forgot')); ?></a>
+                    </div>
+                    <div class="f-auth-pass">
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            class="f-input<?php echo e($errors->has('password') ? ' f-input--invalid' : ''); ?>"
+                            required
+                            autocomplete="current-password"
+                        >
+                        <?php echo $__env->make('auth.partials.password_toggle', ['for' => 'password'], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+                    </div>
+                    <?php $__errorArgs = ['password'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?><div class="auth-field-error"><?php echo e($message); ?></div><?php unset($message);
+$message = $__bag->first($__errorArgs[0]); ?>
+                        <span class="f-error f-auth-error"><?php echo $__env->make('partials.finder.icon', ['name' => 'alert-circle', 'size' => 15], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php echo e($message); ?></span>
+                    <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?>
+                </div>
+
+                <div class="f-auth-check">
+                    <input type="checkbox" id="remember" name="remember">
+                    <label for="remember"><?php echo e(__('onboarding.login.remember')); ?></label>
+                </div>
+
+                <button type="submit" class="f-btn f-btn--primary f-btn--block">
+                    <?php echo $__env->make('partials.finder.icon', ['name' => 'log-in', 'size' => 18], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+                    <?php echo e(__('onboarding.login.submit_signin')); ?>
+
+                </button>
+            </form>
+
+            <div class="f-auth-note">
+                <?php echo $__env->make('partials.finder.icon', ['name' => 'shield-check', 'size' => 16], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+                <p><?php echo e(__('onboarding.login.security_note')); ?></p>
             </div>
-
-            <div class="auth-checkbox-group">
-                <input type="checkbox" id="remember" name="remember">
-                <label for="remember" class="auth-checkbox-label"><?php echo e(__('onboarding.login.remember')); ?></label>
-            </div>
-
-            <button type="submit" class="auth-btn auth-btn-primary auth-btn--mt">
-                <i data-lucide="log-in"></i>
-                <span><?php echo e(__('onboarding.login.submit_signin')); ?></span>
-            </button>
-        </form>
-
-        <div class="auth-security-block">
-            <i data-lucide="shield-check"></i>
-            <p><?php echo e(__('onboarding.login.security_note')); ?></p>
         </div>
-    </div>
 
-    <div class="auth-footer-links auth-footer-links--mt">
-        <p><?php echo e(__('onboarding.login.no_account')); ?>
+        <div class="f-auth-alt">
+            <p><?php echo e(__('onboarding.login.no_account')); ?>
 
-            <a href="<?php echo e(route('register')); ?>" class="auth-footer-link">
-                <?php echo e(__('onboarding.login.create_account')); ?>
-
-            </a>
-        </p>
+                <a href="<?php echo e(route('register')); ?>"><?php echo e(__('onboarding.login.create_account')); ?></a>
+            </p>
+        </div>
     </div>
 
     
@@ -270,7 +263,5 @@ unset($__errorArgs, $__bag); ?>
     </div>
     <?php endif; ?>
 <?php $__env->stopSection(); ?>
-
-
 
 <?php echo $__env->make('layouts.auth', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\laragon\www\opescare-finder\resources\views\auth\login.blade.php ENDPATH**/ ?>

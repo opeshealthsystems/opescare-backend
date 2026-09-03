@@ -48,6 +48,11 @@ Route::get('/.well-known/oauth-authorization-server', [\App\Http\Controllers\Wel
 Route::get('/robots.txt',  [\App\Http\Controllers\SeoController::class, 'robots'])->name('seo.robots');
 Route::get('/sitemap.xml', [\App\Http\Controllers\SeoController::class, 'sitemap'])->name('seo.sitemap');
 Route::get('/llms.txt',    [\App\Http\Controllers\SeoController::class, 'llms'])->name('seo.llms');
+// /sitemap.xml is an index; the real urlsets live in these two children.
+// Facility profiles are chunked (<=2,000 URLs per file - see config/finder-seo.php).
+Route::get('/sitemap-pages.xml', [\App\Http\Controllers\SeoController::class, 'sitemapPages'])->name('seo.sitemap.pages');
+Route::get('/sitemap-facilities-{page}.xml', [\App\Http\Controllers\SeoController::class, 'sitemapFacilities'])
+    ->whereNumber('page')->name('seo.sitemap.facilities');
 
 // Root / Landing
 Route::get('/', [PublicPageController::class, 'index'])->name('public.landing');

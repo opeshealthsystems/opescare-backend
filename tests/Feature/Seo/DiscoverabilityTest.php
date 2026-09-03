@@ -2,18 +2,22 @@
 
 namespace Tests\Feature\Seo;
 
+use App\Models\CareFacility;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
  * Search, answer and generative engines must be able to find, read and quote
- * the public site — in BOTH languages.
+ * the public Finder — in BOTH languages — and must be handed every facility
+ * profile, because "pharmacie douala" queries land on profiles, not the home
+ * page.
  *
- * The gap this closes: locale lived only in the session, so every page had one
- * url and a crawler (which carries no session) always received English. Half of
- * 8,214 translated keys were unreachable by any engine, on a platform whose
- * primary market speaks French. There was also no sitemap, no canonical, no
- * hreflang and no structured data anywhere on the site.
+ * The shape under guard: /sitemap.xml is an INDEX pointing at
+ * /sitemap-pages.xml (route-table generated) and /sitemap-facilities-N.xml
+ * (chunked, lastmod from updated_at, cached 24h); robots.txt welcomes AI
+ * crawlers while keeping them out of authenticated surfaces; llms.txt states
+ * what the product is AND what the data is not (reported, timestamped,
+ * unverified) — for a health finder the caveats are the product.
  */
 class DiscoverabilityTest extends TestCase
 {
@@ -22,8 +26,27 @@ class DiscoverabilityTest extends TestCase
     /** Pages that carry the most discovery weight. */
     public static function keyPages(): array
     {
-        return ['/', '/how-it-works', '/interoperability', '/security',
-                '/network/medicine-finder', '/network/blood-finder', '/faq'];
+        return ['/', '/network/medicine-finder', '/network/blood-finder',
+                '/how-it-works', '/about', '/faq'];
+    }
+
+    private function makeFacility(array $overrides = []): CareFacility
+    {
+        static $i = 0;
+        $i++;
+
+        return CareFacility::create(array_merge([
+            'facility_name'       => "Test Facility {$i}",
+            'facility_type'       => 'pharmacy',
+            'listing_status'      => 'active',
+            'verification_status' => 'unverified',
+            'city'                => 'Douala',
+            'region'              => 'Littoral',
+            'address'             => "{$i} Rue de la Paix",
+            'latitude'            => 4.05,
+            'longitude'           => 9.7,
+            'phone_primary'       => '+237650000000',
+        ], $overrides));
     }
 
     public function test_robots_welcomes_ai_crawlers_and_points_at_the_sitemap(): void
@@ -32,7 +55,7 @@ class DiscoverabilityTest extends TestCase
             ->assertHeader('Content-Type', 'text/plain; charset=UTF-8')
             ->getContent();
 
-        // The crawlers that decide whether this platform can be cited at all.
+        // The crawlers that decide whether this product can be cited at all.
         foreach (['GPTBot', 'PerplexityBot', 'ClaudeBot', 'Google-Extended', 'OAI-SearchBot'] as $bot) {
             $this->assertStringContainsString($bot, $body, "{$bot} is not addressed in robots.txt");
         }
@@ -44,23 +67,92 @@ class DiscoverabilityTest extends TestCase
     public function test_robots_keeps_crawlers_out_of_authenticated_surfaces(): void
     {
         // This is a privacy control, not an SEO preference: these paths carry
-        // patient data, sessions and credentials.
+        // personal data, sessions and credentials.
         $body = $this->get('/robots.txt')->assertOk()->getContent();
 
-        foreach (['/portals/', '/api/', '/login', '/document-preview'] as $private) {
+        foreach (['/portals/', '/api/', '/login', '/care-map/facility/*/claim'] as $private) {
             $this->assertStringContainsString("Disallow: {$private}", $body);
         }
     }
 
-    public function test_sitemap_is_valid_xml_listing_both_languages(): void
+    public function test_sitemap_is_an_index_listing_pages_and_facility_chunks(): void
     {
+        $this->makeFacility();
+
         $xml = $this->get('/sitemap.xml')->assertOk()->getContent();
 
         libxml_use_internal_errors(true);
         $doc = simplexml_load_string($xml);
         $this->assertNotFalse($doc, 'sitemap.xml is not valid XML');
+        $this->assertSame('sitemapindex', $doc->getName(), 'sitemap.xml must be a sitemap index');
 
-        $this->assertGreaterThan(20, count($doc->url), 'sitemap looks suspiciously short');
+        $locs = array_map(fn ($s) => (string) $s->loc, iterator_to_array($doc->sitemap, false));
+
+        $this->assertContains(url('/sitemap-pages.xml'), $locs);
+        $this->assertContains(url('/sitemap-facilities-1.xml'), $locs);
+    }
+
+    public function test_facility_profiles_are_chunked_with_lastmod_and_hreflang(): void
+    {
+        // Chunk size 2 + three facilities → the 2,728-row production shape
+        // (index → N chunk files) reproduced at test scale.
+        config(['finder-seo.sitemap.chunk' => 2]);
+
+        $facilities = [$this->makeFacility(), $this->makeFacility(), $this->makeFacility()];
+
+        $index = simplexml_load_string($this->get('/sitemap.xml')->assertOk()->getContent());
+        $locs  = array_map(fn ($s) => (string) $s->loc, iterator_to_array($index->sitemap, false));
+
+        $this->assertContains(url('/sitemap-facilities-1.xml'), $locs);
+        $this->assertContains(url('/sitemap-facilities-2.xml'), $locs, 'three facilities at chunk size 2 must produce a second chunk');
+
+        $chunk1 = simplexml_load_string($this->get('/sitemap-facilities-1.xml')->assertOk()->getContent());
+        $chunk2 = simplexml_load_string($this->get('/sitemap-facilities-2.xml')->assertOk()->getContent());
+
+        $this->assertCount(2, $chunk1->url);
+        $this->assertCount(1, $chunk2->url);
+
+        // Every facility URL ships exactly once, across all chunks.
+        $listed = [];
+        foreach ([$chunk1, $chunk2] as $chunk) {
+            foreach ($chunk->url as $url) {
+                $listed[] = (string) $url->loc;
+
+                $this->assertNotEmpty((string) $url->lastmod, "{$url->loc} has no lastmod — crawlers will re-fetch 2,700 unchanged profiles");
+
+                $alternates = $url->children('http://www.w3.org/1999/xhtml');
+                $this->assertCount(3, $alternates, "{$url->loc} is missing hreflang alternates");
+            }
+        }
+
+        foreach ($facilities as $facility) {
+            $this->assertContains(route('public.care-map.profile', $facility->id), $listed);
+        }
+
+        // Past the last chunk is a 404, not an empty file.
+        $this->get('/sitemap-facilities-3.xml')->assertNotFound();
+    }
+
+    public function test_a_delisted_facility_is_not_in_the_sitemap(): void
+    {
+        $active   = $this->makeFacility();
+        $delisted = $this->makeFacility(['listing_status' => 'delisted']);
+
+        $xml = $this->get('/sitemap-facilities-1.xml')->assertOk()->getContent();
+
+        $this->assertStringContainsString($active->id, $xml);
+        $this->assertStringNotContainsString($delisted->id, $xml);
+    }
+
+    public function test_pages_sitemap_is_valid_xml_listing_both_languages(): void
+    {
+        $xml = $this->get('/sitemap-pages.xml')->assertOk()->getContent();
+
+        libxml_use_internal_errors(true);
+        $doc = simplexml_load_string($xml);
+        $this->assertNotFalse($doc, 'sitemap-pages.xml is not valid XML');
+
+        $this->assertGreaterThan(20, count($doc->url), 'pages sitemap looks suspiciously short');
 
         foreach ($doc->url as $url) {
             $alternates = $url->children('http://www.w3.org/1999/xhtml');
@@ -75,7 +167,7 @@ class DiscoverabilityTest extends TestCase
 
     public function test_the_sitemap_never_exposes_a_private_path(): void
     {
-        $doc = simplexml_load_string($this->get('/sitemap.xml')->assertOk()->getContent());
+        $doc = simplexml_load_string($this->get('/sitemap-pages.xml')->assertOk()->getContent());
 
         $leaked = [];
         foreach ($doc->url as $url) {
@@ -89,15 +181,18 @@ class DiscoverabilityTest extends TestCase
         $this->assertSame([], array_unique($leaked), "\n" . implode("\n", array_unique($leaked)) . "\n");
     }
 
-    public function test_llms_txt_states_what_the_platform_is_and_is_not(): void
+    public function test_llms_txt_states_what_the_data_is_and_is_not(): void
     {
-        // Written to be quoted verbatim. The "is not" half matters as much as
-        // the "is": a hospital management system is the thing OpesCare is most
-        // often mistaken for, including by models summarising it.
+        // Written to be quoted verbatim. For a health finder the caveats ARE
+        // the product: an engine that presents stock reports as guarantees
+        // can send a sick person to a closed pharmacy.
         $body = $this->get('/llms.txt')->assertOk()->getContent();
 
-        $this->assertStringContainsString('Health ID', $body);
-        $this->assertStringContainsString('not a hospital management system', $body);
+        $this->assertStringContainsString('OpesCare Finder', $body);
+        $this->assertStringContainsString('MINSANTE', $body);
+        $this->assertStringContainsString('OpenStreetMap', $body);
+        $this->assertStringContainsString('never a guarantee', $body);
+        $this->assertStringContainsString('NOT an OpesCare accreditation', $body);
         $this->assertStringContainsString('?lang=fr', $body);
     }
 
@@ -136,10 +231,18 @@ class DiscoverabilityTest extends TestCase
             }
 
             foreach ($m[1] as $i => $json) {
-                if (json_decode(trim($json), true) === null) {
+                $decoded = json_decode(trim($json), true);
+
+                if ($decoded === null) {
                     // Invalid JSON-LD is worse than none — engines discard the
                     // whole block, silently.
                     $failures[] = "{$path} block {$i}: invalid JSON — " . json_last_error_msg();
+                } elseif (($decoded['@context'] ?? null) !== 'https://schema.org') {
+                    // Caught in the wild: Blade compiles directives before
+                    // echos, so a literal "@context" outside a protected @php
+                    // block is eaten by the @context directive — the JSON stays
+                    // syntactically valid while the schema key becomes garbage.
+                    $failures[] = "{$path} block {$i}: no schema.org @context key — Blade's @context directive may have eaten it";
                 }
             }
         }
@@ -169,8 +272,8 @@ class DiscoverabilityTest extends TestCase
 
     public function test_a_crawler_can_reach_the_french_site_without_a_session(): void
     {
-        // The whole point. Before ?lang= was honoured, this was impossible:
-        // locale came only from the session, so every crawler saw English.
+        // The whole point of ?lang= being honoured: locale used to come only
+        // from the session, so every crawler saw English.
         $en = $this->get('/')->assertOk()->getContent();
         $fr = $this->get('/?lang=fr')->assertOk()->getContent();
 

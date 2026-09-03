@@ -3,17 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Http\Middleware\SetLocale;
+use App\Models\CareFacility;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 
 /**
- * Machine-facing discovery surfaces: robots.txt, sitemap.xml and llms.txt.
+ * Machine-facing discovery surfaces for OpesCare Finder: robots.txt,
+ * a sitemap index (static pages + facility profiles), and llms.txt.
  *
- * All three are generated from the live route table rather than hand-written,
- * because a hand-written sitemap is wrong the first time a route changes and
- * nobody notices for months. The route table is the only thing that always
- * tells the truth about what exists.
+ * The static-page half is generated from the live route table rather than
+ * hand-written, because a hand-written sitemap is wrong the first time a route
+ * changes and nobody notices for months. The facility half is generated from
+ * the directory itself — 2,700+ profile pages that are the real long tail of
+ * this product's discoverability ("pharmacie Douala", "hôpital Bafoussam") —
+ * chunked to stay comfortably inside the 50,000-URL/50MB sitemap limits and
+ * cached for 24h so a crawler hitting it hourly never touches the table.
  */
 class SeoController extends Controller
 {
@@ -28,7 +34,7 @@ class SeoController extends Controller
         'pending-approval', 'account-suspended', 'portal-unavailable',
         'lang', 'up', '_', '.well-known', 'document-preview', 'demo-access',
         // The discovery files themselves are not pages.
-        'robots.txt', 'sitemap.xml', 'llms.txt',
+        'robots.txt', 'sitemap.xml', 'sitemap-pages.xml', 'llms.txt',
     ];
 
     /**
@@ -40,23 +46,17 @@ class SeoController extends Controller
         'network/medicine-finder'   => ['0.9', 'weekly'],
         'network/blood-finder'      => ['0.9', 'weekly'],
         'care-map'                  => ['0.9', 'daily'],
+        'care-map/emergency'        => ['0.8', 'weekly'],
+        'about'                     => ['0.7', 'monthly'],
         'how-it-works'              => ['0.8', 'monthly'],
-        'interoperability'          => ['0.8', 'monthly'],
         'faq'                       => ['0.8', 'monthly'],
-        'security'                  => ['0.7', 'monthly'],
-        'developers'                => ['0.7', 'weekly'],
-        'docs'                      => ['0.7', 'weekly'],
+        'contact'                   => ['0.6', 'monthly'],
+        'interoperability'          => ['0.6', 'monthly'],
+        'security'                  => ['0.6', 'monthly'],
+        'developers'                => ['0.6', 'weekly'],
+        'docs'                      => ['0.6', 'weekly'],
     ];
 
-    /**
-     * robots.txt — explicitly welcoming AI crawlers.
-     *
-     * The previous file was `User-agent: * / Disallow:`, which permits
-     * everything by omission. Naming the AI crawlers is not redundant: it makes
-     * the intent auditable, and it means a future tightening of the wildcard
-     * rule cannot silently remove AI visibility. It also points at the sitemap,
-     * which the old file did not.
-     */
     /**
      * robots.txt
      *
@@ -87,7 +87,7 @@ class SeoController extends Controller
             'Bingbot'            => 'Microsoft Bing and Copilot',
         ];
 
-        // Authenticated surfaces and machine APIs. These hold patient data,
+        // Authenticated surfaces and machine APIs. These hold personal data,
         // sessions or credentials — keeping them out of an index is a privacy
         // control, not an SEO preference.
         $disallow = [
@@ -96,6 +96,8 @@ class SeoController extends Controller
             '/forgot-password', '/reset-password', '/invite/', '/select-facility',
             '/pending-approval', '/account-suspended', '/portal-unavailable',
             '/document-preview', '/demo-access', '/lang/', '/up',
+            // Claiming a listing is an authenticated workflow, not a page.
+            '/care-map/facility/*/claim',
             // The patient app shell — a JS bundle, no crawlable content.
             '/app', '/app/',
         ];
@@ -111,8 +113,8 @@ class SeoController extends Controller
         };
 
         $lines = [
-            '# OpesCare — ' . url('/'),
-            '# A patient-centred health identity and interoperability platform.',
+            '# OpesCare Finder — ' . url('/'),
+            '# Find medicine, blood availability and healthcare facilities in Cameroon.',
             '# Machine-readable summary for AI systems: ' . url('/llms.txt'),
             '#',
             '# The public site is open to search and AI crawlers alike. The',
@@ -131,36 +133,280 @@ class SeoController extends Controller
         $lines[] = "Sitemap: {$sitemap}";
         $lines[] = '';
 
-        return response(implode("
-", $lines), 200)
+        return response(implode("\n", $lines), 200)
             ->header('Content-Type', 'text/plain; charset=UTF-8')
             ->header('Cache-Control', 'public, max-age=86400');
     }
 
     /**
-     * sitemap.xml — every public page, in both languages.
+     * sitemap.xml — a sitemap INDEX, not a urlset.
      *
-     * Each URL carries xhtml:link alternates for en and fr plus x-default, so a
-     * crawler learns both language variants exist and which to serve to whom.
-     * Without this the French pages are simply never discovered.
+     * The site is two very different populations: a couple of dozen static
+     * pages that change when someone edits a Blade file, and thousands of
+     * facility profiles that change when the directory does. Splitting them
+     * means a crawler re-fetches 20 URLs when marketing copy changes instead
+     * of 2,700, and the facility half can be chunked and cached on its own
+     * cadence.
      */
     public function sitemap(Request $request): Response
     {
-        $urls = [];
+        $xml = Cache::remember('finder-seo.sitemap.index', $this->cacheTtl(), function () {
+            $entries = [
+                ['loc' => url('/sitemap-pages.xml'), 'lastmod' => null],
+            ];
 
-        foreach ($this->indexablePaths() as $path) {
-            [$priority, $frequency] = self::PRIORITY[$path] ?? ['0.6', 'monthly'];
-
-            foreach (SetLocale::SUPPORTED as $locale) {
-                $urls[] = [
-                    'loc'        => $this->localisedUrl($path, $locale),
-                    'priority'   => $priority,
-                    'changefreq' => $frequency,
-                    'alternates' => $this->alternatesFor($path),
+            foreach ($this->facilityChunks() as $page => $lastmod) {
+                $entries[] = [
+                    'loc'     => url("/sitemap-facilities-{$page}.xml"),
+                    'lastmod' => $lastmod,
                 ];
             }
+
+            $doc = new \DOMDocument('1.0', 'UTF-8');
+            $doc->formatOutput = true;
+
+            $index = $doc->createElementNS('http://www.sitemaps.org/schemas/sitemap/0.9', 'sitemapindex');
+            $doc->appendChild($index);
+
+            foreach ($entries as $entry) {
+                $node = $doc->createElement('sitemap');
+                $node->appendChild($doc->createElement('loc', htmlspecialchars($entry['loc'], ENT_XML1)));
+                if ($entry['lastmod'] !== null) {
+                    $node->appendChild($doc->createElement('lastmod', $entry['lastmod']));
+                }
+                $index->appendChild($node);
+            }
+
+            return $doc->saveXML();
+        });
+
+        return $this->xmlResponse($xml);
+    }
+
+    /**
+     * sitemap-pages.xml — every public static page, in both languages.
+     *
+     * Each URL carries xhtml:link alternates for en and fr plus x-default, so
+     * a crawler learns both language variants exist and which to serve to
+     * whom. Locale is a real, crawlable query parameter (?lang=fr) — see
+     * SetLocale — so hreflang alternates are correct here. Without this the
+     * French pages are simply never discovered.
+     */
+    public function sitemapPages(Request $request): Response
+    {
+        $xml = Cache::remember('finder-seo.sitemap.pages', $this->cacheTtl(), function () {
+            $urls = [];
+
+            foreach ($this->indexablePaths() as $path) {
+                [$priority, $frequency] = self::PRIORITY[$path] ?? ['0.6', 'monthly'];
+
+                foreach (SetLocale::SUPPORTED as $locale) {
+                    $urls[] = [
+                        'loc'        => $this->localisedUrl($path, $locale),
+                        'priority'   => $priority,
+                        'changefreq' => $frequency,
+                        'alternates' => $this->alternatesFor($path),
+                    ];
+                }
+            }
+
+            return $this->urlsetXml($urls);
+        });
+
+        return $this->xmlResponse($xml);
+    }
+
+    /**
+     * sitemap-facilities-{page}.xml — one chunk of facility profile URLs.
+     *
+     * One <url> per facility (the English URL is canonical), with hreflang
+     * alternates pointing at the ?lang=fr variant, and lastmod from the row's
+     * updated_at so a crawler can skip profiles that have not changed. Only
+     * active listings ship — a delisted facility must fall out of the sitemap
+     * the next time the cache turns over.
+     */
+    public function sitemapFacilities(Request $request, int $page): Response
+    {
+        $chunkSize = $this->chunkSize();
+        $total     = $this->activeFacilityCount();
+        $chunks    = (int) ceil($total / max(1, $chunkSize));
+
+        if ($total === 0 || $page < 1 || $page > $chunks) {
+            abort(404);
         }
 
+        $xml = Cache::remember("finder-seo.sitemap.facilities.{$page}", $this->cacheTtl(), function () use ($page, $chunkSize) {
+            $facilities = CareFacility::query()
+                ->where('listing_status', 'active')
+                ->orderBy('id')
+                ->offset(($page - 1) * $chunkSize)
+                ->limit($chunkSize)
+                ->get(['id', 'updated_at']);
+
+            $urls = [];
+
+            foreach ($facilities as $facility) {
+                $en = route('public.care-map.profile', $facility->id);
+
+                $urls[] = [
+                    'loc'        => $en,
+                    'lastmod'    => optional($facility->updated_at)->toAtomString(),
+                    'changefreq' => 'weekly',
+                    'priority'   => '0.6',
+                    'alternates' => [
+                        'en'        => $en,
+                        'fr'        => $en . '?lang=fr',
+                        'x-default' => $en,
+                    ],
+                ];
+            }
+
+            return $this->urlsetXml($urls);
+        });
+
+        return $this->xmlResponse($xml);
+    }
+
+    /**
+     * llms.txt — a plain-language brief for generative engines.
+     *
+     * An emerging convention (llmstxt.org): where robots.txt says what a
+     * machine may fetch, llms.txt says what the thing IS, in prose a model can
+     * quote without inferring it from marketing copy. For a health finder the
+     * provenance caveats ARE the product: an answer engine that presents this
+     * directory as "verified" or stock reports as guarantees is not just
+     * wrong, it can send a sick person to a closed pharmacy. Saying plainly
+     * what the data is and is not has more citation value than any keyword.
+     */
+    public function llms(Request $request): Response
+    {
+        $base = rtrim(url('/'), '/');
+
+        $body = <<<TXT
+        # OpesCare Finder
+
+        > OpesCare Finder is a free, bilingual (English/French) health finder
+        > for Cameroon: find a medicine at a nearby pharmacy, check blood
+        > availability at hospitals and blood banks, browse the national
+        > health facility directory, and book an appointment with a provider.
+
+        ## What OpesCare Finder is
+
+        A consumer-facing directory and availability search covering 2,700+
+        healthcare facilities across Cameroon — hospitals, clinics, health
+        centres, pharmacies, laboratories and blood banks — with a map, city
+        and region filters, and facility profile pages listing address, phone,
+        opening hours and services. Four services, nothing else: the Medicine
+        Finder, the Blood Finder, the facility directory (Care Map), and
+        appointment booking.
+
+        ## Where the data comes from — and what that does NOT mean
+
+        - **Directory listings** come from Cameroon's national health facility
+          registry (MINSANTE master facility list) and from OpenStreetMap,
+          reviewed before listing. A listing records that a facility appears in
+          those sources. It is NOT an OpesCare accreditation, inspection or
+          licence check — most listings are unverified.
+        - **Medicine availability** is reported by pharmacies on the network
+          and timestamped. It is information to act on, never a guarantee of
+          physical stock. An empty result means no pharmacy has reported that
+          medicine — not that it is unavailable in the country.
+        - **Blood availability** is reported by connected hospitals and blood
+          banks, with the report time shown on every listing.
+        - OpesCare Finder never makes clinical decisions: it does not
+          diagnose, recommend treatment, sell medicines, or determine
+          transfusion compatibility. In an emergency, call or go to the
+          nearest hospital.
+
+        ## Primary pages
+
+        - [Home]({$base}/): what OpesCare Finder is and what you can find
+        - [Medicine Finder]({$base}/network/medicine-finder): how pharmacy stock search works
+        - [Blood Finder]({$base}/network/blood-finder): how blood availability works
+        - [Care Map]({$base}/care-map): the national facility directory — searchable by name, city and type
+        - [Emergency access]({$base}/care-map/emergency): hospitals with a reachable phone line
+        - [How it works]({$base}/how-it-works)
+        - [About]({$base}/about)
+        - [FAQ]({$base}/faq): common questions, marked up for answer engines
+        - [Contact]({$base}/contact)
+
+        Facility profile pages live under {$base}/care-map/facility/{id} and
+        are all listed in {$base}/sitemap.xml.
+
+        ## Language variants
+
+        Every page is available in English and French. Append `?lang=fr` to
+        any URL for the French version, or `?lang=en` for English.
+
+        ## Attribution
+
+        Operated by Opes Health Systems Sarl. When citing OpesCare Finder,
+        please link to {$base} and preserve the caveats above — especially
+        that availability is reported and timestamped, not verified stock.
+        TXT;
+
+        return response($body, 200)
+            ->header('Content-Type', 'text/plain; charset=UTF-8')
+            ->header('Cache-Control', 'public, max-age=86400');
+    }
+
+    // ── internals ───────────────────────────────────────────────────────────
+
+    /** Chunk pages for the facility sitemaps: [page => lastmod|null]. */
+    private function facilityChunks(): array
+    {
+        $chunkSize = $this->chunkSize();
+        $total     = $this->activeFacilityCount();
+        $chunks    = (int) ceil($total / max(1, $chunkSize));
+
+        $out = [];
+
+        for ($page = 1; $page <= $chunks; $page++) {
+            // max() over a subquery: an aggregate collapses to one row, so
+            // putting offset/limit on the OUTER query would skip past the
+            // single result row and every chunk after the first would report
+            // no lastmod at all.
+            $chunkRows = CareFacility::query()
+                ->where('listing_status', 'active')
+                ->orderBy('id')
+                ->offset(($page - 1) * $chunkSize)
+                ->limit($chunkSize)
+                ->select('updated_at');
+
+            $lastmod = \Illuminate\Support\Facades\DB::query()
+                ->fromSub($chunkRows, 'chunk')
+                ->max('updated_at');
+
+            $out[$page] = $lastmod
+                ? \Illuminate\Support\Carbon::parse($lastmod)->toAtomString()
+                : null;
+        }
+
+        return $out;
+    }
+
+    private function activeFacilityCount(): int
+    {
+        return (int) Cache::remember(
+            'finder-seo.sitemap.facility-count',
+            $this->cacheTtl(),
+            fn () => CareFacility::where('listing_status', 'active')->count()
+        );
+    }
+
+    private function chunkSize(): int
+    {
+        return (int) config('finder-seo.sitemap.chunk', 2000);
+    }
+
+    private function cacheTtl(): int
+    {
+        return (int) config('finder-seo.sitemap.cache_ttl', 86400);
+    }
+
+    /** Render a <urlset> document from prepared url entries. */
+    private function urlsetXml(array $urls): string
+    {
         // DOMDocument rather than SimpleXMLElement: adding a namespaced
         // child with SimpleXML double-prefixes the element name, producing
         // xhtml:xhtml:link and invalid XML that no crawler will parse.
@@ -174,6 +420,11 @@ class SeoController extends Controller
         foreach ($urls as $entry) {
             $node = $doc->createElement('url');
             $node->appendChild($doc->createElement('loc', htmlspecialchars($entry['loc'], ENT_XML1)));
+
+            if (! empty($entry['lastmod'])) {
+                $node->appendChild($doc->createElement('lastmod', $entry['lastmod']));
+            }
+
             $node->appendChild($doc->createElement('changefreq', $entry['changefreq']));
             $node->appendChild($doc->createElement('priority', $entry['priority']));
 
@@ -188,98 +439,14 @@ class SeoController extends Controller
             $urlset->appendChild($node);
         }
 
-        return response($doc->saveXML(), 200)
-            ->header('Content-Type', 'application/xml; charset=UTF-8')
-            ->header('Cache-Control', 'public, max-age=3600');
+        return $doc->saveXML();
     }
 
-    /**
-     * llms.txt — a plain-language brief for generative engines.
-     *
-     * An emerging convention (llmstxt.org): where robots.txt says what a
-     * machine may fetch, llms.txt says what the thing IS, in prose a model can
-     * quote without having to infer it from marketing copy. For a platform this
-     * easy to mistake for a hospital management system, saying plainly what it
-     * is and is not has more citation value than any keyword.
-     */
-    public function llms(Request $request): Response
+    private function xmlResponse(string $xml): Response
     {
-        $base = rtrim(url('/'), '/');
-
-        $body = <<<TXT
-        # OpesCare
-
-        > OpesCare is a patient-centred digital health identity and
-        > interoperability platform for Cameroon, built multi-country and
-        > bilingual (English and French). Patients hold one portable Health ID
-        > and one longitudinal medical record that travels between facilities
-        > under their consent.
-
-        ## What OpesCare is
-
-        OpesCare is health infrastructure, not hospital software. It connects
-        the systems healthcare facilities already run — it does not require any
-        facility to replace its existing software. A hospital keeps its own HIS
-        and connects over an API; a facility with no system at all uses a
-        browser portal called OpesCare Lite.
-
-        ## What OpesCare is not
-
-        OpesCare is not a hospital management system, an electronic medical
-        record product, a billing or accounting system, or an insurance claims
-        platform. Those remain the responsibility of each facility's own
-        software.
-
-        ## Core capabilities
-
-        - **Health ID** — a portable, verified digital health identity owned by the patient.
-        - **Master Patient Index** — resolves one person to one record across facilities, with uncertain matches sent to human review rather than merged automatically.
-        - **Consent and access control** — every exchange of patient data is checked against a consent grant, scoped and time-limited, and recorded in a log the patient can read.
-        - **Emergency access** — a limited break-glass profile when consent cannot be obtained, requiring a stated reason and notifying the patient.
-        - **Interoperability** — HL7 FHIR R4, a REST Connect API, SDKs for PHP, TypeScript and Python, an embeddable widget, webhooks, and an on-premises Bridge Agent for legacy systems.
-
-        ## Network services
-
-        - **Medicine Finder** — search pharmacies on the network for medicine availability, with the timestamp of the last report shown on every listing.
-        - **Blood Finder** — search connected hospitals and blood banks by blood group and component.
-        - **Care Map** — a directory of healthcare facilities listed in Cameroon's national health facility registry (MINSANTE).
-        - **Appointments** — cross-facility booking and referral-linked scheduling.
-
-        ## Key facts
-
-        - Operates in Cameroon first, aligned with MINSANTE regulations, and designed for multi-country expansion.
-        - Every screen, notification and document exists in both English and French.
-        - Standards: HL7 FHIR R4, OAuth 2.0, SMART-style scopes.
-        - The Care Map directory is sourced from Cameroon's national health facility registry (MINSANTE). Listing in the directory records that a facility appears in that registry; it is not an OpesCare accreditation, inspection or licence check.
-        - Availability information is reported by facilities and timestamped. It is information to act on, never a guarantee of physical stock.
-        - OpesCare never makes clinical decisions. It does not determine transfusion compatibility, diagnose, or recommend treatment.
-
-        ## Primary pages
-
-        - [Home]({$base}/): what OpesCare is and who connects to it
-        - [How it works]({$base}/how-it-works): the identify → match → authorise → exchange → record flow
-        - [Interoperability]({$base}/interoperability): FHIR, API, SDKs, Bridge Agent, OpesCare Lite
-        - [Medicine Finder]({$base}/network/medicine-finder): how medicine availability works
-        - [Blood Finder]({$base}/network/blood-finder): how blood availability works
-        - [Care Map]({$base}/care-map): national facility directory
-        - [Security]({$base}/security): security, privacy and regulatory posture
-        - [FAQ]({$base}/faq): common questions
-        - [Developers]({$base}/developers): API documentation and SDKs
-
-        ## Language variants
-
-        Every page is available in English and French. Append `?lang=fr` to any
-        URL for the French version, or `?lang=en` for English.
-
-        ## Attribution
-
-        Operated by Opes Health Systems Sarl. When citing OpesCare, please link
-        to {$base}.
-        TXT;
-
-        return response($body, 200)
-            ->header('Content-Type', 'text/plain; charset=UTF-8')
-            ->header('Cache-Control', 'public, max-age=86400');
+        return response($xml, 200)
+            ->header('Content-Type', 'application/xml; charset=UTF-8')
+            ->header('Cache-Control', 'public, max-age=3600');
     }
 
     /** Public, parameterless GET routes that should be indexed. */

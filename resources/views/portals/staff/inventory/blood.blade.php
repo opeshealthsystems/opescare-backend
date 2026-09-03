@@ -55,12 +55,16 @@
 @section('breadcrumb_home_url', route('portals.staff'))
 @section('breadcrumb_section', __('staff_inv.breadcrumb_blood', [], app()->getLocale()) ?: 'Blood Bank')
 
+@section('head')
+@include('portals.pharmacy._supply_styles')
+@endsection
+
 @section('content')
 
 <div class="page-head">
     <h2>{{ __('public.stf_inv_blood_title') }}</h2>
     <div class="page-head__spacer"></div>
-    <button type="button" class="btn btn-primary btn-sm" onclick="openUpsertModal()">
+    <button type="button" class="btn btn-primary btn-sm fs-tap" onclick="openUpsertModal()">
         <i data-lucide="plus-circle"></i>
         {{ __('public.stf_inv_blood_update_stock_btn') }}
     </button>
@@ -143,7 +147,7 @@
                 <div class="empty-state-icon"><i data-lucide="droplets"></i></div>
                 <h3>{{ __('public.stf_inv_blood_empty_title') }}</h3>
                 <p>{{ __('public.stf_inv_blood_empty_desc') }}</p>
-                <button type="button" class="btn btn-primary btn-sm mt-6" onclick="openUpsertModal()">{{ __('public.stf_inv_blood_update_stock_btn') }}</button>
+                <button type="button" class="btn btn-primary btn-sm mt-6 fs-tap" onclick="openUpsertModal()">{{ __('public.stf_inv_blood_update_stock_btn') }}</button>
             </div>
         @else
             <div class="table-wrapper">
@@ -165,7 +169,9 @@
                         @endphp
                         <tr>
                             <td data-label="{{ __('public.stf_inv_blood_col_group') }}">
-                                <span class="td-strong">{{ $item->blood_group }}</span>
+                                {{-- Big group tag — same visual language as the public
+                                     Blood Finder's group grid. --}}
+                                <span class="fs-bgroup-tag">{{ $item->blood_group }}</span>
                             </td>
                             <td data-label="{{ __('public.stf_inv_blood_col_component') }}">
                                 <span class="badge badge-neutral">@enum($item->component)</span>
@@ -178,7 +184,8 @@
                                 @if($item->is_unsafe)     <span class="badge badge-danger badge-sm">{{ __('public.stf_inv_blood_flag_unsafe') }}</span> @endif
                                 @if($item->is_quarantined)<span class="badge badge-warning badge-sm">{{ __('public.stf_inv_blood_flag_quarantine') }}</span> @endif
                                 @if(!$item->is_expired && !$item->is_unsafe && !$item->is_quarantined)
-                                    <span class="td-muted">—</span>
+                                    {{-- Screening state is said out loud, not implied by a dash. --}}
+                                    <span class="fs-screen-ok">@include('partials.finder.icon', ['name' => 'check', 'size' => 12]) {{ __('finder_supply.blood_screening_clear') }}</span>
                                 @endif
                             </td>
                             <td data-label="{{ __('public.stf_inv_blood_col_updated') }}" class="td-muted">
@@ -186,17 +193,17 @@
                             </td>
                             <td data-label="{{ __('public.stf_inv_blood_col_actions') }}">
                                 <div class="row-actions-inline">
-                                    <button type="button" class="btn btn-primary btn-xs"
+                                    <button type="button" class="btn btn-primary btn-xs fs-tap"
                                         onclick="openAdjustModal('{{ $item->id }}', '{{ $item->blood_group }}', '{{ addslashes($item->component) }}', 'add')">
                                         <i data-lucide="plus"></i>
                                         {{ __('public.stf_inv_blood_btn_add') }}
                                     </button>
-                                    <button type="button" class="btn btn-ghost btn-xs"
+                                    <button type="button" class="btn btn-ghost btn-xs fs-tap"
                                         onclick="openAdjustModal('{{ $item->id }}', '{{ $item->blood_group }}', '{{ addslashes($item->component) }}', 'subtract')">
                                         <i data-lucide="minus"></i>
                                         {{ __('public.stf_inv_blood_btn_use') }}
                                     </button>
-                                    <button type="button" class="btn btn-ghost btn-xs"
+                                    <button type="button" class="btn btn-ghost btn-xs fs-tap"
                                         onclick="openBloodFlagModal('{{ $item->id }}', '{{ $item->blood_group }} {{ addslashes($item->component) }}', {{ $item->is_expired ? 1 : 0 }}, {{ $item->is_unsafe ? 1 : 0 }}, {{ $item->is_quarantined ? 1 : 0 }})">
                                         <i data-lucide="flag"></i>
                                         {{ __('public.stf_inv_blood_btn_flags') }}
@@ -220,33 +227,47 @@
             @csrf
             <div class="modal__body">
                 <p>{{ __('public.stf_inv_blood_modal_set_note') }}</p>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">{{ __('public.stf_inv_blood_lbl_group') }}</label>
-                        <select name="blood_group" class="form-control" required>
-                            @foreach(['O+','O-','A+','A-','B+','B-','AB+','AB-'] as $g)
-                                <option value="{{ $g }}">{{ $g }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">{{ __('public.stf_inv_blood_lbl_component') }}</label>
-                        <select name="component" class="form-control" required>
-                            @foreach(['whole_blood','packed_red_cells','fresh_frozen_plasma','platelets'] as $c)
-                                <option value="{{ $c }}">@enum($c, 'blood_component')</option>
-                            @endforeach
-                        </select>
+                <div class="form-group">
+                    {{-- Same `blood_group` field, radio chips instead of a
+                         <select>: the grid mirrors the public Blood Finder. --}}
+                    <label class="form-label">{{ __('public.stf_inv_blood_lbl_group') }}</label>
+                    <div class="fs-bgrid" role="radiogroup" aria-label="{{ __('finder_supply.blood_group_pick') }}">
+                        @foreach(['O+','O-','A+','A-','B+','B-','AB+','AB-'] as $g)
+                            <label class="fs-bchip">
+                                <input type="radio" name="blood_group" value="{{ $g }}" {{ $g === 'O+' ? 'checked' : '' }} required>
+                                <span>{{ $g }}</span>
+                            </label>
+                        @endforeach
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">{{ __('public.stf_inv_blood_lbl_units') }}</label>
-                    <input type="number" name="available_units" class="form-control" required min="0" value="0">
+                    <label class="form-label">{{ __('public.stf_inv_blood_lbl_component') }}</label>
+                    <select name="component" class="form-control" required>
+                        @foreach(['whole_blood','packed_red_cells','fresh_frozen_plasma','platelets'] as $c)
+                            <option value="{{ $c }}">@enum($c, 'blood_component')</option>
+                        @endforeach
+                    </select>
                 </div>
+                <div class="form-group">
+                    <label class="form-label" for="upsert-units">{{ __('public.stf_inv_blood_lbl_units') }}</label>
+                    <div class="fs-stepper">
+                        <button type="button" aria-label="{{ __('finder_supply.stepper_minus') }}" onclick="fsStep('upsert-units', -1)">&minus;</button>
+                        <input type="number" id="upsert-units" name="available_units" required min="0" inputmode="numeric" value="0">
+                        <button type="button" aria-label="{{ __('finder_supply.stepper_plus') }}" onclick="fsStep('upsert-units', 1)">+</button>
+                    </div>
+                </div>
+                @if($publishesToFinder)
+                {{-- Honest, and true: BloodAvailabilityProjector republishes on save. --}}
+                <div class="fs-publish-note">
+                    @include('partials.finder.icon', ['name' => 'droplet', 'size' => 15])
+                    <span>{{ __('finder_supply.blood_publish_note') }}</span>
+                </div>
+                @endif
             </div>
             <div class="modal__footer">
-                <button type="button" class="btn btn-ghost btn-sm" onclick="closeUpsertModal()">{{ __('public.stf_inv_blood_cancel') }}</button>
-                <button type="submit" class="btn btn-primary btn-sm">
-                    <i data-lucide="save"></i>
+                <button type="button" class="btn btn-ghost btn-sm fs-tap" onclick="closeUpsertModal()">{{ __('public.stf_inv_blood_cancel') }}</button>
+                <button type="submit" class="btn btn-primary btn-sm fs-tap">
+                    @include('partials.finder.icon', ['name' => 'check', 'size' => 16])
                     {{ __('public.stf_inv_blood_btn_save') }}
                 </button>
             </div>
@@ -264,13 +285,23 @@
             <div class="modal__body">
                 <p id="adjust-label"></p>
                 <div class="form-group">
-                    <label class="form-label">{{ __('public.stf_inv_blood_lbl_adj_units') }}</label>
-                    <input type="number" name="units" class="form-control" required min="1" value="1">
+                    <label class="form-label" for="adjust-units">{{ __('public.stf_inv_blood_lbl_adj_units') }}</label>
+                    <div class="fs-stepper">
+                        <button type="button" aria-label="{{ __('finder_supply.stepper_minus') }}" onclick="fsStep('adjust-units', -1)">&minus;</button>
+                        <input type="number" id="adjust-units" name="units" required min="1" inputmode="numeric" value="1">
+                        <button type="button" aria-label="{{ __('finder_supply.stepper_plus') }}" onclick="fsStep('adjust-units', 1)">+</button>
+                    </div>
                 </div>
+                @if($publishesToFinder)
+                <div class="fs-publish-note">
+                    @include('partials.finder.icon', ['name' => 'droplet', 'size' => 15])
+                    <span>{{ __('finder_supply.blood_publish_note') }}</span>
+                </div>
+                @endif
             </div>
             <div class="modal__footer">
-                <button type="button" class="btn btn-ghost btn-sm" onclick="closeAdjustModal()">{{ __('public.stf_inv_blood_cancel') }}</button>
-                <button type="submit" id="adjust-btn" class="btn btn-primary btn-sm">{{ __('public.stf_inv_blood_btn_confirm') }}</button>
+                <button type="button" class="btn btn-ghost btn-sm fs-tap" onclick="closeAdjustModal()">{{ __('public.stf_inv_blood_cancel') }}</button>
+                <button type="submit" id="adjust-btn" class="btn btn-primary btn-sm fs-tap">{{ __('public.stf_inv_blood_btn_confirm') }}</button>
             </div>
         </form>
     </div>
@@ -308,6 +339,14 @@
 <script>
     var bloodBase = '{{ url('/portals/staff/inventory/blood') }}';
 
+    // Big-thumb stepper: nudge a numeric input without leaving the modal.
+    function fsStep(id, delta) {
+        var input = document.getElementById(id);
+        var min   = parseInt(input.min || '0', 10);
+        var next  = (parseInt(input.value, 10) || 0) + delta;
+        input.value = Math.max(min, next);
+    }
+
     function openUpsertModal()  { document.getElementById('upsert-modal').removeAttribute('hidden'); }
     function closeUpsertModal() { document.getElementById('upsert-modal').setAttribute('hidden',''); }
     document.getElementById('upsert-modal').addEventListener('click', function(e) { if(e.target===this) closeUpsertModal(); });
@@ -318,7 +357,7 @@
         document.getElementById('adjust-direction').value = direction;
         document.getElementById('adjust-form').action = bloodBase + '/' + id + '/adjust';
         var btn = document.getElementById('adjust-btn');
-        btn.className = direction === 'add' ? 'btn btn-primary btn-sm' : 'btn btn-warning btn-sm';
+        btn.className = direction === 'add' ? 'btn btn-primary btn-sm fs-tap' : 'btn btn-warning btn-sm fs-tap';
         btn.textContent = direction === 'add' ? '{{ __('staff_inv.js_add', [], app()->getLocale()) ?: 'Add' }}' : '{{ __('staff_inv.js_use', [], app()->getLocale()) ?: 'Use' }}';
         document.getElementById('adjust-modal').removeAttribute('hidden');
     }

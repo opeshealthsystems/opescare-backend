@@ -49,12 +49,16 @@
 <?php $__env->startSection('breadcrumb_home_url', route('portals.staff')); ?>
 <?php $__env->startSection('breadcrumb_section', __('staff_inv.breadcrumb_blood', [], app()->getLocale()) ?: 'Blood Bank'); ?>
 
+<?php $__env->startSection('head'); ?>
+<?php echo $__env->make('portals.pharmacy._supply_styles', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+<?php $__env->stopSection(); ?>
+
 <?php $__env->startSection('content'); ?>
 
 <div class="page-head">
     <h2><?php echo e(__('public.stf_inv_blood_title')); ?></h2>
     <div class="page-head__spacer"></div>
-    <button type="button" class="btn btn-primary btn-sm" onclick="openUpsertModal()">
+    <button type="button" class="btn btn-primary btn-sm fs-tap" onclick="openUpsertModal()">
         <i data-lucide="plus-circle"></i>
         <?php echo e(__('public.stf_inv_blood_update_stock_btn')); ?>
 
@@ -134,7 +138,7 @@
                 <div class="empty-state-icon"><i data-lucide="droplets"></i></div>
                 <h3><?php echo e(__('public.stf_inv_blood_empty_title')); ?></h3>
                 <p><?php echo e(__('public.stf_inv_blood_empty_desc')); ?></p>
-                <button type="button" class="btn btn-primary btn-sm mt-6" onclick="openUpsertModal()"><?php echo e(__('public.stf_inv_blood_update_stock_btn')); ?></button>
+                <button type="button" class="btn btn-primary btn-sm mt-6 fs-tap" onclick="openUpsertModal()"><?php echo e(__('public.stf_inv_blood_update_stock_btn')); ?></button>
             </div>
         <?php else: ?>
             <div class="table-wrapper">
@@ -156,7 +160,8 @@
                         ?>
                         <tr>
                             <td data-label="<?php echo e(__('public.stf_inv_blood_col_group')); ?>">
-                                <span class="td-strong"><?php echo e($item->blood_group); ?></span>
+                                
+                                <span class="fs-bgroup-tag"><?php echo e($item->blood_group); ?></span>
                             </td>
                             <td data-label="<?php echo e(__('public.stf_inv_blood_col_component')); ?>">
                                 <span class="badge badge-neutral"><?php echo e(\App\Support\Enums::label($item->component)); ?></span>
@@ -170,7 +175,8 @@
                                 <?php if($item->is_unsafe): ?>     <span class="badge badge-danger badge-sm"><?php echo e(__('public.stf_inv_blood_flag_unsafe')); ?></span> <?php endif; ?>
                                 <?php if($item->is_quarantined): ?><span class="badge badge-warning badge-sm"><?php echo e(__('public.stf_inv_blood_flag_quarantine')); ?></span> <?php endif; ?>
                                 <?php if(!$item->is_expired && !$item->is_unsafe && !$item->is_quarantined): ?>
-                                    <span class="td-muted">—</span>
+                                    
+                                    <span class="fs-screen-ok"><?php echo $__env->make('partials.finder.icon', ['name' => 'check', 'size' => 12], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?> <?php echo e(__('finder_supply.blood_screening_clear')); ?></span>
                                 <?php endif; ?>
                             </td>
                             <td data-label="<?php echo e(__('public.stf_inv_blood_col_updated')); ?>" class="td-muted">
@@ -179,19 +185,19 @@
                             </td>
                             <td data-label="<?php echo e(__('public.stf_inv_blood_col_actions')); ?>">
                                 <div class="row-actions-inline">
-                                    <button type="button" class="btn btn-primary btn-xs"
+                                    <button type="button" class="btn btn-primary btn-xs fs-tap"
                                         onclick="openAdjustModal('<?php echo e($item->id); ?>', '<?php echo e($item->blood_group); ?>', '<?php echo e(addslashes($item->component)); ?>', 'add')">
                                         <i data-lucide="plus"></i>
                                         <?php echo e(__('public.stf_inv_blood_btn_add')); ?>
 
                                     </button>
-                                    <button type="button" class="btn btn-ghost btn-xs"
+                                    <button type="button" class="btn btn-ghost btn-xs fs-tap"
                                         onclick="openAdjustModal('<?php echo e($item->id); ?>', '<?php echo e($item->blood_group); ?>', '<?php echo e(addslashes($item->component)); ?>', 'subtract')">
                                         <i data-lucide="minus"></i>
                                         <?php echo e(__('public.stf_inv_blood_btn_use')); ?>
 
                                     </button>
-                                    <button type="button" class="btn btn-ghost btn-xs"
+                                    <button type="button" class="btn btn-ghost btn-xs fs-tap"
                                         onclick="openBloodFlagModal('<?php echo e($item->id); ?>', '<?php echo e($item->blood_group); ?> <?php echo e(addslashes($item->component)); ?>', <?php echo e($item->is_expired ? 1 : 0); ?>, <?php echo e($item->is_unsafe ? 1 : 0); ?>, <?php echo e($item->is_quarantined ? 1 : 0); ?>)">
                                         <i data-lucide="flag"></i>
                                         <?php echo e(__('public.stf_inv_blood_btn_flags')); ?>
@@ -216,33 +222,46 @@
             <?php echo csrf_field(); ?>
             <div class="modal__body">
                 <p><?php echo e(__('public.stf_inv_blood_modal_set_note')); ?></p>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label"><?php echo e(__('public.stf_inv_blood_lbl_group')); ?></label>
-                        <select name="blood_group" class="form-control" required>
-                            <?php $__currentLoopData = ['O+','O-','A+','A-','B+','B-','AB+','AB-']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $g): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                <option value="<?php echo e($g); ?>"><?php echo e($g); ?></option>
-                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label"><?php echo e(__('public.stf_inv_blood_lbl_component')); ?></label>
-                        <select name="component" class="form-control" required>
-                            <?php $__currentLoopData = ['whole_blood','packed_red_cells','fresh_frozen_plasma','platelets']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $c): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                <option value="<?php echo e($c); ?>"><?php echo e(\App\Support\Enums::label($c, 'blood_component')); ?></option>
-                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                        </select>
+                <div class="form-group">
+                    
+                    <label class="form-label"><?php echo e(__('public.stf_inv_blood_lbl_group')); ?></label>
+                    <div class="fs-bgrid" role="radiogroup" aria-label="<?php echo e(__('finder_supply.blood_group_pick')); ?>">
+                        <?php $__currentLoopData = ['O+','O-','A+','A-','B+','B-','AB+','AB-']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $g): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <label class="fs-bchip">
+                                <input type="radio" name="blood_group" value="<?php echo e($g); ?>" <?php echo e($g === 'O+' ? 'checked' : ''); ?> required>
+                                <span><?php echo e($g); ?></span>
+                            </label>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label"><?php echo e(__('public.stf_inv_blood_lbl_units')); ?></label>
-                    <input type="number" name="available_units" class="form-control" required min="0" value="0">
+                    <label class="form-label"><?php echo e(__('public.stf_inv_blood_lbl_component')); ?></label>
+                    <select name="component" class="form-control" required>
+                        <?php $__currentLoopData = ['whole_blood','packed_red_cells','fresh_frozen_plasma','platelets']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $c): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e($c); ?>"><?php echo e(\App\Support\Enums::label($c, 'blood_component')); ?></option>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </select>
                 </div>
+                <div class="form-group">
+                    <label class="form-label" for="upsert-units"><?php echo e(__('public.stf_inv_blood_lbl_units')); ?></label>
+                    <div class="fs-stepper">
+                        <button type="button" aria-label="<?php echo e(__('finder_supply.stepper_minus')); ?>" onclick="fsStep('upsert-units', -1)">&minus;</button>
+                        <input type="number" id="upsert-units" name="available_units" required min="0" inputmode="numeric" value="0">
+                        <button type="button" aria-label="<?php echo e(__('finder_supply.stepper_plus')); ?>" onclick="fsStep('upsert-units', 1)">+</button>
+                    </div>
+                </div>
+                <?php if($publishesToFinder): ?>
+                
+                <div class="fs-publish-note">
+                    <?php echo $__env->make('partials.finder.icon', ['name' => 'droplet', 'size' => 15], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+                    <span><?php echo e(__('finder_supply.blood_publish_note')); ?></span>
+                </div>
+                <?php endif; ?>
             </div>
             <div class="modal__footer">
-                <button type="button" class="btn btn-ghost btn-sm" onclick="closeUpsertModal()"><?php echo e(__('public.stf_inv_blood_cancel')); ?></button>
-                <button type="submit" class="btn btn-primary btn-sm">
-                    <i data-lucide="save"></i>
+                <button type="button" class="btn btn-ghost btn-sm fs-tap" onclick="closeUpsertModal()"><?php echo e(__('public.stf_inv_blood_cancel')); ?></button>
+                <button type="submit" class="btn btn-primary btn-sm fs-tap">
+                    <?php echo $__env->make('partials.finder.icon', ['name' => 'check', 'size' => 16], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
                     <?php echo e(__('public.stf_inv_blood_btn_save')); ?>
 
                 </button>
@@ -261,13 +280,23 @@
             <div class="modal__body">
                 <p id="adjust-label"></p>
                 <div class="form-group">
-                    <label class="form-label"><?php echo e(__('public.stf_inv_blood_lbl_adj_units')); ?></label>
-                    <input type="number" name="units" class="form-control" required min="1" value="1">
+                    <label class="form-label" for="adjust-units"><?php echo e(__('public.stf_inv_blood_lbl_adj_units')); ?></label>
+                    <div class="fs-stepper">
+                        <button type="button" aria-label="<?php echo e(__('finder_supply.stepper_minus')); ?>" onclick="fsStep('adjust-units', -1)">&minus;</button>
+                        <input type="number" id="adjust-units" name="units" required min="1" inputmode="numeric" value="1">
+                        <button type="button" aria-label="<?php echo e(__('finder_supply.stepper_plus')); ?>" onclick="fsStep('adjust-units', 1)">+</button>
+                    </div>
                 </div>
+                <?php if($publishesToFinder): ?>
+                <div class="fs-publish-note">
+                    <?php echo $__env->make('partials.finder.icon', ['name' => 'droplet', 'size' => 15], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+                    <span><?php echo e(__('finder_supply.blood_publish_note')); ?></span>
+                </div>
+                <?php endif; ?>
             </div>
             <div class="modal__footer">
-                <button type="button" class="btn btn-ghost btn-sm" onclick="closeAdjustModal()"><?php echo e(__('public.stf_inv_blood_cancel')); ?></button>
-                <button type="submit" id="adjust-btn" class="btn btn-primary btn-sm"><?php echo e(__('public.stf_inv_blood_btn_confirm')); ?></button>
+                <button type="button" class="btn btn-ghost btn-sm fs-tap" onclick="closeAdjustModal()"><?php echo e(__('public.stf_inv_blood_cancel')); ?></button>
+                <button type="submit" id="adjust-btn" class="btn btn-primary btn-sm fs-tap"><?php echo e(__('public.stf_inv_blood_btn_confirm')); ?></button>
             </div>
         </form>
     </div>
@@ -308,6 +337,14 @@
 <script>
     var bloodBase = '<?php echo e(url('/portals/staff/inventory/blood')); ?>';
 
+    // Big-thumb stepper: nudge a numeric input without leaving the modal.
+    function fsStep(id, delta) {
+        var input = document.getElementById(id);
+        var min   = parseInt(input.min || '0', 10);
+        var next  = (parseInt(input.value, 10) || 0) + delta;
+        input.value = Math.max(min, next);
+    }
+
     function openUpsertModal()  { document.getElementById('upsert-modal').removeAttribute('hidden'); }
     function closeUpsertModal() { document.getElementById('upsert-modal').setAttribute('hidden',''); }
     document.getElementById('upsert-modal').addEventListener('click', function(e) { if(e.target===this) closeUpsertModal(); });
@@ -318,7 +355,7 @@
         document.getElementById('adjust-direction').value = direction;
         document.getElementById('adjust-form').action = bloodBase + '/' + id + '/adjust';
         var btn = document.getElementById('adjust-btn');
-        btn.className = direction === 'add' ? 'btn btn-primary btn-sm' : 'btn btn-warning btn-sm';
+        btn.className = direction === 'add' ? 'btn btn-primary btn-sm fs-tap' : 'btn btn-warning btn-sm fs-tap';
         btn.textContent = direction === 'add' ? '<?php echo e(__('staff_inv.js_add', [], app()->getLocale()) ?: 'Add'); ?>' : '<?php echo e(__('staff_inv.js_use', [], app()->getLocale()) ?: 'Use'); ?>';
         document.getElementById('adjust-modal').removeAttribute('hidden');
     }

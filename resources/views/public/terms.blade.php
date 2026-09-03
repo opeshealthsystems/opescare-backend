@@ -1,9 +1,37 @@
-@extends('layouts.public')
+@extends('layouts.finder')
 
 @section('title', __('public.terms_page.page_title'))
-@section('meta_description', __('public.terms_page.meta_description'))
+@section('description', __('public.terms_page.meta_description'))
 
 @section('content')
+
+    {{--
+        Shell restyle only — the legal wording below is untouched. This bridge
+        maps the legacy public.css helper classes and --color-* variables the
+        document markup uses onto the finder design tokens, so the text renders
+        correctly inside layouts.finder without editing a single clause.
+    --}}
+    <style>
+        :root {
+            --color-primary: var(--f-brand);
+            --color-text-primary: var(--f-ink);
+            --color-text-muted: var(--f-muted);
+            --color-border: var(--f-line);
+            --color-surface: var(--f-surface);
+        }
+        .container { width: 100%; max-width: 1080px; margin-inline: auto; padding-inline: 16px; }
+        .content-header { padding: clamp(40px, 7vw, 72px) 0 1.5rem; background: var(--f-surface); text-align: center; }
+        .content-header h1 { font-size: clamp(1.6rem, 4vw, 2.4rem); line-height: 1.15; }
+        .content-body { padding: 2rem 0 4rem; }
+        .badge { display: inline-block; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 0.35rem 1rem; border-radius: 999px; }
+        .text-muted { color: var(--f-muted); }
+        .text-primary { color: var(--f-brand); }
+        .font-bold { font-weight: 700; }
+        .rich-text h2 { margin-top: 2.5rem; }
+        .rich-text h3 { margin-top: 1.5rem; }
+        .rich-text table { border-collapse: collapse; width: 100%; }
+        .rich-text th, .rich-text td { border: 1px solid var(--f-line); padding: 0.5rem 0.75rem; text-align: left; }
+    </style>
 
     <header class="content-header">
         <div class="container">
@@ -22,7 +50,7 @@
     </header>
 
     {{-- Quick nav --}}
-    <section style="background:#F8FAFC;border-bottom:1px solid #E2E8F0;padding:1.25rem 0;">
+    <section style="background:var(--f-ground);border-bottom:1px solid #E2E8F0;padding:1.25rem 0;">
         <div class="container">
             <p style="font-size:0.8125rem;color:var(--color-text-muted);margin:0 0 0.5rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">{{ __('public.terms_page.sections_label') }}</p>
             <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
@@ -53,10 +81,10 @@
         <div class="container rich-text" style="max-width:860px;">
 
             {{-- Acceptance banner --}}
-            <div style="background:#FEF3C7;border:1px solid #FCD34D;border-radius:1rem;padding:1.5rem;margin-bottom:3rem;">
+            <div style="background:var(--f-warn-wash);border:1px solid var(--f-warn);border-radius:1rem;padding:1.5rem;margin-bottom:3rem;">
                 <div style="display:flex;gap:1rem;align-items:flex-start;">
-                    <i data-lucide="alert-triangle" style="width:1.25rem;height:1.25rem;color:#D97706;flex-shrink:0;margin-top:0.15rem;"></i>
-                    <p style="margin:0;font-size:0.9rem;color:#92400E;line-height:1.65;">
+                    <span style="color:var(--f-warn);flex-shrink:0;margin-top:0.15rem;">@include('partials.finder.icon', ['name' => 'alert-triangle', 'size' => 20])</span>
+                    <p style="margin:0;font-size:0.9rem;color:var(--f-warn);line-height:1.65;">
                         <strong>By creating an account, registering a facility, or using any OpesCare service, you confirm that you have read, understood and agree to be bound by these Terms and Conditions in their entirety.</strong> If you do not agree, you must not use the OpesCare platform. Institutions using the platform on behalf of an employer or healthcare organisation confirm that a duly authorised representative has accepted these terms on behalf of that entity.
                     </p>
                 </div>
@@ -103,9 +131,9 @@
                     ['African Union Malabo Convention (2014)','African Union Convention on Cyber Security and Personal Data Protection (EX.CL/846(XXV)) — regional data protection framework.'],
                     ['MINSANTE National Digital Health Strategy 2026–2030','Cameroon\'s national roadmap for health digitalization, EHR implementation, interoperability, and telemedicine regulation.'],
                 ] as [$law,$desc])
-                <div style="background:#F8FAFC;border-left:4px solid #0F4C81;border-radius:0 0.75rem 0.75rem 0;padding:1rem 1.25rem;">
-                    <p style="margin:0 0 0.25rem;font-weight:700;font-size:0.9rem;color:#0F2744;">{{ $law }}</p>
-                    <p style="margin:0;font-size:0.875rem;color:#4B5563;">{{ $desc }}</p>
+                <div style="background:var(--f-ground);border-left:4px solid #0F4C81;border-radius:0 0.75rem 0.75rem 0;padding:1rem 1.25rem;">
+                    <p style="margin:0 0 0.25rem;font-weight:700;font-size:0.9rem;color:var(--f-ink);">{{ $law }}</p>
+                    <p style="margin:0;font-size:0.875rem;color:var(--f-ink-soft);">{{ $desc }}</p>
                 </div>
                 @endforeach
             </div>
@@ -270,7 +298,7 @@
 
             {{-- 18. Contact --}}
             <h2 id="contact">18. Contact</h2>
-            <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:0.875rem;padding:1.5rem;margin:1rem 0;">
+            <div style="background:var(--f-ground);border:1px solid #E2E8F0;border-radius:0.875rem;padding:1.5rem;margin:1rem 0;">
                 <p style="margin:0;"><strong>Legal Enquiries:</strong> <a href="mailto:legal@opeshealthsystems.com">legal@opeshealthsystems.com</a><br>
                 <strong>Data Protection:</strong> <a href="mailto:privacy@opeshealthsystems.com">privacy@opeshealthsystems.com</a><br>
                 <strong>Technical Support:</strong> <a href="mailto:support@opescare.com">support@opescare.com</a><br>
@@ -279,7 +307,7 @@
             </div>
 
             {{-- Footer --}}
-            <div style="margin-top:4rem;padding:2rem;background:var(--color-bg,#F8FAFC);border:1px solid #E2E8F0;border-radius:1rem;font-size:0.875rem;color:var(--color-text-muted);">
+            <div style="margin-top:4rem;padding:2rem;background:var(--f-ground, var(--f-ground));border:1px solid #E2E8F0;border-radius:1rem;font-size:0.875rem;color:var(--color-text-muted);">
                 <p style="margin:0 0 0.5rem;"><strong>{{ __('public.terms_page.effective_date') }}</strong> 1 June 2026 &nbsp;|&nbsp; <strong>{{ __('public.terms_page.version') }}</strong> 2.0 &nbsp;|&nbsp; <strong>{{ __('public.terms_page.last_updated') }}</strong> 7 June 2026</p>
                 <p style="margin:0;"><strong>{{ __('public.terms_page.governing_law_label') }}</strong> Republic of Cameroon &nbsp;|&nbsp; <strong>{{ __('public.terms_page.jurisdiction') }}</strong> Courts of Yaoundé, Cameroon &nbsp;|&nbsp; <strong>{{ __('public.terms_page.languages') }}</strong> English (French available on request)</p>
             </div>

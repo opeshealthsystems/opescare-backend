@@ -11,6 +11,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    @if (file_exists(public_path('assets/finder.css')))
+        <link rel="stylesheet" href="{{ asset('assets/finder.css') }}">
+    @endif
     <link rel="stylesheet" href="{{ asset('css/portal.css') }}">
     <link rel="stylesheet" href="{{ asset('css/helix-v2.css') }}">
     <style>
@@ -27,8 +30,9 @@
     <div class="sidebar-overlay" id="sidebar-overlay" aria-hidden="true"></div>
 
     @php
-        $sidebarProfileKey = auth()->user()?->role?->dashboard_profile_key ?? 'patient';
-        $sidebarRoleLabel  = auth()->user()?->role?->description ?? (auth()->user()?->roleName() ?? 'Portal');
+        $sidebarProfileKey  = auth()->user()?->role?->dashboard_profile_key ?? 'patient';
+        $sidebarRoleLabel   = auth()->user()?->role?->description ?? (auth()->user()?->roleName() ?? 'Portal');
+        $topbarFacilityName = auth()->user()?->primaryFacility?->name;
     @endphp
 
     <!-- Sidebar -->
@@ -97,6 +101,13 @@
                 @endif
             </nav>
 
+            @if($topbarFacilityName)
+            <div class="topbar-facility" title="{{ $topbarFacilityName }}">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/></svg>
+                <span>{{ $topbarFacilityName }}</span>
+            </div>
+            @endif
+
             <div class="topbar-actions">
                 @php
                     $locale = app()->getLocale();
@@ -111,6 +122,31 @@
                 <a href="{{ route('public.help') }}" class="topbar-icon-btn" aria-label="Help">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                 </a>
+
+                <div class="topbar-user">
+                    <button type="button" class="topbar-user-btn" id="topbar-user-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="topbar-user-menu" aria-label="{{ auth()->user()->name ?? 'User' }}">
+                        <span class="topbar-avatar" aria-hidden="true">{{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="topbar-user-menu" id="topbar-user-menu" hidden>
+                        <div class="topbar-user-meta">
+                            <div class="topbar-user-name">{{ auth()->user()->name ?? 'User' }}</div>
+                            <div class="topbar-user-role">
+                                @hasSection('sidebar_user_role')@yield('sidebar_user_role')@else{{ $sidebarRoleLabel }}@endif
+                            </div>
+                            @if($topbarFacilityName)
+                                <div class="topbar-user-facility">{{ $topbarFacilityName }}</div>
+                            @endif
+                        </div>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="topbar-user-signout">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                                {{ __('public.portal.sign_out', [], app()->getLocale()) ?: 'Sign Out' }}
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -175,8 +211,34 @@ if (typeof lucide !== 'undefined') lucide.createIcons();
 
     if (overlay) overlay.addEventListener('click', closeSidebar);
 
+    // Topbar user menu
+    var userToggle = document.getElementById('topbar-user-toggle');
+    var userMenu   = document.getElementById('topbar-user-menu');
+
+    function closeUserMenu() {
+        if (userMenu && !userMenu.hidden) {
+            userMenu.hidden = true;
+            userToggle.setAttribute('aria-expanded', 'false');
+        }
+    }
+
+    if (userToggle && userMenu) {
+        userToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var open = userMenu.hidden;
+            userMenu.hidden = !open;
+            userToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+        document.addEventListener('click', function(e) {
+            if (!userMenu.hidden && !userMenu.contains(e.target)) closeUserMenu();
+        });
+    }
+
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && sidebar.classList.contains('open')) closeSidebar();
+        if (e.key === 'Escape') {
+            if (sidebar.classList.contains('open')) closeSidebar();
+            closeUserMenu();
+        }
     });
 
     // Mark the active sidebar link.

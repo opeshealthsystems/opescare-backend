@@ -1,3 +1,11 @@
+{{--
+    LEGACY platform-marketing shell (landing.css/public.css, Inter, lucide.js).
+
+    The Finder redesign uses layouts.finder + public/assets/finder.css instead.
+    This layout is deliberately left intact so unmigrated pages keep rendering;
+    do NOT extend it for new or redesigned pages — extend layouts.finder.
+    Delete this file once the last page has migrated.
+--}}
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>

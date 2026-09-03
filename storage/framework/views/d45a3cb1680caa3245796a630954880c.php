@@ -4,122 +4,131 @@
 <?php $__env->startSection('breadcrumb_home_url', route('portals.patient')); ?>
 <?php $__env->startSection('breadcrumb_section', __('referral.title')); ?>
 
+<?php $__env->startSection('head'); ?>
+    <?php echo $__env->make('portals.patient._finder_head', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+<?php $__env->stopSection(); ?>
+
 <?php $__env->startSection('content'); ?>
 
-<div class="page-header">
-    <div>
-        <h1 class="page-title"><?php echo e(__('referral.title')); ?></h1>
-        <p class="page-subtitle"><?php echo e(__('referral.subtitle')); ?></p>
-    </div>
-</div>
+<div class="pf">
 
-
-<div class="panel mb-4">
-    <div class="panel-header">
-        <h3 class="panel-title"><i data-lucide="gift"></i> <?php echo e(__('referral.your_link')); ?></h3>
-        <span class="badge badge-info"><?php echo e(__('referral.your_code')); ?>: <?php echo e($code); ?></span>
+    <div class="pf-head">
+        <div>
+            <h1><?php echo e(__('referral.title')); ?></h1>
+            <p class="pf-sub"><?php echo e(__('referral.subtitle')); ?></p>
+        </div>
     </div>
-    <div class="panel-body">
-        <div style="display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;">
-            <input id="refer-link" type="text" class="form-control" readonly
+
+    
+    <div class="f-card" style="margin-bottom:12px;">
+        <h2 class="pf-card-head">
+            <?php echo $__env->make('partials.finder.icon', ['name' => 'gift', 'size' => 18], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+            <?php echo e(__('referral.your_link')); ?>
+
+            <span class="f-badge"><?php echo e(__('referral.your_code')); ?>: <?php echo e($code); ?></span>
+        </h2>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+            <input id="refer-link" type="text" class="f-input" readonly
                    value="<?php echo e($link); ?>" style="flex:1;min-width:240px;" onclick="this.select();">
-            <button type="button" class="btn btn-primary" id="refer-copy-btn"
+            <button type="button" class="f-btn f-btn--primary" id="refer-copy-btn" style="min-height:48px;"
                     data-copied="<?php echo e(__('referral.copied')); ?>"
-                    onclick="opesCopyReferLink()">
-                <i data-lucide="copy"></i> <span><?php echo e(__('referral.copy')); ?></span>
+                    onclick="pfCopyReferLink()">
+                <span><?php echo e(__('referral.copy')); ?></span>
             </button>
         </div>
     </div>
-</div>
 
+    
+    <div class="f-card" style="margin-bottom:12px;">
+        <h2 class="pf-card-head">
+            <?php echo $__env->make('partials.finder.icon', ['name' => 'info', 'size' => 18], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+            <?php echo e(__('referral.how_title')); ?>
 
-<div class="panel mb-4">
-    <div class="panel-header">
-        <h3 class="panel-title"><i data-lucide="sparkles"></i> <?php echo e(__('referral.how_title')); ?></h3>
-    </div>
-    <div class="panel-body">
-        <ul style="list-style:none;padding:0;margin:0;display:grid;gap:.75rem;">
-            <li style="display:flex;align-items:flex-start;gap:.6rem;">
-                <i data-lucide="share-2" style="width:1.1rem;height:1.1rem;color:#0F4C81;flex:none;margin-top:.15rem;"></i>
+        </h2>
+        <ul style="list-style:none;display:grid;gap:12px;">
+            <li style="display:flex;align-items:flex-start;gap:10px;">
+                <span class="pf-qa__icon" style="width:30px;height:30px;border-radius:50%;"><?php echo $__env->make('partials.finder.icon', ['name' => 'external-link', 'size' => 15], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></span>
                 <span><?php echo e(__('referral.how_step1')); ?></span>
             </li>
-            <li style="display:flex;align-items:flex-start;gap:.6rem;">
-                <i data-lucide="user-plus" style="width:1.1rem;height:1.1rem;color:#0F4C81;flex:none;margin-top:.15rem;"></i>
+            <li style="display:flex;align-items:flex-start;gap:10px;">
+                <span class="pf-qa__icon" style="width:30px;height:30px;border-radius:50%;"><?php echo $__env->make('partials.finder.icon', ['name' => 'users', 'size' => 15], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></span>
                 <span><?php echo e(__('referral.how_step2')); ?></span>
             </li>
-            <li style="display:flex;align-items:flex-start;gap:.6rem;">
-                <i data-lucide="party-popper" style="width:1.1rem;height:1.1rem;color:#0F4C81;flex:none;margin-top:.15rem;"></i>
+            <li style="display:flex;align-items:flex-start;gap:10px;">
+                <span class="pf-qa__icon" style="width:30px;height:30px;border-radius:50%;"><?php echo $__env->make('partials.finder.icon', ['name' => 'gift', 'size' => 15], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?></span>
                 <span><?php echo e(__('referral.how_step3', ['referrer' => $referrerDays, 'referee' => $refereeDays])); ?></span>
             </li>
         </ul>
     </div>
-</div>
 
+    
+    <div class="f-card" style="margin-bottom:12px;">
+        <h2 class="pf-card-head">
+            <?php echo $__env->make('partials.finder.icon', ['name' => 'users', 'size' => 18], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+            <?php echo e(__('referral.stats_title')); ?>
 
-<div class="panel mb-4">
-    <div class="panel-header">
-        <h3 class="panel-title"><i data-lucide="users"></i> <?php echo e(__('referral.stats_title')); ?></h3>
-    </div>
-    <div class="panel-body">
-        <div style="display:flex;flex-wrap:wrap;gap:2rem;">
+        </h2>
+        <div class="pf-tiles" style="grid-template-columns:repeat(3,1fr);">
             <div>
-                <div style="font-size:1.75rem;font-weight:700;color:#0F4C81;"><?php echo e($joinedCount); ?></div>
-                <div class="page-subtitle"><?php echo e(__('referral.stat_invites')); ?></div>
+                <div class="pf-tile__value"><?php echo e($joinedCount); ?></div>
+                <div class="pf-tile__label"><?php echo e(__('referral.stat_invites')); ?></div>
             </div>
             <div>
-                <div style="font-size:1.75rem;font-weight:700;color:#0F4C81;"><?php echo e($rewardedCount); ?></div>
-                <div class="page-subtitle"><?php echo e(__('referral.stat_rewarded')); ?></div>
+                <div class="pf-tile__value"><?php echo e($rewardedCount); ?></div>
+                <div class="pf-tile__label"><?php echo e(__('referral.stat_rewarded')); ?></div>
             </div>
             <div>
-                <div style="font-size:1.75rem;font-weight:700;color:#0F4C81;"><?php echo e($rewardedDays); ?></div>
-                <div class="page-subtitle"><?php echo e(__('referral.stat_days_earned')); ?></div>
+                <div class="pf-tile__value"><?php echo e($rewardedDays); ?></div>
+                <div class="pf-tile__label"><?php echo e(__('referral.stat_days_earned')); ?></div>
             </div>
         </div>
     </div>
-</div>
 
+    
+    <div class="f-card">
+        <h2 class="pf-card-head">
+            <?php echo $__env->make('partials.finder.icon', ['name' => 'clock', 'size' => 18], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+            <?php echo e(__('referral.invites_title')); ?>
 
-<div class="panel">
-    <div class="panel-header">
-        <h3 class="panel-title"><i data-lucide="history"></i> <?php echo e(__('referral.invites_title')); ?></h3>
-    </div>
-    <div class="panel-body">
+        </h2>
         <?php if($invites->isEmpty()): ?>
-            <p class="page-subtitle" style="margin:0;"><?php echo e(__('referral.no_invites')); ?></p>
+            <p class="f-muted f-small" style="margin:0;"><?php echo e(__('referral.no_invites')); ?></p>
         <?php else: ?>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th><?php echo e(__('referral.col_when')); ?></th>
-                        <th><?php echo e(__('referral.col_email')); ?></th>
-                        <th><?php echo e(__('referral.col_status')); ?></th>
-                        <th><?php echo e(__('referral.col_reward')); ?></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php $__currentLoopData = $invites; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $invite): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+            <div class="pf-table-wrap">
+                <table class="pf-table">
+                    <thead>
                         <tr>
-                            <td><?php echo e($invite->created_at?->isoFormat('LL')); ?></td>
-                            <td><?php echo e($invite->referee_email ?? '—'); ?></td>
-                            <td><span class="badge"><?php echo e(__('referral.status_' . $invite->status)); ?></span></td>
-                            <td>
-                                <?php if($invite->status === 'rewarded'): ?>
-                                    <?php echo e(__('referral.days', ['count' => $invite->referrer_reward_days])); ?>
-
-                                <?php else: ?>
-                                    —
-                                <?php endif; ?>
-                            </td>
+                            <th><?php echo e(__('referral.col_when')); ?></th>
+                            <th><?php echo e(__('referral.col_email')); ?></th>
+                            <th><?php echo e(__('referral.col_status')); ?></th>
+                            <th><?php echo e(__('referral.col_reward')); ?></th>
                         </tr>
-                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <?php $__currentLoopData = $invites; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $invite): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <tr>
+                                <td><?php echo e($invite->created_at?->isoFormat('LL')); ?></td>
+                                <td><?php echo e($invite->referee_email ?? '—'); ?></td>
+                                <td><span class="f-badge <?php echo e($invite->status === 'rewarded' ? 'f-badge--good' : 'pf-badge--muted'); ?>"><?php echo e(__('referral.status_' . $invite->status)); ?></span></td>
+                                <td>
+                                    <?php if($invite->status === 'rewarded'): ?>
+                                        <?php echo e(__('referral.days', ['count' => $invite->referrer_reward_days])); ?>
+
+                                    <?php else: ?>
+                                        —
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </tbody>
+                </table>
+            </div>
         <?php endif; ?>
     </div>
 </div>
 
 <script>
-function opesCopyReferLink() {
+function pfCopyReferLink() {
     var input = document.getElementById('refer-link');
     var btn = document.getElementById('refer-copy-btn');
     if (!input || !btn) return;
