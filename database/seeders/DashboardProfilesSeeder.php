@@ -240,14 +240,14 @@ class DashboardProfilesSeeder extends Seeder
                 'key'           => 'facility_admin',
                 'name'          => 'Facility Admin Dashboard',
                 'portal_prefix' => 'admin',
-                'landing_route' => 'portals.staff',
+                'landing_route' => 'portals.admin',
                 'description'   => 'Facility-level operations and onboarding management',
             ],
             [
                 'key'           => 'facility_executive',
                 'name'          => 'Hospital / Clinic Executive Dashboard',
                 'portal_prefix' => 'admin',
-                'landing_route' => 'portals.staff',
+                'landing_route' => 'portals.admin',
                 'description'   => 'Executive overview: KPIs, performance, compliance',
             ],
             [
