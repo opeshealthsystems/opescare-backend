@@ -4,86 +4,35 @@
     {{ __('public.portal.patient_role', [], $l) ?: 'Patient' }}
 </div>
 <div class="sidebar-spacer"></div>
+
 <div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.portal.nav_my_health', [], $l) ?: 'My Health' }}</div>
+    <div class="sidebar-nav-label">{{ __('public.portal.nav_care', [], $l) ?: 'Care' }}</div>
     <a href="{{ route('portals.patient') }}" class="sidebar-link {{ request()->routeIs('portals.patient') ? 'active' : '' }}">
-        <i data-lucide="id-card"></i>
-        <span>{{ __('public.medical_id.health_id', [], $l) ?: 'My Health ID' }}</span>
+        <i data-lucide="layout-dashboard"></i><span>{{ __('public.portal.nav_dashboard', [], $l) ?: 'Dashboard' }}</span>
     </a>
-    <a href="{{ route('portals.patient.appointments') }}" class="sidebar-link {{ request()->routeIs('portals.patient.appointments') ? 'active' : '' }}">
-        <i data-lucide="calendar-check-2"></i>
-        <span>{{ __('public.portal.nav_appointments', [], $l) ?: 'Appointments' }}</span>
+    <a href="{{ route('portals.patient.appointments') }}" class="sidebar-link {{ request()->routeIs('portals.patient.appointments*') ? 'active' : '' }}">
+        <i data-lucide="calendar-check-2"></i><span>{{ __('public.portal.nav_appointments', [], $l) ?: 'Appointments' }}</span>
     </a>
-        <a href="{{ route('portals.patient.prescriptions') }}" class="sidebar-link {{ request()->routeIs('portals.patient.prescriptions') ? 'active' : '' }}">
-        <i data-lucide="pill"></i>
-        <span>{{ __('public.portal.nav_prescriptions', [], $l) ?: 'Prescriptions' }}</span>
+    <a href="{{ route('portals.patient.prescriptions') }}" class="sidebar-link {{ request()->routeIs('portals.patient.prescriptions*') ? 'active' : '' }}">
+        <i data-lucide="pill"></i><span>{{ __('public.portal.nav_prescriptions', [], $l) ?: 'Prescriptions' }}</span>
     </a>
-                <a href="{{ route('portals.patient.messages') }}" class="sidebar-link {{ request()->routeIs('portals.patient.messages*') ? 'active' : '' }}">
-        <i data-lucide="messages-square"></i>
-        <span>{{ __('messaging.inbox_title', [], $l) ?: 'Messages' }}</span>
+    <a href="{{ route('portals.patient.family') }}" class="sidebar-link {{ request()->routeIs('portals.patient.family*') ? 'active' : '' }}">
+        <i data-lucide="users"></i><span>{{ __('public.portal.nav_family', [], $l) ?: 'Family' }}</span>
     </a>
+    <a href="{{ route('portals.patient.messages') }}" class="sidebar-link {{ request()->routeIs('portals.patient.messages*') ? 'active' : '' }}">
+        <i data-lucide="messages-square"></i><span>{{ __('public.portal.nav_messages', [], $l) ?: 'Messages' }}</span>
+    </a>
+</div>
+
+<div class="sidebar-nav-section">
+    <div class="sidebar-nav-label">{{ __('public.portal.nav_account', [], $l) ?: 'Account' }}</div>
     <a href="{{ route('portals.patient.notifications') }}" class="sidebar-link {{ request()->routeIs('portals.patient.notifications*') ? 'active' : '' }}">
-        <i data-lucide="bell"></i>
-        <span>{{ __('notifications.nav', [], $l) ?: 'Notifications' }}</span>
+        <i data-lucide="bell"></i><span>{{ __('public.portal.nav_notifications', [], $l) ?: 'Notifications' }}</span>
     </a>
-</div>
-<div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.portal.nav_clinical', [], $l) ?: 'Clinical' }}</div>
-                    </div>
-@feature('insurance_marketplace')
-<div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.portal.nav_insurance_section', [], $l) ?: 'Insurance' }}</div>
-    </div>
-@endfeature
-<div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.portal.nav_billing', [], $l) ?: 'Billing' }}</div>
-        @feature('billing')
-        @endfeature
-    <a href="{{ route('portals.patient.refer') }}" class="sidebar-link {{ request()->routeIs('portals.patient.refer') ? 'active' : '' }}">
-        <i data-lucide="gift"></i>
-        <span>{{ __('referral.nav_label', [], $l) ?: 'Refer & Earn' }}</span>
+    <a href="{{ route('portals.patient.profile') }}" class="sidebar-link {{ request()->routeIs('portals.patient.profile') ? 'active' : '' }}">
+        <i data-lucide="user-cog"></i><span>{{ __('public.portal.nav_profile', [], $l) ?: 'Profile' }}</span>
     </a>
-</div>
-<div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.portal.nav_privacy', [], $l) ?: 'Privacy & Access' }}</div>
-            <a href="{{ route('portals.patient.profile') }}" class="sidebar-link">
-        <i data-lucide="user-cog"></i>
-        <span>{{ __('public.portal.nav_profile', [], $l) ?: 'My Profile' }}</span>
-    </a>
-</div>
-<div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.pat_nav_account', [], $l) ?: 'Account' }}</div>
     <a href="{{ route('portals.patient.settings') }}" class="sidebar-link {{ request()->routeIs('portals.patient.settings') ? 'active' : '' }}">
-        <i data-lucide="settings"></i>
-        <span>{{ __('public.pat_nav_settings', [], $l) ?: 'Settings' }}</span>
-    </a>
-</div>
-<div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.portal.nav_resources', [], $l) ?: 'Resources' }}</div>
-    <a href="{{ route('public.care-map') }}" class="sidebar-link">
-        <i data-lucide="map-pin"></i>
-        <span>{{ __('public.portal.nav_care_map', [], $l) ?: 'Care Map' }}</span>
-    </a>
-    <a href="{{ route('public.help') }}" class="sidebar-link">
-        <i data-lucide="help-circle"></i>
-        <span>{{ __('public.portal.nav_help', [], $l) ?: 'Help' }}</span>
-    </a>
-</div>
-<div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.portal.nav_family', [], $l) ?: 'My Family' }}</div>
-    <a href="{{ route('portals.patient.family') }}"
-       class="sidebar-link {{ request()->routeIs('portals.patient.family*') ? 'active' : '' }}">
-        <i data-lucide="users"></i>
-        <span>{{ __('public.portal.nav_family_dashboard', [], $l) ?: 'Family Dashboard' }}</span>
-    </a>
-    <a href="{{ route('portals.patient.family.add') }}"
-       class="sidebar-link {{ request()->routeIs('portals.patient.family.add') ? 'active' : '' }}">
-        <i data-lucide="user-plus"></i>
-        <span>{{ __('public.portal.nav_family_add', [], $l) ?: 'Add Dependent' }}</span>
-    </a>
-    <a href="{{ route('portals.patient.family.invite') }}"
-       class="sidebar-link {{ request()->routeIs('portals.patient.family.invite') ? 'active' : '' }}">
-        <i data-lucide="mail"></i>
-        <span>{{ __('public.portal.nav_family_invite', [], $l) ?: 'Invite Member' }}</span>
+        <i data-lucide="settings"></i><span>{{ __('public.portal.nav_settings', [], $l) ?: 'Settings' }}</span>
     </a>
 </div>

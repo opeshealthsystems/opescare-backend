@@ -139,7 +139,7 @@ class DashboardProfilesSeeder extends Seeder
                 'key'           => 'queue_manager',
                 'name'          => 'Queue Operations Dashboard',
                 'portal_prefix' => 'staff',
-                'landing_route' => 'portals.staff.queue',
+                'landing_route' => 'portals.staff',
                 'description'   => 'Patient queue management and flow',
             ],
             [
@@ -201,21 +201,21 @@ class DashboardProfilesSeeder extends Seeder
                 'key'           => 'cashier',
                 'name'          => 'Cashier Dashboard',
                 'portal_prefix' => 'staff',
-                'landing_route' => 'portals.staff.billing',
+                'landing_route' => 'portals.staff',
                 'description'   => 'Point-of-sale billing and payment collection',
             ],
             [
                 'key'           => 'billing_officer',
                 'name'          => 'Billing Officer Dashboard',
                 'portal_prefix' => 'staff',
-                'landing_route' => 'portals.staff.billing',
+                'landing_route' => 'portals.staff',
                 'description'   => 'Claims creation, invoice management',
             ],
             [
                 'key'           => 'finance_manager',
                 'name'          => 'Finance Manager Dashboard',
                 'portal_prefix' => 'staff',
-                'landing_route' => 'portals.staff.billing',
+                'landing_route' => 'portals.staff',
                 'description'   => 'Financial oversight, reconciliation, refund approval',
             ],
 
@@ -224,14 +224,14 @@ class DashboardProfilesSeeder extends Seeder
                 'key'           => 'insurance_reviewer',
                 'name'          => 'Insurance Reviewer Dashboard',
                 'portal_prefix' => 'insurance',
-                'landing_route' => 'portals.insurance.claims',
+                'landing_route' => 'portal.unavailable',
                 'description'   => 'Claims review and pre-authorization workflow',
             ],
             [
                 'key'           => 'insurance_admin',
                 'name'          => 'Insurance Admin Dashboard',
                 'portal_prefix' => 'insurance',
-                'landing_route' => 'portals.insurance.claims',
+                'landing_route' => 'portal.unavailable',
                 'description'   => 'Insurance policy management and administration',
             ],
 
@@ -332,14 +332,14 @@ class DashboardProfilesSeeder extends Seeder
                 'key'           => 'bridge_agent_admin',
                 'name'          => 'Bridge Agent Admin Dashboard',
                 'portal_prefix' => 'admin',
-                'landing_route' => 'portals.admin.bridge',
+                'landing_route' => 'portals.admin',
                 'description'   => 'Bridge agent device pairing and sync management',
             ],
             [
                 'key'           => 'device_kiosk',
                 'name'          => 'Device / Kiosk Dashboard',
                 'portal_prefix' => 'lite',
-                'landing_route' => 'portals.lite.dashboard',
+                'landing_route' => 'portal.unavailable',
                 'description'   => 'Kiosk / facility device limited interface',
             ],
 
@@ -348,7 +348,7 @@ class DashboardProfilesSeeder extends Seeder
                 'key'           => 'lite',
                 'name'          => 'OpesCare Lite Dashboard',
                 'portal_prefix' => 'lite',
-                'landing_route' => 'portals.lite.dashboard',
+                'landing_route' => 'portal.unavailable',
                 'description'   => 'Simplified portal for low-connectivity facilities',
             ],
 
@@ -380,28 +380,28 @@ class DashboardProfilesSeeder extends Seeder
                 'key'           => 'privacy_officer',
                 'name'          => 'Privacy Officer Dashboard',
                 'portal_prefix' => 'admin',
-                'landing_route' => 'portals.admin.security',
+                'landing_route' => 'portals.admin',
                 'description'   => 'Data protection and patient privacy management',
             ],
             [
                 'key'           => 'security_officer',
                 'name'          => 'Security Officer Dashboard',
                 'portal_prefix' => 'admin',
-                'landing_route' => 'portals.admin.security',
+                'landing_route' => 'portals.admin',
                 'description'   => 'Platform security monitoring and incident response',
             ],
             [
                 'key'           => 'compliance_audit',
                 'name'          => 'Compliance / Audit Dashboard',
                 'portal_prefix' => 'admin',
-                'landing_route' => 'portals.admin.security.audit_explorer',
+                'landing_route' => 'portals.admin',
                 'description'   => 'Compliance auditing and regulatory reporting',
             ],
             [
                 'key'           => 'emergency_access_reviewer',
                 'name'          => 'Emergency Access Review Dashboard',
                 'portal_prefix' => 'admin',
-                'landing_route' => 'portals.admin.security.emergency_access',
+                'landing_route' => 'portals.admin',
                 'description'   => 'Review and approve emergency record access requests',
             ],
 
@@ -471,7 +471,7 @@ class DashboardProfilesSeeder extends Seeder
         ];
 
         foreach ($profiles as $data) {
-            DashboardProfile::firstOrCreate(
+            DashboardProfile::updateOrCreate(
                 ['key' => $data['key']],
                 [
                     'name'          => $data['name'],

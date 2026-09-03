@@ -116,7 +116,7 @@ class PatientSignupFlowTest extends TestCase
     {
         $this->actingAs($this->patientUser())
             ->withSession(['mfa.verified' => true])
-            ->get('/portals/patient')
+            ->get('/patient')
             ->assertRedirect(route('portals.patient.complete-profile'));
     }
 
@@ -126,7 +126,7 @@ class PatientSignupFlowTest extends TestCase
 
         $this->actingAs($user)
             ->withSession(['mfa.verified' => true])
-            ->post('/portals/patient/complete-profile', $this->identity())
+            ->post('/patient/complete-profile', $this->identity())
             ->assertRedirect(route('portals.patient'));
 
         $user->refresh();
@@ -152,7 +152,7 @@ class PatientSignupFlowTest extends TestCase
 
         $this->actingAs($user)
             ->withSession(['mfa.verified' => true])
-            ->post('/portals/patient/complete-profile', $this->identity(['country' => 'Canada']));
+            ->post('/patient/complete-profile', $this->identity(['country' => 'Canada']));
 
         $patient = Patient::find($user->fresh()->patient_id);
 
@@ -166,13 +166,13 @@ class PatientSignupFlowTest extends TestCase
 
         $this->actingAs($user)
             ->withSession(['mfa.verified' => true])
-            ->post('/portals/patient/complete-profile', $this->identity());
+            ->post('/patient/complete-profile', $this->identity());
 
         $firstHealthId = Patient::find($user->fresh()->patient_id)->health_id;
 
         $this->actingAs($user->fresh())
             ->withSession(['mfa.verified' => true])
-            ->post('/portals/patient/complete-profile', $this->identity(['first_name' => 'Someone']))
+            ->post('/patient/complete-profile', $this->identity(['first_name' => 'Someone']))
             ->assertRedirect(route('portals.patient'));
 
         $this->assertSame(1, Patient::count(), 'a second submission must not mint a second Health ID');
@@ -183,7 +183,7 @@ class PatientSignupFlowTest extends TestCase
     {
         $this->actingAs($this->patientUser())
             ->withSession(['mfa.verified' => true])
-            ->post('/portals/patient/complete-profile', ['first_name' => 'Amina'])
+            ->post('/patient/complete-profile', ['first_name' => 'Amina'])
             ->assertSessionHasErrors(['last_name', 'dob', 'sex', 'phone']);
 
         $this->assertSame(0, Patient::count());

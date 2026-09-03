@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
  * Enforce role-to-portal routing.
  *
  * If an authenticated user attempts to access a portal they are not authorised
- * for (e.g. a patient navigating to /portals/staff), they are silently
+ * for (e.g. a patient navigating to /facility), they are silently
  * redirected to the correct portal for their role instead of receiving a 403,
  * which produces a better UX while still preventing cross-portal access.
  *
@@ -23,11 +23,34 @@ class EnsurePortalAccess
      * Portal prefix → role names allowed in that portal.
      * Role names match the canonical names seeded in RolesSeeder.
      */
+    //
+    // Keys are URI prefixes. The operator dashboards moved to clean, short
+    // prefixes (/patient, /facility, /admin, /developer, /pharmacy); the keys
+    // below mirror those. detectPortalPrefix() returns the FIRST str_starts_with
+    // match, so any prefix that is itself a prefix of another MUST be listed
+    // first — hence 'facility/team' precedes 'facility'.
     private const PORTAL_ROLES = [
-        'portals/patient' => [
+        'patient' => [
             'patient', 'guardian', 'caregiver', 'dependent_manager', 'emergency_contact',
         ],
-        'portals/staff' => [
+        // Facility-tier administration of one's OWN facility (team management).
+        // Was /portals/facility; now /facility/team, sharing the /facility root
+        // with the operations desk below. It is listed FIRST so '/facility/team'
+        // (which also starts with 'facility') resolves to the facility-admin
+        // roles rather than the clinical roster.
+        //
+        // It stays its own prefix because the two neighbouring options are both
+        // wrong: everything under /admin/* is platform god-mode
+        // (RequirePlatformAdmin), so a facility admin gets 403 there, and adding
+        // the facility-admin roles to the operations desk would hand them the
+        // entire clinical portal. Only the five real facility-administration
+        // roles are listed; platform roles are deliberately absent, since they
+        // have no facility context to scope a team page to.
+        'facility/team' => [
+            'facility_admin', 'clinic_admin', 'hospital_admin', 'facility_ceo', 'branch_admin',
+        ],
+        // Operations desk (was /portals/staff, now /facility).
+        'facility' => [
             // Clinical providers
             'doctor', 'multi_doctor', 'specialist', 'consultant', 'resident', 'visiting_doctor',
             // Nursing
@@ -45,23 +68,13 @@ class EnsurePortalAccess
             // Data quality
             'data_steward', 'reconciliation_officer', 'data_import_officer', 'data_quality_reviewer',
         ],
-        // Facility-tier administration of one's OWN facility (team management).
-        //
-        // This exists as its own prefix because the two neighbouring options are
-        // both wrong: everything under portals/admin/* is platform god-mode
-        // (RequirePlatformAdmin), so a facility admin gets 403 there, and adding
-        // the facility-admin roles to portals/staff would hand them the entire
-        // clinical portal. Only the five real facility-administration roles are
-        // listed; platform roles are deliberately absent, since they have no
-        // facility context to scope a team page to.
-        'portals/facility' => [
-            'facility_admin', 'clinic_admin', 'hospital_admin', 'facility_ceo', 'branch_admin',
-        ],
-        'portals/insurance' => [
+        // Phantom portal (module removed from this product) — kept so the role
+        // lists stay complete; no such route reaches this middleware.
+        'insurance' => [
             'insurance_reviewer', 'insurance_claims', 'insurance_preauth',
             'insurance_admin', 'insurance_finance',
         ],
-        'portals/admin' => [
+        'admin' => [
             // Facility administration
             'facility_admin', 'clinic_admin', 'hospital_admin', 'facility_ceo',
             'department_manager', 'branch_admin', 'finance',
@@ -77,20 +90,22 @@ class EnsurePortalAccess
             // Partner governance
             'partner_admin', 'partner_reviewer', 'partner_compliance', 'partner_technical',
         ],
-        'portals/developer' => [
+        'developer' => [
             'developer', 'developer_org_admin', 'api_partner', 'api_technical',
             'webhook_manager', 'sandbox_developer',
         ],
-        'portals/lite' => [
+        // Phantom portal (module removed) — see 'insurance' note above.
+        'lite' => [
             'lite_facility', 'lite_staff', 'lite_device', 'lite_offline_sync',
         ],
-        'portals/pharmacy' => [
+        'pharmacy' => [
             'pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'medicine_stock', 'dispensing_officer',
         ],
-        'portals/lab' => [
+        // Phantom portals (modules removed) — see 'insurance' note above.
+        'lab' => [
             'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection',
         ],
-        'portals/healthorg' => [
+        'healthorg' => [
             'ngo_admin', 'health_program_manager', 'outreach_team', 'mobile_clinic_team',
         ],
     ];
@@ -113,9 +128,9 @@ class EnsurePortalAccess
         // Patient portal: only patient/guardian/caregiver roles allowed.
         // [RBAC FIX] Previously bypassed all role checks — a doctor or pharmacist
         // could access any patient's portal. Now enforced like every other portal.
-        if ($requestedPrefix === 'portals/patient') {
+        if ($requestedPrefix === 'patient') {
             $patientRole = $user->role?->name ?? null;
-            $allowedPatientRoles = self::PORTAL_ROLES['portals/patient'];
+            $allowedPatientRoles = self::PORTAL_ROLES['patient'];
             if ($patientRole && !in_array($patientRole, $allowedPatientRoles, true)) {
                 // Staff/admin user tried to open the patient portal — redirect to their own portal
                 return redirect($this->correctPortalFor($patientRole), 302);
@@ -188,11 +203,11 @@ class EnsurePortalAccess
     private function portalForRole(string $role): string
     {
         return match (true) {
-            in_array($role, self::PORTAL_ROLES['portals/patient'])    => '/portals/patient',
-            in_array($role, self::PORTAL_ROLES['portals/pharmacy'])   => '/portals/pharmacy',
-            in_array($role, self::PORTAL_ROLES['portals/staff'])      => '/portals/staff',
-            in_array($role, self::PORTAL_ROLES['portals/developer'])  => '/portals/developer',
-            in_array($role, self::PORTAL_ROLES['portals/admin'])      => '/portals/admin',
+            in_array($role, self::PORTAL_ROLES['patient'])    => '/patient',
+            in_array($role, self::PORTAL_ROLES['pharmacy'])   => '/pharmacy',
+            in_array($role, self::PORTAL_ROLES['facility'])   => '/facility',
+            in_array($role, self::PORTAL_ROLES['developer'])  => '/developer',
+            in_array($role, self::PORTAL_ROLES['admin'])      => '/admin',
             // Unknown/unassigned role must NOT default into the admin portal.
             // Roles whose portals do not exist in this product (insurance, lab,
             // lite, healthorg) fall through here too — same default deny.

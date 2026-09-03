@@ -19,8 +19,8 @@ use Tests\TestCase;
  * ---------------
  * GET /api/v1/care-map/blood/search returned [] for ever. Not because the
  * query was wrong — because `blood_availability` had no reachable writer. The
- * only route that fed it, POST /portals/staff/inventory/blood, matched the
- * URI pattern `portals/staff/inventory/*` in the `inventory_ops` freeze and
+ * only route that fed it, POST /facility/inventory/blood, matched the
+ * URI pattern `facility/inventory/*` in the `inventory_ops` freeze and
  * 404'd in production. The finder shipped in V1; the one screen that could
  * give it data did not.
  *
@@ -33,7 +33,7 @@ use Tests\TestCase;
  *  1. The loop closes: staff record stock -> the public search returns that
  *     facility, with the timestamp the freshness contract reads.
  *  2. The carve-out is surgical: blood is reachable while pharmacy inventory,
- *     supply chain, api/v1/inventory and portals/pharmacy/inventory stay 404.
+ *     supply chain, api/v1/inventory and pharmacy/inventory stay 404.
  *  3. Provenance: a seeded row and an unattributed row are NEVER returned to a
  *     patient. Blood is the search where being wrong is most expensive — a
  *     relative drives past a hospital that has units to reach one that never
@@ -135,7 +135,7 @@ class BloodFinderEndToEndTest extends TestCase
         $staff = $this->bloodBankStaff();
 
         $this->actingAs($staff)
-            ->post('/portals/staff/inventory/blood', [
+            ->post('/facility/inventory/blood', [
                 'blood_group'     => 'O-',
                 'component'       => 'whole_blood',
                 'available_units' => 7,
@@ -170,7 +170,7 @@ class BloodFinderEndToEndTest extends TestCase
     {
         $staff = $this->bloodBankStaff();
 
-        $this->actingAs($staff)->post('/portals/staff/inventory/blood', [
+        $this->actingAs($staff)->post('/facility/inventory/blood', [
             'blood_group'     => 'A+',
             'component'       => 'packed_red_cells',
             'available_units' => 3,
@@ -190,7 +190,7 @@ class BloodFinderEndToEndTest extends TestCase
     {
         $staff = $this->bloodBankStaff();
 
-        $this->actingAs($staff)->post('/portals/staff/inventory/blood', [
+        $this->actingAs($staff)->post('/facility/inventory/blood', [
             'blood_group'     => 'B+',
             'component'       => 'whole_blood',
             'available_units' => 4,
@@ -269,7 +269,7 @@ class BloodFinderEndToEndTest extends TestCase
         ]);
 
         $staff = $this->bloodBankStaff();
-        $this->actingAs($staff)->post('/portals/staff/inventory/blood', [
+        $this->actingAs($staff)->post('/facility/inventory/blood', [
             'blood_group'     => 'O+',
             'component'       => 'whole_blood',
             'available_units' => 2,
@@ -287,7 +287,7 @@ class BloodFinderEndToEndTest extends TestCase
     public function test_unsafe_units_are_never_advertised_even_from_a_real_source(): void
     {
         $staff = $this->bloodBankStaff();
-        $this->actingAs($staff)->post('/portals/staff/inventory/blood', [
+        $this->actingAs($staff)->post('/facility/inventory/blood', [
             'blood_group'     => 'O-',
             'component'       => 'whole_blood',
             'available_units' => 9,
@@ -297,7 +297,7 @@ class BloodFinderEndToEndTest extends TestCase
         $this->assertCount(1, $data);
 
         $item = BloodInventory::where('facility_id', $this->tenant->id)->firstOrFail();
-        $this->actingAs($staff)->post("/portals/staff/inventory/blood/{$item->id}/flag", [
+        $this->actingAs($staff)->post("/facility/inventory/blood/{$item->id}/flag", [
             'is_unsafe' => '1',
         ]);
 
@@ -333,8 +333,8 @@ class BloodFinderEndToEndTest extends TestCase
     {
         $staff = $this->bloodBankStaff();
 
-        $this->actingAs($staff)->get('/portals/staff/inventory/blood')->assertOk();
-        $this->actingAs($staff)->post('/portals/staff/inventory/blood', [
+        $this->actingAs($staff)->get('/facility/inventory/blood')->assertOk();
+        $this->actingAs($staff)->post('/facility/inventory/blood', [
             'blood_group'     => 'O+',
             'component'       => 'whole_blood',
             'available_units' => 1,
@@ -350,10 +350,10 @@ class BloodFinderEndToEndTest extends TestCase
         $staff = $this->bloodBankStaff();
 
         $deletedWebPaths = [
-            '/portals/staff/inventory/pharmacy',
-            '/portals/staff/supply',
-            '/portals/staff/supply/stock',
-            '/portals/pharmacy/inventory',
+            '/facility/inventory/pharmacy',
+            '/facility/supply',
+            '/facility/supply/stock',
+            '/pharmacy/inventory',
         ];
 
         foreach ($deletedWebPaths as $path) {
@@ -363,7 +363,7 @@ class BloodFinderEndToEndTest extends TestCase
 
         // Writes too — a POST that slipped through would be worse than a GET.
         $this->actingAs($staff)
-            ->post('/portals/staff/inventory/pharmacy', ['medicine_name' => 'x'])
+            ->post('/facility/inventory/pharmacy', ['medicine_name' => 'x'])
             ->assertNotFound();
 
         // And the general facility inventory API (items, purchase orders,
@@ -386,14 +386,14 @@ class BloodFinderEndToEndTest extends TestCase
     {
         $uris = collect(app('router')->getRoutes())->map(fn ($r) => $r->uri())->all();
 
-        $this->assertContains('portals/staff/inventory/blood', $uris,
+        $this->assertContains('facility/inventory/blood', $uris,
             'the blood-entry screen must survive the inventory-ops deletion');
         $this->assertContains('api/v1/inventory/blood', $uris,
             'the blood inventory API is the write path that republishes the public Blood Finder');
 
         foreach ([
-            'portals/staff/inventory/pharmacy',
-            'portals/staff/supply',
+            'facility/inventory/pharmacy',
+            'facility/supply',
         ] as $uri) {
             $this->assertNotContains($uri, $uris, "{$uri} belongs to a deleted module and must not be registered.");
         }
@@ -405,7 +405,7 @@ class BloodFinderEndToEndTest extends TestCase
     {
         $staff = $this->bloodBankStaff();
 
-        $rendered = $this->actingAs($staff)->get('/portals/staff/inventory/blood')
+        $rendered = $this->actingAs($staff)->get('/facility/inventory/blood')
             ->assertOk()
             ->getContent();
 
@@ -414,11 +414,11 @@ class BloodFinderEndToEndTest extends TestCase
         foreach (['partials.sidebars.labtech', 'partials.sidebars.lab_manager'] as $sidebar) {
             $html = $this->app['view']->make($sidebar)->render();
 
-            $this->assertStringContainsString('portals/staff/inventory/blood', $html,
+            $this->assertStringContainsString('facility/inventory/blood', $html,
                 "{$sidebar} offers no way to reach the blood screen");
-            $this->assertStringNotContainsString('portals/staff/inventory/pharmacy', $html,
+            $this->assertStringNotContainsString('facility/inventory/pharmacy', $html,
                 "{$sidebar} offers a link to a deleted page");
-            $this->assertStringNotContainsString('portals/staff/supply', $html,
+            $this->assertStringNotContainsString('facility/supply', $html,
                 "{$sidebar} offers a link to a deleted page");
         }
 
@@ -429,7 +429,7 @@ class BloodFinderEndToEndTest extends TestCase
     {
         $staff = $this->bloodBankStaff();
 
-        $this->actingAs($staff)->get('/portals/staff/inventory/blood')
+        $this->actingAs($staff)->get('/facility/inventory/blood')
             ->assertOk()
             ->assertSee(__('public.stf_inv_blood_publishes_notice'), false);
 
@@ -437,7 +437,7 @@ class BloodFinderEndToEndTest extends TestCase
         // rather than let a clerk maintain a fridge no patient can see.
         $this->listing->delete();
 
-        $this->actingAs($staff)->get('/portals/staff/inventory/blood')
+        $this->actingAs($staff)->get('/facility/inventory/blood')
             ->assertOk()
             ->assertSee(__('public.stf_inv_blood_no_listing_notice'), false);
     }
@@ -459,7 +459,7 @@ class BloodFinderEndToEndTest extends TestCase
 
         $staff = $this->bloodBankStaff();
 
-        $this->actingAs($staff)->post('/portals/staff/inventory/blood', [
+        $this->actingAs($staff)->post('/facility/inventory/blood', [
             'blood_group'     => 'O-',
             'component'       => 'whole_blood',
             'available_units' => 6,

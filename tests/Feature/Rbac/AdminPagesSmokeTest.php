@@ -33,7 +33,8 @@ class AdminPagesSmokeTest extends TestCase
         foreach (Route::getRoutes() as $route) {
             if (!in_array('GET', $route->methods())) continue;
             $uri = $route->uri();
-            if (!str_starts_with($uri, 'portals/admin')) continue;
+            // Admin console moved from portals/admin/* to the clean admin/* prefix.
+            if (!str_starts_with($uri, 'admin')) continue;
             if (str_contains($uri, '{')) continue;
 
             // Isolate each request in a savepoint so a failed query in one route

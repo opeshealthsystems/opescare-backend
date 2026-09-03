@@ -78,7 +78,7 @@ class PlatformAdminIsolationTest extends TestCase
     public function test_facility_admin_blocked_from_control_center(): void
     {
         $res = $this->actingAs($this->userWithRole('clinic_admin'))
-            ->get('/portals/admin/cc');
+            ->get('/admin/cc');
 
         // Must be blocked (403 from platform.admin, or redirected) — never 200.
         $this->assertNotSame(200, $res->getStatusCode(), 'facility admin must NOT reach the platform control center');
@@ -97,28 +97,32 @@ class PlatformAdminIsolationTest extends TestCase
     public function test_facility_admin_blocked_from_every_godmode_subpath(): void
     {
         $admin = $this->userWithRole('clinic_admin');
+        // Full paths: the admin console moved to the clean /admin/* prefix, while
+        // the marketing "leads" inbox keeps its /portals/admin/leads URL. Each is
+        // asserted at its real current location so this stays a genuine 403 gate,
+        // not an assertion satisfied by a 301 to a page that would itself 403.
         foreach ([
-            'cc/audit',
-            'cc/feature-flags',
-            'cc/health',
-            'cc/maintenance',
-            'cc/modules',
-            'cc/settings',
-            'users',
-            'roles',
-            'leads',
-            'developer/accounts',
-            'developer/production-requests',
-        ] as $sub) {
-            $res = $this->actingAs($admin)->get('/portals/admin/' . $sub);
-            $this->assertSame(403, $res->getStatusCode(), "facility admin must get 403 on /portals/admin/{$sub}");
+            '/admin/cc/audit',
+            '/admin/cc/feature-flags',
+            '/admin/cc/health',
+            '/admin/cc/maintenance',
+            '/admin/cc/modules',
+            '/admin/cc/settings',
+            '/admin/users',
+            '/admin/roles',
+            '/portals/admin/leads',
+            '/admin/developer/accounts',
+            '/admin/developer/production-requests',
+        ] as $path) {
+            $res = $this->actingAs($admin)->get($path);
+            $this->assertSame(403, $res->getStatusCode(), "facility admin must get 403 on {$path}");
         }
     }
 
     /** The bare facility dashboard stays reachable for a facility admin. */
     public function test_facility_admin_can_open_scoped_dashboard(): void
     {
-        $res = $this->actingAs($this->userWithRole('clinic_admin'))->get('/portals/admin');
+        $res = $this->actingAs($this->userWithRole('clinic_admin'))->get('/admin');
         $this->assertNotSame(403, $res->getStatusCode(), 'facility admin keeps their scoped dashboard');
     }
 }

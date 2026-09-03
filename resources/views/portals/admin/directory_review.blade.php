@@ -41,11 +41,12 @@
 
 @section('content')
 
-<div class="page-head">
-    <h2>{{ __('caremap_claim.review_title') }}</h2>
-    <div class="page-head__spacer"></div>
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{{ __('caremap_claim.review_title') }}</h1>
+        <p class="page-subtitle">{{ __('caremap_claim.review_subtitle') }}</p>
+    </div>
 </div>
-<p class="dr-note">{{ __('caremap_claim.review_subtitle') }}</p>
 
 @if(session('success'))<div class="alert alert-success mb-6"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
 @if(session('error'))<div class="alert alert-danger mb-6"><i data-lucide="alert-circle"></i><div>{{ session('error') }}</div></div>@endif

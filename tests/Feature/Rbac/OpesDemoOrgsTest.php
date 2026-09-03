@@ -95,13 +95,17 @@ class OpesDemoOrgsTest extends TestCase
     public static function representativeAccounts(): array
     {
         return [
-            'hospital doctor'    => ['doctor@hospital.opes.test',          '/portals/staff'],
-            'clinic admin'       => ['clinic_admin@clinic.opes.test',      '/portals/admin'],
-            'pharmacy pharmacist'=> ['pharmacist@pharmacy.opes.test',      '/portals/pharmacy'],
+            // Live portals now sit at clean, short prefixes (staff → /facility).
+            'hospital doctor'    => ['doctor@hospital.opes.test',          '/facility'],
+            'clinic admin'       => ['clinic_admin@clinic.opes.test',      '/admin'],
+            'pharmacy pharmacist'=> ['pharmacist@pharmacy.opes.test',      '/pharmacy'],
+            // lab / insurance / healthorg / lite portals do not exist in the
+            // Finder — these paths 404 (not 403, not a login bounce), which is
+            // exactly what the assertions below require.
             'lab manager'        => ['lab_manager@laboratory.opes.test',   '/portals/lab'],
             'insurance admin'    => ['insurance_admin@insurance.opes.test','/portals/insurance'],
             'ngo admin'          => ['ngo_admin@healthorg.opes.test',      '/portals/healthorg'],
-            'developer'          => ['developer@developer.opes.test',      '/portals/developer'],
+            'developer'          => ['developer@developer.opes.test',      '/developer'],
             'lite facility'      => ['lite_facility@lite.opes.test',       '/portals/lite'],
         ];
     }

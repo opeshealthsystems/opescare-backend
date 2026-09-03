@@ -83,7 +83,7 @@ class SidebarLinksAreReachableTest extends TestCase
                 continue;
             }
 
-            $home = $this->actingAs($user)->get('/portals/staff');
+            $home = $this->actingAs($user)->get('/facility');
             while ($home->isRedirect()) {
                 $home = $this->actingAs($user)->get($home->headers->get('Location'));
             }
@@ -164,7 +164,9 @@ class SidebarLinksAreReachableTest extends TestCase
 
         $this->assertStringNotContainsString('portal-unavailable', $landing,
             'a frozen landing page sent a user with a working portal to a dead end');
-        $this->assertStringContainsString('/portals/', $landing);
+        // Clean prefixes: the pharmacist lands inside their own (alive) pharmacy
+        // portal — was '/portals/' before the portal URLs were shortened.
+        $this->assertStringContainsString('/pharmacy', $landing);
 
         $this->actingAs($user)->get(parse_url($landing, PHP_URL_PATH))->assertOk();
     }

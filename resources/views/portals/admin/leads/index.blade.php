@@ -6,11 +6,12 @@
 @section('breadcrumb_section', __('leads.admin.breadcrumb'))
 @section('content')
 
-<div class="page-head">
-    <h2>{{ __('leads.admin.heading') }}</h2>
-    <div class="page-head__spacer"></div>
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{{ __('leads.admin.heading') }}</h1>
+        <p class="page-subtitle">{{ __('leads.admin.description') }}</p>
+    </div>
 </div>
-<p class="td-muted mb-6">{{ __('leads.admin.description') }}</p>
 
 @if(session('success'))<div class="alert alert-success mb-6"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
 @if(session('error'))<div class="alert alert-danger mb-6"><i data-lucide="alert-circle"></i><div>{{ session('error') }}</div></div>@endif

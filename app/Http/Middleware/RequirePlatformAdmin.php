@@ -124,6 +124,15 @@ class RequirePlatformAdmin
             return true;
         }
 
+        // The admin console moved from /portals/admin/* to the clean /admin/*
+        // prefix. Same rule at the new root: the bare /admin dashboard is the
+        // facility-admin landing (facility-scoped, NOT platform-only), while
+        // everything UNDER /admin/* (Control Center, god-mode data, care-map
+        // governance, …) is platform-tier only.
+        if ($path !== 'admin' && str_starts_with($path, 'admin/')) {
+            return true;
+        }
+
         foreach (self::PLATFORM_ONLY_PREFIXES as $prefix) {
             if ($path === $prefix || str_starts_with($path, $prefix . '/')) {
                 return true;

@@ -208,8 +208,8 @@ Route::middleware(['web', 'throttle:verify'])->group(function () {
 // Deliberately OUTSIDE the patient.profile gate below, or the gate would
 // redirect to itself forever.
 Route::middleware(['web', 'auth', 'mfa.verified', 'throttle:portal'])->group(function () {
-    Route::get('/portals/patient/complete-profile',  [\App\Http\Controllers\MedicalId\PatientProfileCompletionController::class, 'show'])->name('portals.patient.complete-profile');
-    Route::post('/portals/patient/complete-profile', [\App\Http\Controllers\MedicalId\PatientProfileCompletionController::class, 'store'])->name('portals.patient.complete-profile.store');
+    Route::get('/patient/complete-profile',  [\App\Http\Controllers\MedicalId\PatientProfileCompletionController::class, 'show'])->name('portals.patient.complete-profile');
+    Route::post('/patient/complete-profile', [\App\Http\Controllers\MedicalId\PatientProfileCompletionController::class, 'store'])->name('portals.patient.complete-profile.store');
 });
 
 // ── Caregiver profile completion ────────────────────────────────────────────
@@ -221,107 +221,115 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'throttle:portal'])->group(fun
 
 // Portal Routes — require authentication, correct portal for role, and facility context
 Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'platform.admin', 'facility.context', 'patient.profile', 'guardian.profile', 'throttle:portal'])->group(function () {
-    Route::get('/portals/patient', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'index'])->name('portals.patient');
+    Route::get('/patient', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'index'])->name('portals.patient');
     // QR generation has its own tighter rate limit (10/min) on top of the portal limit
-    Route::post('/portals/patient/generate-qr', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'generateTemporaryQr'])
+    Route::post('/patient/generate-qr', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'generateTemporaryQr'])
         ->middleware('throttle:portal.qr')
         ->name('portals.patient.qr');
 
-    Route::get('/portals/staff', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'index'])->name('portals.staff');
-    Route::get('/portals/staff/appointments', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointments'])->name('portals.staff.appointments');
+    Route::get('/facility', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'index'])->name('portals.staff');
+    Route::get('/facility/appointments', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointments'])->name('portals.staff.appointments');
 
     Route::middleware(['guardian.context'])->group(function () {
-        Route::get('/portals/patient/appointments', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'appointments'])->name('portals.patient.appointments');
+        Route::get('/patient/appointments', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'appointments'])->name('portals.patient.appointments');
         // Booking + reschedule (book must precede the {id} routes)
-        Route::get('/portals/patient/appointments/book', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'bookAppointmentForm'])->name('portals.patient.appointments.book');
-        Route::post('/portals/patient/appointments/book', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'bookAppointment'])->name('portals.patient.appointments.book.store');
-        Route::get('/portals/patient/appointments/{id}/reschedule', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'rescheduleAppointmentForm'])->name('portals.patient.appointments.reschedule');
-        Route::post('/portals/patient/appointments/{id}/reschedule', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'rescheduleAppointment'])->name('portals.patient.appointments.reschedule.store');
-        Route::post('/portals/patient/appointments/{id}/cancel', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'cancelAppointment'])->name('portals.patient.appointments.cancel');
-        Route::get('/portals/patient/prescriptions', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'prescriptions'])->name('portals.patient.prescriptions');
-        Route::post('/portals/patient/prescriptions/{id}/refill', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'requestRefill'])->name('portals.patient.prescriptions.refill');
+        Route::get('/patient/appointments/book', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'bookAppointmentForm'])->name('portals.patient.appointments.book');
+        Route::post('/patient/appointments/book', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'bookAppointment'])->name('portals.patient.appointments.book.store');
+        Route::get('/patient/appointments/{id}/reschedule', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'rescheduleAppointmentForm'])->name('portals.patient.appointments.reschedule');
+        Route::post('/patient/appointments/{id}/reschedule', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'rescheduleAppointment'])->name('portals.patient.appointments.reschedule.store');
+        Route::post('/patient/appointments/{id}/cancel', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'cancelAppointment'])->name('portals.patient.appointments.cancel');
+        Route::get('/patient/prescriptions', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'prescriptions'])->name('portals.patient.prescriptions');
+        Route::post('/patient/prescriptions/{id}/refill', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'requestRefill'])->name('portals.patient.prescriptions.refill');
         // QR token management
-        Route::post('/portals/patient/qr/{tokenId}/revoke', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'revokeQrToken'])->name('portals.patient.qr.revoke');
-        Route::post('/portals/patient/qr/revoke-all', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'revokeAllQrTokens'])->name('portals.patient.qr.revoke-all');
-        Route::get('/portals/patient/profile', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'profile'])->name('portals.patient.profile');
-        Route::post('/portals/patient/profile', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'updateProfile'])->name('portals.patient.profile.update');
-        Route::get('/portals/patient/settings',   [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'settings'])->name('portals.patient.settings');
-        Route::post('/portals/patient/settings',  [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'updateSettings'])->name('portals.patient.settings.update');
+        Route::post('/patient/qr/{tokenId}/revoke', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'revokeQrToken'])->name('portals.patient.qr.revoke');
+        Route::post('/patient/qr/revoke-all', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'revokeAllQrTokens'])->name('portals.patient.qr.revoke-all');
+        Route::get('/patient/profile', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'profile'])->name('portals.patient.profile');
+        Route::post('/patient/profile', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'updateProfile'])->name('portals.patient.profile.update');
+        Route::get('/patient/settings',   [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'settings'])->name('portals.patient.settings');
+        Route::post('/patient/settings',  [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'updateSettings'])->name('portals.patient.settings.update');
 
         // Notifications centre + channel preferences
-        Route::get('/portals/patient/notifications', [\App\Http\Controllers\MedicalId\PatientNotificationController::class, 'index'])->name('portals.patient.notifications');
-        Route::post('/portals/patient/notifications/read', [\App\Http\Controllers\MedicalId\PatientNotificationController::class, 'markAllRead'])->name('portals.patient.notifications.read');
-        Route::get('/portals/patient/notifications/preferences', [\App\Http\Controllers\MedicalId\PatientNotificationController::class, 'preferences'])->name('portals.patient.notifications.preferences');
-        Route::post('/portals/patient/notifications/preferences', [\App\Http\Controllers\MedicalId\PatientNotificationController::class, 'updatePreferences'])->name('portals.patient.notifications.preferences.update');
+        Route::get('/patient/notifications', [\App\Http\Controllers\MedicalId\PatientNotificationController::class, 'index'])->name('portals.patient.notifications');
+        Route::post('/patient/notifications/read', [\App\Http\Controllers\MedicalId\PatientNotificationController::class, 'markAllRead'])->name('portals.patient.notifications.read');
+        Route::get('/patient/notifications/preferences', [\App\Http\Controllers\MedicalId\PatientNotificationController::class, 'preferences'])->name('portals.patient.notifications.preferences');
+        Route::post('/patient/notifications/preferences', [\App\Http\Controllers\MedicalId\PatientNotificationController::class, 'updatePreferences'])->name('portals.patient.notifications.preferences.update');
         // Secure messaging (patient <-> care team) — built on the Messaging module
-        Route::get('/portals/patient/messages', [\App\Http\Controllers\MedicalId\PatientMessagingController::class, 'index'])->name('portals.patient.messages');
+        Route::get('/patient/messages', [\App\Http\Controllers\MedicalId\PatientMessagingController::class, 'index'])->name('portals.patient.messages');
         // Compose a new thread (must precede the {thread} wildcard)
-        Route::get('/portals/patient/messages/compose', [\App\Http\Controllers\MedicalId\PatientMessagingController::class, 'composeForm'])->name('portals.patient.messages.compose');
-        Route::post('/portals/patient/messages', [\App\Http\Controllers\MedicalId\PatientMessagingController::class, 'store'])->name('portals.patient.messages.store');
-        Route::get('/portals/patient/messages/{thread}', [\App\Http\Controllers\MedicalId\PatientMessagingController::class, 'show'])->name('portals.patient.messages.show');
-        Route::post('/portals/patient/messages/{thread}/messages', [\App\Http\Controllers\MedicalId\PatientMessagingController::class, 'send'])->name('portals.patient.messages.send');
+        Route::get('/patient/messages/compose', [\App\Http\Controllers\MedicalId\PatientMessagingController::class, 'composeForm'])->name('portals.patient.messages.compose');
+        Route::post('/patient/messages', [\App\Http\Controllers\MedicalId\PatientMessagingController::class, 'store'])->name('portals.patient.messages.store');
+        Route::get('/patient/messages/{thread}', [\App\Http\Controllers\MedicalId\PatientMessagingController::class, 'show'])->name('portals.patient.messages.show');
+        Route::post('/patient/messages/{thread}/messages', [\App\Http\Controllers\MedicalId\PatientMessagingController::class, 'send'])->name('portals.patient.messages.send');
     });
 
     // --- Inventory Portal (blood only — the facility side of the Blood Finder) ---
-    Route::get('/portals/staff/inventory/blood', [\App\Http\Controllers\MedicalId\InventoryPortalController::class, 'blood'])->name('portals.staff.inventory.blood');
-    Route::post('/portals/staff/inventory/blood', [\App\Http\Controllers\MedicalId\InventoryPortalController::class, 'bloodUpsert'])->name('portals.staff.inventory.blood.upsert');
-    Route::post('/portals/staff/inventory/blood/{id}/adjust', [\App\Http\Controllers\MedicalId\InventoryPortalController::class, 'bloodAdjust'])->name('portals.staff.inventory.blood.adjust');
-    Route::post('/portals/staff/inventory/blood/{id}/flag', [\App\Http\Controllers\MedicalId\InventoryPortalController::class, 'bloodFlag'])->name('portals.staff.inventory.blood.flag');
+    Route::get('/facility/inventory/blood', [\App\Http\Controllers\MedicalId\InventoryPortalController::class, 'blood'])->name('portals.staff.inventory.blood');
+    Route::post('/facility/inventory/blood', [\App\Http\Controllers\MedicalId\InventoryPortalController::class, 'bloodUpsert'])->name('portals.staff.inventory.blood.upsert');
+    Route::post('/facility/inventory/blood/{id}/adjust', [\App\Http\Controllers\MedicalId\InventoryPortalController::class, 'bloodAdjust'])->name('portals.staff.inventory.blood.adjust');
+    Route::post('/facility/inventory/blood/{id}/flag', [\App\Http\Controllers\MedicalId\InventoryPortalController::class, 'bloodFlag'])->name('portals.staff.inventory.blood.flag');
 
     // ── Staff: Appointment actions ──────────────────────────────
-    Route::get('/portals/staff/appointments/create', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointmentsCreate'])->name('portals.staff.appointments.create');
-    Route::post('/portals/staff/appointments', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointmentsStore'])->name('portals.staff.appointments.store');
-    Route::post('/portals/staff/appointments/{id}/confirm', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointmentsConfirm'])->name('portals.staff.appointments.confirm');
-    Route::post('/portals/staff/appointments/{id}/cancel', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointmentsCancel'])->name('portals.staff.appointments.cancel');
-    Route::post('/portals/staff/appointments/{id}/check-in', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointmentsCheckIn'])->name('portals.staff.appointments.check-in');
-    Route::post('/portals/staff/appointments/{id}/no-show', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointmentsNoShow'])->name('portals.staff.appointments.no-show');
+    Route::get('/facility/appointments/create', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointmentsCreate'])->name('portals.staff.appointments.create');
+    Route::post('/facility/appointments', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointmentsStore'])->name('portals.staff.appointments.store');
+    Route::post('/facility/appointments/{id}/confirm', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointmentsConfirm'])->name('portals.staff.appointments.confirm');
+    Route::post('/facility/appointments/{id}/cancel', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointmentsCancel'])->name('portals.staff.appointments.cancel');
+    Route::post('/facility/appointments/{id}/check-in', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointmentsCheckIn'])->name('portals.staff.appointments.check-in');
+    Route::post('/facility/appointments/{id}/no-show', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointmentsNoShow'])->name('portals.staff.appointments.no-show');
 
     // ── Staff: patient message inbox ─────────────────────────────
-    Route::get('/portals/staff/messages',                 [\App\Http\Controllers\MedicalId\StaffMessagingController::class, 'index'])->name('portals.staff.messages');
-    Route::get('/portals/staff/messages/{thread}',        [\App\Http\Controllers\MedicalId\StaffMessagingController::class, 'show'])->name('portals.staff.messages.show');
-    Route::post('/portals/staff/messages/{thread}/reply', [\App\Http\Controllers\MedicalId\StaffMessagingController::class, 'send'])->name('portals.staff.messages.send');
+    Route::get('/facility/messages',                 [\App\Http\Controllers\MedicalId\StaffMessagingController::class, 'index'])->name('portals.staff.messages');
+    Route::get('/facility/messages/{thread}',        [\App\Http\Controllers\MedicalId\StaffMessagingController::class, 'show'])->name('portals.staff.messages.show');
+    Route::post('/facility/messages/{thread}/reply', [\App\Http\Controllers\MedicalId\StaffMessagingController::class, 'send'])->name('portals.staff.messages.send');
 
     // ── Facility admin: my team (invite / reissue / revoke) ───────
-    // Prefix is portals/facility, NOT portals/admin: everything under
-    // portals/admin/* is platform-tier only (RequirePlatformAdmin).
-    Route::get('/portals/facility/team',                            [\App\Http\Controllers\MedicalId\FacilityStaffController::class, 'index'])->name('portals.facility.team');
-    Route::post('/portals/facility/team/invites',                   [\App\Http\Controllers\MedicalId\FacilityStaffController::class, 'store'])->name('portals.facility.team.invite');
-    Route::post('/portals/facility/team/invites/{id}/reissue',      [\App\Http\Controllers\MedicalId\FacilityStaffController::class, 'reissue'])->name('portals.facility.team.invite.reissue');
-    Route::post('/portals/facility/team/invites/{id}/revoke',       [\App\Http\Controllers\MedicalId\FacilityStaffController::class, 'revoke'])->name('portals.facility.team.invite.revoke');
+    // Prefix is facility, NOT admin: everything under
+    // admin/* is platform-tier only (RequirePlatformAdmin).
+    Route::get('/facility/team',                            [\App\Http\Controllers\MedicalId\FacilityStaffController::class, 'index'])->name('portals.facility.team');
+    Route::post('/facility/team/invites',                   [\App\Http\Controllers\MedicalId\FacilityStaffController::class, 'store'])->name('portals.facility.team.invite');
+    Route::post('/facility/team/invites/{id}/reissue',      [\App\Http\Controllers\MedicalId\FacilityStaffController::class, 'reissue'])->name('portals.facility.team.invite.reissue');
+    Route::post('/facility/team/invites/{id}/revoke',       [\App\Http\Controllers\MedicalId\FacilityStaffController::class, 'revoke'])->name('portals.facility.team.invite.revoke');
 
 
     // ── Family Management ──────────────────────────────────────────────────────
-    Route::get('/portals/patient/family',                           [\App\Http\Controllers\MedicalId\FamilyController::class, 'index'])->name('portals.patient.family');
-    Route::get('/portals/patient/family/add',                       [\App\Http\Controllers\MedicalId\FamilyController::class, 'addForm'])->name('portals.patient.family.add');
-    Route::post('/portals/patient/family/add',                      [\App\Http\Controllers\MedicalId\FamilyController::class, 'store'])->name('portals.patient.family.store');
-    Route::get('/portals/patient/family/invite',                    [\App\Http\Controllers\MedicalId\FamilyController::class, 'inviteForm'])->name('portals.patient.family.invite');
-    Route::post('/portals/patient/family/invite',                   [\App\Http\Controllers\MedicalId\FamilyController::class, 'sendInvite'])->name('portals.patient.family.invite.send');
-    Route::post('/portals/patient/family/switch/{patientId}',       [\App\Http\Controllers\MedicalId\FamilyController::class, 'switchTo'])->name('portals.patient.family.switch');
-    Route::post('/portals/patient/family/switch-back',              [\App\Http\Controllers\MedicalId\FamilyController::class, 'switchBack'])->name('portals.patient.family.switch.back');
-    Route::get('/portals/patient/family/{id}/edit',                 [\App\Http\Controllers\MedicalId\FamilyController::class, 'editForm'])->name('portals.patient.family.edit');
-    Route::post('/portals/patient/family/{id}/edit',                [\App\Http\Controllers\MedicalId\FamilyController::class, 'update'])->name('portals.patient.family.update');
-    Route::post('/portals/patient/family/{id}/revoke',              [\App\Http\Controllers\MedicalId\FamilyController::class, 'revoke'])->name('portals.patient.family.revoke');
-    Route::post('/portals/patient/family/{id}/guardian-consent/approve', [\App\Http\Controllers\MedicalId\FamilyController::class, 'guardianConsentApprove'])->name('portals.patient.family.guardian_consent.approve');
-    Route::post('/portals/patient/family/{id}/guardian-consent/deny',    [\App\Http\Controllers\MedicalId\FamilyController::class, 'guardianConsentDeny'])->name('portals.patient.family.guardian_consent.deny');
+    Route::get('/patient/family',                           [\App\Http\Controllers\MedicalId\FamilyController::class, 'index'])->name('portals.patient.family');
+    Route::get('/patient/family/add',                       [\App\Http\Controllers\MedicalId\FamilyController::class, 'addForm'])->name('portals.patient.family.add');
+    Route::post('/patient/family/add',                      [\App\Http\Controllers\MedicalId\FamilyController::class, 'store'])->name('portals.patient.family.store');
+    Route::get('/patient/family/invite',                    [\App\Http\Controllers\MedicalId\FamilyController::class, 'inviteForm'])->name('portals.patient.family.invite');
+    Route::post('/patient/family/invite',                   [\App\Http\Controllers\MedicalId\FamilyController::class, 'sendInvite'])->name('portals.patient.family.invite.send');
+    Route::post('/patient/family/switch/{patientId}',       [\App\Http\Controllers\MedicalId\FamilyController::class, 'switchTo'])->name('portals.patient.family.switch');
+    Route::post('/patient/family/switch-back',              [\App\Http\Controllers\MedicalId\FamilyController::class, 'switchBack'])->name('portals.patient.family.switch.back');
+    Route::get('/patient/family/{id}/edit',                 [\App\Http\Controllers\MedicalId\FamilyController::class, 'editForm'])->name('portals.patient.family.edit');
+    Route::post('/patient/family/{id}/edit',                [\App\Http\Controllers\MedicalId\FamilyController::class, 'update'])->name('portals.patient.family.update');
+    Route::post('/patient/family/{id}/revoke',              [\App\Http\Controllers\MedicalId\FamilyController::class, 'revoke'])->name('portals.patient.family.revoke');
+    Route::post('/patient/family/{id}/guardian-consent/approve', [\App\Http\Controllers\MedicalId\FamilyController::class, 'guardianConsentApprove'])->name('portals.patient.family.guardian_consent.approve');
+    Route::post('/patient/family/{id}/guardian-consent/deny',    [\App\Http\Controllers\MedicalId\FamilyController::class, 'guardianConsentDeny'])->name('portals.patient.family.guardian_consent.deny');
 
-    Route::get('/portals/admin', [\App\Http\Controllers\MedicalId\AdminPortalController::class, 'index'])->name('portals.admin');
+    Route::get('/admin', [\App\Http\Controllers\MedicalId\AdminPortalController::class, 'index'])->name('portals.admin');
 
     // ── Master Admin Control Center ───────────────────────────────
-    Route::get('/portals/admin/cc',                      [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'index'])->name('portals.admin.cc');
-    Route::get('/portals/admin/cc/settings',             [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'settings'])->name('portals.admin.cc.settings');
-    Route::post('/portals/admin/cc/settings',            [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'settingsUpdate'])->name('portals.admin.cc.settings.update');
-    Route::get('/portals/admin/cc/feature-flags',        [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'featureFlags'])->name('portals.admin.cc.feature_flags');
-    Route::post('/portals/admin/cc/feature-flags/{key}', [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'featureFlagToggle'])->name('portals.admin.cc.feature_flags.toggle');
-    Route::get('/portals/admin/cc/modules',              [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'modules'])->name('portals.admin.cc.modules');
-    Route::post('/portals/admin/cc/modules/{key}',       [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'moduleToggle'])->name('portals.admin.cc.modules.toggle');
-    Route::get('/portals/admin/cc/maintenance',          [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'maintenance'])->name('portals.admin.cc.maintenance');
-    Route::post('/portals/admin/cc/maintenance',         [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'maintenanceStore'])->name('portals.admin.cc.maintenance.store');
-    Route::post('/portals/admin/cc/maintenance/{id}',    [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'maintenanceToggle'])->name('portals.admin.cc.maintenance.toggle');
-    Route::get('/portals/admin/cc/health',               [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'systemHealth'])->name('portals.admin.cc.health');
-    Route::get('/portals/admin/cc/audit',                [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'auditLog'])->name('portals.admin.cc.audit');
+    Route::get('/admin/cc',                      [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'index'])->name('portals.admin.cc');
+    Route::get('/admin/cc/settings',             [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'settings'])->name('portals.admin.cc.settings');
+    Route::post('/admin/cc/settings',            [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'settingsUpdate'])->name('portals.admin.cc.settings.update');
+    Route::get('/admin/cc/feature-flags',        [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'featureFlags'])->name('portals.admin.cc.feature_flags');
+    Route::post('/admin/cc/feature-flags/{key}', [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'featureFlagToggle'])->name('portals.admin.cc.feature_flags.toggle');
+    Route::get('/admin/cc/modules',              [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'modules'])->name('portals.admin.cc.modules');
+    Route::post('/admin/cc/modules/{key}',       [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'moduleToggle'])->name('portals.admin.cc.modules.toggle');
+    Route::get('/admin/cc/maintenance',          [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'maintenance'])->name('portals.admin.cc.maintenance');
+    Route::post('/admin/cc/maintenance',         [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'maintenanceStore'])->name('portals.admin.cc.maintenance.store');
+    Route::post('/admin/cc/maintenance/{id}',    [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'maintenanceToggle'])->name('portals.admin.cc.maintenance.toggle');
+    Route::get('/admin/cc/health',               [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'systemHealth'])->name('portals.admin.cc.health');
+    Route::get('/admin/cc/audit',                [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'auditLog'])->name('portals.admin.cc.audit');
 
 
     // ── User Management (god mode) ──────────────────────────────────────────
+    // NOTE: users / facilities / roles keep the /portals/admin/* URI (they are
+    // NOT shortened to /admin/*). A parallel god-mode set already lives at the
+    // bare /admin/{users,facilities,roles} URIs (names admin.*), wired to the
+    // same controllers and used by the CRUD views. Moving these here onto those
+    // exact URIs would collide, and Laravel keeps only ONE name per method+URI —
+    // the later registration would silently evict portals.admin.*.index, which
+    // the admin nav links by. Leaving these three at /portals/admin/* lets BOTH
+    // name families resolve, exactly as before the prefix rename.
     Route::prefix('portals/admin/users')->name('portals.admin.users.')->group(function () {
         Route::get('/',                  [AdminUserManagementController::class,    'index'])->name('index');
         Route::post('/',                 [AdminUserManagementController::class,    'store'])->name('store');
@@ -348,7 +356,7 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'platform.adm
 
 
     // ── Appointments Overview ───────────────────────────────────────────────
-    Route::prefix('portals/admin/appointments')->name('portals.admin.appointments.')->group(function () {
+    Route::prefix('admin/appointments')->name('portals.admin.appointments.')->group(function () {
         Route::get('/',              [AdminAppointmentsController::class, 'index'])->name('index');
         Route::get('{id}',           [AdminAppointmentsController::class, 'show'])->name('show');
         Route::post('{id}/cancel',   [AdminAppointmentsController::class, 'cancel'])->name('cancel');
@@ -418,19 +426,19 @@ Route::middleware(['web', 'auth', 'platform.admin'])->group(function () {
 |--------------------------------------------------------------------------
 | OpesCare Pharmacy Portal
 |--------------------------------------------------------------------------
-| /portals/pharmacy/inventory (facility-internal inventory ops) was removed
+| /pharmacy/inventory (facility-internal inventory ops) was removed
 | with the inventory-ops module; the public stock reporting page below is
 | what the patient Medicine Finder reads.
 */
 Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access'])->group(function () {
-    Route::get('/portals/pharmacy',                              [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'dashboard'])->name('portals.pharmacy.dashboard');
-    Route::get('/portals/pharmacy/prescriptions',               [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'prescriptions'])->name('portals.pharmacy.prescriptions');
-    Route::post('/portals/pharmacy/prescriptions/{id}/dispense',[\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'dispense'])->name('portals.pharmacy.dispense');
+    Route::get('/pharmacy',                              [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'dashboard'])->name('portals.pharmacy.dashboard');
+    Route::get('/pharmacy/prescriptions',               [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'prescriptions'])->name('portals.pharmacy.prescriptions');
+    Route::post('/pharmacy/prescriptions/{id}/dispense',[\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'dispense'])->name('portals.pharmacy.dispense');
     // Public medicine availability — the medicine_pharmacy_stocks rows the
     // patient Medicine Finder reads.
-    Route::get('/portals/pharmacy/stock',                       [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'stock'])->name('portals.pharmacy.stock');
-    Route::post('/portals/pharmacy/stock',                      [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'reportStock'])->name('portals.pharmacy.stock.report');
-    Route::get('/portals/pharmacy/controlled',                  [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'controlled'])->name('portals.pharmacy.controlled');
+    Route::get('/pharmacy/stock',                       [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'stock'])->name('portals.pharmacy.stock');
+    Route::post('/pharmacy/stock',                      [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'reportStock'])->name('portals.pharmacy.stock.report');
+    Route::get('/pharmacy/controlled',                  [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'controlled'])->name('portals.pharmacy.controlled');
 });
 
 /*
@@ -484,48 +492,85 @@ Route::post('/family/invite/accept/{token}', [\App\Http\Controllers\MedicalId\Fa
 | Connect inventory stock ingest (api/v1/connect/inventory/*).
 */
 Route::middleware(['web', 'auth', 'portal.access'])->group(function () {
-    Route::get('/portals/developer',                                          [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'dashboard'])->name('portals.developer.dashboard');
-    Route::get('/portals/developer/onboard',                                  [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'onboard'])->name('portals.developer.onboard');
-    Route::post('/portals/developer/onboard',                                 [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'onboardStore'])->name('portals.developer.onboard.store');
+    Route::get('/developer',                                          [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'dashboard'])->name('portals.developer.dashboard');
+    Route::get('/developer/onboard',                                  [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'onboard'])->name('portals.developer.onboard');
+    Route::post('/developer/onboard',                                 [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'onboardStore'])->name('portals.developer.onboard.store');
 
     // Apps (Integration Clients)
-    Route::get('/portals/developer/apps',                                     [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'apps'])->name('portals.developer.apps');
-    Route::get('/portals/developer/apps/create',                              [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'createApp'])->name('portals.developer.apps.create');
-    Route::post('/portals/developer/apps',                                    [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'storeApp'])->name('portals.developer.apps.store');
-    Route::get('/portals/developer/apps/{clientId}',                          [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'showApp'])->name('portals.developer.apps.show');
-    Route::post('/portals/developer/apps/{clientId}/rotate-secret',           [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'rotateSecret'])->name('portals.developer.apps.rotate');
-    Route::post('/portals/developer/apps/{clientId}/pay-invoice',             [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'payInvoice'])->name('portals.developer.apps.pay');
-    Route::post('/portals/developer/apps/{clientId}/toggle',                  [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'toggleApp'])->name('portals.developer.apps.toggle');
+    Route::get('/developer/apps',                                     [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'apps'])->name('portals.developer.apps');
+    Route::get('/developer/apps/create',                              [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'createApp'])->name('portals.developer.apps.create');
+    Route::post('/developer/apps',                                    [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'storeApp'])->name('portals.developer.apps.store');
+    Route::get('/developer/apps/{clientId}',                          [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'showApp'])->name('portals.developer.apps.show');
+    Route::post('/developer/apps/{clientId}/rotate-secret',           [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'rotateSecret'])->name('portals.developer.apps.rotate');
+    Route::post('/developer/apps/{clientId}/pay-invoice',             [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'payInvoice'])->name('portals.developer.apps.pay');
+    Route::post('/developer/apps/{clientId}/toggle',                  [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'toggleApp'])->name('portals.developer.apps.toggle');
 
     // Production Access Requests
-    Route::get('/portals/developer/production-requests',                      [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'productionRequests'])->name('portals.developer.production_requests');
-    Route::get('/portals/developer/production-requests/create',               [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'createProductionRequest'])->name('portals.developer.production_requests.create');
-    Route::post('/portals/developer/production-requests',                     [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'storeProductionRequest'])->name('portals.developer.production_requests.store');
+    Route::get('/developer/production-requests',                      [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'productionRequests'])->name('portals.developer.production_requests');
+    Route::get('/developer/production-requests/create',               [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'createProductionRequest'])->name('portals.developer.production_requests.create');
+    Route::post('/developer/production-requests',                     [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'storeProductionRequest'])->name('portals.developer.production_requests.store');
 
     // Webhook Delivery Logs
-    Route::get('/portals/developer/apps/{clientId}/webhook-deliveries',       [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'webhookDeliveries'])->name('portals.developer.webhook_deliveries');
+    Route::get('/developer/apps/{clientId}/webhook-deliveries',       [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'webhookDeliveries'])->name('portals.developer.webhook_deliveries');
 
     // API Usage Analytics
-    Route::get('/portals/developer/analytics',                                [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'analytics'])->name('portals.developer.analytics');
+    Route::get('/developer/analytics',                                [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'analytics'])->name('portals.developer.analytics');
 });
 
 // --- Admin: Developer Portal Management (approvals for the self-service flow) ---
 Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'platform.admin', 'facility.context', 'throttle:portal'])->group(function () {
-    Route::get('/portals/admin/developer/production-requests',             [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'adminProductionRequests'])->name('portals.admin.developer.production_requests');
-    Route::post('/portals/admin/developer/production-requests/{prodRequest}/approve', [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'adminApproveProductionRequest'])->name('portals.admin.developer.production_requests.approve');
-    Route::post('/portals/admin/developer/production-requests/{prodRequest}/reject',  [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'adminRejectProductionRequest'])->name('portals.admin.developer.production_requests.reject');
-    Route::get('/portals/admin/developer/accounts',                        [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'adminDeveloperAccounts'])->name('portals.admin.developer.accounts');
-    Route::post('/portals/admin/developer/accounts/{account}/suspend',     [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'adminSuspendDeveloper'])->name('portals.admin.developer.accounts.suspend');
+    Route::get('/admin/developer/production-requests',             [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'adminProductionRequests'])->name('portals.admin.developer.production_requests');
+    Route::post('/admin/developer/production-requests/{prodRequest}/approve', [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'adminApproveProductionRequest'])->name('portals.admin.developer.production_requests.approve');
+    Route::post('/admin/developer/production-requests/{prodRequest}/reject',  [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'adminRejectProductionRequest'])->name('portals.admin.developer.production_requests.reject');
+    Route::get('/admin/developer/accounts',                        [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'adminDeveloperAccounts'])->name('portals.admin.developer.accounts');
+    Route::post('/admin/developer/accounts/{account}/suspend',     [\App\Http\Controllers\MedicalId\DeveloperPortalController::class, 'adminSuspendDeveloper'])->name('portals.admin.developer.accounts.suspend');
 });
 
 // --- Integration Certifications (partner integrations for the stock ingest) ---
 Route::middleware(['web', 'auth', 'portal.access'])->group(function () {
-    Route::get('/portals/admin/certifications',                                   [\App\Http\Controllers\MedicalId\IntegrationCertificationController::class, 'index'])->name('portals.admin.certifications.index');
-    Route::get('/portals/admin/certifications/create',                            [\App\Http\Controllers\MedicalId\IntegrationCertificationController::class, 'create'])->name('portals.admin.certifications.create');
-    Route::post('/portals/admin/certifications',                                  [\App\Http\Controllers\MedicalId\IntegrationCertificationController::class, 'store'])->name('portals.admin.certifications.store');
-    Route::get('/portals/admin/certifications/{certification}',                   [\App\Http\Controllers\MedicalId\IntegrationCertificationController::class, 'show'])->name('portals.admin.certifications.show');
-    Route::post('/portals/admin/certifications/{certification}/test-run',         [\App\Http\Controllers\MedicalId\IntegrationCertificationController::class, 'recordTestRun'])->name('portals.admin.certifications.test_run');
-    Route::post('/portals/admin/certifications/{certification}/badge/issue',      [\App\Http\Controllers\MedicalId\IntegrationCertificationController::class, 'issueBadge'])->name('portals.admin.certifications.badge.issue');
-    Route::post('/portals/admin/certifications/badges/{badge}/revoke',            [\App\Http\Controllers\MedicalId\IntegrationCertificationController::class, 'revokeBadge'])->name('portals.admin.certifications.badge.revoke');
-    Route::post('/portals/admin/certifications/seed-requirements',                [\App\Http\Controllers\MedicalId\IntegrationCertificationController::class, 'seedRequirements'])->name('portals.admin.certifications.seed');
+    Route::get('/admin/certifications',                                   [\App\Http\Controllers\MedicalId\IntegrationCertificationController::class, 'index'])->name('portals.admin.certifications.index');
+    Route::get('/admin/certifications/create',                            [\App\Http\Controllers\MedicalId\IntegrationCertificationController::class, 'create'])->name('portals.admin.certifications.create');
+    Route::post('/admin/certifications',                                  [\App\Http\Controllers\MedicalId\IntegrationCertificationController::class, 'store'])->name('portals.admin.certifications.store');
+    Route::get('/admin/certifications/{certification}',                   [\App\Http\Controllers\MedicalId\IntegrationCertificationController::class, 'show'])->name('portals.admin.certifications.show');
+    Route::post('/admin/certifications/{certification}/test-run',         [\App\Http\Controllers\MedicalId\IntegrationCertificationController::class, 'recordTestRun'])->name('portals.admin.certifications.test_run');
+    Route::post('/admin/certifications/{certification}/badge/issue',      [\App\Http\Controllers\MedicalId\IntegrationCertificationController::class, 'issueBadge'])->name('portals.admin.certifications.badge.issue');
+    Route::post('/admin/certifications/badges/{badge}/revoke',            [\App\Http\Controllers\MedicalId\IntegrationCertificationController::class, 'revokeBadge'])->name('portals.admin.certifications.badge.revoke');
+    Route::post('/admin/certifications/seed-requirements',                [\App\Http\Controllers\MedicalId\IntegrationCertificationController::class, 'seedRequirements'])->name('portals.admin.certifications.seed');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Legacy /portals/* → clean-prefix redirects
+|--------------------------------------------------------------------------
+| The five operator dashboards moved to short, canonical prefixes
+| (/admin, /pharmacy, /facility, /developer, /patient). These permanent
+| redirects keep old bookmarks and any lingering hardcoded /portals/* link
+| working. They are auth-free (a redirect needs no session) and are declared
+| LAST so they can only ever match paths no real route claims — the real
+| dashboards now live at the clean prefixes, and /portals/guardian/* and
+| /portals/listing/* are deliberately NOT redirected (those prefixes were
+| not renamed). POSTs keep working at the canonical URLs because every form
+| links by route() name, whose names are unchanged.
+|
+| NOTE: portals/staff AND portals/facility both fold into /facility — the
+| operations desk (was staff) and the facility-admin team page (was
+| facility/team) now share one clean root with no path collision.
+*/
+foreach ([
+    'portals/admin'     => 'admin',
+    'portals/pharmacy'  => 'pharmacy',
+    'portals/staff'     => 'facility',
+    'portals/facility'  => 'facility',
+    'portals/developer' => 'developer',
+    'portals/patient'   => 'patient',
+] as $legacyPrefix => $cleanPrefix) {
+    // Bare prefix (e.g. /portals/admin → /admin)
+    Route::permanentRedirect('/' . $legacyPrefix, '/' . $cleanPrefix);
+
+    // Everything under it (e.g. /portals/admin/cc → /admin/cc), query string preserved.
+    Route::get('/' . $legacyPrefix . '/{rest}', function (string $rest) use ($cleanPrefix) {
+        $qs = request()->getQueryString();
+
+        return redirect('/' . $cleanPrefix . '/' . $rest . ($qs ? '?' . $qs : ''), 301);
+    })->where('rest', '.*');
+}

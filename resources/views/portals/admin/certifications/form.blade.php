@@ -10,8 +10,11 @@
     <span>{{ __('public.adm_cert_form_breadcrumb_new') }}</span>
 </div>
 
-<div class="page-head">
-    <h2>{{ __('public.adm_cert_form_heading') }}</h2>
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{{ __('public.adm_cert_form_heading') }}</h1>
+        <p class="page-subtitle">{{ __('public.adm_cert_form_subtitle') }}</p>
+    </div>
 </div>
 
 <div class="panel form-panel">

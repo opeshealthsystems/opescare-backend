@@ -107,14 +107,14 @@ class SignupRequestCaptureTest extends TestCase
 
         // Before submitting: pinned to the completion step.
         $this->actingAs($user)->withSession(['mfa.verified' => true])
-            ->get('/portals/patient')
+            ->get('/patient')
             ->assertRedirect(route('portals.guardian.complete-profile'));
 
         $user->forceFill(['profile_completed_at' => now()])->save();
 
         // After submitting: pinned to the pending screen, not an empty portal.
         $this->actingAs($user->fresh())->withSession(['mfa.verified' => true])
-            ->get('/portals/patient')
+            ->get('/patient')
             ->assertRedirect(route('portals.guardian.pending'));
     }
 

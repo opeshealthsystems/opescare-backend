@@ -1,6 +1,6 @@
 @extends('layouts.portal')
 @section('title', __('public.adm_dev_acc_title'))
-@section('sidebar') @include('portals.admin.connect._sidebar') @endsection
+@include('portals.admin.control_center._sidebar')
 
 @section('content')
 
@@ -9,11 +9,12 @@
     <span>{{ __('public.adm_dev_acc_breadcrumb_section') }}</span>
 </div>
 
-<div class="page-head">
-    <h2>{{ __('public.adm_dev_acc_heading') }}</h2>
-    <div class="page-head__spacer"></div>
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{{ __('public.adm_dev_acc_heading') }}</h1>
+        <p class="page-subtitle">{{ __('public.adm_dev_acc_subtitle') }}</p>
+    </div>
 </div>
-<p class="td-muted mb-6">{{ __('public.adm_dev_acc_subtitle') }}</p>
 
 @if(session('success'))<div class="alert alert-success mb-6"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
 @if(session('error'))<div class="alert alert-danger mb-6"><i data-lucide="alert-circle"></i><div>{{ session('error') }}</div></div>@endif

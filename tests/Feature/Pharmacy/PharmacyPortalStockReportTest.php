@@ -138,7 +138,7 @@ class PharmacyPortalStockReportTest extends TestCase
         $this->assertNull($before['stock'], 'No stock has been reported yet.');
 
         $this->asPharmacist()
-            ->post('/portals/pharmacy/stock', [
+            ->post('/pharmacy/stock', [
                 'medicine_id'         => $this->medicine->id,
                 'stock_status'        => PharmacyStockStatus::InStock->value,
                 'packs_available'     => 42,
@@ -162,7 +162,7 @@ class PharmacyPortalStockReportTest extends TestCase
 
     public function test_a_portal_write_is_distinguishable_from_seeded_data(): void
     {
-        $this->asPharmacist()->post('/portals/pharmacy/stock', [
+        $this->asPharmacist()->post('/pharmacy/stock', [
             'medicine_id'  => $this->medicine->id,
             'stock_status' => PharmacyStockStatus::InStock->value,
         ]);
@@ -190,7 +190,7 @@ class PharmacyPortalStockReportTest extends TestCase
             'last_reported_at'    => now()->subMonth(),
         ]);
 
-        $this->asPharmacist()->post('/portals/pharmacy/stock', [
+        $this->asPharmacist()->post('/pharmacy/stock', [
             'medicine_id'         => $this->medicine->id,
             'stock_status'        => PharmacyStockStatus::LowStock->value,
             'packs_available'     => 3,
@@ -221,7 +221,7 @@ class PharmacyPortalStockReportTest extends TestCase
             'last_reported_at' => now()->subMonth(),
         ]);
 
-        $this->asPharmacist()->post('/portals/pharmacy/stock', [
+        $this->asPharmacist()->post('/pharmacy/stock', [
             'medicine_id'  => $this->medicine->id,
             'stock_status' => PharmacyStockStatus::LowStock->value,
         ]);
@@ -239,7 +239,7 @@ class PharmacyPortalStockReportTest extends TestCase
 
     public function test_out_of_stock_is_reportable_and_hides_the_pharmacy_from_only_stocking_searches(): void
     {
-        $this->asPharmacist()->post('/portals/pharmacy/stock', [
+        $this->asPharmacist()->post('/pharmacy/stock', [
             'medicine_id'  => $this->medicine->id,
             'stock_status' => PharmacyStockStatus::OutOfStock->value,
         ]);
@@ -266,7 +266,7 @@ class PharmacyPortalStockReportTest extends TestCase
         $this->listing->forceFill(['facility_id' => null])->save();
 
         $this->asPharmacist()
-            ->post('/portals/pharmacy/stock', [
+            ->post('/pharmacy/stock', [
                 'medicine_id'  => $this->medicine->id,
                 'stock_status' => PharmacyStockStatus::InStock->value,
             ])
@@ -282,7 +282,7 @@ class PharmacyPortalStockReportTest extends TestCase
         $this->listing->forceFill(['latitude' => null, 'longitude' => null])->save();
 
         $this->asPharmacist()
-            ->get('/portals/pharmacy/stock')
+            ->get('/pharmacy/stock')
             ->assertOk()
             ->assertSee(__('public.pharmacy_portal.stock_warn_no_coords_title'), false);
 
@@ -292,29 +292,29 @@ class PharmacyPortalStockReportTest extends TestCase
 
     public function test_the_stock_page_lists_what_the_finder_serves(): void
     {
-        $this->asPharmacist()->post('/portals/pharmacy/stock', [
+        $this->asPharmacist()->post('/pharmacy/stock', [
             'medicine_id'     => $this->medicine->id,
             'stock_status'    => PharmacyStockStatus::InStock->value,
             'packs_available' => 12,
         ]);
 
         $this->asPharmacist()
-            ->get('/portals/pharmacy/stock')
+            ->get('/pharmacy/stock')
             ->assertOk()
             ->assertSee('Paracetamol 500mg Tablet')
             ->assertSee(__('public.pharmacy_portal.stock_src_portal'), false);
 
-        // The legacy /portals/pharmacy/inventory alias was deleted with the
+        // The legacy /pharmacy/inventory alias was deleted with the
         // inventory-ops module in the Finder extraction. It must stay gone —
         // the stock page above is the only entry.
         $this->asPharmacist()
-            ->get('/portals/pharmacy/inventory')
+            ->get('/pharmacy/inventory')
             ->assertNotFound();
     }
 
     public function test_a_stock_report_never_writes_to_the_legacy_pharmacy_inventories_table(): void
     {
-        $this->asPharmacist()->post('/portals/pharmacy/stock', [
+        $this->asPharmacist()->post('/pharmacy/stock', [
             'medicine_id'  => $this->medicine->id,
             'stock_status' => PharmacyStockStatus::InStock->value,
         ]);

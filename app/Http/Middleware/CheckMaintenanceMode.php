@@ -67,10 +67,17 @@ class CheckMaintenanceMode
         'status',                           // Public status page — must be reachable DURING an outage
         'sla',                              // Public SLA page
         '.well-known/*',                    // OAuth/JWKS discovery (machine clients verifying tokens)
-        'portals/admin/cc/maintenance',     // Admin toggle page (GET)
-        'portals/admin/cc/maintenance/*',   // Admin toggle actions (POST)
-        'portals/admin/cc',                 // Admin control centre dashboard
-        'portals/admin/cc/health',          // System health page (to diagnose issues)
+        // Admin console moved to the clean /admin/* prefix; old /portals/admin/*
+        // kept for the redirect window (a legacy bookmark 301s to the new path,
+        // which is itself allow-listed here).
+        'admin/cc/maintenance',             // Admin toggle page (GET)
+        'admin/cc/maintenance/*',           // Admin toggle actions (POST)
+        'admin/cc',                         // Admin control centre dashboard
+        'admin/cc/health',                  // System health page (to diagnose issues)
+        'portals/admin/cc/maintenance',     // legacy
+        'portals/admin/cc/maintenance/*',   // legacy
+        'portals/admin/cc',                 // legacy
+        'portals/admin/cc/health',          // legacy
     ];
 
     public function handle(Request $request, Closure $next): Response

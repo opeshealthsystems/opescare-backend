@@ -22,7 +22,8 @@ class RequireCompletePatientProfile
 {
     /** Reachable while the profile is still incomplete. */
     private const ALLOWED = [
-        'portals/patient/complete-profile',
+        'patient/complete-profile',
+        'portals/patient/complete-profile', // legacy path (redirect window)
     ];
 
     public function handle(Request $request, Closure $next): Response

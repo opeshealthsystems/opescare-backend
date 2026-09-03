@@ -12,8 +12,11 @@
     <span>{{ __('public.adm_fac_breadcrumb_dir') }}</span>
 </div>
 
-<div class="page-head">
-    <h2>{{ __('public.adm_fac_heading') }}</h2>
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{{ __('public.adm_fac_heading') }}</h1>
+        <p class="page-subtitle">{{ __('public.adm_fac_subtitle') }}</p>
+    </div>
     <div class="page-head__spacer"></div>
     <a href="{{ route('admin.facilities.index') }}#add" class="btn btn-primary">
         <i data-lucide="plus"></i> {{ __('public.adm_fac_btn_add') }}

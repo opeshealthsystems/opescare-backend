@@ -12,8 +12,11 @@
     <span>{{ __('public.adm_roles_idx_breadcrumb_sub') }}</span>
 </div>
 
-<div class="page-head">
-    <h2>{{ __('public.adm_roles_idx_breadcrumb') }}</h2>
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{{ __('public.adm_roles_idx_breadcrumb') }}</h1>
+        <p class="page-subtitle">{{ __('public.adm_roles_idx_subtitle') }}</p>
+    </div>
     <div class="page-head__spacer"></div>
     <button type="button" class="btn btn-primary" onclick="opOpenModal('create-role-modal')">
         <i data-lucide="plus"></i> {{ __('public.adm_roles_idx_btn_create') }}

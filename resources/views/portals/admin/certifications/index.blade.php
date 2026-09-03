@@ -10,8 +10,11 @@
     <span>{{ __('public.adm_cert_idx_breadcrumb_dir') }}</span>
 </div>
 
-<div class="page-head">
-    <h2>{{ __('public.adm_cert_idx_heading') }}</h2>
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{{ __('public.adm_cert_idx_heading') }}</h1>
+        <p class="page-subtitle">{{ __('public.adm_cert_idx_subtitle') }}</p>
+    </div>
     <div class="page-head__spacer"></div>
     <form method="POST" action="{{ route('portals.admin.certifications.seed') }}" class="inline-form">
         @csrf

@@ -363,7 +363,7 @@ class FacilityStaffInviteTest extends TestCase
         // portals/facility prefix rather than serving the page.
         $this->actingAs($doctor->fresh())
             ->get(route('portals.facility.team'))
-            ->assertRedirect('/portals/staff');
+            ->assertRedirect('/facility');
     }
 
     public function test_an_unknown_token_is_indistinguishable_from_an_expired_one(): void

@@ -264,7 +264,7 @@ class PharmacyCoverageProvenanceTest extends TestCase
 
         $this->actingAs($this->pharmacist)
             ->withSession(['active_facility_id' => $this->facility->id])
-            ->get('/portals/pharmacy/stock')
+            ->get('/pharmacy/stock')
             ->assertOk()
             ->assertSee(
                 __('public.pharmacy_portal.stock_cov_summary', ['reported' => 3, 'total' => 5]),

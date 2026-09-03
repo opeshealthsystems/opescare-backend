@@ -157,7 +157,7 @@ class CareJourneyTest extends TestCase
         ]);
 
         $this->actingAs($patientUser)->withSession(['mfa.verified' => true])
-            ->post('/portals/patient/appointments/book', [
+            ->post('/patient/appointments/book', [
                 'facility_id'      => $tenant->id,
                 'appointment_type' => $this->firstAppointmentType(),
                 'scheduled_at'     => now()->addDays(3)->format('Y-m-d H:i:s'),
@@ -170,7 +170,7 @@ class CareJourneyTest extends TestCase
 
         // The facility confirms it.
         $this->asStaff($this->staffAt($tenant))
-            ->post("/portals/staff/appointments/{$appointment->id}/confirm")
+            ->post("/facility/appointments/{$appointment->id}/confirm")
             ->assertRedirect();
 
         $this->assertSame('confirmed', $appointment->fresh()->status);
@@ -192,7 +192,7 @@ class CareJourneyTest extends TestCase
         ]);
 
         $this->asStaff($this->staffAt($mine))
-            ->post("/portals/staff/appointments/{$appointment->id}/confirm")
+            ->post("/facility/appointments/{$appointment->id}/confirm")
             ->assertNotFound();
 
         $this->assertSame(
@@ -210,7 +210,7 @@ class CareJourneyTest extends TestCase
         $patient  = Patient::factory()->create();
 
         $this->asStaff($this->staffAt($mine))
-            ->post('/portals/staff/appointments', [
+            ->post('/facility/appointments', [
                 'patient_id'       => $patient->id,
                 'facility_id'      => $theirs->id,          // ignored on purpose
                 'appointment_type' => $this->firstAppointmentType(),

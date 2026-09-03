@@ -12,9 +12,11 @@
     <span>{{ __('public.adm_users_idx_breadcrumb_dir') }}</span>
 </div>
 
-<div class="page-head">
-    <h2>{{ __('public.adm_users_idx_heading') }}</h2>
-    <div class="page-head__spacer"></div>
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{{ __('public.adm_users_idx_heading') }}</h1>
+        <p class="page-subtitle">{{ __('public.adm_users_idx_subtitle') }}</p>
+    </div>
 </div>
 
 @if(session('success'))<div class="alert alert-success mb-6"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
