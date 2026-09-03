@@ -37,15 +37,32 @@ class FinderDemoSeeder extends Seeder
     public function run(): void
     {
         // Real tenants so the dashboards open populated, not empty.
+        // The operational `facilities` table (tenants) is not linked to the
+        // `care_facilities` directory in every environment — care_facilities.facility_id
+        // is NULL in production — so the old directory-join fallback resolved to NULL and
+        // left the demo facility accounts with no facility. A facility-scoped role with no
+        // facility bounces off RequireFacilityContext straight to /login, so the whole
+        // facility-admin demo was a login loop. Resolve by type instead, and CREATE a demo
+        // hospital when the estate has none, so the accounts always get a real facility.
         $pharmacy = DB::table('facilities')->where('name', 'Pharmacy ESSEC')->first()
-            ?? DB::table('facilities')->whereIn('id', function ($q) {
-                $q->select('facility_id')->from('care_facilities')->where('facility_type', 'pharmacy')->whereNotNull('facility_id');
-            })->first();
+            ?? DB::table('facilities')->where('type', 'pharmacy')->first()
+            ?? DB::table('facilities')->first();
 
         $hospital = DB::table('facilities')->where('name', 'Hôpital Central de Yaoundé')->first()
-            ?? DB::table('facilities')->whereIn('id', function ($q) {
-                $q->select('facility_id')->from('care_facilities')->where('facility_type', 'hospital')->whereNotNull('facility_id');
-            })->first();
+            ?? DB::table('facilities')->where('type', 'hospital')->first();
+        if (! $hospital) {
+            $hospitalId = (string) Str::uuid();
+            DB::table('facilities')->insert([
+                'id'         => $hospitalId,
+                'name'       => 'Hôpital Central de Yaoundé',
+                'type'       => 'hospital',
+                'status'     => 'active',
+                'is_demo'    => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            $hospital = DB::table('facilities')->where('id', $hospitalId)->first();
+        }
 
         $accounts = [
             // Admin — bypasses facility context, sees the whole directory.
