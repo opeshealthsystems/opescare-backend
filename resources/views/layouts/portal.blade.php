@@ -74,8 +74,16 @@
                     </div>
                 </div>
             </div>
-            @if(auth()->user()?->isProfessional())
-                <a href="{{ route('professional.profile') }}" class="sidebar-link sidebar-link-footer {{ request()->routeIs('professional.*') ? 'active' : '' }}">
+            @php
+                $me = auth()->user();
+                $myProfileUrl = $me?->isProfessional()
+                    ? route('professional.profile')
+                    : (in_array($me?->role?->dashboard_profile_key, ['patient', 'guardian', 'caregiver', 'dependent_manager'], true)
+                        ? route('portals.patient.profile')
+                        : null);
+            @endphp
+            @if($myProfileUrl)
+                <a href="{{ $myProfileUrl }}" class="sidebar-link sidebar-link-footer {{ request()->routeIs('professional.*') || request()->routeIs('portals.patient.profile') ? 'active' : '' }}">
                     <i data-lucide="id-card"></i><span>{{ __('professional.nav_my_profile', [], app()->getLocale()) ?: 'My Profile' }}</span>
                 </a>
             @endif

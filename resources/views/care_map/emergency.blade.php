@@ -135,6 +135,7 @@
             </p>
 
             @php $shown = collect($facilities)->take(40); @endphp
+            @include('partials.finder.map', ['facilities' => $shown, 'mapId' => 'emergency-map', 'height' => '340px'])
             <div class="em-cards">
                 @forelse($shown as $f)
                     @php
@@ -142,7 +143,7 @@
                         $dist    = isset($f->distance) ? round($f->distance, 1) : null;
                         $address = collect([$f->address, $f->city, $f->region])->filter()->implode(', ');
                         $dirUrl  = ($f->latitude && $f->longitude)
-                            ? 'https://www.google.com/maps/dir/?api=1&destination=' . $f->latitude . ',' . $f->longitude
+                            ? true
                             : null;
                     @endphp
                     <article class="f-card">
@@ -176,7 +177,7 @@
                                 </a>
                             @endif
                             @if($dirUrl)
-                                <a class="f-btn" href="{{ $dirUrl }}" target="_blank" rel="noopener noreferrer">{{ __('public.care_map_emergency.action_directions') }}</a>
+                                <button type="button" class="f-btn" data-finder-directions="{{ $f->id }}">{{ __('public.care_map_emergency.action_directions') }}</button>
                             @endif
                             <a class="f-btn f-btn--ghost" href="{{ route('public.care-map.profile', $f->id) }}">{{ __('public.care_map_emergency.action_profile') }}</a>
                         </div>

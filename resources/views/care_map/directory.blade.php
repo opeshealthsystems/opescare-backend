@@ -453,7 +453,7 @@ body {
         $phone = $f->dialablePhone();
         $locationStr = collect([$f->city, $f->region])->filter()->unique()->implode(', ');
         $dirUrl = ($f->latitude && $f->longitude)
-            ? 'https://www.google.com/maps/dir/?api=1&destination=' . $f->latitude . ',' . $f->longitude
+            ? true
             : null;
         $profileUrl = route('public.care-map.profile', array_filter(['id' => $f->id, 'lang' => request('lang')]));
 
@@ -517,10 +517,10 @@ body {
             </a>
           @endif
           @if($dirUrl)
-            <a href="{{ $dirUrl }}" target="_blank" rel="noopener noreferrer" class="btn btn-dir" aria-label="{{ __('finder_directory.directions') }} — {{ $f->facility_name }}">
+            <button type="button" class="btn btn-dir" onclick="directionsTo('{{ $f->id }}')" aria-label="{{ __('finder_directory.directions') }} — {{ $f->facility_name }}">
               <span class="icon" aria-hidden="true">@includeIf('partials.finder.icon', ['name' => 'navigation'])</span>
               {{ __('finder_directory.directions') }}
-            </a>
+            </button>
           @endif
           <a href="{{ $profileUrl }}" class="btn btn-view" aria-label="{{ __('finder_directory.view_profile') }} — {{ $f->facility_name }}">
             {{ __('finder_directory.view_profile') }}
@@ -650,6 +650,33 @@ function locateMe(btn) {
     () => { btn.disabled = false; btn.style.opacity = ''; alert(I18N.geoDenied); }
   );
 }
+
+// In-app directions: show this facility + the visitor's location on OUR map,
+// draw the straight line, label the distance — never opens an external map app.
+var _userMarker = null, _routeLine = null;
+function directionsTo(id) {
+  var f = MARKERS.filter(function (m) { return String(m.id) === String(id); })[0];
+  if (!f || !f.lat) return;
+  initMap();
+  if (window.innerWidth < 960 && !mapOpen && document.getElementById('mapToggle')) toggleMap();
+  setTimeout(function () { map && map.invalidateSize(); }, 80);
+  var dest = [f.lat, f.lng];
+  document.getElementById('mapPanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  if (!navigator.geolocation) { map.setView(dest, 15); return; }
+  navigator.geolocation.getCurrentPosition(function (pos) {
+    var u = [pos.coords.latitude, pos.coords.longitude];
+    if (_userMarker) map.removeLayer(_userMarker);
+    _userMarker = L.marker(u).addTo(map).bindPopup(I18N.youAreHere || 'You are here');
+    if (_routeLine) map.removeLayer(_routeLine);
+    _routeLine = L.polyline([u, dest], { color: '#0F4C81', weight: 3, opacity: 0.75, dashArray: '6 6' }).addTo(map);
+    map.fitBounds(L.latLngBounds([u, dest]).pad(0.25));
+    var R = 6371, dLat = (dest[0]-u[0])*Math.PI/180, dLng = (dest[1]-u[1])*Math.PI/180;
+    var a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(u[0]*Math.PI/180)*Math.cos(dest[0]*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
+    var km = (R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a))).toFixed(1);
+    _routeLine.bindPopup(km + ' km').openPopup();
+  }, function () { map.setView(dest, 15); });
+}
+window.directionsTo = directionsTo;
 
 // Desktop pane is always visible: init once Leaflet is ready.
 window.addEventListener('load', () => {

@@ -44,7 +44,7 @@
 
   $placeLine = collect([$facility->city, $facility->region])->filter()->unique()->implode(', ');
   $dirUrl = ($facility->latitude && $facility->longitude)
-      ? 'https://www.google.com/maps/dir/?api=1&destination=' . $facility->latitude . ',' . $facility->longitude
+      ? true
       : null;
 
   $backUrl = route('public.care-map', array_filter(['lang' => request('lang')]));
@@ -184,6 +184,8 @@
     @endif
   </section>
 
+  @include('partials.finder.map', ['facilities' => [$facility], 'single' => true, 'mapId' => 'facility-map', 'height' => '300px'])
+
   {{-- ── Actions ──────────────────────────────────────────────────────── --}}
   @if($phone || $dirUrl || $bookable)
   <div class="p-actions">
@@ -200,10 +202,10 @@
       </a>
     @endif
     @if($dirUrl)
-      <a class="f-btn" href="{{ $dirUrl }}" target="_blank" rel="noopener noreferrer">
+      <button type="button" class="f-btn" data-finder-directions="{{ $facility->id }}">
         @include('partials.finder.icon', ['name' => 'navigation', 'size' => 16])
         {{ __('finder_directory.directions') }}
-      </a>
+      </button>
     @endif
   </div>
   @if($bookable)

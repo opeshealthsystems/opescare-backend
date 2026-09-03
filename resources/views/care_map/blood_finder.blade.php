@@ -148,6 +148,7 @@
             <p style="font-weight:650;margin-top:16px;">{{ trans_choice('finder_search.blood.results_count', $results->count(), ['count' => $results->count(), 'group' => $group]) }}</p>
 
             @php $shown = $results->take(30); @endphp
+            @include('partials.finder.map', ['facilities' => $shown, 'mapId' => 'blood-map', 'height' => '340px'])
             <div style="display:grid;gap:12px;margin-top:12px;">
                 @foreach($shown as $f)
                     @php
@@ -155,7 +156,7 @@
                         $phone    = $f->dialablePhone();
                         $address  = collect([$f->address, $f->city, $f->region])->filter()->implode(', ');
                         $dirUrl   = ($f->latitude && $f->longitude)
-                            ? 'https://www.google.com/maps/dir/?api=1&destination=' . $f->latitude . ',' . $f->longitude
+                            ? true
                             : null;
                         $reportedAt = $match->last_updated_at?->locale(app()->getLocale());
                     @endphp
@@ -199,10 +200,10 @@
                                 <span class="f-small f-muted" style="align-self:center;">{{ __('finder_search.common.no_phone') }}</span>
                             @endif
                             @if($dirUrl)
-                                <a class="f-btn" href="{{ $dirUrl }}" target="_blank" rel="noopener noreferrer">
+                                <button type="button" class="f-btn" data-finder-directions="{{ $f->id }}">
                                     @include('partials.finder.icon', ['name' => 'navigation', 'size' => 16])
                                     {{ __('finder_search.common.directions') }}
-                                </a>
+                                </button>
                             @endif
                             <a class="f-btn f-btn--ghost" href="{{ route('public.care-map.profile', $f->id) }}">
                                 {{ __('finder_search.common.view_profile') }}
