@@ -442,14 +442,14 @@ class DashboardProfilesSeeder extends Seeder
                 'key'           => 'super_admin',
                 'name'          => 'Super Admin Dashboard',
                 'portal_prefix' => 'admin',
-                'landing_route' => 'portals.admin.cc',
+                'landing_route' => 'portals.admin',
                 'description'   => 'Full platform control centre access',
             ],
             [
                 'key'           => 'platform_owner',
                 'name'          => 'Platform Owner Dashboard',
                 'portal_prefix' => 'admin',
-                'landing_route' => 'portals.admin.cc',
+                'landing_route' => 'portals.admin',
                 'description'   => 'Opes Health Systems product owner and platform management',
             ],
             [
