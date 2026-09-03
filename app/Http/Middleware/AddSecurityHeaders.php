@@ -34,11 +34,16 @@ class AddSecurityHeaders
     {
         $response = $next($request);
 
+        // The embeddable map page (/embed/*) is loaded in an iframe by the web
+        // app and a WebView by the native app: it must be same-origin frameable
+        // and allowed to use geolocation (for the "locate me"/directions map).
+        $isEmbed = $request->is('embed/*');
+
         // ── Universal headers ────────────────────────────────────────────────
         $response->headers->set('X-Content-Type-Options', 'nosniff');
-        $response->headers->set('X-Frame-Options', 'DENY');
+        $response->headers->set('X-Frame-Options', $isEmbed ? 'SAMEORIGIN' : 'DENY');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
-        $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+        $response->headers->set('Permissions-Policy', $isEmbed ? 'camera=(), microphone=(), geolocation=(self)' : 'camera=(), microphone=(), geolocation=()');
 
         // HSTS — ISO 27001 A.14.1 / OWASP A05 (was missing)
         // Only meaningful over HTTPS; harmless over HTTP in development.
@@ -74,7 +79,7 @@ class AddSecurityHeaders
                 "font-src 'self' https://fonts.gstatic.com; " .
                 "img-src 'self' data: https:; " .
                 "connect-src 'self'; " .
-                "frame-ancestors 'none';"
+                "frame-ancestors " . ($isEmbed ? "'self'" : "'none'") . ";"
             );
         }
 

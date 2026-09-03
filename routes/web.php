@@ -147,6 +147,10 @@ Route::post('/verify/otp', [PublicPageController::class, 'submitVerifyOtp'])->mi
 Route::post('/verify/otp/resend', [PublicPageController::class, 'resendOtp'])->middleware('throttle:auth-code')->name('otp.resend');
 
 // Verification & Restriction Status Displays
+// Embeddable map page for the mobile app (iframe on web, WebView on native).
+// Driven by ?markers=<json> or ?lat=&lng=&name=; same-origin so no CORS.
+Route::get('/embed/map', function () { return view('embed.map'); })->name('embed.map');
+
 Route::middleware(['web', 'auth'])->get('/portal-unavailable', [PublicPageController::class, 'showPortalUnavailable'])->name('portal.unavailable');
 Route::get('/pending-approval', [PublicPageController::class, 'showPendingApproval'])->name('account.pending');
 Route::get('/account-suspended', [PublicPageController::class, 'showAccountSuspended'])->name('account.suspended');
