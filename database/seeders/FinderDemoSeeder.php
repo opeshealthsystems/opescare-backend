@@ -119,6 +119,10 @@ class FinderDemoSeeder extends Seeder
         if ($hospital) {
             $this->seedBlood($hospital->id);
         }
+
+        // Seed a few realistic notifications for the demo accounts so the bell
+        // and notification centre show real content the moment you log in.
+        $this->call(DemoNotificationsSeeder::class);
     }
 
     private function seedBlood(string $facilityId): void

@@ -74,6 +74,11 @@
                     </div>
                 </div>
             </div>
+            @if(auth()->user()?->isProfessional())
+                <a href="{{ route('professional.profile') }}" class="sidebar-link sidebar-link-footer {{ request()->routeIs('professional.*') ? 'active' : '' }}">
+                    <i data-lucide="id-card"></i><span>{{ __('professional.nav_my_profile', [], app()->getLocale()) ?: 'My Profile' }}</span>
+                </a>
+            @endif
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="sidebar-logout">
@@ -109,6 +114,7 @@
             @endif
 
             <div class="topbar-actions">
+                @includeIf('partials.notifications.bell')
                 @php
                     $locale = app()->getLocale();
                     $otherLocale = $locale === 'fr' ? 'en' : 'fr';
@@ -182,6 +188,10 @@
 
 <!-- Lucide Icons -->
 <script src="{{ asset('js/lucide.min.js') }}"></script>
+@auth
+<script src="{{ asset('js/notification-sounds.js') }}" defer></script>
+<script src="{{ asset('js/notifications.js') }}" defer></script>
+@endauth
 <script>
 if (typeof lucide !== 'undefined') lucide.createIcons();
 </script>

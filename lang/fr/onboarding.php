@@ -97,7 +97,10 @@ return [
             'patient_title' => 'Je suis un patient',
             'patient_desc' => 'Créez ou accédez à votre ID Santé, gérez vos consentements, consultez vos mises à jour et transportez votre historique médical en toute sécurité.',
             'patient_cta' => 'Continuer comme Patient',
-            
+
+            'professional_title' => 'Je suis un professionnel de santé',
+            'professional_desc' => 'Inscrivez-vous en tant que médecin, infirmier, pharmacien ou autre professionnel, ajoutez vos qualifications et faites-vous vérifier.',
+
             'guardian_title' => 'Je gère les soins d\'un proche',
             'guardian_desc' => 'Demandez l\'accès pour gérer les soins d\'un enfant, d\'une personne à charge, d\'un parent âgé ou sous votre responsabilité.',
             'guardian_cta' => 'Continuer comme Tuteur',

@@ -114,4 +114,36 @@ class User extends Authenticatable
         // Backward compatibility fallback
         return $this->role ?? null;
     }
+    /**
+     * The professional's staff record (personal + employment info). One per
+     * user; created lazily the first time they open their profile.
+     */
+    public function staffProfile()
+    {
+        return $this->hasOne(\App\Models\StaffProfile::class, 'user_id');
+    }
+
+    /**
+     * Professional qualifications / licences owned by this user. Verification
+     * lives on verified_at / verified_by (null = not yet verified).
+     */
+    public function providerCredentials()
+    {
+        return $this->hasMany(\App\Models\ProviderCredential::class, 'provider_id');
+    }
+
+    /**
+     * A "professional" is any facility / clinical staff member — everyone who is
+     * not a patient-family member, a developer, or a platform administrator.
+     * Gates the /professional/* self-service profile + qualifications area.
+     */
+    public function isProfessional(): bool
+    {
+        $key = $this->role?->dashboard_profile_key;
+
+        return $key !== null && ! in_array($key, [
+            'patient', 'guardian', 'caregiver', 'dependent_manager',
+            'developer', 'super_admin', 'platform_owner',
+        ], true);
+    }
 }

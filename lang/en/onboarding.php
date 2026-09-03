@@ -97,7 +97,10 @@ return [
             'patient_title' => 'I am a patient',
             'patient_desc' => 'Create or access your Health ID, manage consent, view health updates, and carry your medical history safely.',
             'patient_cta' => 'Continue as Patient',
-            
+
+            'professional_title' => 'I am a health professional',
+            'professional_desc' => 'Register as a doctor, nurse, pharmacist or other professional, add your qualifications, and get verified.',
+
             'guardian_title' => 'I manage care for someone',
             'guardian_desc' => 'Request access to manage a child, dependent, elderly relative, or someone under your care.',
             'guardian_cta' => 'Continue as Guardian',

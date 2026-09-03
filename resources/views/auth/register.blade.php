@@ -22,6 +22,16 @@
                     <span class="f-auth-choice__go">@include('partials.finder.icon', ['name' => 'chevron-right', 'size' => 18])</span>
                 </a>
 
+                {{-- Health Professional --}}
+                <a href="{{ route('register.professional') }}" class="f-auth-choice">
+                    <span class="f-auth-choice__icon">@include('partials.finder.icon', ['name' => 'stethoscope', 'size' => 20])</span>
+                    <span class="f-auth-choice__body">
+                        <span class="f-auth-choice__title">{{ __('onboarding.selector.cards.professional_title') }}</span>
+                        <span class="f-auth-choice__desc">{{ __('onboarding.selector.cards.professional_desc') }}</span>
+                    </span>
+                    <span class="f-auth-choice__go">@include('partials.finder.icon', ['name' => 'chevron-right', 'size' => 18])</span>
+                </a>
+
                 {{-- Guardian / Caregiver --}}
                 <a href="{{ route('register.guardian') }}" class="f-auth-choice">
                     <span class="f-auth-choice__icon">@include('partials.finder.icon', ['name' => 'users', 'size' => 20])</span>

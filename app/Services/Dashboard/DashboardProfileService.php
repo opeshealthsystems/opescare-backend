@@ -24,6 +24,14 @@ class DashboardProfileService
      */
     public function landingUrlForUser(User $user): string
     {
+        // A professional not yet attached to any facility (freshly self-registered,
+        // or between postings) cannot enter the facility desk, which requires a
+        // facility context — they would bounce to /login. Send them to their own
+        // profile, where they complete their details and watch for verification.
+        if ($user->isProfessional() && ! $this->hasFacilityContext($user)) {
+            return url('/professional/profile');
+        }
+
         $profile = $this->profileForUser($user);
 
         $url = $profile ? $profile->landingUrl() : url('/portals/patient');
@@ -73,6 +81,17 @@ class DashboardProfileService
         } catch (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException|\Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException) {
             return false;
         }
+    }
+
+    private function hasFacilityContext(User $user): bool
+    {
+        if (! empty($user->primary_facility_id)) {
+            return true;
+        }
+
+        return \App\Models\FacilityRoleAssignment::where('user_id', $user->id)
+            ->where('is_active', true)
+            ->exists();
     }
 
     public function landingUrlForCurrent(): string

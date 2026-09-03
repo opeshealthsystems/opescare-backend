@@ -118,6 +118,14 @@ Route::get('/register/hospital', function() { return redirect()->route('register
 Route::get('/signup/developer', [PublicPageController::class, 'showDeveloperRegister'])->name('register.developer');
 Route::post('/signup/developer', [PublicPageController::class, 'submitDeveloperRegister'])->middleware('throttle:signup')->name('register.developer.submit');
 
+// Professional Self-Registration (doctor / nurse / pharmacist / …) — creates a
+// REAL but unverified account; the qualifications entered are reviewed by an
+// admin before the verified badge appears. The complementary facility-invited
+// path is the /invite/{token} activation below.
+Route::get('/signup/professional', [\App\Http\Controllers\MedicalId\ProfessionalRegistrationController::class, 'create'])->middleware('guest')->name('register.professional');
+Route::post('/signup/professional', [\App\Http\Controllers\MedicalId\ProfessionalRegistrationController::class, 'store'])->middleware(['guest', 'throttle:signup'])->name('register.professional.submit');
+Route::get('/register/professional', function () { return redirect()->route('register.professional'); });
+
 // Staff Invitation Activation
 // Both verbs are throttled: the POST mints a staff account at a facility, and
 // the GET tells an enumerating caller whether a token is live by what it
@@ -220,6 +228,26 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'throttle:portal'])->group(fun
 });
 
 // Portal Routes — require authentication, correct portal for role, and facility context
+// Professional self-service profile + qualifications. Intentionally NOT behind
+// facility.context: a self-registered professional is not attached to a facility
+// until an admin verifies them, but must still complete their profile here.
+Route::middleware(['web', 'auth'])->group(function () {
+    Route::get('/professional', function () { return redirect()->route('professional.profile'); });
+    Route::get('/professional/profile', [\App\Http\Controllers\MedicalId\ProfessionalProfileController::class, 'profile'])->name('professional.profile');
+    Route::post('/professional/profile', [\App\Http\Controllers\MedicalId\ProfessionalProfileController::class, 'updateProfile'])->name('professional.profile.update');
+    Route::post('/professional/qualifications', [\App\Http\Controllers\MedicalId\ProfessionalProfileController::class, 'storeQualification'])->name('professional.qualifications.store');
+    Route::delete('/professional/qualifications/{id}', [\App\Http\Controllers\MedicalId\ProfessionalProfileController::class, 'destroyQualification'])->name('professional.qualifications.destroy');
+});
+
+// Platform-wide notification centre — every authenticated user reads their own
+// notification_events. /feed is polled by the topbar bell (unread + latest);
+// /read stamps notifications_seen_at.
+Route::middleware(['web', 'auth'])->group(function () {
+    Route::get('/notifications', [\App\Http\Controllers\MedicalId\NotificationCenterController::class, 'index'])->name('notifications.center');
+    Route::get('/notifications/feed', [\App\Http\Controllers\MedicalId\NotificationCenterController::class, 'feed'])->name('notifications.feed');
+    Route::post('/notifications/read', [\App\Http\Controllers\MedicalId\NotificationCenterController::class, 'markRead'])->name('notifications.read');
+});
+
 Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'platform.admin', 'facility.context', 'patient.profile', 'guardian.profile', 'throttle:portal'])->group(function () {
     Route::get('/patient', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'index'])->name('portals.patient');
     // QR generation has its own tighter rate limit (10/min) on top of the portal limit
@@ -319,6 +347,11 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'platform.adm
     Route::post('/admin/cc/maintenance/{id}',    [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'maintenanceToggle'])->name('portals.admin.cc.maintenance.toggle');
     Route::get('/admin/cc/health',               [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'systemHealth'])->name('portals.admin.cc.health');
     Route::get('/admin/cc/audit',                [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'auditLog'])->name('portals.admin.cc.audit');
+
+    // Professional qualification verification queue (platform-admin).
+    Route::get('/admin/verifications', [\App\Http\Controllers\MedicalId\CredentialVerificationController::class, 'index'])->name('portals.admin.verifications.index');
+    Route::post('/admin/verifications/{id}/verify', [\App\Http\Controllers\MedicalId\CredentialVerificationController::class, 'verify'])->name('portals.admin.verifications.verify');
+    Route::post('/admin/verifications/{id}/reject', [\App\Http\Controllers\MedicalId\CredentialVerificationController::class, 'reject'])->name('portals.admin.verifications.reject');
 
 
     // ── User Management (god mode) ──────────────────────────────────────────

@@ -9,6 +9,7 @@ use App\Enums\BloodRequestUrgency;
 use App\Models\BloodAvailability;
 use App\Models\BloodRequest;
 use App\Models\CareFacility;
+use App\Support\Notify;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -86,7 +87,7 @@ class BloodRequestService
             throw new RuntimeException(self::ERR_NOT_AVAILABLE);
         }
 
-        return DB::transaction(function () use (
+        $request = DB::transaction(function () use (
             $patientId, $facility, $availability, $bloodGroup, $componentType,
             $quantity, $urgency, $contactPhone, $patientNote, $neededBy
         ) {
@@ -139,6 +140,35 @@ class BloodRequestService
                 'expires_at'            => now()->addHours(self::HOLD_HOURS),
             ]);
         });
+
+        // The blood bank should see (and hear) an order the moment it lands, not
+        // on its next manual refresh. This is a best-effort in-app signal raised
+        // once the request is committed — notifying is never allowed to undo the
+        // order, so any failure is swallowed (rescue with $report = false) and the
+        // persisted request is returned regardless. roleNames is [] so every
+        // active staff member at the facility is pinged.
+        rescue(fn () => Notify::toFacilityStaff(
+            $request->care_facility_id,
+            'blood_order_received',
+            'blood',
+            [
+                'title' => sprintf('New blood request: %s × %d', $bloodGroup->label(), $quantity),
+                'body'  => sprintf(
+                    '%s · %s%s',
+                    $urgency->label(),
+                    $componentType->label(),
+                    $contactPhone !== null ? ' · ' . $contactPhone : '',
+                ),
+                'url'   => url('/facility/inventory/blood'),
+            ],
+            [],
+            'high',
+            null,
+            'BloodRequest',
+            $request->id,
+        ), null, false);
+
+        return $request;
     }
 
     /**

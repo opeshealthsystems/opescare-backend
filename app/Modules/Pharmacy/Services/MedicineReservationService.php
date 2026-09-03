@@ -7,6 +7,7 @@ use App\Models\CareFacility;
 use App\Models\Medicine;
 use App\Models\MedicinePharmacyStock;
 use App\Models\MedicineReservation;
+use App\Support\Notify;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -65,7 +66,7 @@ class MedicineReservationService
             throw new RuntimeException(self::ERR_NOT_RESERVABLE);
         }
 
-        return DB::transaction(function () use (
+        $reservation = DB::transaction(function () use (
             $patientId, $medicine, $pharmacy, $stock, $quantity, $packSize, $patientNote, $prescriptionId
         ) {
             $openForPatient = MedicineReservation::query()
@@ -106,6 +107,37 @@ class MedicineReservationService
                 'expires_at'       => now()->addHours(self::HOLD_HOURS),
             ]);
         });
+
+        // The pharmacy desk should see (and hear) a hold the moment it lands, not
+        // on its next manual refresh. Best-effort in-app signal raised once the
+        // reservation is committed — notifying is never allowed to undo the order,
+        // so any failure is swallowed (rescue with $report = false) and the
+        // persisted reservation is returned regardless. roleNames is [] so every
+        // active staff member at the pharmacy is pinged. actorId stays null: the
+        // caller's patient_id is a patients.id, not the users.id actor_id expects.
+        $medicineName = $medicine->name ?: ($medicine->generic_name ?: ($medicine->brand_name ?: 'Medicine'));
+
+        rescue(fn () => Notify::toFacilityStaff(
+            $reservation->care_facility_id,
+            'pharmacy_order_received',
+            'pharmacy',
+            [
+                'title' => sprintf('New medicine reservation: %s × %d', $medicineName, $reservation->quantity),
+                'body'  => sprintf(
+                    'Ref %s%s',
+                    $reservation->reference,
+                    $reservation->pack_size !== null ? ' · ' . $reservation->pack_size : '',
+                ),
+                'url'   => url('/pharmacy/stock'),
+            ],
+            [],
+            'high',
+            null,
+            'MedicineReservation',
+            $reservation->id,
+        ), null, false);
+
+        return $reservation;
     }
 
     /**

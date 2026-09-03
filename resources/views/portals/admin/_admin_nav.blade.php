@@ -39,6 +39,11 @@
     <a href="{{ route('portals.admin.roles.index') }}" class="sidebar-link {{ request()->routeIs('portals.admin.roles.*') || request()->routeIs('admin.roles.*') ? 'active' : '' }}">
         <i data-lucide="shield-check"></i><span>{{ __('public.portal.nav_roles', [], $l) ?: 'Roles' }}</span>
     </a>
+    <a href="{{ route('portals.admin.verifications.index') }}" class="sidebar-link {{ request()->routeIs('portals.admin.verifications.*') ? 'active' : '' }}">
+        <i data-lucide="badge-check"></i><span>{{ __('professional.nav_verifications', [], $l) ?: 'Verifications' }}</span>
+        @php $pendingCreds = rescue(fn () => \App\Models\ProviderCredential::whereNull('verified_at')->where('status', '!=', 'suspended')->count(), 0, false); @endphp
+        @if($pendingCreds > 0)<span class="sidebar-badge sidebar-badge--warning">{{ $pendingCreds }}</span>@endif
+    </a>
 </div>
 
 {{-- Partners --}}

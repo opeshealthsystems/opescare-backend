@@ -1,71 +1,166 @@
 <?php
+
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
- * Seeds demo notification_events for the messaging/alerts dashboard.
- * Idempotent – inserts only if the table is empty.
+ * DemoNotificationsSeeder — realistic in-app notifications for the demo accounts,
+ * so the notification bell + centre show real, categorised content in the demo.
+ *
+ * The read side (PatientNotificationController and the bell) keys strictly on
+ * `recipient_user_id`, and treats a row as UNREAD when created_at > the
+ * recipient's users.notifications_seen_at. So every row here is addressed to a
+ * real demo user id (never null) and left naturally unread — we do NOT touch
+ * users.notifications_seen_at.
+ *
+ * Column set mirrors App\Support\Notify (uuid, event_type, communication_type,
+ * recipient_user_id, recipient_type, payload_json, priority, status,
+ * requires_acknowledgement, …). We insert via the query builder rather than the
+ * App\Models\NotificationEvent model on purpose: that model declares HasUuids,
+ * but `notification_events.id` is a bigint sequence (nextval), so an Eloquent
+ * save forces a UUID string into a bigint column and errors. Omitting `id` lets
+ * the sequence assign it — the same approach the rest of this table uses.
+ *
+ * `communication_type` is the category the sound/badge layer keys off:
+ * blood | pharmacy | appointment | account | general. A blood order and a
+ * pharmacy order are included so those category/sound features are demonstrable.
+ *
+ * Idempotent: at the top we delete any prior rows this seeder created (scoped to
+ * the demo recipients AND to our fixed event_type set), so re-running never piles
+ * up. Safe to run repeatedly.
  */
 class DemoNotificationsSeeder extends Seeder
 {
-    private const FAC  = '00000000-0000-0000-0000-100000000001';
-    private const PAT1 = '00000000-0000-0000-0000-300000000001';
-    private const DOC  = '00000000-0000-0000-0000-200000000001';
+    /** Every event_type this seeder owns — used for the idempotent cleanup. */
+    private const EVENT_TYPES = [
+        'blood_order_received',
+        'pharmacy_order_received',
+        'appointment_reminder',
+        'appointment_confirmed',
+        'low_stock_alert',
+        'staff_joined',
+        'health_tip',
+    ];
 
     public function run(): void
     {
-        if (DB::table('notification_events')->count() > 0) {
+        // Resolve the demo accounts by email; skip any that are missing so this
+        // seeder is safe to run before/independently of the full demo estate.
+        $emails = [
+            'demo.receptionist@opescare.test',
+            'demo.pharmacist@opescare.test',
+            'demo.facility.admin@opescare.test',
+            'demo.patient@opescare.test',
+        ];
+
+        $userIdByEmail = [];
+        foreach ($emails as $email) {
+            $user = User::where('email', $email)->first();
+            if ($user) {
+                $userIdByEmail[$email] = (string) $user->id;
+            } else {
+                $this->command?->warn("  skip {$email}: user not found");
+            }
+        }
+
+        if (empty($userIdByEmail)) {
+            $this->command?->warn('  no demo users found — nothing to seed. Run FinderDemoSeeder first.');
+
             return;
         }
 
+        // Idempotency: clear only the rows this seeder is responsible for.
+        DB::table('notification_events')
+            ->whereIn('recipient_user_id', array_values($userIdByEmail))
+            ->whereIn('event_type', self::EVENT_TYPES)
+            ->delete();
+
+        // One flat list, staggered over the last ~2 days (most recent first) so
+        // the ordering is visible in the centre. hoursAgo drives created_at.
+        // [email, event_type, category, priority, requiresAck, hoursAgo, title, body, url]
         $events = [
-            ['event_type' => 'appointment_reminder',
-             'subject_type' => 'Patient', 'subject_id' => self::PAT1,
-             'actor_type' => 'system', 'actor_id' => null,
-             'facility_id' => self::FAC,
-             'channel' => 'sms',
-             'status' => 'delivered',
-             'payload' => ['message' => 'Reminder: your appointment tomorrow at 10:00 AM.'],
-             'created_at' => now()->subHours(18)],
-            ['event_type' => 'lab_result_ready',
-             'subject_type' => 'Patient', 'subject_id' => self::PAT1,
-             'actor_type' => 'User', 'actor_id' => self::DOC,
-             'facility_id' => self::FAC,
-             'channel' => 'in_app',
-             'status' => 'delivered',
-             'payload' => ['message' => 'Your lab results are now available.'],
-             'created_at' => now()->subHours(5)],
-            ['event_type' => 'prescription_ready',
-             'subject_type' => 'Patient', 'subject_id' => self::PAT1,
-             'actor_type' => 'system', 'actor_id' => null,
-             'facility_id' => self::FAC,
-             'channel' => 'sms',
-             'status' => 'pending',
-             'payload' => ['message' => 'Your prescription is ready for collection at the pharmacy.'],
-             'created_at' => now()->subMinutes(20)],
+            // Front desk / facility ops — blood request lands loudest (high +
+            // requires acknowledgement) so the category + sound path is obvious.
+            ['demo.receptionist@opescare.test', 'blood_order_received', 'blood', 'high', true, 2,
+                'New blood request: O+ × 3',
+                'Requested by Yaoundé General — urgent',
+                '/facility/inventory/blood'],
+
+            // Pharmacy reservation — the pharmacy category/sound demo.
+            ['demo.pharmacist@opescare.test', 'pharmacy_order_received', 'pharmacy', 'high', false, 5,
+                'New medicine reservation: Paracetamol × 2',
+                'Reserved for pickup by a patient via the Finder.',
+                '/pharmacy/stock'],
+
+            // Pharmacy low-stock nudge — a plain general note.
+            ['demo.pharmacist@opescare.test', 'low_stock_alert', 'general', 'normal', false, 9,
+                'Low stock: Amoxicillin 500mg',
+                '3 packs remaining — reorder soon to avoid a stock-out.',
+                '/pharmacy/stock'],
+
+            // Front desk appointment reminder.
+            ['demo.receptionist@opescare.test', 'appointment_reminder', 'appointment', 'normal', false, 14,
+                'Upcoming appointment at 14:00',
+                'Aïssatou N. — General consultation, Room 3.',
+                '/facility/appointments'],
+
+            // Facility admin account notice.
+            ['demo.facility.admin@opescare.test', 'staff_joined', 'account', 'normal', false, 20,
+                'A new staff member joined your facility',
+                'Dr. Amara Diallo now has access to the facility desk.',
+                '/facility/staff'],
+
+            // Patient appointment confirmation.
+            ['demo.patient@opescare.test', 'appointment_confirmed', 'appointment', 'normal', false, 30,
+                'Appointment confirmed',
+                'Your appointment on Sep 5 at 14:00 is confirmed.',
+                '/portal/notifications'],
+
+            // Patient general health tip.
+            ['demo.patient@opescare.test', 'health_tip', 'general', 'normal', false, 44,
+                'Health tip: stay hydrated',
+                'Drink water regularly, especially during the dry season.',
+                '/portal/notifications'],
         ];
 
-        foreach ($events as $e) {
+        $seeded = 0;
+        foreach ($events as [$email, $eventType, $category, $priority, $requiresAck, $hoursAgo, $title, $body, $url]) {
+            if (! isset($userIdByEmail[$email])) {
+                continue; // recipient not present in this estate
+            }
+
+            $when = now()->subHours($hoursAgo);
+
             DB::table('notification_events')->insert([
-                'uuid'                  => Str::uuid()->toString(),
-                'event_type'            => $e['event_type'],
-                'communication_type'    => $e['channel'],
-                'actor_id'              => $e['actor_id'],
-                'recipient_user_id'     => null,
-                'recipient_type'        => 'patient',
-                'related_resource_type' => $e['subject_type'],
-                'related_resource_id'   => $e['subject_id'],
-                'payload_json'          => json_encode($e['payload']),
-                'priority'              => 'normal',
-                'status'                => $e['status'],
-                'requires_acknowledgement' => false,
-                'acknowledgement_status' => 'not_required',
-                'created_at'            => $e['created_at'],
-                'updated_at'            => $e['created_at'],
+                // `id` intentionally omitted — bigint sequence assigns it.
+                'uuid'                     => (string) Str::uuid(),
+                'event_type'               => $eventType,
+                'communication_type'       => $category,
+                'actor_id'                 => null,
+                'recipient_user_id'        => $userIdByEmail[$email],
+                'recipient_type'           => 'user',
+                'related_resource_type'    => null,
+                'related_resource_id'      => null,
+                'payload_json'             => json_encode([
+                    'title' => $title,
+                    'body'  => $body,
+                    'url'   => $url,
+                ]),
+                'priority'                 => $priority,
+                'status'                   => 'routed',
+                'requires_acknowledgement' => $requiresAck,
+                'acknowledgement_status'   => $requiresAck ? 'pending' : 'not_required',
+                'created_at'               => $when,
+                'updated_at'               => $when,
             ]);
+
+            $seeded++;
         }
+
+        $this->command?->info("  seeded {$seeded} demo notification_events for " . count($userIdByEmail) . ' demo account(s)');
     }
 }
