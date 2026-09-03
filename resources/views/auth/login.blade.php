@@ -118,13 +118,10 @@
 
             <div class="demo-tabs" role="tablist">
                 <button class="demo-tab-btn active" type="button" data-demo-tab="clinical">
-                    <i data-lucide="stethoscope"></i> Clinical
+                    <i data-lucide="users"></i> Staff
                 </button>
                 <button class="demo-tab-btn" type="button" data-demo-tab="facility">
                     <i data-lucide="building-2"></i> Facility
-                </button>
-                <button class="demo-tab-btn" type="button" data-demo-tab="insurance">
-                    <i data-lucide="shield-check"></i> Insurance
                 </button>
                 <button class="demo-tab-btn" type="button" data-demo-tab="patient">
                     <i data-lucide="user"></i> Patient
@@ -139,35 +136,15 @@
 
             <div class="demo-tab-pane active" id="demo-tab-clinical" role="tabpanel">
                 <div class="demo-btn-grid">
-                    <button type="button" class="demo-login-btn demo-btn-clinical" data-demo-role="doctor" data-demo-email="demo.doctor@opescare.test">
-                        <i data-lucide="stethoscope"></i>
-                        <span>Dr. Amara Diallo</span>
-                        <small>General Practitioner</small>
-                    </button>
-                    <button type="button" class="demo-login-btn demo-btn-clinical" data-demo-role="multi_doctor" data-demo-email="demo.multi.doctor@opescare.test">
-                        <i data-lucide="network"></i>
-                        <span>Dr. Kofi Mensah</span>
-                        <small>Multi-Facility Doctor</small>
-                    </button>
-                    <button type="button" class="demo-login-btn demo-btn-clinical" data-demo-role="nurse" data-demo-email="demo.nurse@opescare.test">
-                        <i data-lucide="heart-pulse"></i>
-                        <span>Nurse Fatou Traoré</span>
-                        <small>Clinical Nurse</small>
-                    </button>
-                    <button type="button" class="demo-login-btn demo-btn-clinical" data-demo-role="specialist" data-demo-email="demo.specialist@opescare.test">
-                        <i data-lucide="microscope"></i>
-                        <span>Dr. Ibrahim Sow</span>
-                        <small>Specialist</small>
-                    </button>
                     <button type="button" class="demo-login-btn demo-btn-clinical" data-demo-role="pharmacist" data-demo-email="demo.pharmacist@opescare.test">
                         <i data-lucide="pill"></i>
                         <span>Aïcha Coulibaly</span>
                         <small>Pharmacist</small>
                     </button>
-                    <button type="button" class="demo-login-btn demo-btn-clinical" data-demo-role="labtech" data-demo-email="demo.labtech@opescare.test">
-                        <i data-lucide="flask-conical"></i>
-                        <span>Boubacar Keïta</span>
-                        <small>Lab Technician</small>
+                    <button type="button" class="demo-login-btn demo-btn-clinical" data-demo-role="receptionist" data-demo-email="demo.receptionist@opescare.test">
+                        <i data-lucide="monitor"></i>
+                        <span>Front Desk — Aminata</span>
+                        <small>Receptionist · Operations Desk</small>
                     </button>
                 </div>
             </div>
@@ -184,28 +161,9 @@
                         <span>CEO Seydou Ouédraogo</span>
                         <small>Chief Executive Officer</small>
                     </button>
-                    <button type="button" class="demo-login-btn demo-btn-facility" data-demo-role="finance" data-demo-email="demo.finance@opescare.test">
-                        <i data-lucide="bar-chart-2"></i>
-                        <span>Finance Officer Kadiatou</span>
-                        <small>Finance &amp; Billing</small>
-                    </button>
                 </div>
             </div>
 
-            <div class="demo-tab-pane" id="demo-tab-insurance" role="tabpanel">
-                <div class="demo-btn-grid">
-                    <button type="button" class="demo-login-btn demo-btn-insurance" data-demo-role="insurance_claims" data-demo-email="demo.insurance@opescare.test">
-                        <i data-lucide="file-check-2"></i>
-                        <span>Oumar Ba</span>
-                        <small>Claims Officer</small>
-                    </button>
-                    <button type="button" class="demo-login-btn demo-btn-insurance" data-demo-role="insurance_preauth" data-demo-email="demo.preauth@opescare.test">
-                        <i data-lucide="clipboard-check"></i>
-                        <span>Awa (Preauth)</span>
-                        <small>Pre-Auth Reviewer</small>
-                    </button>
-                </div>
-            </div>
 
             <div class="demo-tab-pane" id="demo-tab-patient" role="tabpanel">
                 <div class="demo-btn-grid">
@@ -213,11 +171,6 @@
                         <i data-lucide="user"></i>
                         <span>Jean Dupont</span>
                         <small>Patient</small>
-                    </button>
-                    <button type="button" class="demo-login-btn demo-btn-patient" data-demo-role="guardian" data-demo-email="demo.guardian@opescare.test">
-                        <i data-lucide="users"></i>
-                        <span>Marie Dupont</span>
-                        <small>Guardian / Family</small>
                     </button>
                 </div>
             </div>

@@ -71,6 +71,9 @@ class FinderDemoSeeder extends Seeder
             ['demo.pharmacist@opescare.test',     'Demo — Pharmacy',          'pharmacist',     $pharmacy?->id],
             ['demo.facility.admin@opescare.test', 'Demo — Facility Admin',    'facility_admin', $hospital?->id],
             ['demo.facility.ceo@opescare.test',   'Demo — Facility Executive','facility_ceo',   $hospital?->id],
+            // Front desk — the clinical operations desk (/facility): appointments,
+            // blood inventory, messages. Facility-scoped so RequireFacilityContext resolves.
+            ['demo.receptionist@opescare.test',   'Demo — Front Desk',        'receptionist',   $hospital?->id],
             // Developer — API credentials self-service.
             ['demo.developer@opescare.test',      'Demo — Developer',         'developer',      null],
             // Patient — the booking side, so the whole loop is walkable.
