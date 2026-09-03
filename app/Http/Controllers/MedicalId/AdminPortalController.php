@@ -37,7 +37,11 @@ class AdminPortalController extends Controller
             ->limit(10)
             ->get();
 
-        $platformStats = [
+        // Platform-wide figures (revenue, user/org/subscription counts) are god-mode
+        // only. The view already hides them behind @platformadmin; gating the QUERIES
+        // too means a facility admin who reaches this page never triggers a
+        // platform-wide revenue aggregation that was never meant for their tier.
+        $platformStats = \App\Http\Middleware\RequirePlatformAdmin::isPlatformTier($request->user()) ? [
             'facilities'           => \App\Models\Facility::count(),
             'organizations'        => \App\Models\DeveloperOrganization::count(),
             'active_subscriptions' => \App\Models\OrganizationSubscription::whereIn('status', ['active', 'trialing'])->count(),
@@ -45,7 +49,7 @@ class AdminPortalController extends Controller
             'total_users'          => \App\Models\User::count(),
             'pending_onboarding'   => \App\Models\OrganizationSubscription::where('status', 'pending')->count(),
             'monthly_revenue'      => \App\Models\Invoice::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->where('status', 'paid')->sum('subtotal_amount'),
-        ];
+        ] : null;
 
         return view('portals.admin.index', compact('stats', 'recentLogs', 'platformStats'));
     }
