@@ -4,26 +4,33 @@ namespace App\Http\Controllers\Api\Mobile;
 
 use App\Http\Controllers\Controller;
 use App\Models\OfficialDocument;
-use App\Services\Documents\DocumentVerificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 /**
  * Mobile Patient API — Official Documents
  *
  * Patients can view their issued official documents (discharge summaries,
- * referral letters, lab reports, etc.) and retrieve QR-verifiable links.
+ * referral letters, etc.). Every query is scoped to the patient id resolved
+ * from the bearer token by `auth.mobile` — never from caller-supplied input.
  *
  * Document content is NOT streamed here to avoid exposing raw file paths.
- * Clients use the provided `verify_url` (minted fresh on `show()`) for
- * public verification instead of a direct file download.
+ *
+ * `verify_url` is currently always null: this build has no public
+ * document-verification page. The route this controller used to point at
+ * (`/verify/document/{token}`) does not exist in routes/web.php — only
+ * `/verify/qr/{token}` does, and that verifies health-ID QR tokens against a
+ * different token store, not documents. Minting a DocumentVerificationToken
+ * for a URL that 404s wrote an unbounded row per view and handed the patient
+ * a dead link, so the minting was removed. To restore the feature, add a
+ * public `/verify/document/{token}` route + view backed by
+ * DocumentVerificationService::verifyByToken() (with throttling, audit
+ * logging and PHI minimisation — it is an unauthenticated surface), then
+ * re-inject the service and mint the token here again.
  */
 class MobileDocumentController extends Controller
 {
-    public function __construct(private DocumentVerificationService $verification)
-    {
-    }
-
     /**
      * List official documents belonging to the authenticated patient.
      *
@@ -67,20 +74,20 @@ class MobileDocumentController extends Controller
     {
         $patientId = $this->resolvePatientId($request);
 
+        // official_documents.id is a Postgres `uuid` column: comparing it to a
+        // non-UUID string raises 22P02 and surfaces as a 500. A bad id in the
+        // URL is a not-found, not a server fault.
+        if (! Str::isUuid($id)) {
+            abort(404);
+        }
+
         $doc = OfficialDocument::where('id', $id)
             ->where('patient_id', $patientId)
             ->where('status', 'issued')
             ->with('facility:id,name')
             ->firstOrFail();
 
-        // Mint a fresh, short-lived verification token for this view — raw
-        // tokens are never persisted (only their hash is), so a working
-        // verify_url can only be produced on demand, not read back from a
-        // prior issuance.
-        $rawToken = $this->verification->issueToken($doc->id, null, 60);
-        $verifyUrl = url('/verify/document/' . $rawToken);
-
-        return response()->json(['data' => $this->formatDocumentDetail($doc, $verifyUrl)]);
+        return response()->json(['data' => $this->formatDocumentDetail($doc)]);
     }
 
     // -------------------------------------------------------------------------
@@ -98,13 +105,15 @@ class MobileDocumentController extends Controller
         ];
     }
 
-    private function formatDocumentDetail(OfficialDocument $d, ?string $verifyUrl = null): array
+    private function formatDocumentDetail(OfficialDocument $d): array
     {
         $base = $this->formatDocument($d);
         $base['expires_at'] = $d->expires_at?->toIso8601String();
         $base['sensitivity_level'] = $d->sensitivity_level;
         $base['has_file'] = ! empty($d->pdf_path);
-        $base['verify_url'] = $verifyUrl;
+        // Key kept in the contract (the app reads it) but always null until a
+        // public document-verification page exists — see the class docblock.
+        $base['verify_url'] = null;
         return $base;
     }
 

@@ -105,6 +105,60 @@ Route::prefix('mobile')->group(function () {
         Route::get('/data-exports/{id}/download', [\App\Http\Controllers\Api\Mobile\MobileGovernanceController::class, 'downloadExport']);
 
         // Appointments
+        // ── Routes restored 2026-09-04 ────────────────────────────────────────
+        // The extraction pruned these from this file but KEPT their controllers,
+        // so the app called endpoints that 404'd. Each was verified against this
+        // product's schema before wiring; several controllers were fixed first.
+
+        // Health ID card — the app's Health ID tab.
+        Route::get('/health-id-card', [\App\Http\Controllers\Api\Mobile\MobilePatientController::class, 'getHealthIdCard']);
+
+        // Clinical record. Retracted (entered-in-error) rows are filtered out so
+        // voided data never reads back as a live condition or an administered dose.
+        Route::get('/allergies', [\App\Http\Controllers\Api\Mobile\MobilePatientController::class, 'getAllergies']);
+        Route::get('/clinical', [\App\Http\Controllers\Api\Mobile\MobilePatientController::class, 'getClinical']);
+        Route::get('/immunizations', [\App\Http\Controllers\Api\Mobile\MobilePatientController::class, 'getImmunizations']);
+
+        // Official documents.
+        Route::get('/documents', [\App\Http\Controllers\Api\Mobile\MobileDocumentController::class, 'index']);
+        Route::get('/documents/{id}', [\App\Http\Controllers\Api\Mobile\MobileDocumentController::class, 'show']);
+
+        // Care plans.
+        Route::get('/care-plans', [\App\Http\Controllers\Api\Mobile\MobileCarePlanController::class, 'index']);
+        Route::get('/care-plans/{id}', [\App\Http\Controllers\Api\Mobile\MobileCarePlanController::class, 'show']);
+
+        // Referrals.
+        Route::get('/referrals', [\App\Http\Controllers\Api\Mobile\MobileReferralController::class, 'index']);
+
+        // Medical-record export. POST (not GET) to match the client and to keep the
+        // include_* toggles out of a query string that lands in access logs.
+        // Throttled: /api/* carries no default throttle and this is the largest
+        // single disclosure of a patient's record.
+        Route::post('/medical-records/export/pdf', [\App\Http\Controllers\Api\Mobile\MedicalRecordExportController::class, 'exportPdf'])->middleware('throttle:10,1');
+        Route::post('/medical-records/export/fhir', [\App\Http\Controllers\Api\Mobile\MedicalRecordExportController::class, 'exportFhir'])->middleware('throttle:10,1');
+
+        // Patient <-> provider messaging. Thread ids are bigints, so {id} is
+        // digit-constrained — an unconstrained segment reaches Postgres as a
+        // bigint cast and 500s where it should 404.
+        Route::get('/messages/threads', [\App\Http\Controllers\Api\Mobile\MobileMessagingController::class, 'index']);
+        Route::post('/messages/threads', [\App\Http\Controllers\Api\Mobile\MobileMessagingController::class, 'start'])->middleware('throttle:10,1');
+        Route::get('/messages/threads/{id}', [\App\Http\Controllers\Api\Mobile\MobileMessagingController::class, 'show'])->whereNumber('id');
+        Route::post('/messages/threads/{id}/messages', [\App\Http\Controllers\Api\Mobile\MobileMessagingController::class, 'sendMessage'])->whereNumber('id')->middleware('throttle:30,1');
+
+        // Support. /support/contact is a GET returning contact details + the
+        // category list the composer needs — not a contact-form POST.
+        Route::get('/support/contact', [\App\Http\Controllers\Api\Mobile\MobileSupportController::class, 'contact']);
+        Route::get('/support/tickets', [\App\Http\Controllers\Api\Mobile\MobileSupportController::class, 'tickets']);
+        Route::post('/support/tickets', [\App\Http\Controllers\Api\Mobile\MobileSupportController::class, 'store']);
+        Route::get('/support/tickets/{id}', [\App\Http\Controllers\Api\Mobile\MobileSupportController::class, 'show']);
+        Route::post('/support/tickets/{id}/messages', [\App\Http\Controllers\Api\Mobile\MobileSupportController::class, 'sendMessage']);
+
+        // Limited encrypted offline mode: authorises a device to hold PHI locally.
+        // NOTE: /queue writes sync_jobs rows that nothing in the Finder consumes yet
+        // (the facility-side worker was pruned) — the policy half is fully functional.
+        Route::post('/offline/policies', [\App\Http\Controllers\Api\Mobile\OfflineSyncController::class, 'createPolicy']);
+        Route::post('/offline/policies/{policy}/queue', [\App\Http\Controllers\Api\Mobile\OfflineSyncController::class, 'queue']);
+
         // Prescriptions — the mobile app's /mobile/prescriptions calls had no
         // route, so the screen 404'd against this backend.
         Route::get('/prescriptions', [\App\Http\Controllers\Api\Mobile\MobilePrescriptionController::class, 'index']);

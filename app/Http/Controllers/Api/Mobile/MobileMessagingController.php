@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Api\Mobile;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use App\Modules\Messaging\Models\Message;
 use App\Modules\Messaging\Models\MessageThread;
 use App\Modules\Messaging\Models\MessageThreadParticipant;
 use App\Modules\Messaging\Services\MessagePermissionService;
 use App\Modules\Messaging\Services\MessagingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 /**
  * Mobile Patient API — Messaging
@@ -44,23 +46,42 @@ class MobileMessagingController extends Controller
     {
         $patientId = $this->resolvePatientId($request);
 
-        $threadIds = MessageThreadParticipant::where('user_id', $patientId)
+        // The patient's own participant rows are the whole authorisation story
+        // here: a thread is only listed when this patient is an active
+        // participant in it. Keyed by thread_id so the per-thread read cursor
+        // is a lookup, not a query.
+        $participants = MessageThreadParticipant::where('user_id', $patientId)
             ->where('status', 'active')
-            ->pluck('thread_id');
+            ->get()
+            ->keyBy('thread_id');
 
-        $threads = MessageThread::whereIn('id', $threadIds)
+        $threads = MessageThread::whereIn('id', $participants->keys())
             ->orderByDesc('updated_at')
             ->get();
 
-        $data = $threads->map(function (MessageThread $thread) use ($patientId) {
-            $lastMessage = $thread->messages()->latest('id')->first();
-            $participant = MessageThreadParticipant::where('thread_id', $thread->id)
-                ->where('user_id', $patientId)
-                ->first();
+        // Latest message per thread in two bounded queries instead of one
+        // query per thread. MAX(id) is the ordering the detail view uses.
+        $lastMessageIds = Message::whereIn('thread_id', $threads->modelKeys())
+            ->groupBy('thread_id')
+            ->selectRaw('thread_id, MAX(id) AS id')
+            ->pluck('id');
+
+        $lastMessages = Message::whereIn('id', $lastMessageIds)->get()->keyBy('thread_id');
+
+        $data = $threads->map(function (MessageThread $thread) use ($patientId, $participants, $lastMessages) {
+            $lastMessage = $lastMessages->get($thread->id);
+            $participant = $participants->get($thread->id);
+
+            // `last_read_at` is a plain timestamp column and the participant
+            // model declares no casts, so it arrives as a string — comparing
+            // it with `->lt()` directly is a fatal call-on-string. Parse it.
+            $lastReadAt = $participant?->last_read_at
+                ? Carbon::parse($participant->last_read_at)
+                : null;
 
             $unread = $lastMessage
                 && $lastMessage->sender_id !== $patientId
-                && (! $participant?->last_read_at || $participant->last_read_at->lt($lastMessage->created_at));
+                && (! $lastReadAt || $lastReadAt->lt($lastMessage->created_at));
 
             return [
                 'id'           => $thread->id,
@@ -85,7 +106,7 @@ class MobileMessagingController extends Controller
     public function show(Request $request, string $id): JsonResponse
     {
         $patientId = $this->resolvePatientId($request);
-        $thread = MessageThread::findOrFail($id);
+        $thread = $this->findThread($id);
 
         if (! $this->permissionService->canViewThread($patientId, $thread->uuid)) {
             return response()->json([
@@ -120,7 +141,7 @@ class MobileMessagingController extends Controller
         $patientId = $this->resolvePatientId($request);
         $validated = $request->validate(['body' => ['required', 'string', 'max:4000']]);
 
-        $thread = MessageThread::findOrFail($id);
+        $thread = $this->findThread($id);
         if (! $this->permissionService->canViewThread($patientId, $thread->uuid)) {
             return response()->json([
                 'error_code' => 'MESSAGE_ACCESS_DENIED',
@@ -133,6 +154,12 @@ class MobileMessagingController extends Controller
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 400);
         }
+
+        // `Message` declares no `$touches`, so without this the parent thread's
+        // `updated_at` never moves and index()'s `orderByDesc('updated_at')`
+        // degrades into thread-creation order — the inbox stops behaving like
+        // an inbox after the very first reply.
+        $thread->touch();
 
         return response()->json(['data' => [
             'id'         => $message->id,
@@ -205,6 +232,20 @@ class MobileMessagingController extends Controller
                 'created_at' => $message->created_at?->toISOString(),
             ]],
         ]], 201);
+    }
+
+    /**
+     * `message_threads.id` is a bigint. Handing Postgres a non-numeric route
+     * segment raises `invalid input syntax for type bigint` — a 500 where a
+     * 404 belongs — so the shape is checked before the lookup.
+     */
+    private function findThread(string $id): MessageThread
+    {
+        if (! ctype_digit($id)) {
+            abort(404);
+        }
+
+        return MessageThread::findOrFail($id);
     }
 
     private function resolvePatientId(Request $request): string

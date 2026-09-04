@@ -198,7 +198,11 @@ class MobilePatientController extends Controller
             return response()->json(['message' => __('api.patient_not_found')], 404);
         }
 
+        // Clinical events are immutable: a mistake is marked entered-in-error, never
+        // deleted. Showing those back to the patient would present retracted data as
+        // a live condition, so they are excluded here (resolved history is kept).
         $conditions = Diagnosis::where('patient_id', $patientId)
+            ->where('status', '!=', 'entered-in-error')
             ->orderByDesc('created_at')
             ->get(['id', 'display_name', 'code', 'code_system', 'snomed_code', 'status', 'created_at']);
 
@@ -225,7 +229,9 @@ class MobilePatientController extends Controller
             return response()->json(['message' => __('api.patient_not_found')], 404);
         }
 
+        // Same rule as conditions: a retracted dose must not read as administered.
         $immunizations = ImmunizationRecord::where('patient_id', $patientId)
+            ->where('status', '!=', 'entered_in_error')
             ->orderByDesc('administered_at')
             ->get(['id', 'vaccine_name', 'lot_number', 'dose_number', 'administered_at', 'status']);
 

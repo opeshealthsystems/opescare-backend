@@ -56,6 +56,13 @@ class MobilePrescriptionController extends Controller
     {
         $patientId = $this->resolvePatientId($request);
 
+        // prescriptions.id is a uuid column: a malformed id makes Postgres raise
+        // 22P02, which the generic JSON handler turns into a 500. Not found is the
+        // honest answer.
+        if (! \Illuminate\Support\Str::isUuid($id)) {
+            abort(404);
+        }
+
         $prescription = Prescription::where('id', $id)
             ->where('patient_id', $patientId)
             ->with(['items', 'facility:id,name'])
