@@ -123,6 +123,14 @@ class ProfessionalProfileController extends Controller
     /**
      * Every professional has exactly one staff record. Create it lazily on first
      * visit, seeded from the account so the form is never empty.
+     *
+     * `facility_id` is deliberately allowed to be null here. A clinician who
+     * registered themselves has no facility until one admits them, and that is
+     * precisely the person this page exists for — seeding the row with an
+     * arbitrary facility to satisfy a constraint would publish them as that
+     * facility's staff. The column was NOT NULL until
+     * 2026_09_05_120000_make_staff_profiles_facility_id_nullable, which is why
+     * this used to raise SQLSTATE 23502 and 500 the page.
      */
     private function resolveProfile($user): StaffProfile
     {
@@ -131,6 +139,7 @@ class ProfessionalProfileController extends Controller
         return StaffProfile::firstOrCreate(
             ['user_id' => $user->id],
             [
+                // May be null — see above.
                 'facility_id'  => $user->primary_facility_id,
                 'first_name'   => $first,
                 'last_name'    => $last,

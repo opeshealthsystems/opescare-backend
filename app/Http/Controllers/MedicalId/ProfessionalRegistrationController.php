@@ -71,6 +71,12 @@ class ProfessionalRegistrationController extends Controller
         [$first, $last] = $this->splitName($validated['name']);
         StaffProfile::create([
             'user_id'    => $user->id,
+            // No facility: this person registered themselves and no facility has
+            // admitted them yet. They ask to join one through
+            // /professional/facilities, and the approving facility writes this
+            // column. Omitting it used to violate a NOT NULL constraint and 500
+            // the whole signup.
+            'facility_id' => null,
             'first_name' => $first,
             'last_name'  => $last,
             'email'      => $validated['email'],
