@@ -478,6 +478,7 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access'])->group(funct
     Route::post('/facility/prescriptions/{id}/void', [\App\Http\Controllers\MedicalId\PrescriberController::class, 'void'])->name('portals.prescriber.void');
 
     Route::get('/pharmacy/prescriptions',               [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'prescriptions'])->name('portals.pharmacy.prescriptions');
+    Route::get('/pharmacy/prescriptions/lookup', [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'prescriptionLookup'])->name('portals.pharmacy.prescriptions.lookup');
     Route::post('/pharmacy/prescriptions/{id}/dispense',[\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'dispense'])->name('portals.pharmacy.dispense');
     // Public medicine availability — the medicine_pharmacy_stocks rows the
     // patient Medicine Finder reads.

@@ -141,11 +141,49 @@ class PharmacyPortalController extends Controller
      * refused rather than silently re-stamping a prescription that has already
      * been handed to the patient.
      */
+    /**
+     * Counter lookup: the patient presents their Health ID, the pharmacy sees the
+     * active prescriptions on it — from ANY facility — and can dispense them.
+     *
+     * Exact Health ID only: patient enumeration is forbidden platform-wide, and a
+     * presented Health ID is the real-world consent gesture at the counter.
+     */
+    public function prescriptionLookup(Request $req)
+    {
+        $healthId = trim((string) $req->input('health_id'));
+        $patient  = null;
+        $results  = collect();
+
+        if ($healthId !== '') {
+            $patient = \App\Models\Patient::where('health_id', $healthId)->first();
+
+            if ($patient) {
+                $results = Prescription::with(['items', 'facility:id,name'])
+                    ->where('patient_id', $patient->id)
+                    ->whereIn('status', ['active', 'partially_dispensed'])
+                    ->orderByDesc('prescribed_at')
+                    ->get();
+            }
+        }
+
+        return view('portals.pharmacy.prescription_lookup', [
+            'healthId' => $healthId,
+            'patient'  => $patient,
+            'results'  => $results,
+            'searched' => $healthId !== '',
+        ]);
+    }
+
     public function dispense(Request $req, string $id, \App\Services\Clinical\PrescriptionService $prescriptions)
     {
         $facilityId = $this->facilityId();
 
-        $rx = Prescription::where('facility_id', $facilityId)->findOrFail($id);
+        // A prescription is written at one facility and filled at another — the
+        // patient carries it. Scoping this to the pharmacy's OWN facility made an
+        // outside prescription impossible to dispense, which is the normal case.
+        // The gate is that the pharmacist reached this id via the patient's exact
+        // Health ID at the counter (see prescriptionLookup) — ids are not guessable.
+        $rx = Prescription::findOrFail($id);
 
         try {
             $prescriptions->dispense($rx, auth()->id(), ['notes' => $req->input('dispense_notes')]);

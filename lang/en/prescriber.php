@@ -70,6 +70,17 @@ return [
     'st_voided'              => 'Voided',
     'st_expired'             => 'Expired',
 
+    // Counter dispensing
+    'counter_title'   => 'Dispense at the counter',
+    'counter_sub'     => 'Enter the Health ID the patient presents to see their active prescriptions.',
+    'counter_lookup'  => 'Find prescriptions',
+    'counter_none'    => 'No active prescriptions on that Health ID.',
+    'counter_nopat'   => 'No patient matches that Health ID.',
+    'counter_from'    => 'Issued at',
+    'counter_dispense'=> 'Dispense',
+    'counter_notes'   => 'Dispense notes',
+    'counter_link'    => 'Counter lookup',
+
     // Nav
     'nav'             => 'Prescriptions',
 ];

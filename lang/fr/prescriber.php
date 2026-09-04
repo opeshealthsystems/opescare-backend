@@ -70,6 +70,17 @@ return [
     'st_voided'              => 'Annulée',
     'st_expired'             => 'Expirée',
 
+    // Counter dispensing
+    'counter_title'   => 'Délivrer au comptoir',
+    'counter_sub'     => 'Saisissez l’identifiant santé présenté par le patient pour voir ses ordonnances actives.',
+    'counter_lookup'  => 'Rechercher les ordonnances',
+    'counter_none'    => 'Aucune ordonnance active sur cet identifiant santé.',
+    'counter_nopat'   => 'Aucun patient ne correspond à cet identifiant santé.',
+    'counter_from'    => 'Émise à',
+    'counter_dispense'=> 'Délivrer',
+    'counter_notes'   => 'Notes de délivrance',
+    'counter_link'    => 'Recherche comptoir',
+
     // Nav
     'nav'             => 'Ordonnances',
 ];

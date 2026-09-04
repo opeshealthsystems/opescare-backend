@@ -92,11 +92,7 @@
                     <td class="kv-strong">
                         {{ $patientName !== '' ? $patientName : '—' }}
                         @if($patient && ($patient->date_of_birth || $patient->sex))
-                        <div class="td-muted text-sm">
-                            @if($patient->date_of_birth){{ $patient->date_of_birth->format('d M Y') }}@endif
-                            @if($patient->date_of_birth && $patient->sex) &middot; @endif
-                            @if($patient->sex)@enum($patient->sex, 'sex')@endif
-                        </div>
+                        <div class="td-muted text-sm">@if($patient->date_of_birth){{ $patient->date_of_birth->format('d M Y') }}@endif @if($patient->date_of_birth && $patient->sex)&middot; @endif @if($patient->sex)@enum($patient->sex, 'sex')@endif</div>
                         @endif
                     </td>
                 </tr>
