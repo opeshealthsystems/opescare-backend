@@ -75,12 +75,19 @@ class VerifyController extends Controller
 
         return view('verify.qr', [
             'token'  => $token,
-            'result' => $patient ? [
+            // The view reads this as an OBJECT ($result->name, ->health_id,
+            // ->dob, ->blood_type, ->valid). It was handed an array, and PHP
+            // yields null for ->prop on an array — so a correctly verified
+            // patient rendered every field as an em dash under the words
+            // "Identity Verified". The key names must match the view too:
+            // it wants `name` and `dob`, not first/last_name and date_of_birth.
+            'result' => $patient ? (object) [
+                'valid'         => true,
+                'expired'       => false,
+                'name'          => trim($patient->first_name . ' ' . $patient->last_name),
                 'health_id'     => $patient->health_id,
-                'first_name'    => $patient->first_name,
-                'last_name'     => $patient->last_name,
-                'date_of_birth' => $patient->date_of_birth?->format('Y-m-d'),
-                'sex'           => $patient->sex,
+                'dob'           => $patient->date_of_birth?->format('Y-m-d'),
+                'blood_type'    => $patient->blood_group,
             ] : null,
             'error'  => $patient ? null : 'Patient record not found for this QR token.',
         ]);
