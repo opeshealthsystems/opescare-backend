@@ -2,54 +2,7 @@
 
 @section('title', __('staff_inv.title_blood', [], app()->getLocale()) ?: 'Blood Bank Inventory')
 
-@section('sidebar_role_badge')
-<div class="sidebar-role-badge">{{ __('public.staff_portal.role_clinical_staff', [], app()->getLocale()) ?: 'Clinical Staff' }}</div>
-@endsection
 @section('sidebar_user_role', __('public.staff_portal.role_clinical_staff', [], app()->getLocale()) ?: 'Clinical Staff')
-
-@section('sidebar_nav')
-<div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.staff_portal.sidebar_lbl_overview', [], app()->getLocale()) ?: 'Overview' }}</div>
-    <a href="{{ route('portals.staff') }}" class="sidebar-link">
-        <i data-lucide="layout-dashboard"></i>
-        <span>{{ __('public.portal.nav_dashboard', [], app()->getLocale()) ?: 'Dashboard' }}</span>
-    </a>
-</div>
-<div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('staff_inv.nav_lbl_clinical', [], app()->getLocale()) ?: 'Clinical' }}</div>
-    <a href="{{ route('portals.staff.appointments') }}" class="sidebar-link">
-        <i data-lucide="calendar-check-2"></i>
-        <span>{{ __('public.portal.nav_appointments', [], app()->getLocale()) ?: 'Appointments' }}</span>
-    </a>
-        </div>
-<div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('staff_inv.nav_lbl_hr', [], app()->getLocale()) ?: 'HR & Staff' }}</div>
-                </div>
-{{-- Blood Bank is carved OUT of the inventory_ops freeze (see the
-     'inventory_ops' block in bootstrap/app.php): it is the only reachable
-     writer of the public Blood Finder's data. Pharmacy stock and Supply Chain
-     are NOT — they 404 while the flag is off, so they are guarded here rather
-     than offered as dead links. --}}
-<div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('staff_inv.nav_lbl_inventory', [], app()->getLocale()) ?: 'Inventory' }}</div>
-    @feature('inventory_ops')
-        @endfeature
-    <a href="{{ route('portals.staff.inventory.blood') }}" class="sidebar-link active">
-        <i data-lucide="droplets"></i>
-        <span>{{ __('public.portal.nav_inventory_blood', [], app()->getLocale()) ?: 'Blood Bank' }}</span>
-    </a>
-</div>
-@feature('inventory_ops')
-<div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('staff_inv.nav_lbl_supply_chain', [], app()->getLocale()) ?: 'Supply Chain' }}</div>
-    </div>
-@endfeature
-<div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('staff_inv.nav_lbl_operations', [], app()->getLocale()) ?: 'Operations' }}</div>
-    @feature('billing')
-        @endfeature
-                    </div>
-@endsection
 
 @section('breadcrumb_home', __('public.staff_portal.title', [], app()->getLocale()) ?: 'Staff Portal')
 @section('breadcrumb_home_url', route('portals.staff'))

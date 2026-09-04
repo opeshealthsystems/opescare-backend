@@ -1,6 +1,5 @@
 @extends('layouts.portal')
 @section('title', __('public.developer_portal.page_create_prod_req', [], app()->getLocale()) ?: 'Request Production Access')
-@section('sidebar_nav') @include('portals.developer._sidebar') @endsection
 @php $l = app()->getLocale(); @endphp
 
 @section('content')

@@ -2,17 +2,7 @@
 
 @section('title', __('public.pharmacy_portal.page_title', [], app()->getLocale()) ?: 'Pharmacy Portal')
 
-@section('sidebar_role_badge')
-<div class="sidebar-role-badge">
-    <i data-lucide="pill"></i>
-    {{ __('public.pharmacy_portal.role_badge', [], app()->getLocale()) ?: 'Pharmacy' }}
-</div>
-@endsection
 @section('sidebar_user_role', __('public.pharmacy_portal.role_label', [], app()->getLocale()) ?: 'Pharmacist')
-
-@section('sidebar_nav')
-@include('portals.pharmacy._sidebar')
-@endsection
 
 @section('breadcrumb_home', __('public.pharmacy_portal.page_title', [], app()->getLocale()) ?: 'Pharmacy Portal')
 @section('breadcrumb_home_url', route('portals.pharmacy.dashboard'))

@@ -1,7 +1,5 @@
 @extends('layouts.portal')
 @section('title', __('public.developer_portal.page_title', [], app()->getLocale()) ?: 'Developer Portal')
-@section('sidebar_nav') @include('portals.developer._sidebar') @endsection
-
 @section('content')
 
     <div class="page-head">

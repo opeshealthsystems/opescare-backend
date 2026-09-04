@@ -1,6 +1,5 @@
 @extends('layouts.portal')
 @section('title', __('public.developer_portal.page_apps', [], app()->getLocale()) ?: 'My Apps')
-@section('sidebar_nav') @include('portals.developer._sidebar') @endsection
 @php $l = app()->getLocale(); @endphp
 
 @section('content')

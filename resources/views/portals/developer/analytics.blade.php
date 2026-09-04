@@ -1,6 +1,5 @@
 @extends('layouts.portal')
 @section('title', __('public.developer_portal.page_analytics', [], app()->getLocale()) ?: 'API Usage Analytics')
-@section('sidebar_nav') @include('portals.developer._sidebar') @endsection
 @php $l = app()->getLocale(); @endphp
 
 @section('content')

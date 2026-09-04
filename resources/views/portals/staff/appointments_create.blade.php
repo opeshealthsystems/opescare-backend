@@ -2,55 +2,7 @@
 
 @section('title', __('public.staff_portal.btn_book_appointment', [], app()->getLocale()) ?: 'Book Appointment')
 
-@section('sidebar_role_badge')
-<div class="sidebar-role-badge">{{ __('public.staff_portal.role_clinical_staff', [], app()->getLocale()) ?: 'Clinical Staff' }}</div>
-@endsection
 @section('sidebar_user_role', __('public.staff_portal.role_clinical_staff', [], app()->getLocale()) ?: 'Clinical Staff')
-
-@section('sidebar_nav')
-<div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.stf_nav_overview') }}</div>
-    <a href="{{ route('portals.staff') }}" class="sidebar-link">
-        <i data-lucide="layout-dashboard"></i>
-        <span>{{ __('public.portal.nav_dashboard', [], app()->getLocale()) ?: 'Dashboard' }}</span>
-    </a>
-    @feature('analytics_dashboards')
-    @endfeature
-</div>
-<div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.stf_nav_clinical') }}</div>
-    <a href="{{ route('portals.staff.appointments') }}" class="sidebar-link active">
-        <i data-lucide="calendar-check-2"></i>
-        <span>{{ __('public.portal.nav_appointments', [], app()->getLocale()) ?: 'Appointments' }}</span>
-    </a>
-            @feature('clinical_decision_support')
-    @endfeature
-</div>
-<div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.stf_nav_hr_staff') }}</div>
-                </div>
-@feature('inventory_ops')
-<div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.stf_nav_inventory') }}</div>
-        <a href="{{ route('portals.staff.inventory.blood') }}" class="sidebar-link">
-        <i data-lucide="droplets"></i>
-        <span>{{ __('public.portal.nav_inventory_blood', [], app()->getLocale()) ?: 'Blood Bank' }}</span>
-    </a>
-</div>
-@endfeature
-@feature('inventory_ops')
-<div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.stf_nav_supply_chain') }}</div>
-    </div>
-@endfeature
-<div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.stf_nav_operations') }}</div>
-    @feature('billing')
-        @endfeature
-        @feature('insurance')
-        @endfeature
-                </div>
-@endsection
 
 @section('breadcrumb_home', __('public.staff_portal.title', [], app()->getLocale()) ?: 'Staff Portal')
 @section('breadcrumb_home_url', route('portals.staff'))
