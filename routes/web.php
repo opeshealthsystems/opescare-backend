@@ -213,6 +213,7 @@ Route::middleware(['web', 'throttle:verify'])->group(function () {
     Route::get('/verify/health-id', [\App\Http\Controllers\MedicalId\VerifyController::class, 'healthId'])->name('verify.health-id');
     Route::post('/verify/health-id', [\App\Http\Controllers\MedicalId\VerifyController::class, 'healthIdLookup'])->name('verify.health-id.lookup');
     Route::get('/verify/qr/{token}', [\App\Http\Controllers\MedicalId\VerifyController::class, 'qr'])->name('verify.qr');
+    Route::get('/verify/rx/{token}', [\App\Http\Controllers\MedicalId\PrescriptionVerifyController::class, 'rx'])->name('verify.rx');
 });
 
 // ── Patient profile completion ──────────────────────────────────────────────
@@ -475,6 +476,7 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access'])->group(funct
     Route::get('/facility/prescriptions/new',        [\App\Http\Controllers\MedicalId\PrescriberController::class, 'create'])->name('portals.prescriber.create');
     Route::post('/facility/prescriptions',           [\App\Http\Controllers\MedicalId\PrescriberController::class, 'store'])->name('portals.prescriber.store');
     Route::get('/facility/prescriptions/{id}',       [\App\Http\Controllers\MedicalId\PrescriberController::class, 'show'])->name('portals.prescriber.show');
+    Route::get('/facility/prescriptions/{id}/print', [\App\Http\Controllers\MedicalId\PrescriptionPrintController::class, 'show'])->name('portals.prescriber.print');
     Route::post('/facility/prescriptions/{id}/void', [\App\Http\Controllers\MedicalId\PrescriberController::class, 'void'])->name('portals.prescriber.void');
 
     Route::get('/pharmacy/prescriptions',               [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'prescriptions'])->name('portals.pharmacy.prescriptions');

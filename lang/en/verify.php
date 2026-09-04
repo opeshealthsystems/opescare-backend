@@ -64,4 +64,76 @@ return [
 
     // Errors
     'error_not_found'      => 'No verified Health ID found for the provided identifier. Please check the ID and try again.',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Prescription scan-target — GET /verify/rx/{token}
+    |--------------------------------------------------------------------------
+    | The page a pharmacist lands on after scanning a printed script.
+    */
+
+    'rx_title'             => 'Prescription Verification — OpesCare',
+    'rx_heading'           => 'Prescription Verification',
+    'rx_subheading'        => 'This is the prescription behind the code you scanned. Check the reference and the patient before dispensing.',
+
+    // Single refusal — invalid, expired and withdrawn are one answer.
+    'rx_invalid_title'     => 'Prescription Not Available',
+    'rx_invalid_body'      => 'This link is invalid, has expired, or has been withdrawn. Ask the patient for a current prescription code.',
+
+    // Reference
+    'rx_reference_label'   => 'Prescription Reference',
+    'rx_no_reference'      => 'No reference assigned',
+
+    // Verdict banners
+    'rx_do_not_dispense'   => 'Do Not Dispense',
+    'rx_retracted_body'    => 'This prescription has been withdrawn (:status) and is no longer a valid order. Do not dispense against it. Contact the issuing facility if the patient needs a replacement.',
+    'rx_expired_body'      => 'This prescription is past its validity date and is no longer a valid order. Do not dispense against it. The patient needs a new prescription from their prescriber.',
+    'rx_dispensed_title'   => 'Already Dispensed',
+    'rx_dispensed_body'    => 'This prescription has already been dispensed in full. Do not dispense it a second time.',
+    'rx_valid_title'       => 'Valid Prescription',
+    'rx_valid_body'        => 'This prescription is active and may be dispensed. Confirm the patient name and Health ID below before handing over any medicine.',
+
+    // Sections
+    'rx_section_patient'   => 'Patient',
+    'rx_section_order'     => 'Prescription',
+    'rx_section_medicines' => 'Prescribed Medicines',
+
+    // Fields
+    'rx_patient'           => 'Name',
+    'rx_health_id'         => 'Health ID',
+    'rx_facility'          => 'Issuing Facility',
+    'rx_prescriber'        => 'Prescriber',
+    'rx_prescribed_at'     => 'Prescribed',
+    'rx_expires_at'        => 'Valid Until',
+    'rx_no_expiry'         => 'No expiry recorded',
+    'rx_status'            => 'Status',
+    'rx_dispensed_at'      => 'Dispensed',
+    'rx_not_dispensed'     => 'Not yet dispensed',
+    'rx_not_recorded'      => 'Not recorded',
+
+    // Medicines table
+    'rx_col_medicine'      => 'Medicine',
+    'rx_col_dose'          => 'Dose',
+    'rx_col_frequency'     => 'Frequency',
+    'rx_col_route'         => 'Route',
+    'rx_col_duration'      => 'Duration',
+    'rx_col_quantity'      => 'Qty',
+    'rx_col_status'        => 'Status',
+    'rx_days'              => ':count day(s)',
+    'rx_no_items'          => 'No medicines are recorded on this prescription.',
+
+    // Audit
+    'rx_audit_note'        => 'This access has been logged. The patient can see every time this prescription was opened, and can withdraw the link at any time from their portal.',
+
+    // Status labels
+    'rx_status_active'              => 'Active',
+    'rx_status_pending'             => 'Pending',
+    'rx_status_partially_dispensed' => 'Partially dispensed',
+    'rx_status_dispensed'           => 'Dispensed',
+    'rx_status_expired'             => 'Expired',
+    'rx_status_cancelled'           => 'Cancelled',
+    'rx_status_voided'              => 'Voided',
+    'rx_status_entered_in_error'    => 'Entered in error',
+    'rx_status_amended'             => 'Amended — superseded',
+    'rx_status_unknown'             => 'Unknown',
 ];

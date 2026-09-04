@@ -82,6 +82,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'facility.context' => \App\Http\Middleware\RequireFacilityContext::class,
             'consent.grant'    => \App\Http\Middleware\RequireConsentGrant::class,
             'auth.mobile'      => \App\Http\Middleware\AuthenticateMobilePatient::class,
+            'auth.provider'    => \App\Http\Middleware\AuthenticateMobileProvider::class,
             'guardian.context' => \App\Http\Middleware\GuardianAccessMiddleware::class,
             'mfa.verified'     => \App\Http\Middleware\EnsureTwoFactorVerified::class,
             'api.admin'        => \App\Http\Middleware\RequireApiAdminRole::class,

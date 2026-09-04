@@ -393,4 +393,14 @@ return [
     'policy_already_exists'          => 'You already have a policy for this plan.',
     'enrollment_submitted'           => 'Enrollment submitted successfully. Your policy is pending activation.',
     'feature_requires_upgrade'       => 'This feature requires a Premium subscription.',
+    // Mobile provider (clinician) sessions + prescribing from the app.
+    'provider_invalid_credentials'   => 'Invalid email or password.',
+    'provider_no_facility'           => 'Your account is not attached to a facility. Ask your facility administrator to add you to their staff list before prescribing.',
+    'provider_logged_out'            => 'Signed out.',
+    'prescription_issued'            => 'Prescription issued.',
+    'prescription_issue_failed'      => 'The prescription could not be issued. Please try again.',
+    'prescription_unknown_medicine'  => 'One of the medicines is not in the catalogue.',
+    'prescription_voided'            => 'Prescription voided.',
+    'prescription_void_failed'       => 'The prescription could not be voided. Please try again.',
+    'prescription_not_voidable'      => 'This prescription can no longer be voided.',
 ];

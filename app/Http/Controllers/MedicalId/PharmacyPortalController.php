@@ -136,29 +136,108 @@ class PharmacyPortalController extends Controller
     // ------------------------------------------------------------------
 
     /**
-     * Dispensing goes through PrescriptionService so that the item lines, the
-     * dispenser, and the audit event are all recorded — and so a repeat POST is
-     * refused rather than silently re-stamping a prescription that has already
-     * been handed to the patient.
-     */
-    /**
-     * Counter lookup: the patient presents their Health ID, the pharmacy sees the
-     * active prescriptions on it — from ANY facility — and can dispense them.
+     * The alphabet a prescription reference is drawn from: Crockford's base32,
+     * which omits I, L, O and U precisely so that a handle read down a phone or
+     * copied off a photocopy cannot turn a 1 into an I or a 0 into an O.
      *
-     * Exact Health ID only: patient enumeration is forbidden platform-wide, and a
-     * presented Health ID is the real-world consent gesture at the counter.
+     * Mirrors the alphabet the `prescriptions.reference` backfill migration uses;
+     * kept here as the read-side contract for what a valid reference looks like.
+     */
+    private const REFERENCE_ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+
+    /**
+     * Canonicalise whatever the pharmacist typed into `RX-XXXX-XXXX`, or null
+     * when it cannot be a prescription reference at all.
+     *
+     * The input side is deliberately generous, because this string is retyped
+     * from a printed sheet, a fax, a photocopy or a phone screen: case is
+     * ignored, spaces and hyphens are dropped wherever they fall, and the `RX`
+     * prefix is optional. `rx4f2a9c31`, `RX 4F2A 9C31`, `4f2a-9c31` and
+     * `RX-4F2A-9C31` are all the same handle.
+     *
+     * The alphabet is where it stops being generous — exactly eight Crockford
+     * characters — and that is also what makes the one-box lookup unambiguous:
+     * a Health ID is `CM-HID-XXXX-XXXX-XXXX`, seventeen characters once the
+     * hyphens are stripped, so it can never be mistaken for a reference.
+     *
+     * The prefix-stripped reading is tried first and the whole string second, so
+     * a reference that legitimately begins `RX-RX..` still resolves whether it is
+     * typed with its prefix or without.
+     */
+    private function normaliseReference(string $raw): ?string
+    {
+        $compact = strtoupper((string) preg_replace('/[^A-Za-z0-9]/', '', $raw));
+
+        $candidates = [];
+
+        if (str_starts_with($compact, 'RX')) {
+            $candidates[] = substr($compact, 2);
+        }
+
+        $candidates[] = $compact;
+
+        foreach ($candidates as $candidate) {
+            if (strlen($candidate) === 8 && strspn($candidate, self::REFERENCE_ALPHABET) === 8) {
+                return 'RX-' . substr($candidate, 0, 4) . '-' . substr($candidate, 4, 4);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Counter lookup: the patient presents their Health ID **or** a printed
+     * script, and the pharmacy sees what it may dispense — from ANY facility.
+     *
+     * One box, two kinds of handle. At a busy counter the pharmacist has
+     * whichever the patient happens to be carrying: a phone showing the Health
+     * ID, or a sheet of paper with a prescription number on it. Making them pick
+     * a mode first buys nothing, because the two are trivially told apart — see
+     * normaliseReference() — so the box just works out which was typed.
+     *
+     * Exact matches in both directions, never a prefix or LIKE search. Patient
+     * enumeration is forbidden platform-wide, and a reference must resolve to one
+     * prescription or to none: a partial `RX-4F2A` that returned a list would turn
+     * a guess into a fishing expedition across other people's scripts.
+     *
+     * A reference deliberately ignores the issuing facility. That is the whole
+     * point of it — a script written at a hospital is filled at an outside
+     * pharmacy, and the dispense action is already gated on dispensability rather
+     * than on who wrote it.
      */
     public function prescriptionLookup(Request $req)
     {
-        $healthId = trim((string) $req->input('health_id'));
-        $patient  = null;
-        $results  = collect();
+        // `q` is the single box. `health_id` is still honoured so an existing
+        // bookmark or a link into this screen keeps resolving exactly as before.
+        $query = trim((string) ($req->filled('q') ? $req->input('q') : $req->input('health_id', '')));
 
-        if ($healthId !== '') {
-            $patient = \App\Models\Patient::where('health_id', $healthId)->first();
+        $reference = $query === '' ? null : $this->normaliseReference($query);
+        $mode      = $reference !== null ? 'reference' : 'health_id';
+        $patient   = null;
+        $results   = collect();
+
+        if ($query !== '' && $reference !== null) {
+            $prescription = Prescription::with([
+                    'items',
+                    'facility:id,name',
+                    'patient',
+                    'prescriber:id,name',
+                ])
+                ->where('reference', $reference)
+                ->first();
+
+            if ($prescription) {
+                // The patient row can come back null — merged away, or filtered
+                // by the demo-isolation scope. The screen still has to render the
+                // script, so identity is shown defensively rather than assumed.
+                $patient = $prescription->patient;
+                $results = collect([$prescription]);
+            }
+        } elseif ($query !== '') {
+            $patient = \App\Models\Patient::where('health_id', $query)->first();
 
             if ($patient) {
-                $results = Prescription::with(['items', 'facility:id,name'])
+                $results = Prescription::with(['items', 'facility:id,name', 'prescriber:id,name'])
                     ->where('patient_id', $patient->id)
                     ->whereIn('status', ['active', 'partially_dispensed'])
                     ->orderByDesc('prescribed_at')
@@ -167,13 +246,29 @@ class PharmacyPortalController extends Controller
         }
 
         return view('portals.pharmacy.prescription_lookup', [
-            'healthId' => $healthId,
-            'patient'  => $patient,
-            'results'  => $results,
-            'searched' => $healthId !== '',
+            'query'     => $query,
+            // Kept so the old variable name still resolves for anything that
+            // reads it, and so the Health-ID path is unchanged from the view's side.
+            'healthId'  => $mode === 'health_id' ? $query : '',
+            'mode'      => $mode,
+            'reference' => $reference,
+            'patient'   => $patient,
+            'results'   => $results,
+            'searched'  => $query !== '',
         ]);
     }
 
+    /**
+     * Dispensing goes through PrescriptionService so that the item lines, the
+     * dispenser, and the audit event are all recorded — and so a repeat POST is
+     * refused rather than silently re-stamping a prescription that has already
+     * been handed to the patient.
+     *
+     * The service also re-checks dispensability, which is what makes the screen's
+     * hidden Dispense button a courtesy rather than the control: a voided,
+     * cancelled, entered-in-error, amended, already-dispensed or lapsed script is
+     * refused here even if the POST is replayed by hand.
+     */
     public function dispense(Request $req, string $id, \App\Services\Clinical\PrescriptionService $prescriptions)
     {
         $facilityId = $this->facilityId();
@@ -181,8 +276,9 @@ class PharmacyPortalController extends Controller
         // A prescription is written at one facility and filled at another — the
         // patient carries it. Scoping this to the pharmacy's OWN facility made an
         // outside prescription impossible to dispense, which is the normal case.
-        // The gate is that the pharmacist reached this id via the patient's exact
-        // Health ID at the counter (see prescriptionLookup) — ids are not guessable.
+        // The gate is that the pharmacist reached this id at the counter, via the
+        // patient's exact Health ID or the reference printed on the script they
+        // are holding (see prescriptionLookup) — ids are not guessable.
         $rx = Prescription::findOrFail($id);
 
         try {

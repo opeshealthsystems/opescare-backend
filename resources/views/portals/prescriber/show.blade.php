@@ -72,6 +72,11 @@
         </div>
     </div>
     <div class="entity-head__spacer"></div>
+    {{-- The paper the patient actually walks to the pharmacy with. Opens in its
+         own tab so the desk keeps its place in the record behind the print sheet. --}}
+    <a href="{{ route('portals.prescriber.print', $rx->id) }}" class="btn btn-primary" target="_blank" rel="noopener">
+        <i data-lucide="printer"></i> {{ __('prescriber.print_action') }}
+    </a>
     <a href="{{ route('portals.prescriber.index') }}" class="btn btn-secondary">
         <i data-lucide="arrow-left"></i> {{ __('prescriber.back') }}
     </a>

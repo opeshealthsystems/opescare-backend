@@ -76,6 +76,24 @@ Route::prefix('mobile')->group(function () {
         Route::post('/refresh', [\App\Http\Controllers\Api\Mobile\MobileAuthController::class, 'refresh']);
     });
 
+    // Provider (clinician) sessions. Separate from the patient auth block above
+    // because these mint a provider token, which acts on other people's records
+    // within one facility rather than on the holder's own record.
+    Route::post('/auth/provider/login', [\App\Http\Controllers\Api\Mobile\MobileProviderAuthController::class, 'login'])
+        ->middleware('throttle:5,1');
+
+    Route::middleware('auth.provider')->group(function () {
+        Route::post('/auth/provider/logout', [\App\Http\Controllers\Api\Mobile\MobileProviderAuthController::class, 'logout']);
+        Route::get('/auth/provider/me', [\App\Http\Controllers\Api\Mobile\MobileProviderAuthController::class, 'me']);
+
+        // Prescribing from the app — the native half of the prescriber's desk.
+        // Patient lookup is an exact Health ID match only (no enumeration).
+        Route::get('/doctor/patients/lookup', [\App\Http\Controllers\Api\Mobile\MobilePrescribingController::class, 'lookupPatient']);
+        Route::get('/doctor/prescriptions', [\App\Http\Controllers\Api\Mobile\MobilePrescribingController::class, 'index']);
+        Route::post('/doctor/prescriptions', [\App\Http\Controllers\Api\Mobile\MobilePrescribingController::class, 'store']);
+        Route::post('/doctor/prescriptions/{id}/void', [\App\Http\Controllers\Api\Mobile\MobilePrescribingController::class, 'void']);
+    });
+
     // Protected mobile endpoints — require valid patient Bearer token
     Route::middleware('auth.mobile')->group(function () {
 
@@ -163,6 +181,12 @@ Route::prefix('mobile')->group(function () {
         // route, so the screen 404'd against this backend.
         Route::get('/prescriptions', [\App\Http\Controllers\Api\Mobile\MobilePrescriptionController::class, 'index']);
         Route::get('/prescriptions/{id}', [\App\Http\Controllers\Api\Mobile\MobilePrescriptionController::class, 'show']);
+
+        // Presenting a script at a pharmacy counter: the patient mints a code on
+        // demand and can withdraw it again. Never minted on read - a live token is
+        // a standing disclosure of a medication list.
+        Route::post('/prescriptions/{id}/share', [\App\Http\Controllers\Api\Mobile\MobilePrescriptionController::class, 'share']);
+        Route::delete('/prescriptions/{id}/share', [\App\Http\Controllers\Api\Mobile\MobilePrescriptionController::class, 'withdrawShare']);
 
         Route::get('/appointments', [\App\Http\Controllers\Api\Mobile\MobileAppointmentController::class, 'index']);
         Route::get('/appointments/{id}', [\App\Http\Controllers\Api\Mobile\MobileAppointmentController::class, 'show']);

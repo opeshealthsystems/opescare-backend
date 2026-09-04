@@ -69,10 +69,12 @@ return [
     'st_cancelled'           => 'Annulée',
     'st_voided'              => 'Annulée',
     'st_expired'             => 'Expirée',
+    'st_entered_in_error'    => 'Saisie erronée',
+    'st_amended'             => 'Modifiée',
 
     // Counter dispensing
     'counter_title'   => 'Délivrer au comptoir',
-    'counter_sub'     => 'Saisissez l’identifiant santé présenté par le patient pour voir ses ordonnances actives.',
+    'counter_sub'     => 'Saisissez l’identifiant santé présenté par le patient, ou le numéro imprimé sur son ordonnance.',
     'counter_lookup'  => 'Rechercher les ordonnances',
     'counter_none'    => 'Aucune ordonnance active sur cet identifiant santé.',
     'counter_nopat'   => 'Aucun patient ne correspond à cet identifiant santé.',
@@ -80,6 +82,39 @@ return [
     'counter_dispense'=> 'Délivrer',
     'counter_notes'   => 'Notes de délivrance',
     'counter_link'    => 'Recherche comptoir',
+
+    // Comptoir — un seul champ : identifiant santé ou numéro d’ordonnance
+    'counter_query'      => 'Identifiant santé ou numéro d’ordonnance',
+    'counter_query_hint' => 'Saisissez l’identifiant santé exact, ou le numéro d’ordonnance imprimé sur le document (RX-XXXX-XXXX). La recherche par nom n’est pas possible.',
+    'counter_norx'       => 'Aucune ordonnance ne porte le numéro :reference.',
+    'counter_nopatrow'   => 'Dossier patient indisponible',
+
+    // Comptoir — refus d’une ordonnance qui ne doit pas être délivrée
+    'counter_blocked_title'      => 'Ne pas délivrer',
+    'counter_blocked_title_done' => 'Déjà délivrée',
+    'counter_blocked_terminal'   => 'Cette ordonnance est :status et ne doit pas être délivrée.',
+    'counter_blocked_expired'    => 'Cette ordonnance a expiré le :date et ne doit pas être délivrée.',
+    'counter_blocked_dispensed'  => 'Cette ordonnance a déjà été remise au patient. Elle ne peut pas être délivrée une seconde fois.',
+
+    // Ordonnance imprimable — la feuille que le patient porte à la pharmacie
+    'print_action'             => 'Imprimer',
+    'print_doc_title'          => 'Ordonnance :reference',
+    'print_reference'          => 'N° d’ordonnance',
+    'print_facility'           => 'Établissement émetteur',
+    'print_facility_license'   => 'Licence de l’établissement',
+    'print_date_of_birth'      => 'Date de naissance',
+    'print_sex'                => 'Sexe',
+    'print_license'            => 'N° de licence',
+    'print_no_items'           => 'Aucun médicament n’est inscrit sur cette ordonnance.',
+    'print_scan_to_verify'     => 'Scannez pour vérifier cette ordonnance',
+    'print_verify_unavailable' => 'La vérification numérique est indisponible pour cet exemplaire. Communiquez le numéro d’ordonnance ci-dessus à l’établissement émetteur.',
+    'print_signature'          => 'Signature et cachet du prescripteur',
+    'print_footer'             => 'Cette ordonnance peut être vérifiée ou retirée numériquement à tout moment. Une ordonnance retirée cesse d’être vérifiable, y compris sur le papier déjà remis — scannez avant de délivrer.',
+    'print_void_banner'        => 'Ne pas délivrer — cette ordonnance n’est pas valable',
+    'print_void_detail'        => 'Elle a été marquée :status le :date et ne doit pas être délivrée.',
+    'print_expired_banner'     => 'Ne pas délivrer — cette ordonnance a expiré',
+    'print_expired_detail'     => 'Elle a expiré le :date et ne doit pas être délivrée.',
+    'print_generated'          => 'Imprimée le :datetime',
 
     // Nav
     'nav'             => 'Ordonnances',

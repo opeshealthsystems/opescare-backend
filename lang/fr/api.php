@@ -380,4 +380,14 @@ return [
     'policy_already_exists'          => 'Vous avez déjà une police pour ce plan.',
     'enrollment_submitted'           => "Inscription soumise avec succès. Votre police est en attente d'activation.",
     'feature_requires_upgrade'       => 'Cette fonctionnalité nécessite un abonnement Premium.',
+    // Sessions des professionnels (mobile) + prescription depuis l'application.
+    'provider_invalid_credentials'   => 'Adresse e-mail ou mot de passe invalide.',
+    'provider_no_facility'           => "Votre compte n'est rattaché à aucun établissement. Demandez à votre administrateur d'établissement de vous ajouter à son personnel avant de prescrire.",
+    'provider_logged_out'            => 'Déconnecté.',
+    'prescription_issued'            => 'Ordonnance émise.',
+    'prescription_issue_failed'      => "L'ordonnance n'a pas pu être émise. Veuillez réessayer.",
+    'prescription_unknown_medicine'  => "L'un des médicaments ne figure pas au catalogue.",
+    'prescription_voided'            => 'Ordonnance annulée.',
+    'prescription_void_failed'       => "L'ordonnance n'a pas pu être annulée. Veuillez réessayer.",
+    'prescription_not_voidable'      => "Cette ordonnance ne peut plus être annulée.",
 ];

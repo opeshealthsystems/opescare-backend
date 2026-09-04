@@ -30,6 +30,7 @@ class Prescription extends Model
      * silently rewrite what a clinician ordered, for whom, and when.
      */
     public const IMMUTABLE_ATTRIBUTES = [
+        'reference',
         'patient_id',
         'facility_id',
         'visit_id',
@@ -48,6 +49,10 @@ class Prescription extends Model
     ];
 
     protected $fillable = [
+        // Short human-quotable handle (RX-XXXX-XXXX) — what a pharmacy is told
+        // down a phone or reads off a printed script. Set by the migration's
+        // deterministic backfill and by PrescriptionService on issue.
+        'reference',
         'patient_id',
         'facility_id',
         'visit_id',
@@ -83,6 +88,19 @@ class Prescription extends Model
 
     protected static function booted(): void
     {
+        // Every prescription gets its human-quotable handle at creation, on every
+        // path there is - prescriber desk, mobile prescribing, seeder, console.
+        // This used to live only in the migration backfill, so every NEW
+        // prescription saved with a NULL reference and was unfindable by the one
+        // thing a pharmacy is ever handed: the prescription number.
+        static::creating(function (self $prescription): void {
+            if (filled($prescription->reference)) {
+                return;
+            }
+
+            $prescription->reference = self::allocateReference((string) $prescription->getKey());
+        });
+
         static::updating(function (self $prescription): void {
             foreach (self::IMMUTABLE_ATTRIBUTES as $attribute) {
                 if ($prescription->isDirty($attribute)) {
@@ -156,6 +174,12 @@ class Prescription extends Model
         return $this->hasMany(self::class, 'amends_prescription_id');
     }
 
+    /** Revocable capabilities to view this prescription (printed or on screen). */
+    public function accessTokens(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(PrescriptionAccessToken::class);
+    }
+
     public function items(): HasMany
     {
         return $this->hasMany(PrescriptionItem::class);
@@ -180,6 +204,69 @@ class Prescription extends Model
         }
 
         return ! ($this->expires_at && $this->expires_at->isPast());
+    }
+
+    /**
+     * Crockford's alphabet - no I, L, O or U, so a number read down a phone line
+     * or copied by hand cannot turn a 1 into an I or a 0 into an O.
+     */
+    private const REFERENCE_ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+
+    /**
+     * A short, unique, human-quotable handle: RX-XXXX-XXXX.
+     *
+     * Derived from the row's own UUID so it lands on exactly the value the
+     * migration's backfill would have produced - one prescription can never be
+     * numbered two different ways. The column is UNIQUE, so on the vanishingly
+     * rare derivation collision we draw at random rather than let the insert die
+     * on a constraint violation. The existence check drops global scopes on
+     * purpose: in demo mode IsDemoRecord hides non-demo rows, and a collision we
+     * cannot see is exactly the one that reaches Postgres.
+     */
+    public static function allocateReference(?string $id = null): string
+    {
+        $candidate = filled($id) ? self::referenceFromId((string) $id) : self::randomReference();
+
+        for ($attempt = 0; $attempt < 5; $attempt++) {
+            $taken = static::withoutGlobalScopes()->where('reference', $candidate)->exists();
+
+            if (! $taken) {
+                return $candidate;
+            }
+
+            $candidate = self::randomReference();
+        }
+
+        return $candidate;
+    }
+
+    private static function referenceFromId(string $id): string
+    {
+        $hex = preg_replace('/[^0-9a-f]/i', '', $id);
+        $out = '';
+
+        for ($i = 0; $i < 8; $i++) {
+            $chunk = hexdec(substr($hex, $i * 4, 4) ?: '0');
+            $out .= self::REFERENCE_ALPHABET[$chunk % 32];
+        }
+
+        return self::formatReference($out);
+    }
+
+    private static function randomReference(): string
+    {
+        $out = '';
+
+        for ($i = 0; $i < 8; $i++) {
+            $out .= self::REFERENCE_ALPHABET[random_int(0, 31)];
+        }
+
+        return self::formatReference($out);
+    }
+
+    private static function formatReference(string $body): string
+    {
+        return 'RX-' . substr($body, 0, 4) . '-' . substr($body, 4, 4);
     }
 
     public function statusColor(): string

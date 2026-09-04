@@ -8,7 +8,7 @@
 <div class="page-header">
     <div>
         <h1 class="page-title">{{ __('prescriber.counter_title', [], $l) ?: 'Dispense at the counter' }}</h1>
-        <p class="page-subtitle">{{ __('prescriber.counter_sub', [], $l) ?: 'Enter the Health ID the patient presents to see their active prescriptions.' }}</p>
+        <p class="page-subtitle">{{ __('prescriber.counter_sub', [], $l) ?: 'Enter the Health ID the patient presents, or the number printed on their prescription.' }}</p>
     </div>
     <a href="{{ route('portals.pharmacy.prescriptions') }}" class="btn btn-secondary">
         <i data-lucide="list"></i>
@@ -23,16 +23,23 @@
     <div class="alert alert-danger">{{ session('error') }}</div>
 @endif
 
-{{-- Health ID lookup — exact match only; patient names are never searchable. --}}
+{{--
+    One box, two kinds of handle. Whichever the patient is carrying — a phone
+    showing the Health ID or a printed script with a number on it — goes in
+    here; the controller works out which was typed. Exact match either way:
+    patient names are never searchable and a reference resolves to one
+    prescription or to none, never to a list.
+--}}
 <div class="panel">
     <div class="panel-body">
         <form method="GET" action="{{ route('portals.pharmacy.prescriptions.lookup') }}" class="form-row">
-            <div class="form-group" style="flex:1 1 260px">
-                <label class="form-label" for="health_id">{{ __('prescriber.health_id', [], $l) ?: 'Health ID' }}</label>
-                <input type="text" id="health_id" name="health_id" class="form-control"
-                       value="{{ $healthId }}" autocomplete="off" required
-                       placeholder="CM-HID-XXXX-XXXX-XXXX">
-                <p class="form-hint">{{ __('prescriber.health_id_hint', [], $l) ?: 'Enter the exact Health ID — patient names are not searchable.' }}</p>
+            <div class="form-group" style="flex:1 1 300px">
+                <label class="form-label" for="q">{{ __('prescriber.counter_query', [], $l) ?: 'Health ID or prescription number' }}</label>
+                <input type="text" id="q" name="q" class="form-control"
+                       value="{{ $query }}" autocomplete="off" autocapitalize="characters"
+                       spellcheck="false" required
+                       placeholder="CM-HID-XXXX-XXXX-XXXX  /  RX-XXXX-XXXX">
+                <p class="form-hint">{{ __('prescriber.counter_query_hint', [], $l) ?: 'Enter the exact Health ID, or the prescription number from the printed script. Patient names are not searchable.' }}</p>
             </div>
             <div class="form-group" style="align-self:flex-start">
                 <button type="submit" class="btn btn-primary">
@@ -44,15 +51,53 @@
     </div>
 </div>
 
-@if($searched && ! $patient)
-    <div class="alert alert-danger">{{ __('prescriber.counter_nopat', [], $l) ?: 'No patient matches that Health ID.' }}</div>
+{{-- Nothing found. The two paths fail differently, so they say different things. --}}
+@if($searched && $results->isEmpty() && $mode === 'reference')
+    <div class="alert alert-danger">
+        <i data-lucide="file-question"></i>
+        <div>{{ __('prescriber.counter_norx', ['reference' => $reference], $l) }}</div>
+    </div>
+@elseif($searched && ! $patient)
+    <div class="alert alert-danger">
+        <i data-lucide="user-x"></i>
+        <div>{{ __('prescriber.counter_nopat', [], $l) ?: 'No patient matches that Health ID.' }}</div>
+    </div>
 @endif
 
-@if($patient)
+@if($searched && ($patient || $results->isNotEmpty()))
+    @php
+        /**
+         * Identity, resolved defensively. On the reference path the patient row
+         * can legitimately come back null — merged away, or filtered out by the
+         * demo-isolation scope — and the script still has to be readable.
+         */
+        $patientName = $patient
+            ? trim(((string) ($patient->first_name ?? '')) . ' ' . ((string) ($patient->last_name ?? '')))
+            : '';
+
+        /**
+         * Status label from the prescriber namespace, falling back to the shared
+         * enum labeller for values that have no prescriber.st_* key of their own.
+         */
+        $label = function (?string $value) use ($l): string {
+            $value = (string) $value;
+            if ($value === '') {
+                return '—';
+            }
+            $key  = 'prescriber.st_' . $value;
+            $text = __($key, [], $l);
+
+            return $text !== $key ? $text : \App\Support\Enums::label($value);
+        };
+    @endphp
+
     <div class="panel">
         <div class="panel-header">
-            <div class="panel-title">{{ $patient->first_name }} {{ $patient->last_name }}</div>
-            <span class="badge badge-neutral">{{ $patient->health_id }}</span>
+            <div class="panel-title">
+                <i data-lucide="user"></i>
+                {{ $patientName !== '' ? $patientName : (__('prescriber.counter_nopatrow', [], $l)) }}
+            </div>
+            <span class="badge badge-neutral mono">{{ $patient?->health_id ?? '—' }}</span>
         </div>
 
         @if($results->isEmpty())
@@ -64,35 +109,137 @@
             </div>
         @else
             @foreach($results as $rx)
+                @php
+                    $rxStatus = (string) ($rx->status ?? '');
+
+                    /**
+                     * Whether this script may still be filled — and, when it may
+                     * not, why. `isDispensable()` is the model's own rule and the
+                     * same one PrescriptionService re-checks on POST, so the
+                     * button and the write path cannot disagree.
+                     *
+                     * Expiry is a date check independent of the stored status: a
+                     * script can sit at 'active' and still be long lapsed.
+                     */
+                    $expired     = ($rx->expires_at && $rx->expires_at->isPast()) || $rxStatus === 'expired';
+                    $terminal    = $rx->isTerminal();
+                    $canDispense = $rx->isDispensable();
+
+                    /**
+                     * Driven off isDispensable() rather than off the status alone,
+                     * so no refusable state can slip through un-explained: a stored
+                     * 'expired' with no expiry date, or any status added later,
+                     * still lands on a refusal instead of a silent missing button.
+                     */
+                    $refusal = match (true) {
+                        $canDispense              => null,
+                        $rxStatus === 'dispensed' => __('prescriber.counter_blocked_dispensed', [], $l),
+                        $expired                  => __('prescriber.counter_blocked_expired', ['date' => $rx->expires_at?->format('d M Y') ?? '—'], $l),
+                        default                   => __('prescriber.counter_blocked_terminal', ['status' => $label($rxStatus)], $l),
+                    };
+
+                    $rxBadge = match ($rxStatus) {
+                        'active'              => 'badge-info',
+                        'dispensed'           => 'badge-success',
+                        'partially_dispensed' => 'badge-warning',
+                        'voided',
+                        'entered_in_error',
+                        'cancelled'           => 'badge-danger',
+                        'amended'             => 'badge-warning',
+                        default               => 'badge-neutral',
+                    };
+
+                    $prescriberName = trim((string) ($rx->prescriber->name ?? ''));
+                @endphp
+
                 <div class="panel-body" style="border-top:1px solid var(--p-border,#e5e7eb)">
                     <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start">
                         <div style="min-width:0">
-                            <div style="font-weight:600">
-                                {{ optional($rx->prescribed_at)->format('d M Y') ?: '—' }}
-                                <span class="badge badge-info" style="margin-left:6px">
-                                    {{ __('prescriber.st_' . $rx->status, [], $l) ?: $rx->status }}
-                                </span>
+                            <div style="font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                                <span class="mono">{{ $rx->reference ?: '—' }}</span>
+                                <span class="badge {{ $rxBadge }} badge-sm">{{ $label($rxStatus) }}</span>
+                                {{-- A script can sit at 'active' and still be long lapsed; say so next to the status. --}}
+                                @if($expired && ! $terminal && $rxStatus !== 'expired')
+                                    <span class="badge badge-danger badge-sm">{{ __('prescriber.st_expired', [], $l) ?: 'Expired' }}</span>
+                                @endif
                             </div>
-                            <div class="td-muted" style="font-size:.85rem">
-                                {{ __('prescriber.counter_from', [], $l) ?: 'Issued at' }}:
-                                {{ $rx->facility->name ?? '—' }}
-                            </div>
-                            @if($rx->notes)
-                                <div class="td-muted" style="font-size:.85rem">{{ $rx->notes }}</div>
+
+                            <table class="kv-table" style="margin-top:8px">
+                                <tr>
+                                    <td>{{ __('prescriber.counter_from', [], $l) ?: 'Issued at' }}</td>
+                                    <td class="kv-strong">{{ $rx->facility->name ?? '—' }}</td>
+                                </tr>
+                                <tr>
+                                    <td>{{ __('prescriber.col_prescriber', [], $l) ?: 'Prescriber' }}</td>
+                                    <td class="kv-strong">{{ $prescriberName !== '' ? $prescriberName : '—' }}</td>
+                                </tr>
+                                <tr>
+                                    <td>{{ __('prescriber.issued_at', [], $l) ?: 'Issued' }}</td>
+                                    <td class="kv-strong">{{ $rx->prescribed_at?->format('d M Y H:i') ?? '—' }}</td>
+                                </tr>
+                                <tr>
+                                    <td>{{ __('prescriber.expires_at', [], $l) ?: 'Expires' }}</td>
+                                    <td class="kv-strong">
+                                        @if($rx->expires_at)
+                                            @if($expired)
+                                                <span class="badge badge-danger badge-sm">{{ $rx->expires_at->format('d M Y') }}</span>
+                                            @else
+                                                {{ $rx->expires_at->format('d M Y') }}
+                                            @endif
+                                        @else
+                                            —
+                                        @endif
+                                    </td>
+                                </tr>
+                                @if($rx->dispensed_at)
+                                <tr>
+                                    <td>{{ __('prescriber.dispensed_at', [], $l) ?: 'Dispensed' }}</td>
+                                    <td class="kv-strong">{{ $rx->dispensed_at->format('d M Y H:i') }}</td>
+                                </tr>
+                                @endif
+                            </table>
+
+                            @if(filled($rx->notes))
+                                <div class="td-muted" style="font-size:.85rem;margin-top:8px">{{ $rx->notes }}</div>
                             @endif
                         </div>
 
-                        <form method="POST" action="{{ route('portals.pharmacy.dispense', $rx->id) }}"
-                              style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap">
-                            @csrf
-                            <input type="text" name="dispense_notes" class="form-control" style="min-width:180px"
-                                   placeholder="{{ __('prescriber.counter_notes', [], $l) ?: 'Dispense notes' }}">
-                            <button type="submit" class="btn btn-primary">
-                                <i data-lucide="check"></i>
-                                <span>{{ __('prescriber.counter_dispense', [], $l) ?: 'Dispense' }}</span>
-                            </button>
-                        </form>
+                        @if($canDispense)
+                            <form method="POST" action="{{ route('portals.pharmacy.dispense', $rx->id) }}"
+                                  style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap">
+                                @csrf
+                                <input type="text" name="dispense_notes" class="form-control" style="min-width:180px"
+                                       placeholder="{{ __('prescriber.counter_notes', [], $l) ?: 'Dispense notes' }}">
+                                <button type="submit" class="btn btn-primary">
+                                    <i data-lucide="check"></i>
+                                    <span>{{ __('prescriber.counter_dispense', [], $l) ?: 'Dispense' }}</span>
+                                </button>
+                            </form>
+                        @endif
                     </div>
+
+                    {{--
+                        The refusal. A retracted or lapsed script must be
+                        unmistakable at a glance and must offer nothing to click:
+                        handing out medicine against a voided order is the one
+                        mistake this screen exists to prevent.
+                    --}}
+                    @if($refusal)
+                        <div class="alert {{ $rxStatus === 'dispensed' ? 'alert-warning' : 'alert-danger' }}" style="margin-top:10px">
+                            <i data-lucide="{{ $rxStatus === 'dispensed' ? 'check-circle' : 'shield-alert' }}"></i>
+                            <div>
+                                <strong>{{ $rxStatus === 'dispensed'
+                                    ? (__('prescriber.counter_blocked_title_done', [], $l))
+                                    : (__('prescriber.counter_blocked_title', [], $l)) }}</strong>
+                                <div>{{ $refusal }}</div>
+                                @if(filled($rx->void_reason))
+                                    <div class="td-muted" style="font-size:.85rem">
+                                        {{ __('prescriber.void_reason', [], $l) ?: 'Reason' }}: {{ $rx->void_reason }}
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
 
                     <div class="table-wrapper" style="margin-top:10px">
                         <table class="data-table">
@@ -101,24 +248,37 @@
                                     <th>{{ __('prescriber.drug_name', [], $l) ?: 'Medicine' }}</th>
                                     <th>{{ __('prescriber.dose', [], $l) ?: 'Dose' }}</th>
                                     <th>{{ __('prescriber.frequency', [], $l) ?: 'Frequency' }}</th>
+                                    <th>{{ __('prescriber.route', [], $l) ?: 'Route' }}</th>
                                     <th>{{ __('prescriber.quantity', [], $l) ?: 'Quantity' }}</th>
                                     <th>{{ __('prescriber.item_status', [], $l) ?: 'Line status' }}</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($rx->items as $item)
+                                @forelse($rx->items as $item)
+                                    @php
+                                        $itemStatus = (string) ($item->status ?? '');
+                                        $itemBadge  = match ($itemStatus) {
+                                            'dispensed' => 'badge-success',
+                                            'pending'   => 'badge-info',
+                                            default     => 'badge-neutral',
+                                        };
+                                    @endphp
                                     <tr>
-                                        <td class="td-strong">{{ $item->drug_name }}</td>
-                                        <td>{{ $item->dose ?: '—' }}</td>
-                                        <td>{{ $item->frequency ?: '—' }}</td>
-                                        <td>{{ $item->quantity ?: '—' }}</td>
-                                        <td>
-                                            <span class="badge {{ $item->status === 'dispensed' ? 'badge-success' : 'badge-neutral' }}">
-                                                {{ __('prescriber.st_' . $item->status, [], $l) ?: $item->status }}
-                                            </span>
+                                        <td data-label="{{ __('prescriber.drug_name', [], $l) ?: 'Medicine' }}" class="td-strong">{{ $item->drug_name ?: '—' }}</td>
+                                        <td data-label="{{ __('prescriber.dose', [], $l) ?: 'Dose' }}">{{ $item->dose ?: '—' }}</td>
+                                        <td data-label="{{ __('prescriber.frequency', [], $l) ?: 'Frequency' }}">{{ $item->frequency ?: '—' }}</td>
+                                        <td data-label="{{ __('prescriber.route', [], $l) ?: 'Route' }}">{{ $item->route ? \App\Support\Enums::label($item->route, 'route') : '—' }}</td>
+                                        <td data-label="{{ __('prescriber.quantity', [], $l) ?: 'Quantity' }}">{{ $item->quantity !== null && $item->quantity !== '' ? $item->quantity : '—' }}</td>
+                                        <td data-label="{{ __('prescriber.item_status', [], $l) ?: 'Line status' }}">
+                                            <span class="badge {{ $itemBadge }} badge-sm">{{ $label($itemStatus) }}</span>
+                                            @if($item->dispensed_at)
+                                                <div class="td-muted" style="font-size:.8rem">{{ $item->dispensed_at->format('d M Y H:i') }}</div>
+                                            @endif
                                         </td>
                                     </tr>
-                                @endforeach
+                                @empty
+                                    <tr><td colspan="6" class="td-muted empty-cell">—</td></tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>

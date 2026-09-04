@@ -69,10 +69,12 @@ return [
     'st_cancelled'           => 'Cancelled',
     'st_voided'              => 'Voided',
     'st_expired'             => 'Expired',
+    'st_entered_in_error'    => 'Entered in error',
+    'st_amended'             => 'Amended',
 
     // Counter dispensing
     'counter_title'   => 'Dispense at the counter',
-    'counter_sub'     => 'Enter the Health ID the patient presents to see their active prescriptions.',
+    'counter_sub'     => 'Enter the Health ID the patient presents, or the number printed on their prescription.',
     'counter_lookup'  => 'Find prescriptions',
     'counter_none'    => 'No active prescriptions on that Health ID.',
     'counter_nopat'   => 'No patient matches that Health ID.',
@@ -80,6 +82,39 @@ return [
     'counter_dispense'=> 'Dispense',
     'counter_notes'   => 'Dispense notes',
     'counter_link'    => 'Counter lookup',
+
+    // Counter — one box: a Health ID or a prescription number
+    'counter_query'      => 'Health ID or prescription number',
+    'counter_query_hint' => 'Enter the exact Health ID, or the prescription number printed on the script (RX-XXXX-XXXX). Patient names are not searchable.',
+    'counter_norx'       => 'No prescription has the number :reference.',
+    'counter_nopatrow'   => 'Patient record unavailable',
+
+    // Counter — refusing a script that must not be filled
+    'counter_blocked_title'      => 'Do not dispense',
+    'counter_blocked_title_done' => 'Already dispensed',
+    'counter_blocked_terminal'   => 'This prescription is :status and must not be dispensed.',
+    'counter_blocked_expired'    => 'This prescription lapsed on :date and must not be dispensed.',
+    'counter_blocked_dispensed'  => 'This prescription has already been handed to the patient. It cannot be dispensed a second time.',
+
+    // Printable prescription — the sheet a patient carries to a pharmacy
+    'print_action'             => 'Print',
+    'print_doc_title'          => 'Prescription :reference',
+    'print_reference'          => 'Prescription no.',
+    'print_facility'           => 'Issuing facility',
+    'print_facility_license'   => 'Facility licence',
+    'print_date_of_birth'      => 'Date of birth',
+    'print_sex'                => 'Sex',
+    'print_license'            => 'Licence no.',
+    'print_no_items'           => 'No medicines are recorded on this prescription.',
+    'print_scan_to_verify'     => 'Scan to verify this prescription',
+    'print_verify_unavailable' => 'Digital verification is unavailable for this copy. Quote the prescription number above to the issuing facility.',
+    'print_signature'          => 'Prescriber signature and stamp',
+    'print_footer'             => 'This prescription can be verified or withdrawn digitally at any time. A withdrawn prescription stops verifying, including on paper already handed over — scan before dispensing.',
+    'print_void_banner'        => 'Do not dispense — this prescription is not valid',
+    'print_void_detail'        => 'It was marked :status on :date and must not be dispensed.',
+    'print_expired_banner'     => 'Do not dispense — this prescription has expired',
+    'print_expired_detail'     => 'It lapsed on :date and must not be dispensed.',
+    'print_generated'          => 'Printed :datetime',
 
     // Nav
     'nav'             => 'Prescriptions',
