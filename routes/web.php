@@ -469,6 +469,14 @@ Route::middleware(['web', 'auth', 'platform.admin'])->group(function () {
 */
 Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access'])->group(function () {
     Route::get('/pharmacy',                              [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'dashboard'])->name('portals.pharmacy.dashboard');
+    // ── Prescriber desk — writing prescriptions (the clinical half of the
+    // module; dispensing is the pharmacy routes below). Facility-scoped.
+    Route::get('/facility/prescriptions',            [\App\Http\Controllers\MedicalId\PrescriberController::class, 'index'])->name('portals.prescriber.index');
+    Route::get('/facility/prescriptions/new',        [\App\Http\Controllers\MedicalId\PrescriberController::class, 'create'])->name('portals.prescriber.create');
+    Route::post('/facility/prescriptions',           [\App\Http\Controllers\MedicalId\PrescriberController::class, 'store'])->name('portals.prescriber.store');
+    Route::get('/facility/prescriptions/{id}',       [\App\Http\Controllers\MedicalId\PrescriberController::class, 'show'])->name('portals.prescriber.show');
+    Route::post('/facility/prescriptions/{id}/void', [\App\Http\Controllers\MedicalId\PrescriberController::class, 'void'])->name('portals.prescriber.void');
+
     Route::get('/pharmacy/prescriptions',               [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'prescriptions'])->name('portals.pharmacy.prescriptions');
     Route::post('/pharmacy/prescriptions/{id}/dispense',[\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'dispense'])->name('portals.pharmacy.dispense');
     // Public medicine availability — the medicine_pharmacy_stocks rows the
