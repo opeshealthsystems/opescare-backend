@@ -83,8 +83,20 @@
                         : null);
             @endphp
             @if($myProfileUrl)
-                <a href="{{ $myProfileUrl }}" class="sidebar-link sidebar-link-footer {{ request()->routeIs('professional.*') || request()->routeIs('portals.patient.profile') ? 'active' : '' }}">
+                {{-- Narrowed from professional.* so it does not light up at the
+                     same time as the "Join a facility" link below it. --}}
+                <a href="{{ $myProfileUrl }}" class="sidebar-link sidebar-link-footer {{ request()->routeIs('professional.profile*') || request()->routeIs('professional.qualifications.*') || request()->routeIs('portals.patient.profile') ? 'active' : '' }}">
                     <i data-lucide="id-card"></i><span>{{ __('professional.nav_my_profile', [], app()->getLocale()) ?: 'My Profile' }}</span>
+                </a>
+            @endif
+            @if($me?->isProfessional())
+                {{-- Lives here, next to My Profile, rather than in one of the 40+
+                     role sidebars: asking to join a facility is a personal action
+                     that has to work for a clinician who has NO facility yet, and
+                     those are exactly the accounts whose role sidebar links to
+                     pages facility.context will not let them reach. --}}
+                <a href="{{ route('professional.join') }}" class="sidebar-link sidebar-link-footer {{ request()->routeIs('professional.join*') ? 'active' : '' }}">
+                    <i data-lucide="building-2"></i><span>{{ __('team.join_nav', [], app()->getLocale()) ?: 'Join a facility' }}</span>
                 </a>
             @endif
             <form method="POST" action="{{ route('logout') }}">

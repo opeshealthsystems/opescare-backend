@@ -116,6 +116,20 @@ return [
     'print_expired_detail'     => 'It lapsed on :date and must not be dispensed.',
     'print_generated'          => 'Printed :datetime',
 
+    // Printable prescription — issuer identity and anti-forgery framing
+    'print_brand'              => 'OpesCare',
+    'print_platform_strap'     => 'National digital health-ID platform',
+    'print_not_recorded'       => 'Not recorded',
+    'print_ministry_code'      => 'MINSANTE code',
+    'print_items_count'        => ':count item(s)',
+    'print_items_end'          => 'End of prescription — :count item(s). Nothing may be added below this line.',
+    'print_verify_heading'     => 'Verify before dispensing',
+    'print_verify_body'        => 'This paper is not the authority — the scan is. Scan the code, or open the address above, and confirm the prescription is still valid before you dispense.',
+    'print_verify_ref'         => 'The paper is not the authority. If you cannot scan, quote the prescription number to the issuing facility and confirm it is still valid before you dispense.',
+    'print_security_heading'   => 'Security notice',
+    'print_security_altered'   => 'Void if altered. Any erasure, overwriting or correction on this sheet voids it in full.',
+    'print_security_withdrawn' => 'A prescription withdrawn after printing stops verifying. Paper already handed over is not proof that it is still valid.',
+
     // Nav
     'nav'             => 'Prescriptions',
 ];

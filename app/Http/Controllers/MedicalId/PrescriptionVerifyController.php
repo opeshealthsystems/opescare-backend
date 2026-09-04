@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Prescription;
 use App\Modules\Governance\Services\AccessLogService;
 use App\Services\Clinical\PrescriptionAccessService;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -64,22 +65,31 @@ class PrescriptionVerifyController extends Controller
         $this->audit($prescription);
 
         return view('verify.rx', [
-            'token'  => $token,
-            'rx'     => $this->project($prescription),
-            'error'  => null,
+            'token'      => $token,
+            'rx'         => $this->project($prescription),
+            'error'      => null,
+            // Stamped on the letterhead so the pharmacist can see the check was
+            // made now, live, and is not a screenshot of an older answer.
+            'verifiedAt' => Carbon::now(),
         ]);
     }
 
     /**
      * One refusal, one message. Invalid, expired and withdrawn are the same
      * answer to whoever is holding the paper.
+     *
+     * `verifiedAt` is deliberately null here, and not merely unused: a clock on
+     * the refusal page would make two refusals differ byte for byte, and the
+     * whole point of this method is that they cannot. Nothing rendered below
+     * may vary with which kind of bad token arrived.
      */
     private function refuse(string $token)
     {
         return view('verify.rx', [
-            'token' => $token,
-            'rx'    => null,
-            'error' => __('verify.rx_invalid_body'),
+            'token'      => $token,
+            'rx'         => null,
+            'error'      => __('verify.rx_invalid_body'),
+            'verifiedAt' => null,
         ]);
     }
 
@@ -110,11 +120,12 @@ class PrescriptionVerifyController extends Controller
             'reference'      => $prescription->reference,
 
             // Enough to confirm the right person is at the counter. Deliberately
-            // NOT the patient id, date of birth, phone, address or email.
+            // NOT the patient id, date of birth, phone, address or email — and the
+            // Health ID is MASKED, see maskHealthId() for why.
             'patient_name'      => $patient
                 ? trim($patient->first_name . ' ' . $patient->last_name)
                 : null,
-            'patient_health_id' => $patient?->health_id,
+            'patient_health_id' => self::maskHealthId($patient?->health_id),
 
             // Provenance.
             'facility_name'   => $prescription->facility?->name,
@@ -150,6 +161,63 @@ class PrescriptionVerifyController extends Controller
      * PrescriptionService write — so an unrecognised value falls back rather
      * than leaking an untranslated database string onto a public page.
      */
+    /**
+     * Show only the last group of the Health ID: CM-HID-****-****-XA57.
+     *
+     * This page is public and unauthenticated — anyone holding the printed sheet,
+     * a photograph of it, or a forwarded link reaches it. On this platform a
+     * Health ID is not merely a name for a person: the pharmacy counter accepts
+     * one and returns that patient's active prescriptions, so a full ID read off
+     * a discarded script is a key into someone's medication record, for life.
+     * It cannot be rotated the way a password can.
+     *
+     * The last group is kept because the actual verification act at the counter
+     * is comparing this against the card in the patient's hand, and a trailing
+     * group is enough to do that while being useless to a stranger. The name
+     * above it stays in full — matching the person is the whole point.
+     */
+    public static function maskHealthId(?string $healthId): ?string
+    {
+        $healthId = strtoupper(trim((string) $healthId));
+
+        if ($healthId === '') {
+            return null;
+        }
+
+        // The platform format is COUNTRY-HID-BLOCK1-BLOCK2-CHECKBLOCK
+        // (HealthIdGeneratorService). The first two groups are a constant every
+        // patient in the country shares, so masking them costs legibility and
+        // buys no privacy; the identifying entropy is in BLOCK1 and BLOCK2.
+        if (preg_match('/^([A-Z]{2})-HID-(.+)$/', $healthId, $m) === 1) {
+            $blocks = explode('-', $m[2]);
+            $last   = array_pop($blocks);
+
+            $masked = array_map(
+                static fn (string $b): string => str_repeat('*', max(strlen($b), 1)),
+                $blocks
+            );
+
+            return $m[1] . '-HID-' . implode('-', [...$masked, $last]);
+        }
+
+        // Unknown shape: assume every group is identifying and keep only the last.
+        if (str_contains($healthId, '-')) {
+            $parts = explode('-', $healthId);
+            $last  = array_pop($parts);
+
+            return implode('-', array_map(
+                static fn (string $part): string => str_repeat('*', max(strlen($part), 1)),
+                $parts
+            )) . '-' . $last;
+        }
+
+        $keep = min(4, (int) floor(strlen($healthId) / 2));
+
+        return $keep < 1
+            ? str_repeat('*', strlen($healthId))
+            : str_repeat('*', strlen($healthId) - $keep) . substr($healthId, -$keep);
+    }
+
     private function statusLabel(string $status): string
     {
         $known = [

@@ -76,6 +76,16 @@ return [
     'rx_heading'           => 'Vérification d\'Ordonnance',
     'rx_subheading'        => 'Voici l\'ordonnance correspondant au code scanné. Vérifiez la référence et le patient avant toute délivrance.',
 
+    // En-tête — la page doit ressembler au document officiel qu'elle est.
+    'rx_platform_line'     => 'Plateforme Nationale de Santé Numérique',
+    'rx_doc_kicker'        => 'Service de Vérification des Ordonnances',
+    'rx_verified_label'    => 'Vérifiée',
+    'rx_authority_note'    => 'C\'est cet écran qui fait foi, et non le papier. Il est servi en direct par OpesCare depuis le dossier de l\'établissement émetteur ; une ordonnance imprimée n\'en est qu\'une copie. En cas de divergence entre le papier et cet écran, c\'est cet écran qui prévaut.',
+    'rx_reference_hint'    => 'Comparez cette référence avec l\'ordonnance imprimée avant toute délivrance.',
+    'rx_privacy_note'      => 'Ce lien ne divulgue que le nom du patient et son ID de Santé — ni date de naissance, ni coordonnées, ni notes cliniques, ni aucune autre ordonnance.',
+    'rx_table_scroll_hint' => 'Faites défiler le tableau horizontalement pour voir toutes les colonnes.',
+    'rx_medicines_region'  => 'Médicaments prescrits — tableau défilant',
+
     // Refus unique — invalide, expiré et retiré donnent la même réponse.
     'rx_invalid_title'     => 'Ordonnance Indisponible',
     'rx_invalid_body'      => 'Ce lien est invalide, a expiré ou a été retiré. Demandez au patient un code d\'ordonnance à jour.',

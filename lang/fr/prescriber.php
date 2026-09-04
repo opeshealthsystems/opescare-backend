@@ -116,6 +116,20 @@ return [
     'print_expired_detail'     => 'Elle a expiré le :date et ne doit pas être délivrée.',
     'print_generated'          => 'Imprimée le :datetime',
 
+    // Ordonnance imprimable — identité de l’émetteur et dispositifs anti-fraude
+    'print_brand'              => 'OpesCare',
+    'print_platform_strap'     => 'Plateforme nationale d’identité santé numérique',
+    'print_not_recorded'       => 'Non renseigné',
+    'print_ministry_code'      => 'Code MINSANTE',
+    'print_items_count'        => ':count article(s)',
+    'print_items_end'          => 'Fin de l’ordonnance — :count article(s). Rien ne peut être ajouté sous cette ligne.',
+    'print_verify_heading'     => 'Vérifier avant de délivrer',
+    'print_verify_body'        => 'Le papier ne fait pas foi — c’est le scan qui fait foi. Scannez le code, ou ouvrez l’adresse ci-dessus, et confirmez que l’ordonnance est toujours valable avant de délivrer.',
+    'print_verify_ref'         => 'Le papier ne fait pas foi. Si vous ne pouvez pas scanner, communiquez le numéro d’ordonnance à l’établissement émetteur et confirmez qu’elle est toujours valable avant de délivrer.',
+    'print_security_heading'   => 'Avis de sécurité',
+    'print_security_altered'   => 'Nulle en cas de modification. Toute rature, surcharge ou correction sur cette feuille l’annule intégralement.',
+    'print_security_withdrawn' => 'Une ordonnance retirée après impression cesse d’être vérifiable. Le papier déjà remis ne prouve pas qu’elle est encore valable.',
+
     // Nav
     'nav'             => 'Ordonnances',
 ];

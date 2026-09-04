@@ -35,6 +35,18 @@ use Illuminate\View\View;
  *  2. A prescription that is void, cancelled, entered-in-error, superseded or
  *     expired must never come off the printer looking like a normal script.
  *     The sheet says so across the top and repeats it beside the signature.
+ *  3. The sheet must look issued and be awkward to forge. It carries the
+ *     platform mark, the facility's own contact block, and BOTH licence
+ *     numbers — the prescriber's and the facility's — printed as "not
+ *     recorded" when the record does not hold them, because a blank where a
+ *     licence should be is itself information. Behind the content runs a
+ *     watermark woven from this prescription's own reference, so a sheet
+ *     photocopied blank still names the script it came from.
+ *
+ * Everything the view needs for that is already in this payload: `facility`
+ * carries `license_number`, `registry` carries the MINSANTE code and the
+ * postal/telephone contact, and `licenseNumber` is the prescriber's. Nothing
+ * on the sheet is invented — a missing value prints as missing.
  *
  * Scope matches PrescriberController exactly — same facility resolution, same
  * middleware — so nothing is printable here that is not viewable there.

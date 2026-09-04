@@ -242,6 +242,14 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/professional/profile', [\App\Http\Controllers\MedicalId\ProfessionalProfileController::class, 'updateProfile'])->name('professional.profile.update');
     Route::post('/professional/qualifications', [\App\Http\Controllers\MedicalId\ProfessionalProfileController::class, 'storeQualification'])->name('professional.qualifications.store');
     Route::delete('/professional/qualifications/{id}', [\App\Http\Controllers\MedicalId\ProfessionalProfileController::class, 'destroyQualification'])->name('professional.qualifications.destroy');
+
+    // Ask to join a facility's team. Outside facility.context for the same
+    // reason as the routes above: the professionals who need this page are
+    // exactly the ones with no facility yet. The facility's half of the
+    // conversation — approve / decline — lives on /facility/team.
+    Route::get('/professional/facilities',                [\App\Http\Controllers\MedicalId\ProfessionalJoinRequestController::class, 'index'])->name('professional.join');
+    Route::post('/professional/facilities',               [\App\Http\Controllers\MedicalId\ProfessionalJoinRequestController::class, 'store'])->middleware('throttle:portal')->name('professional.join.store');
+    Route::post('/professional/facilities/{id}/withdraw', [\App\Http\Controllers\MedicalId\ProfessionalJoinRequestController::class, 'withdraw'])->middleware('throttle:portal')->name('professional.join.withdraw');
 });
 
 // Platform-wide notification centre — every authenticated user reads their own
@@ -321,6 +329,12 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'platform.adm
     Route::post('/facility/team/invites',                   [\App\Http\Controllers\MedicalId\FacilityStaffController::class, 'store'])->name('portals.facility.team.invite');
     Route::post('/facility/team/invites/{id}/reissue',      [\App\Http\Controllers\MedicalId\FacilityStaffController::class, 'reissue'])->name('portals.facility.team.invite.reissue');
     Route::post('/facility/team/invites/{id}/revoke',       [\App\Http\Controllers\MedicalId\FacilityStaffController::class, 'revoke'])->name('portals.facility.team.invite.revoke');
+
+    // Join requests: the other direction — a clinician asked to be added, the
+    // facility decides. The role is chosen HERE, by the approver, never by the
+    // requester; the facility comes from the session, never from the body.
+    Route::post('/facility/team/join-requests/{id}/approve', [\App\Http\Controllers\MedicalId\FacilityStaffController::class, 'approveJoinRequest'])->name('portals.facility.team.join.approve');
+    Route::post('/facility/team/join-requests/{id}/decline', [\App\Http\Controllers\MedicalId\FacilityStaffController::class, 'declineJoinRequest'])->name('portals.facility.team.join.decline');
 
 
     // ── Family Management ──────────────────────────────────────────────────────

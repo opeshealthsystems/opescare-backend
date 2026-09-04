@@ -76,6 +76,16 @@ return [
     'rx_heading'           => 'Prescription Verification',
     'rx_subheading'        => 'This is the prescription behind the code you scanned. Check the reference and the patient before dispensing.',
 
+    // Letterhead — the page has to look like the official document it is.
+    'rx_platform_line'     => 'National Digital Health Platform',
+    'rx_doc_kicker'        => 'Prescription Verification Service',
+    'rx_verified_label'    => 'Checked',
+    'rx_authority_note'    => 'This screen is the authority, not the paper. It is served live by OpesCare from the issuing facility\'s own record; a printed prescription is only a copy of it. If the paper and this screen disagree, this screen is correct.',
+    'rx_reference_hint'    => 'Read this reference back against the printed prescription before dispensing.',
+    'rx_privacy_note'      => 'This link discloses the patient\'s name and Health ID only — no date of birth, no contact details, no clinical notes and no other prescription.',
+    'rx_table_scroll_hint' => 'Swipe the table sideways to see every column.',
+    'rx_medicines_region'  => 'Prescribed medicines — scrollable table',
+
     // Single refusal — invalid, expired and withdrawn are one answer.
     'rx_invalid_title'     => 'Prescription Not Available',
     'rx_invalid_body'      => 'This link is invalid, has expired, or has been withdrawn. Ask the patient for a current prescription code.',
