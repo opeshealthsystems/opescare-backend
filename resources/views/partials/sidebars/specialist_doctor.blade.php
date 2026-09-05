@@ -25,3 +25,9 @@
         <span>{{ __('messaging.nav', [], $l) ?: 'Messages' }}</span>
     </a>
 </div>
+
+
+{{-- Facility switching for clinicians posted at more than one facility.
+     Self-gating: renders nothing unless this user holds more than one active
+     posting (see partials/sidebars/_switch_facility.blade.php). --}}
+@include('partials.sidebars._switch_facility')

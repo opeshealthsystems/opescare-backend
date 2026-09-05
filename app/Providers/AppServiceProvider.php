@@ -117,6 +117,41 @@ class AppServiceProvider extends ServiceProvider
         Route::middleware('api')
             ->group(base_path('routes/mobile_vitals.php'));
 
+        // Account deletion — the in-app erasure flow (Apple 5.1.1(v) and Google
+        // Play both require one when an app creates accounts) plus the public
+        // page that documents it.
+        //
+        // Registered with an EMPTY attribute array, not ->middleware('api'):
+        // this file carries its own `api/mobile` group AND a separate `web`
+        // group for the public page. Wrapping it in `api` would put a browser
+        // page behind the API middleware stack.
+        Route::group([], base_path('routes/mobile_account_deletion.php'));
+
+        // Mobile consent ledger routes — loaded here rather than in routes/api.php so
+        // parallel work on separate features cannot collide in one file.
+        Route::middleware('api')
+            ->group(base_path('routes/mobile_consent_ledger.php'));
+
+        // Mobile consent requests routes — loaded here rather than in routes/api.php so
+        // parallel work on separate features cannot collide in one file.
+        Route::middleware('api')
+            ->group(base_path('routes/mobile_consent_requests.php'));
+
+        // Mobile emergency access routes — loaded here rather than in routes/api.php so
+        // parallel work on separate features cannot collide in one file.
+        Route::middleware('api')
+            ->group(base_path('routes/mobile_emergency_access.php'));
+
+        // Mobile facility registry routes — loaded here rather than in routes/api.php so
+        // parallel work on separate features cannot collide in one file.
+        Route::middleware('api')
+            ->group(base_path('routes/mobile_facility_registry.php'));
+
+        // Mobile provider facility routes — loaded here rather than in routes/api.php so
+        // parallel work on separate features cannot collide in one file.
+        Route::middleware('api')
+            ->group(base_path('routes/mobile_provider_facility.php'));
+
         // Mobile appointments reschedule routes — loaded here rather than in routes/api.php so
         // parallel work on separate features cannot collide in one file.
         Route::middleware('api')
@@ -156,6 +191,11 @@ class AppServiceProvider extends ServiceProvider
         // parallel work on separate features cannot collide in one file.
         Route::middleware('api')
             ->group(base_path('routes/mobile_payments.php'));
+
+        // Mobile messaging recipients route — loaded here rather than in
+        // routes/api.php so parallel work on separate features cannot collide.
+        Route::middleware('api')
+            ->group(base_path('routes/mobile_messaging_recipients.php'));
 
         /*
          * Second-factor and one-time codes.

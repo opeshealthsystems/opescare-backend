@@ -56,6 +56,23 @@ class MobileProviderController extends Controller
     private const CLINICAL_CATEGORY = 'clinical';
 
     /**
+     * Why a facility's clinician list is empty. The client needs the three
+     * cases apart, because the honest next step differs in each:
+     *
+     *   not_connected  — the listing has no `facilities` row behind it. Nothing
+     *                    will be published here until the operator signs up.
+     *                    Offer the phone number.
+     *   none_published — the operator IS on OpesCare but has published no
+     *                    clinical staff profiles. If the calendar has open
+     *                    slots the patient can still book (a slot is bound to a
+     *                    facility, not to a named clinician), so offer booking.
+     *   published      — there is a roster; it is in `data`.
+     */
+    private const ROSTER_NOT_CONNECTED  = 'not_connected';
+    private const ROSTER_NONE_PUBLISHED = 'none_published';
+    private const ROSTER_PUBLISHED      = 'published';
+
+    /**
      * GET /api/mobile/facilities/{careFacilityId}/providers
      *
      * Lists the active clinicians at one directory facility. Mirrors the
@@ -63,6 +80,16 @@ class MobileProviderController extends Controller
      * internal `facilities` id (null when the directory entry is unlinked),
      * so the client can correlate a provider with the `provider_id` carried
      * on each slot.
+     *
+     * ── Why the empty case now carries more than `[]` ─────────────────────
+     * Of 2 728 active directory listings only 468 carry a `facility_id`; of
+     * those 468, zero currently publish a clinical staff profile while 121 do
+     * have open slots. An empty `data` array therefore meant three very
+     * different things and the app could not tell them apart, so it showed the
+     * same dead end for all three. `roster_status`, `connected` and
+     * `open_slot_count` split them, and `message` states the reason in the
+     * caller's language. None of it invents a clinician — an empty roster is
+     * still reported as empty.
      */
     public function index(string $careFacilityId): JsonResponse
     {
@@ -75,6 +102,11 @@ class MobileProviderController extends Controller
                 'facility_id'      => null,
                 'care_facility_id' => $careFacility->id,
                 'facility_name'    => $careFacility->facility_name,
+                'connected'        => false,
+                'roster_status'    => self::ROSTER_NOT_CONNECTED,
+                'provider_count'   => 0,
+                'open_slot_count'  => 0,
+                'message'          => __('facility_registry.roster.not_connected'),
                 'data'             => [],
             ]);
         }
@@ -90,10 +122,21 @@ class MobileProviderController extends Controller
 
         $credentials = $this->activeCredentialsFor($profiles->pluck('user_id')->all());
 
+        $openSlotCount = $this->openSlotCountFor($careFacility->facility_id);
+        $rosterStatus  = $profiles->isNotEmpty() ? self::ROSTER_PUBLISHED : self::ROSTER_NONE_PUBLISHED;
+
         return response()->json([
             'facility_id'      => $careFacility->facility_id,
             'care_facility_id' => $careFacility->id,
             'facility_name'    => $careFacility->facility_name,
+            'connected'        => true,
+            'roster_status'    => $rosterStatus,
+            'provider_count'   => $profiles->count(),
+            // A slot belongs to a facility, not to a name. When the roster is
+            // empty but the calendar is not, booking still works — so say so
+            // instead of leaving the patient on a dead screen.
+            'open_slot_count'  => $openSlotCount,
+            'message'          => $this->rosterMessage($rosterStatus, $profiles->count(), $openSlotCount),
             'data'             => $profiles
                 ->map(fn (StaffProfile $p) => $this->formatProvider(
                     $p,
@@ -180,6 +223,33 @@ class MobileProviderController extends Controller
     }
 
     // -------------------------------------------------------------------------
+
+    /**
+     * Open, future, not-yet-full slots at one internal facility.
+     *
+     * Same predicate as MobileFacilityController::slots(), so "121 facilities
+     * are bookable" and "this facility is bookable" can never disagree.
+     */
+    private function openSlotCountFor(string $internalFacilityId): int
+    {
+        return AppointmentSlot::where('facility_id', $internalFacilityId)
+            ->where('status', 'open')
+            ->where('starts_at', '>=', now())
+            ->whereColumn('booked_count', '<', 'capacity')
+            ->count();
+    }
+
+    /** The reason line for a roster, in the caller's language. */
+    private function rosterMessage(string $rosterStatus, int $providerCount, int $openSlotCount): string
+    {
+        if ($rosterStatus === self::ROSTER_PUBLISHED) {
+            return trans_choice('facility_registry.roster.published', $providerCount, ['count' => $providerCount]);
+        }
+
+        return $openSlotCount > 0
+            ? __('facility_registry.roster.slots_without_roster')
+            : __('facility_registry.roster.none_published');
+    }
 
     /**
      * Active ProviderCredential rows for a set of users, keyed by provider_id.

@@ -197,11 +197,20 @@ class MobileProviderDirectoryTest extends TestCase
             '/api/mobile/facilities/' . $unlinked->id . '/providers',
         );
 
+        // The roster is still empty — nothing is invented. What is added is the
+        // REASON it is empty: `not_connected` means no operator has signed up
+        // behind this listing, which is a different dead end from "connected
+        // but has published nobody", and the app has to tell them apart.
         $response->assertStatus(200)
             ->assertExactJson([
                 'facility_id'      => null,
                 'care_facility_id' => $unlinked->id,
                 'facility_name'    => 'Unlinked Clinic',
+                'connected'        => false,
+                'roster_status'    => 'not_connected',
+                'provider_count'   => 0,
+                'open_slot_count'  => 0,
+                'message'          => __('facility_registry.roster.not_connected'),
                 'data'             => [],
             ]);
     }

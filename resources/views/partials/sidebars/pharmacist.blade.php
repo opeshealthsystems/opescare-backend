@@ -26,3 +26,9 @@
         <i data-lucide="shield-alert"></i><span>{{ __('public.portal.nav_controlled', [], $l) ?: 'Controlled Substances' }}</span>
     </a>
 </div>
+
+
+{{-- Facility switching for clinicians posted at more than one facility.
+     Self-gating: renders nothing unless this user holds more than one active
+     posting (see partials/sidebars/_switch_facility.blade.php). --}}
+@include('partials.sidebars._switch_facility')

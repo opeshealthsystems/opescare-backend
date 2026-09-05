@@ -25,6 +25,32 @@ Schedule::command('backup:clean')->daily();
 // OpesCare: data retention enforcement (PR-9 Task 2)
 Schedule::command('opescare:enforce-data-retention')->dailyAt('02:00');
 
+// OpesCare: consent grants whose validity has lapsed.
+//
+// `consent_grants.status` was written at approval and never swept, so a grant
+// long past its expires_at still read `active`. No access decision was ever
+// wrong because of it — every gate checks the DATE as well as the column — but
+// GenerateMinsanteMonthlyReport groups by status alone, so lapsed consents were
+// reported to the health ministry as live. One writer, so the column stops
+// disagreeing with reality.
+Schedule::command('consent:expire-lapsed')->hourly()->withoutOverlapping();
+
+// OpesCare: execute account closures whose 30-day grace period has run out.
+// The grace period is the whole safety property here — a patient who taps
+// delete by mistake has a month to take it back, and the account stays usable
+// throughout because locking it would remove the session needed to cancel.
+Schedule::command('opescare:execute-account-deletions')->dailyAt('02:30')->withoutOverlapping();
+
+// OpesCare: mobile-money charges abandoned mid-flight.
+//
+// A charge still self-closes on the next poll or the patient's next attempt;
+// this just means it happens without needing a visitor to trigger it, so an
+// abandoned charge cannot sit `pending` against an invoice indefinitely.
+Schedule::call(fn () => app(\App\Services\Payments\PaymentChargeService::class)->expireLapsed())
+    ->everyFiveMinutes()
+    ->name('payments:expire-lapsed-charges')
+    ->withoutOverlapping();
+
 // OpesCare: JWT JTI blacklist cleanup — Connect partner tokens can be revoked;
 // entries past their exp timestamp are meaningless and can be pruned.
 Schedule::command('health-id:purge-revoked-tokens')->dailyAt('00:30');

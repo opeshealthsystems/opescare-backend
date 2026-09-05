@@ -172,8 +172,11 @@ class PatientBookingTest extends TestCase
 
         $response = $this->mobileGetJson($this->patient, '/api/mobile/facilities/' . $unlinked->id . '/slots');
 
+        // `connected: false` is the same fact as `facility_id: null`, said in
+        // the word the client renders. An unlinked listing has no calendar and
+        // the endpoint must never invent one.
         $response->assertStatus(200)
-                 ->assertExactJson(['facility_id' => null, 'data' => []]);
+                 ->assertExactJson(['facility_id' => null, 'connected' => false, 'data' => []]);
     }
 
     // ── Task 3 tests (booking) ───────────────────────────────────────

@@ -14,6 +14,7 @@ use App\Notifications\PasswordChangedNotification;
 use App\Notifications\PasswordResetLinkNotification;
 use App\Services\Dashboard\DashboardProfileService;
 use App\Services\Identity\HealthIdGeneratorService;
+use App\Services\Portal\FacilityMembershipService;
 use Illuminate\Auth\Events\PasswordReset as PasswordResetEvent;
 use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Http\Request;
@@ -1231,58 +1232,60 @@ class PublicPageController extends Controller
      * selector's POST would accept any facility id the browser sent, and every
      * one of those controllers would then happily read and write another
      * hospital's data.
+     *
+     * MOVED, not changed: the definition now lives in
+     * App\Services\Portal\FacilityMembershipService, because RequireFacilityContext
+     * and the mobile switch endpoint have to ask the same question and a second
+     * copy of this list is a second copy that can drift. This wrapper stays so
+     * the answer is identical wherever it is asked from — the service also
+     * counts an ACTIVE staff_profiles posting, which this version missed and
+     * which is the only posting many seeded clinicians have.
      */
     private function selectableFacilityIds(?User $user): ?array
     {
-        if (! $user) {
-            return [];
-        }
-
-        if (\App\Http\Middleware\RequirePlatformAdmin::isPlatformTier($user)) {
-            return null; // unrestricted
-        }
-
-        $ids = [];
-
-        if ($user->primary_facility_id) {
-            $ids[] = $user->primary_facility_id;
-        }
-
-        if (method_exists($user, 'facilityRoleAssignments')) {
-            $ids = array_merge(
-                $ids,
-                $user->facilityRoleAssignments()->active()->pluck('facility_id')->all()
-            );
-        }
-
-        return array_values(array_unique($ids));
+        return app(FacilityMembershipService::class)->facilityIdsFor($user);
     }
 
+    /**
+     * The facility selector — reachable at login AND mid-session.
+     *
+     * It used to be a login-only screen that most multi-facility staff never
+     * saw, because RequireFacilityContext auto-pinned them to their primary
+     * facility before they got here. It is now also where the sidebar's
+     * "Switch Facility" link lands, so the page has to describe the CURRENT
+     * facility as well as the alternatives — a switcher that cannot tell you
+     * where you are is a guess with extra steps.
+     */
     public function showSelectFacility()
     {
-        $user     = Auth::user();
-        $roleName = $user?->role?->description ?? $user?->role?->name ?? 'User';
+        $user = Auth::user();
 
-        // Build a list of selectable facilities: exactly the ones the user is
-        // entitled to (see selectableFacilityIds). Platform-tier users get the
-        // full list; everyone else gets their own assignments only, so the page
-        // never offers a choice the POST would refuse.
-        $query = Facility::withoutGlobalScope('isolate_demo')
-            ->orderBy('name');
-
-        $allowed = $this->selectableFacilityIds($user);
-
-        if ($allowed !== null) {
-            $query->whereIn('id', $allowed);
+        // Reached signed-out (a stale tab, a bookmarked URL): there is no
+        // "your facilities" to show, so say so rather than render an empty
+        // card that looks like the account has no postings.
+        if (! $user) {
+            return redirect()->route('login')
+                ->with('error', __('facility_switch.sign_in_required'));
         }
 
-        $facilities = $query->get()->map(fn(Facility $f) => [
-            'id'     => $f->id,
-            'name'   => $f->name,
-            'branch' => ucfirst($f->type ?? ''),
-            'role'   => $roleName,
-            'status' => ($f->status === 'suspended') ? 'suspended' : 'active',
-        ])->values()->all();
+        $roleName = $user->role?->description ?? $user->role?->name ?? 'User';
+        $current  = session('active_facility_id');
+
+        // Exactly the facilities the user is entitled to — the same resolver
+        // the middleware and the mobile switch endpoint use, so the page never
+        // offers a choice the POST would refuse and never hides one it allows.
+        $facilities = collect(app(FacilityMembershipService::class)->facilitiesFor($user, $current))
+            ->map(fn(array $f) => [
+                'id'         => $f['id'],
+                'name'       => $f['name'],
+                'branch'     => ucfirst($f['type']),
+                // The role held AT that facility where one is recorded, so a
+                // clinician who is a consultant at one hospital and a locum at
+                // another sees which hat each card puts on.
+                'role'       => $f['role_label'] ?: $roleName,
+                'status'     => $f['status'],
+                'is_current' => $f['is_current'],
+            ])->values()->all();
 
         return view('auth.select_facility', compact('facilities'));
     }
@@ -1301,17 +1304,35 @@ class PublicPageController extends Controller
                 ->with('error', __('flash.facility_select_required'));
         }
 
+        $user        = Auth::user();
+        $memberships = app(FacilityMembershipService::class);
+
         // The chosen id has to be one the user is entitled to. Without this
         // check the selector was an open door: POST any facility uuid and
         // session('active_facility_id') became that facility, which is the
         // scope every portal controller then trusts — including staff
         // invitations, patient queues, billing and messaging.
-        $allowed = $this->selectableFacilityIds(Auth::user());
-
-        if ($allowed !== null && ! in_array($facilityId, $allowed, true)) {
+        //
+        // Re-checked HERE on every submit, not just on the first: the sidebar
+        // now lets a clinician come back mid-session, and a posting can have
+        // been withdrawn since the page was rendered.
+        if (! $memberships->mayActAt($user, is_string($facilityId) ? $facilityId : null)) {
             return redirect()->route('select-facility')
                 ->with('error', __('flash.facility_select_not_allowed'));
         }
+
+        $facility = Facility::withoutGlobalScope('isolate_demo')->find($facilityId);
+
+        // The suspended check above catches the SENTINEL the selector posts for
+        // a suspended card; this catches the real id, which a direct POST (or a
+        // facility suspended since the page rendered) would otherwise carry
+        // straight into the session. Same refusal the mobile endpoint gives.
+        if (! $facility || $facility->status === 'suspended') {
+            return redirect()->route('select-facility')
+                ->with('error', __('onboarding.login.errors.facility_suspended'));
+        }
+
+        $previous = session('active_facility_id');
 
         // ✅ Save the chosen facility to session so RequireFacilityContext passes
         session(['active_facility_id' => $facilityId]);
@@ -1320,6 +1341,35 @@ class PublicPageController extends Controller
             ? app(DashboardProfileService::class)->landingUrlForCurrent()
             : route('login');
 
-        return redirect($url)->with('success', __('flash.clinical_session_established'));
+        // Nothing moved — don't write an audit row saying it did, and don't
+        // congratulate the user on a change they did not make.
+        if ($previous !== null && (string) $previous === (string) $facilityId) {
+            return redirect($url)->with('info', __('facility_switch.already_active', [
+                'facility' => (string) $facility->name,
+            ]));
+        }
+
+        // Every switch is audited — web and phone alike, same action_type, same
+        // shape — so "who changed which facility they were acting as, and when"
+        // is one query rather than two half-answers.
+        if ($user) {
+            $memberships->auditSwitch(
+                user: $user,
+                fromFacilityId: $previous !== null ? (string) $previous : null,
+                toFacilityId: (string) $facilityId,
+                channel: 'portal_web',
+                ipAddress: $request->ip(),
+            );
+        }
+
+        // A first selection at login is a session being established; a change
+        // made later is a switch, and saying which one happened is the whole
+        // feedback the clinician gets that the portal is now showing somebody
+        // else's building.
+        $message = $previous === null
+            ? __('flash.clinical_session_established')
+            : __('facility_switch.switched', ['facility' => (string) $facility->name]);
+
+        return redirect($url)->with('success', $message);
     }
 }

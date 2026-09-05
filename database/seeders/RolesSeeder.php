@@ -24,7 +24,22 @@ class RolesSeeder extends Seeder
 
         // Clinical Providers
         ['doctor',               'clinical_provider',       'doctor',               'General Doctor'],
-        ['multi_doctor',         'clinical_provider',       'resident_doctor',      'Multi-Facility Doctor'],
+        // multi_doctor renders the DOCTOR dashboard, not the resident one.
+        //
+        // It used to point at 'resident_doctor', whose sidebar is identical to
+        // the doctor sidebar apart from a badge reading "Resident Doctor" — so
+        // a consultant covering three hospitals was shown a TRAINEE's chrome
+        // every time they signed in. The bucketing was deliberate once (the
+        // dashboard_profiles row is still described as "Resident, visiting, or
+        // multi-facility doctor" in DashboardProfilesSeeder) and it was wrong:
+        // working at several facilities says nothing about seniority.
+        //
+        // Nothing else keys off the difference — both profiles are portal_prefix
+        // 'staff' landing on portals.staff, EnsurePortalAccess gates on the ROLE
+        // name, and User::isProfessional() treats the two alike — so this changes
+        // the sidebar a multi-facility doctor sees and nothing more. What they
+        // now get there is the "Switch Facility" entry, which is the point.
+        ['multi_doctor',         'clinical_provider',       'doctor',               'Multi-Facility Doctor'],
         ['specialist',           'clinical_provider',       'specialist_doctor',    'Specialist Doctor'],
         ['consultant',           'clinical_provider',       'specialist_doctor',    'Consultant Doctor'],
         ['resident',             'clinical_provider',       'resident_doctor',      'Resident Doctor'],

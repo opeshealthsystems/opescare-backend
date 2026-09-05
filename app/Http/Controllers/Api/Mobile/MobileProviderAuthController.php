@@ -3,16 +3,14 @@
 namespace App\Http\Controllers\Api\Mobile;
 
 use App\Http\Controllers\Controller;
-use App\Models\Facility;
 use App\Models\ProviderAccessToken;
 use App\Models\StaffProfile;
 use App\Models\User;
+use App\Services\Portal\FacilityMembershipService;
+use App\Services\Portal\ProviderSessionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 /**
  * Mobile Provider API — sessions for clinicians.
@@ -29,15 +27,29 @@ use Illuminate\Support\Str;
  *     body — a caller who could name their own facility could prescribe into
  *     any facility in the country.
  *
+ *     The ONE deliberate exception on this whole surface is
+ *     POST /api/mobile/provider/facility (MobileProviderFacilityController),
+ *     which takes a facility id from the body precisely so a clinician can
+ *     change it — and refuses any id the caller does not hold an active
+ *     posting at, checked server-side against FacilityMembershipService.
+ *     Nothing else on the provider surface reads a facility from a request.
+ *
  *  2. A valid password belonging to a non-clinician is refused with the SAME
  *     401 and the SAME message as a wrong password. Saying "your credentials
  *     are correct but you are not a clinician" confirms the account exists,
  *     which is exactly what an attacker enumerating emails is looking for.
+ *
+ * Token minting, rotation and the `provider` payload all live in
+ * ProviderSessionService so that login and the facility switch produce
+ * byte-identical sessions; this controller only decides WHO and WHERE.
  */
 class MobileProviderAuthController extends Controller
 {
-    /** Matches the patient token's lifetime, so both halves of the app expire alike. */
-    private const TOKEN_TTL_DAYS = 30;
+    public function __construct(
+        private readonly ProviderSessionService $sessions,
+        private readonly FacilityMembershipService $memberships,
+    ) {
+    }
 
     /**
      * Email + password → a 30-day provider bearer token.
@@ -80,14 +92,14 @@ class MobileProviderAuthController extends Controller
             return response()->json(['message' => __('api.provider_no_facility')], 409);
         }
 
-        $rawToken = $this->mintToken($user, $facilityId, $validated['device_name'] ?? null);
+        $rawToken = $this->sessions->mint($user, $facilityId, $validated['device_name'] ?? null);
 
         return response()->json([
             'status'       => 'authenticated',
             'access_token' => $rawToken,
             'token_type'   => 'Bearer',
-            'expires_in'   => self::TOKEN_TTL_DAYS * 86400,
-            'provider'     => $this->providerPayload($user, $facilityId),
+            'expires_in'   => ProviderSessionService::TOKEN_TTL_DAYS * 86400,
+            'provider'     => $this->sessions->payload($user, $facilityId, $this->facilityCount($user)),
         ], 200);
     }
 
@@ -101,8 +113,8 @@ class MobileProviderAuthController extends Controller
     {
         $token = $request->attributes->get('provider_token');
 
-        if ($token instanceof ProviderAccessToken && $token->revoked_at === null) {
-            $token->forceFill(['revoked_at' => Carbon::now()])->save();
+        if ($token instanceof ProviderAccessToken) {
+            $this->sessions->revoke($token);
         }
 
         return response()->json(['message' => __('api.provider_logged_out')], 200);
@@ -126,7 +138,7 @@ class MobileProviderAuthController extends Controller
         }
 
         return response()->json([
-            'provider' => $this->providerPayload($user, $facilityId),
+            'provider' => $this->sessions->payload($user, $facilityId, $this->facilityCount($user)),
         ], 200);
     }
 
@@ -135,60 +147,54 @@ class MobileProviderAuthController extends Controller
     // ──────────────────────────────────────────────────────────────────
 
     /**
-     * The facility this clinician writes for, resolved from their own staff
-     * record only. An active staff posting wins over an inactive one, and
-     * `users.primary_facility_id` is the fallback for clinicians who have a
-     * portal account but no staff_profiles row yet.
+     * The facility a fresh session STARTS at.
      *
-     * Never accepts a facility from the request. See the class docblock.
+     * This used to be `StaffProfile::where(...)->value('facility_id')` — one
+     * column off whichever row Postgres returned first. For a clinician posted
+     * at one facility that is right by accident; for a clinician posted at two
+     * it handed out an arbitrary facility, stamped it on a 30-day token, said
+     * nothing, and offered no way to change it. That is the bug this feature
+     * exists to close.
+     *
+     * It is now DETERMINISTIC and shares its definition of "a posting" with the
+     * web portal: FacilityMembershipService prefers `users.primary_facility_id`
+     * when that is a real posting, and otherwise takes the alphabetically first
+     * facility the clinician is actually posted at. Whichever it picks, the
+     * session is no longer stuck with it — GET /api/mobile/provider/facilities
+     * lists the rest and POST /api/mobile/provider/facility moves to one.
+     *
+     * Still never accepts a facility from the request. See the class docblock.
      */
     private function resolveFacilityId(User $user): ?string
     {
-        $fromStaffProfile = StaffProfile::where('user_id', $user->id)
+        $resolved = $this->memberships->defaultFacilityIdFor($user);
+
+        if ($resolved) {
+            return $resolved;
+        }
+
+        // Legacy last resort, kept so this change cannot lock anybody out who
+        // could sign in yesterday: a clinician whose ONLY record is a
+        // staff_profiles row that is not marked active (older seeded staff, and
+        // records imported before `status` was populated) still gets a session.
+        // The switch endpoint does NOT honour this fallback — moving to another
+        // facility requires a genuine active posting.
+        return StaffProfile::where('user_id', $user->getKey())
             ->whereNotNull('facility_id')
             ->orderByRaw("CASE WHEN status = 'active' THEN 0 ELSE 1 END")
-            ->value('facility_id');
-
-        return $fromStaffProfile ?: ($user->primary_facility_id ?: null);
+            ->orderBy('created_at')
+            ->value('facility_id') ?: null;
     }
 
     /**
-     * Mint the bearer and store only its hashes — the same split the patient
-     * token uses: an indexed SHA-256 for O(1) lookup, plus a slow hash the
-     * middleware verifies in constant time. The raw token is returned once and
-     * never stored.
+     * How many facilities this clinician may act at — the number the app uses
+     * to decide whether to offer a "Switch facility" row at all. Null for a
+     * platform-tier account, which holds no postings.
      */
-    private function mintToken(User $user, string $facilityId, ?string $deviceName): string
+    private function facilityCount(User $user): ?int
     {
-        $rawToken = 'prv_' . Str::random(40);
+        $ids = $this->memberships->facilityIdsFor($user);
 
-        ProviderAccessToken::create([
-            'user_id'           => $user->id,
-            'token_lookup_hash' => hash('sha256', $rawToken),
-            'token_hash'        => Hash::make($rawToken),
-            'token_prefix'      => substr($rawToken, 0, 12),
-            'facility_id'       => $facilityId,
-            'expires_at'        => Carbon::now()->addDays(self::TOKEN_TTL_DAYS),
-            'device_name'       => $deviceName,
-        ]);
-
-        return $rawToken;
-    }
-
-    /**
-     * The identity block the app renders in its header and stores for session
-     * restore. Same shape from login and from /me so the app has one parser.
-     *
-     * @return array<string,mixed>
-     */
-    private function providerPayload(User $user, ?string $facilityId): array
-    {
-        return [
-            'id'            => $user->id,
-            'name'          => $user->name,
-            'role'          => $user->role?->name,
-            'facility_id'   => $facilityId,
-            'facility_name' => $facilityId ? Facility::whereKey($facilityId)->value('name') : null,
-        ];
+        return $ids === null ? null : count($ids);
     }
 }
