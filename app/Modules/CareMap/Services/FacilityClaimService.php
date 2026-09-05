@@ -7,6 +7,8 @@ use App\Models\CareFacility;
 use App\Models\FacilityClaim;
 use App\Models\FacilityRegistry;
 use App\Models\FacilityUpdateAudit;
+use App\Models\User;
+use App\Services\Portal\FacilityMembershipService;
 use Illuminate\Support\Facades\DB;
 
 class FacilityClaimService
@@ -292,6 +294,8 @@ class FacilityClaimService
             'partner_id'         => $listing->partner_id ?? $claimantId,
         ]);
 
+        $this->linkListingToClaimantFacility($listing, $claimantId, $adminId);
+
         FacilityUpdateAudit::create([
             'facility_id'     => $listing->id,
             'actor_id'        => $adminId,
@@ -299,6 +303,115 @@ class FacilityClaimService
             'field_changed'   => 'claimed_by_user_id',
             'old_value'       => $before,
             'new_value'       => $claimantId,
+            'source'          => 'facility_claim_approval',
+            'requires_review' => false,
+            'created_at'      => now(),
+        ]);
+    }
+
+    /**
+     * Join an approved listing to the tenant facility its claimant works for.
+     *
+     * ─────────────────────────────────────────────────────────────────────
+     * WHY: approving a claim used to change nothing that anything could see
+     * ─────────────────────────────────────────────────────────────────────
+     *
+     * `care_facilities.facility_id` is the ONLY join between the 2,700-row
+     * public directory and the operational `facilities` a clinician actually
+     * holds a posting at. Every question worth asking of the directory — does
+     * this listing have doctors, can I book it, is it connected — is that join.
+     *
+     * The listing-claim flow never wrote it. `submitDirectoryClaim()` copies
+     * `facility_id` off the listing being claimed ("may legitimately be null"
+     * — and for a seeded directory row it always is), and approval stamped
+     * `claimed_by_user_id` and stopped. So a hospital could claim its listing,
+     * be approved, and stay invisible. On production today the one facility in
+     * the entire register that has a doctor is Hopital Central de Yaounde, and
+     * its directory row's `facility_id` is NULL — which is the whole reason
+     * "Find a doctor" could only ever return pharmacies.
+     *
+     * ─────────────────────────────────────────────────────────────────────
+     * WHY IT IS THIS NARROW
+     * ─────────────────────────────────────────────────────────────────────
+     *
+     * A directory listing is a hospital's public identity. Moving one to a
+     * different tenant hands that identity over, so this only ever fills a
+     * NULL and never repoints a listing that is already joined, even when the
+     * claimant plainly belongs elsewhere. A contested listing is a dispute for
+     * a human — exactly as `submitDirectoryClaim()` already treats a second
+     * claimant.
+     *
+     * Three more refusals, each of which would otherwise be a guess:
+     *
+     *  - `facilityIdsFor()` returns NULL for a platform-tier admin, meaning
+     *    "unrestricted". An admin approving on someone's behalf has no
+     *    facility of their own to lend, and reading that NULL as a target
+     *    would link the listing to nothing, or to anything.
+     *  - A claimant holding postings at several facilities has not told us
+     *    which one the listing is; taking the first is the `Facility::value('id')`
+     *    bug this service's own docblock was written about.
+     *  - A facility that already has a listing does not get a second one.
+     *    That is how duplicate rows in this table got here.
+     *
+     * In every refusal the claim still approves and the listing is still
+     * stamped as claimed; only the join is withheld, and the audit row names
+     * the reason and asks for review — so an admin can finish it by hand
+     * rather than wonder why nothing happened.
+     */
+    private function linkListingToClaimantFacility(CareFacility $listing, ?string $claimantId, $adminId): void
+    {
+        if ($listing->facility_id !== null || $claimantId === null) {
+            return;
+        }
+
+        $claimant = User::find($claimantId);
+
+        if (! $claimant) {
+            return;
+        }
+
+        // NULL here means "platform tier / unrestricted", not "every facility".
+        $facilityIds = app(FacilityMembershipService::class)->facilityIdsFor($claimant);
+
+        $reason = match (true) {
+            $facilityIds === null     => 'claimant_is_platform_tier',
+            count($facilityIds) === 0 => 'claimant_holds_no_posting',
+            count($facilityIds) > 1   => 'claimant_holds_several_postings',
+            default                   => null,
+        };
+
+        $target = $reason === null ? $facilityIds[0] : null;
+
+        if ($target !== null && CareFacility::where('facility_id', $target)->whereKeyNot($listing->id)->exists()) {
+            $reason = 'facility_already_has_a_listing';
+            $target = null;
+        }
+
+        if ($target === null) {
+            FacilityUpdateAudit::create([
+                'facility_id'     => $listing->id,
+                'actor_id'        => $adminId,
+                'actor_type'      => 'admin',
+                'field_changed'   => 'facility_id',
+                'old_value'       => null,
+                'new_value'       => null,
+                'source'          => 'facility_claim_approval_unlinked:' . $reason,
+                'requires_review' => true,
+                'created_at'      => now(),
+            ]);
+
+            return;
+        }
+
+        $listing->update(['facility_id' => $target]);
+
+        FacilityUpdateAudit::create([
+            'facility_id'     => $listing->id,
+            'actor_id'        => $adminId,
+            'actor_type'      => 'admin',
+            'field_changed'   => 'facility_id',
+            'old_value'       => null,
+            'new_value'       => $target,
             'source'          => 'facility_claim_approval',
             'requires_review' => false,
             'created_at'      => now(),

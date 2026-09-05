@@ -54,9 +54,16 @@ use Illuminate\Support\Facades\DB;
  *   facilities                              482 rows
  *   care_facilities WITH facility_id        468 rows   ← 17.2 % of the directory
  *   ...of those, with an open future slot   121
- *   ...of those, publishing a clinician       0        (staff_profiles holds
- *                                                       one row in total, and
- *                                                       it is administrative)
+ *   ...of those, publishing a clinician       2
+ *
+ * That last number used to read 0, and it was wrong rather than bleak. It
+ * counted active clinical `staff_profiles` rows, and the whole dev database
+ * holds ONE staff profile — a receptionist — while clinicians sign in every
+ * day through `users.primary_facility_id` and `facility_role_assignments`.
+ * "Find a doctor" therefore had nothing to show and fell back to listing
+ * connected pharmacies with "None listed" beside each one. The definition of
+ * a clinician now lives in ONE place, MobileProviderController, and reads all
+ * three posting records — see the docblock there.
  *
  * That is why "Find Provider" felt broken: it listed 2 728 rows in *no order
  * at all* and the overwhelming majority answered "not connected". The endpoint
@@ -168,14 +175,14 @@ class MobileFacilityController extends Controller
                     ->whereColumn('appointment_slots.booked_count', '<', 'appointment_slots.capacity'));
         }
 
+        // "Has a clinician a patient could be seen by" — the ONE predicate,
+        // owned by MobileProviderController, which is also what its roster
+        // lists. See the shared-definition docblock there: the answer is no
+        // longer read off `staff_profiles` alone, because almost nothing
+        // writes to that table and the doctor finder was empty as a result.
         if ($request->boolean('with_providers')) {
-            $query->whereNotNull('facility_id')
-                ->whereExists(fn ($sub) => $sub->select(DB::raw(1))
-                    ->from('staff_profiles')
-                    ->whereColumn('staff_profiles.facility_id', 'care_facilities.facility_id')
-                    ->where('staff_profiles.status', 'active')
-                    ->where('staff_profiles.staff_category', 'clinical')
-                    ->whereNotNull('staff_profiles.user_id'));
+            $query->whereNotNull('facility_id');
+            MobileProviderController::whereHasClinicians($query, 'care_facilities.facility_id');
         }
 
         // ── Ordering ─────────────────────────────────────────────────────
@@ -441,28 +448,21 @@ class MobileFacilityController extends Controller
     /**
      * Active, patient-facing clinicians per internal facility id.
      *
-     * The predicate is identical to MobileProviderController::index() — if it
-     * is counted here it is listed there, so a badge can never promise a
-     * roster the next screen does not show.
+     * The count is now literally the SIZE OF THE ROSTER: the same helper
+     * MobileProviderController::index() lists from, asked for a page of
+     * facilities at once. "If it is counted here it is listed there" is no
+     * longer a rule someone has to keep two WHERE clauses in step with — it is
+     * one function called twice.
      *
      * @param  array<int, string>  $internalIds
      * @return array<string, int>
      */
     private function providerCountsFor(array $internalIds): array
     {
-        if ($internalIds === []) {
-            return [];
-        }
-
-        $rows = DB::table('staff_profiles')
-            ->whereIn('facility_id', $internalIds)
-            ->where('status', 'active')
-            ->where('staff_category', 'clinical')
-            ->whereNotNull('user_id')
-            ->groupBy('facility_id')
-            ->get(['facility_id', DB::raw('count(*) as total')]);
-
-        return $rows->mapWithKeys(fn ($r) => [(string) $r->facility_id => (int) $r->total])->all();
+        return array_map(
+            static fn (array $userIds) => count($userIds),
+            MobileProviderController::clinicianUserIdsByFacility($internalIds),
+        );
     }
 
     /**
@@ -515,15 +515,9 @@ class MobileFacilityController extends Controller
                     ->whereColumn('appointment_slots.booked_count', '<', 'appointment_slots.capacity'))
                 ->count();
 
-            $withProviders = (clone $base)
-                ->whereNotNull('facility_id')
-                ->whereExists(fn ($sub) => $sub->select(DB::raw(1))
-                    ->from('staff_profiles')
-                    ->whereColumn('staff_profiles.facility_id', 'care_facilities.facility_id')
-                    ->where('staff_profiles.status', 'active')
-                    ->where('staff_profiles.staff_category', 'clinical')
-                    ->whereNotNull('staff_profiles.user_id'))
-                ->count();
+            $withProvidersQuery = (clone $base)->whereNotNull('facility_id');
+            MobileProviderController::whereHasClinicians($withProvidersQuery, 'care_facilities.facility_id');
+            $withProviders = $withProvidersQuery->count();
 
             return [
                 'directory_total'      => (int) ($row->directory_total ?? 0),

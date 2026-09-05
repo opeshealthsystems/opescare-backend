@@ -64,8 +64,22 @@
                         <td data-label="{{ __('professional.ver_provider', [], app()->getLocale()) ?: 'Professional' }}">
                             <div class="td-strong">{{ $credential->provider?->name }}</div>
                             <div class="td-muted">{{ $credential->provider?->email }}</div>
-                            @if($credential->provider?->role?->description)
-                            <div class="td-muted">{{ $credential->provider->role->description }}</div>
+                            @php
+                                /*
+                                 * The role under a professional's name is a LABEL, not data the
+                                 * admin edits here, so it follows the same `portal.role_name.*`
+                                 * path the sidebar and topbar use. Printing `roles.description`
+                                 * raw showed a French compliance officer "Visiting Doctor" while
+                                 * every other role badge on the page read "Medecin vacataire".
+                                 * The column stays the fallback for a role with no entry yet.
+                                 */
+                                $roleKey   = $credential->provider?->role?->name;
+                                $roleLabel = $roleKey && \Illuminate\Support\Facades\Lang::has('portal.role_name.' . $roleKey)
+                                    ? __('portal.role_name.' . $roleKey)
+                                    : $credential->provider?->role?->description;
+                            @endphp
+                            @if($roleLabel)
+                            <div class="td-muted">{{ $roleLabel }}</div>
                             @endif
                         </td>
                         <td data-label="{{ __('professional.ver_credential', [], app()->getLocale()) ?: 'Qualification' }}">

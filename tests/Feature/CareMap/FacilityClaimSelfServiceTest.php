@@ -7,6 +7,8 @@ use App\Enums\FacilityImportReviewStatus;
 use App\Models\CareFacility;
 use App\Models\CareFacilityService;
 use App\Models\FacilityClaim;
+use App\Models\FacilityUpdateAudit;
+use App\Models\Facility;
 use App\Models\FacilityImportReview;
 use App\Models\Role;
 use App\Models\User;
@@ -19,6 +21,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
@@ -649,4 +652,156 @@ class FacilityClaimSelfServiceTest extends TestCase
             'payload'            => ['amenity' => 'pharmacy'],
         ], $overrides));
     }
+
+    // ─── 9. Approval joins the listing to the claimant's facility ────────────
+    //
+    // `care_facilities.facility_id` is the ONLY join between the public
+    // directory and the operational facilities a clinician has a posting at,
+    // and the listing-claim flow never wrote it: a hospital could claim its
+    // listing, be approved, and stay invisible to every "has doctors" /
+    // "bookable" / "connected" query in the app. On production that was
+    // literally the case — the one facility in the register holding a doctor
+    // had a NULL here, so "Find a doctor" could only return pharmacies.
+
+    private function tenant(string $name = 'Hôpital Central de Test'): Facility
+    {
+        return Facility::create(['name' => $name, 'type' => 'hospital', 'status' => 'active']);
+    }
+
+    private function staffOf(Facility $facility): User
+    {
+        return User::factory()->create(['primary_facility_id' => $facility->id]);
+    }
+
+    /** Any role id — `facility_role_assignments.role_id` is a required FK. */
+    private function anyRoleId(): string
+    {
+        if (Role::count() === 0) {
+            $this->seed(AccountCategoriesSeeder::class);
+            $this->seed(DashboardProfilesSeeder::class);
+            $this->seed(RolesSeeder::class);
+        }
+
+        return (string) Role::query()->value('id');
+    }
+
+    public function test_approving_a_claim_joins_the_listing_to_the_claimants_facility(): void
+    {
+        $listing = $this->listing();
+        $tenant  = $this->tenant();
+        $user    = $this->staffOf($tenant);
+        $admin   = User::factory()->create();
+
+        $this->assertNull($listing->facility_id, 'a seeded directory row starts unlinked');
+
+        $claim = $this->claims->submitDirectoryClaim($listing->id, $user->id, [
+            'claimant_name'  => 'Dr Ada Ngu',
+            'claimant_role'  => 'owner',
+            'claimant_email' => 'ada@example.cm',
+            'claimant_phone' => '+237 600 000 001',
+        ]);
+        $this->claims->approveClaim($claim->id, $admin->id);
+
+        $listing->refresh();
+        $this->assertSame((string) $tenant->id, (string) $listing->facility_id);
+
+        $this->assertDatabaseHas('facility_update_audits', [
+            'facility_id'   => $listing->id,
+            'field_changed' => 'facility_id',
+            'new_value'     => (string) $tenant->id,
+            'source'        => 'facility_claim_approval',
+        ]);
+    }
+
+    public function test_approval_never_repoints_a_listing_that_already_belongs_to_someone(): void
+    {
+        $incumbent = $this->tenant('Incumbent Hospital');
+        $listing   = $this->listing(['facility_id' => $incumbent->id]);
+
+        $poacher = $this->tenant('Poacher Hospital');
+        $user    = $this->staffOf($poacher);
+        $admin   = User::factory()->create();
+
+        $claim = $this->claims->submitDirectoryClaim($listing->id, $user->id, [
+            'claimant_name'  => 'Someone Else',
+            'claimant_role'  => 'manager',
+            'claimant_email' => 'else@example.cm',
+            'claimant_phone' => '+237 600 000 002',
+        ]);
+        $this->claims->approveClaim($claim->id, $admin->id);
+
+        // A directory listing is a hospital's public identity; approval must
+        // never hand it to a different tenant.
+        $listing->refresh();
+        $this->assertSame((string) $incumbent->id, (string) $listing->facility_id);
+        $this->assertDatabaseMissing('facility_update_audits', [
+            'facility_id'   => $listing->id,
+            'field_changed' => 'facility_id',
+            'new_value'     => (string) $poacher->id,
+        ]);
+    }
+
+    #[DataProvider('unlinkableClaimants')]
+    public function test_an_unresolvable_claimant_leaves_the_join_null_and_asks_for_review(
+        string $who,
+        string $expectedReason
+    ): void {
+        $listing = $this->listing();
+        $admin   = User::factory()->create();
+
+        $user = match ($who) {
+            'platform_tier' => $this->platformAdmin(),
+            'no_posting'    => User::factory()->create(['primary_facility_id' => null]),
+            // NB: the global tap(), not $model->tap() — the latter forwards to
+            // the query builder and hands the closure a Builder.
+            'two_postings'  => tap($this->staffOf($this->tenant('A')), function (User $u): void {
+                DB::table('facility_role_assignments')->insert([
+                    'id'          => (string) Str::uuid(),
+                    'user_id'     => $u->id,
+                    'facility_id' => $this->tenant('B')->id,
+                    'role_id'     => $this->anyRoleId(),
+                    'is_active'   => true,
+                    'assigned_at' => now(),
+                    'created_at'  => now(),
+                    'updated_at'  => now(),
+                ]);
+            }),
+            'taken'         => $this->staffOf(
+                tap($this->tenant('Already Listed'), fn (Facility $f) => $this->listing(['facility_id' => $f->id]))
+            ),
+        };
+
+        $claim = $this->claims->submitDirectoryClaim($listing->id, $user->id, [
+            'claimant_name'  => 'Claimant',
+            'claimant_role'  => 'owner',
+            'claimant_email' => 'c@example.cm',
+            'claimant_phone' => '+237 600 000 003',
+        ]);
+        $this->claims->approveClaim($claim->id, $admin->id);
+
+        // The claim still approves and the listing is still stamped as claimed
+        // — only the join is withheld, with a reason an admin can act on.
+        $listing->refresh();
+        $this->assertNull($listing->facility_id);
+        $this->assertSame((string) $user->id, (string) $listing->claimed_by_user_id);
+
+        $audit = FacilityUpdateAudit::where('facility_id', $listing->id)
+            ->where('field_changed', 'facility_id')
+            ->firstOrFail();
+
+        $this->assertSame('facility_claim_approval_unlinked:' . $expectedReason, $audit->source);
+        $this->assertTrue((bool) $audit->requires_review);
+    }
+
+    public static function unlinkableClaimants(): array
+    {
+        return [
+            // NULL from facilityIdsFor() means "unrestricted", not "every facility".
+            'platform-tier admin has no facility to lend' => ['platform_tier', 'claimant_is_platform_tier'],
+            'claimant holds no posting at all'            => ['no_posting', 'claimant_holds_no_posting'],
+            'claimant works at two facilities'            => ['two_postings', 'claimant_holds_several_postings'],
+            'that facility already has a listing'         => ['taken', 'facility_already_has_a_listing'],
+        ];
+    }
+
 }
