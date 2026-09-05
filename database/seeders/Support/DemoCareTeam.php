@@ -158,8 +158,16 @@ final class DemoCareTeam
             return;
         }
 
+        // "Dr. Amara Diallo" → first "Amara", last "Diallo": the honorific is a
+        // title, not a name (some estates make first/last NOT NULL).
+        $words = array_values(array_filter(explode(' ', $member['name']), fn ($w) => ! in_array(rtrim($w, '.'), ['Dr', 'Nurse', 'Lab', 'Tech'], true)));
+        $first = $words[0] ?? $member['name'];
+        $last  = count($words) > 1 ? implode(' ', array_slice($words, 1)) : $first;
+
         $columns = Schema::getColumnListing('staff_profiles');
         $row = array_intersect_key([
+            'first_name' => $first,
+            'last_name'  => $last,
             'job_title'  => $member['job_title'],
             'department' => $member['department'],
             'created_at' => now(),
@@ -170,7 +178,13 @@ final class DemoCareTeam
             $row['id'] = (string) Str::orderedUuid();
         }
 
-        DB::table('staff_profiles')->updateOrInsert(['user_id' => $userId], $row);
+        try {
+            DB::table('staff_profiles')->updateOrInsert(['user_id' => $userId], $row);
+        } catch (\Throwable $e) {
+            // A profile is a nicety (the specialist's title on the referral);
+            // the story must not fail because an estate's profile table wants
+            // a column this seeder does not know.
+        }
     }
 
     /** Tests and long-running processes: drop the memoised ids. */
