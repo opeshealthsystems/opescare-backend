@@ -397,5 +397,5 @@ return [
     'qr_expired'                     => 'Ce code a expiré. Demandez au patient d\'en présenter un nouveau.',
     'qr_revoked'                     => 'Le patient a retiré ce code. Demandez-lui d\'en présenter un nouveau.',
 
-    'capability_forbidden'           => 'Votre rôle ne comprend pas cette partie d'OpesCare.',
+    'capability_forbidden'           => 'Votre rôle ne comprend pas cette partie d’OpesCare.',
 ];
