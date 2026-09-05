@@ -56,6 +56,21 @@ return [
     'allergies'            => 'Allergies :',
     'audit_note'           => 'Cet accès a été consigné avec vos identifiants prestataire et est visible par le patient.',
 
+    // Cible du scan QR — la page de résultat OPESCARE Secure
+    'secure_eyebrow'       => 'Identifiant Santé sécurisé OpesCare',
+    'result_valid_sub'     => 'Identifiant Santé OpesCare valide',
+    'result_sex'           => 'Sexe',
+    'sex_male'             => 'Masculin',
+    'sex_female'           => 'Féminin',
+    'sex_other'            => 'Autre',
+    'qr_revoked_title'     => 'Code retiré',
+    'qr_revoked_body'      => 'Le patient a retiré ce code. Demandez-lui d\'en présenter un nouveau.',
+    'meta_verified_at'     => 'Vérifié le',
+    'meta_valid_until'     => 'Code valable jusqu\'à',
+    'meta_reference'       => 'Référence',
+    'qr_provider_note'     => 'Seules les informations autorisées par le patient sont affichées.',
+    'qr_scan_note'         => 'Cette vérification a été enregistrée sous la référence ci-dessus. Lorsque le lecteur est connecté en tant que prestataire, elle apparaît aussi dans le journal d\'accès du patient.',
+
     // Footer
     'footer_note'          => 'Besoin d\'aide ?',
     'footer_help'          => 'Visiter le Centre d\'Aide',

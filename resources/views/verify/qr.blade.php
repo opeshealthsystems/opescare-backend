@@ -3,349 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ __('verify.qr_title', [], app()->getLocale()) ?: 'QR Verification — OpesCare' }}</title>
+    <title>{{ __('verify.qr_title') }}</title>
     <meta name="robots" content="noindex, nofollow">
-    <meta name="theme-color" content="#0F4C81">
+    <meta name="theme-color" content="#0E1729">
     @include('partials.favicons')
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="{{ asset('js/lucide.min.js') }}"></script>
     <style>
+        {{--
+            The provider's side of the OPESCARE Secure Health ID: the page a
+            scanner lands on. Same visual language as the credential in the
+            patient app (assets under public/images/health-id, cut from the
+            same library), on the brand palette — navy ground, #0F4C81 accent,
+            white result card. Four states: verified · expired · revoked · invalid.
+        --}}
+        :root {
+            --navy: #0E1729; --deep: #0C3F6C; --brand: #0F4C81; --soft: #EAF1F8; --light: #3D77AC;
+            --ink: #1A2338; --muted: #5B6472; --faint: #93989F; --line: #E6EAF0; --surface: #FFFFFF;
+            --ok: #1E8E5A; --warn: #B8860B; --warn-bg: #FBF3DF; --bad: #D64545; --bad-bg: #FCE8E8;
+        }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { min-height: 100%; }
         body {
-            font-family: 'Inter', sans-serif;
-            background: #F0F4F8;
-            color: #0F172A;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif;
+            color: var(--ink);
+            background: linear-gradient(160deg, var(--navy) 0%, var(--deep) 55%, var(--navy) 100%);
+            display: flex; flex-direction: column; min-height: 100vh; position: relative; overflow-x: hidden;
         }
+        .bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+        .bg .field { position: absolute; inset: 0; background: url("{{ asset('images/health-id/circuit-field.png') }}") center/cover no-repeat; opacity: .38; }
+        .bg .helix { position: absolute; top: 0; right: -18px; width: 90px; height: 100%; background: url("{{ asset('images/health-id/dna-helix.png') }}") center/cover no-repeat; opacity: .32; }
+        .bg .wave  { position: absolute; left: 0; right: 0; bottom: 0; height: 320px; background: url("{{ asset('images/health-id/holo-wave.png') }}") center/cover no-repeat; opacity: .35; }
 
-        .topbar {
-            background: #0F2744;
-            padding: 0.875rem 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .topbar-brand {
-            display: flex;
-            align-items: center;
-            gap: 0.625rem;
-            text-decoration: none;
-            color: #fff;
-            font-weight: 800;
-            font-size: 1.0625rem;
-        }
-        .topbar-brand img { width: 26px; height: 26px; flex-shrink: 0; }
+        .topbar { position: relative; z-index: 1; padding: .9rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+        .brand { display: flex; align-items: center; gap: .6rem; color: #fff; text-decoration: none; font-weight: 700; font-size: 1.05rem; }
+        .brand img { width: 28px; height: 28px; border-radius: 8px; background: #fff; padding: 3px; }
+        .brand small { display: block; font-size: .62rem; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: #C8DCEF; }
+        .eyebrow { font-size: .62rem; letter-spacing: .18em; text-transform: uppercase; color: #C8DCEF; font-weight: 600; }
 
-        .page-wrap {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 2.5rem 1.25rem 4rem;
-        }
+        .wrap { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; align-items: center; padding: 1.25rem 1rem 3rem; }
+        .card { width: 100%; max-width: 520px; background: var(--surface); border-radius: 22px; overflow: hidden; box-shadow: 0 24px 60px rgba(6,11,22,.45); animation: rise .35s ease; }
+        @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
-        /* Loading state (server-side renders loading if no result yet) */
-        .qr-card {
-            width: 100%;
-            max-width: 520px;
-            background: #fff;
-            border-radius: 1.25rem;
-            box-shadow: 0 4px 24px rgba(15,76,129,.12);
-            overflow: hidden;
-            animation: fadeIn .3s ease;
-        }
+        .head { position: relative; padding: 1.4rem 1.5rem 1.25rem; color: #fff; background: linear-gradient(135deg, var(--navy), var(--deep) 60%, var(--brand)); overflow: hidden; }
+        .head::before { content: ""; position: absolute; inset: 0; background: url("{{ asset('images/health-id/guilloche-texture.png') }}") center/cover no-repeat; opacity: .42; }
+        .head .corner { position: absolute; width: 18px; height: 18px; border: 2px solid rgba(234,241,248,.6); }
+        .head .tl { top: 10px; left: 10px; border-right: 0; border-bottom: 0; border-top-left-radius: 8px; }
+        .head .tr { top: 10px; right: 10px; border-left: 0; border-bottom: 0; border-top-right-radius: 8px; }
+        .head .bl { bottom: 10px; left: 10px; border-right: 0; border-top: 0; border-bottom-left-radius: 8px; }
+        .head .br { bottom: 10px; right: 10px; border-left: 0; border-top: 0; border-bottom-right-radius: 8px; }
+        .head-row { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+        .head h1 { font-size: 1.2rem; font-weight: 700; line-height: 1.25; margin-top: .2rem; }
+        .head p { font-size: .8rem; color: #D6E6F5; margin-top: .3rem; max-width: 34ch; }
+        .seal { width: 72px; height: 72px; flex-shrink: 0; filter: drop-shadow(0 6px 14px rgba(0,0,0,.35)); }
 
-        @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+        .state { display: flex; align-items: center; gap: 1rem; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--line); }
+        .state img { width: 64px; height: 64px; flex-shrink: 0; }
+        .state h2 { font-size: 1.15rem; font-weight: 700; line-height: 1.2; }
+        .state p  { font-size: .85rem; color: var(--muted); margin-top: .2rem; }
+        .state.verified h2 { color: var(--ok); }
+        .state.expired  h2 { color: var(--warn); }
+        .state.revoked  h2, .state.invalid h2 { color: var(--bad); }
 
-        .qr-card-header {
-            background: linear-gradient(135deg, #0F2744 0%, #0F4C81 100%);
-            padding: 2rem;
-            text-align: center;
-            color: #fff;
-        }
+        .body { padding: 1.25rem 1.5rem 1.5rem; display: grid; gap: 1rem; }
 
-        .qr-pulse-icon {
-            width: 3.5rem;
-            height: 3.5rem;
-            background: rgba(255,255,255,.12);
-            border: 1.5px solid rgba(255,255,255,.25);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1rem;
-        }
+        .holder { display: flex; align-items: center; gap: .9rem; padding: 1rem; border: 1px solid var(--line); border-radius: 16px; background: linear-gradient(180deg, #FFFFFF, #F7FAFD); }
+        .avatar { width: 52px; height: 52px; border-radius: 50%; background: var(--soft); color: var(--brand); display: grid; place-items: center; font-weight: 700; font-size: 1.05rem; flex-shrink: 0; border: 2px solid #fff; box-shadow: 0 0 0 1px var(--line); }
+        .holder .name { font-weight: 700; font-size: 1.05rem; line-height: 1.2; }
+        .holder .hid  { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .92rem; font-weight: 600; letter-spacing: .06em; color: var(--brand); margin-top: .15rem; word-break: break-all; }
 
-        .qr-card-header h1 { font-size: 1.25rem; font-weight: 800; margin-bottom: 0.25rem; }
-        .qr-card-header p  { font-size: 0.8125rem; color: #BAE6FD; line-height: 1.5; }
+        .rows { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+        .rows > div { padding: .85rem .9rem; border-left: 1px solid var(--line); }
+        .rows > div:first-child { border-left: 0; }
+        .label { display: flex; align-items: center; gap: .35rem; font-size: .66rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
+        .label i { width: .8rem; height: .8rem; }
+        .value { font-size: .95rem; font-weight: 600; margin-top: .25rem; }
 
-        .qr-card-body { padding: 2rem; }
+        .meta { display: grid; gap: .55rem; padding: .25rem 0 0; }
+        .meta div { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; font-size: .85rem; }
+        .meta dt { color: var(--muted); display: flex; align-items: center; gap: .4rem; }
+        .meta dt i { width: .9rem; height: .9rem; color: var(--brand); }
+        .meta dd { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+        .meta dd.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .08em; color: var(--brand); }
 
-        /* Token display */
-        .token-display {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            background: #F0F4F8;
-            border: 1px solid #E2E8F0;
-            border-radius: 0.5rem;
-            padding: 0.625rem 1rem;
-            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-            font-size: 0.8125rem;
-            font-weight: 700;
-            color: #0F4C81;
-            letter-spacing: 0.06em;
-            word-break: break-all;
-            margin-bottom: 1.75rem;
-        }
+        .note { display: flex; gap: .6rem; align-items: flex-start; font-size: .8rem; color: var(--muted); padding: .9rem 1rem; border-radius: 14px; background: var(--soft); }
+        .note i { width: 1rem; height: 1rem; flex-shrink: 0; color: var(--brand); margin-top: .1rem; }
+        .note.bad { background: var(--bad-bg); color: #7A2626; } .note.bad i { color: var(--bad); }
+        .note.warn { background: var(--warn-bg); color: #6B4E00; } .note.warn i { color: var(--warn); }
 
-        /* Status states */
-        .state-loading {
-            text-align: center;
-            padding: 2rem 0;
-        }
-        .spinner {
-            width: 2.5rem;
-            height: 2.5rem;
-            border: 3px solid #E2E8F0;
-            border-top-color: #0F4C81;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto 1rem;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .cta { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; width: 100%; padding: .85rem 1.25rem; border-radius: 999px; background: linear-gradient(90deg, var(--deep), var(--light)); color: #fff; font-weight: 600; font-size: .95rem; text-decoration: none; }
+        .cta i { width: 1rem; height: 1rem; }
 
-        .state-verified {
-            background: #F0FDF9;
-            border: 1.5px solid #6EE7B7;
-            border-radius: 0.875rem;
-            padding: 1.5rem;
-        }
+        .sig { display: flex; align-items: center; justify-content: center; gap: 1.4rem; padding: 1.1rem 1.5rem 0; }
+        .sig img { height: 44px; width: auto; opacity: .9; }
+        .sig .s { height: 54px; }
+        .sigline { text-align: center; font-size: .66rem; letter-spacing: .16em; text-transform: uppercase; color: var(--faint); font-weight: 600; padding: .5rem 1.5rem 1.4rem; }
 
-        .state-expired {
-            background: #FFF7ED;
-            border: 1.5px solid #FDE68A;
-            border-radius: 0.875rem;
-            padding: 1.25rem;
-            display: flex;
-            align-items: flex-start;
-            gap: 0.75rem;
-            font-size: 0.875rem;
-            color: #92400E;
-        }
-
-        .state-invalid {
-            background: #FFF1F2;
-            border: 1.5px solid #FCA5A5;
-            border-radius: 0.875rem;
-            padding: 1.25rem;
-            display: flex;
-            align-items: flex-start;
-            gap: 0.75rem;
-            font-size: 0.875rem;
-            color: #991B1B;
-        }
-
-        .result-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-        .result-cell {}
-        .result-label { font-size: 0.7rem; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.2rem; }
-        .result-value { font-size: 0.9375rem; font-weight: 700; color: #0F172A; }
-        .result-value.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: #0F4C81; }
-
-        .verified-header {
-            display: flex;
-            align-items: center;
-            gap: 0.625rem;
-            font-weight: 800;
-            font-size: 0.9375rem;
-            color: #065F46;
-            margin-bottom: 1rem;
-        }
-        .verified-dot {
-            width: 0.625rem;
-            height: 0.625rem;
-            background: #10B981;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-
-        .audit-note {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.75rem;
-            color: #64748B;
-            margin-top: 1.25rem;
-            padding-top: 1.25rem;
-            border-top: 1px solid #D1FAE5;
-        }
-
-        /* Allergy strip */
-        .allergy-strip {
-            background: #FFF7ED;
-            border: 1px solid #FDE68A;
-            border-radius: 0.5rem;
-            padding: 0.625rem 0.875rem;
-            font-size: 0.8125rem;
-            color: #92400E;
-            font-weight: 600;
-            margin-top: 0.875rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        /* Footer */
-        .verify-footer {
-            text-align: center;
-            font-size: 0.75rem;
-            color: #94A3B8;
-            margin-top: 1.75rem;
-        }
-        .verify-footer a { color: #0F4C81; text-decoration: none; font-weight: 600; }
+        .footer { position: relative; z-index: 1; text-align: center; font-size: .78rem; color: #A9BBD0; margin-top: 1.5rem; }
+        .footer a { color: #fff; text-decoration: none; font-weight: 600; }
 
         @media (max-width: 540px) {
-            .topbar { padding: 0.75rem 1rem; }
-            .qr-card-body { padding: 1.5rem 1.25rem; }
-            .result-grid { grid-template-columns: 1fr; }
+            .head { padding: 1.2rem 1.15rem 1.1rem; }
+            .state, .body { padding-left: 1.15rem; padding-right: 1.15rem; }
+            .rows { grid-template-columns: 1fr; }
+            .rows > div { border-left: 0; border-top: 1px solid var(--line); }
+            .rows > div:first-child { border-top: 0; }
         }
+        @media (prefers-reduced-motion: reduce) { .card { animation: none; } }
     </style>
 </head>
 <body>
+<div class="bg" aria-hidden="true"><div class="field"></div><div class="helix"></div><div class="wave"></div></div>
 
 <header class="topbar">
-    <a href="{{ url('/') }}" class="topbar-brand">
-        <img src="{{ asset('brand/opescare-favicon.png') }}" alt="OpesCare">
-        OpesCare
+    <a href="{{ url('/') }}" class="brand">
+        <img src="{{ asset('brand/opescare-favicon.png') }}" alt="">
+        <span>OpesCare<small>{{ __('verify.secure_eyebrow') }}</small></span>
     </a>
+    <span class="eyebrow">{{ __('verify.badge_provider_tool') }}</span>
 </header>
 
-<div class="page-wrap">
+<main class="wrap">
+    @php
+        $glyph = match ($state) {
+            'verified' => 'indicator-verified',
+            'expired'  => 'indicator-expired',
+            'revoked'  => 'indicator-revoked',
+            default    => 'indicator-invalid',
+        };
+        $stateTitle = match ($state) {
+            'verified' => __('verify.result_verified'),
+            'expired'  => __('verify.qr_expired_title'),
+            'revoked'  => __('verify.qr_revoked_title'),
+            default    => __('verify.qr_invalid_title'),
+        };
+        $stateBody = match ($state) {
+            'verified' => __('verify.result_valid_sub'),
+            'expired'  => __('verify.qr_expired_body'),
+            'revoked'  => __('verify.qr_revoked_body'),
+            default    => __('verify.qr_invalid_body'),
+        };
+    @endphp
 
-    <div class="qr-card">
-        <div class="qr-card-header">
-            <div class="qr-pulse-icon">
-                <i data-lucide="qr-code" style="width:1.625rem;height:1.625rem;color:#fff;"></i>
+    <article class="card" aria-labelledby="qr-title">
+        <div class="head">
+            <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+            <div class="head-row">
+                <div>
+                    <span class="eyebrow">{{ __('verify.secure_eyebrow') }}</span>
+                    <h1 id="qr-title">{{ __('verify.qr_heading') }}</h1>
+                    <p>{{ __('verify.qr_subheading') }}</p>
+                </div>
+                <img class="seal" src="{{ asset('images/health-id/seal.png') }}" alt="">
             </div>
-            <h1>{{ __('verify.qr_heading', [], app()->getLocale()) ?: 'QR Health ID Verification' }}</h1>
-            <p>{{ __('verify.qr_subheading', [], app()->getLocale()) ?: 'Scanning this token will reveal the patient\'s verified identity for clinical purposes only.' }}</p>
         </div>
 
-        <div class="qr-card-body">
-
-            <div class="token-display">
-                <i data-lucide="key" style="width:0.875rem;height:0.875rem;flex-shrink:0;"></i>
-                {{ Str::limit($token, 36, '…') }}
+        <section class="state {{ $state }}" role="status" aria-live="polite">
+            <img src="{{ asset('images/health-id/' . $glyph . '.png') }}" alt="">
+            <div>
+                <h2>{{ $stateTitle }}</h2>
+                <p>{{ $stateBody }}</p>
             </div>
+        </section>
 
-            @if($error ?? null)
-                <div class="state-invalid" role="alert">
-                    <i data-lucide="x-circle" style="width:1.125rem;height:1.125rem;flex-shrink:0;"></i>
+        <div class="body">
+            @if($state === 'verified' && $result)
+                @php
+                    $initials = collect(preg_split('/\s+/', trim((string) $result->name)))->filter()->take(2)
+                        ->map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)))->implode('') ?: '—';
+                    $sexKey = strtolower((string) ($result->sex ?? ''));
+                    $sexLabel = in_array($sexKey, ['male', 'female', 'other'], true) ? __('verify.sex_' . $sexKey) : '—';
+                @endphp
+                <div class="holder">
+                    <div class="avatar" aria-hidden="true">{{ $initials }}</div>
                     <div>
-                        <strong style="display:block;margin-bottom:0.2rem;">{{ __('verify.qr_invalid_title', [], app()->getLocale()) ?: 'Invalid Token' }}</strong>
-                        {{ $error }}
+                        <div class="name">{{ $result->name ?? '—' }}</div>
+                        <div class="hid">{{ $result->health_id ?? '—' }}</div>
                     </div>
                 </div>
-            @elseif($result === null)
-                {{-- Stub / pending state --}}
-                <div class="state-loading" role="status" aria-live="polite">
-                    <div class="spinner" aria-hidden="true"></div>
-                    <p style="font-size:0.9rem;color:#475569;font-weight:600;">{{ __('verify.qr_processing', [], app()->getLocale()) ?: 'Validating token…' }}</p>
-                    <p style="font-size:0.8rem;color:#94A3B8;margin-top:0.375rem;">{{ __('verify.qr_processing_note', [], app()->getLocale()) ?: 'This usually takes less than a second.' }}</p>
-                </div>
-            @elseif(isset($result->expired) && $result->expired)
-                <div class="state-expired" role="alert">
-                    <i data-lucide="clock" style="width:1.125rem;height:1.125rem;flex-shrink:0;"></i>
+
+                <div class="rows">
                     <div>
-                        <strong style="display:block;margin-bottom:0.2rem;">{{ __('verify.qr_expired_title', [], app()->getLocale()) ?: 'QR Code Expired' }}</strong>
-                        {{ __('verify.qr_expired_body', [], app()->getLocale()) ?: 'This QR code has expired. Ask the patient to generate a new one from their patient portal.' }}
+                        <div class="label"><i data-lucide="calendar"></i>{{ __('verify.result_dob') }}</div>
+                        <div class="value">{{ isset($result->dob) ? \Carbon\Carbon::parse($result->dob)->translatedFormat('d M Y') : '—' }}</div>
                     </div>
-                </div>
-            @elseif(isset($result->valid) && !$result->valid)
-                <div class="state-invalid" role="alert">
-                    <i data-lucide="x-circle" style="width:1.125rem;height:1.125rem;flex-shrink:0;"></i>
                     <div>
-                        <strong style="display:block;margin-bottom:0.2rem;">{{ __('verify.qr_invalid_title', [], app()->getLocale()) ?: 'Invalid Token' }}</strong>
-                        {{ __('verify.qr_invalid_body', [], app()->getLocale()) ?: 'This token is not recognised. It may have been tampered with or already used. Contact support if this persists.' }}
+                        <div class="label"><i data-lucide="user"></i>{{ __('verify.result_sex') }}</div>
+                        <div class="value">{{ $sexLabel }}</div>
+                    </div>
+                    <div>
+                        <div class="label"><i data-lucide="droplet"></i>{{ __('verify.result_blood_type') }}</div>
+                        <div class="value">{{ $result->blood_type ?? '—' }}</div>
                     </div>
                 </div>
-            @else
-                <div class="state-verified" role="region" aria-label="Verification result">
-                    <div class="verified-header">
-                        <div class="verified-dot"></div>
-                        {{ __('verify.result_verified', [], app()->getLocale()) ?: 'Identity Verified' }}
-                    </div>
-                    <div class="result-grid">
-                        <div class="result-cell">
-                            <div class="result-label">{{ __('verify.result_name', [], app()->getLocale()) ?: 'Name' }}</div>
-                            <div class="result-value">{{ $result->name ?? '—' }}</div>
-                        </div>
-                        <div class="result-cell">
-                            <div class="result-label">{{ __('verify.result_health_id', [], app()->getLocale()) ?: 'Health ID' }}</div>
-                            <div class="result-value mono">{{ $result->health_id ?? '—' }}</div>
-                        </div>
-                        <div class="result-cell">
-                            <div class="result-label">{{ __('verify.result_dob', [], app()->getLocale()) ?: 'Date of Birth' }}</div>
-                            <div class="result-value">{{ isset($result->dob) ? \Carbon\Carbon::parse($result->dob)->format('d M Y') : '—' }}</div>
-                        </div>
-                        <div class="result-cell">
-                            <div class="result-label">{{ __('verify.result_blood_type', [], app()->getLocale()) ?: 'Blood Type' }}</div>
-                            <div class="result-value">{{ $result->blood_type ?? '—' }}</div>
-                        </div>
-                    </div>
-                    @if(!empty($result->allergies))
-                    <div class="allergy-strip">
-                        <i data-lucide="alert-triangle" style="width:0.875rem;height:0.875rem;flex-shrink:0;"></i>
-                        <span><strong>{{ __('verify.allergies', [], app()->getLocale()) ?: 'Allergies:' }}</strong> {{ $result->allergies }}</span>
-                    </div>
+
+                <dl class="meta">
+                    <div><dt><i data-lucide="clock"></i>{{ __('verify.meta_verified_at') }}</dt><dd>{{ $verified_at->translatedFormat('d M Y, H:i') }}</dd></div>
+                    @if($expires_at)
+                    <div><dt><i data-lucide="timer"></i>{{ __('verify.meta_valid_until') }}</dt><dd>{{ $expires_at->translatedFormat('H:i') }}</dd></div>
                     @endif
-                    <div class="audit-note">
-                        <i data-lucide="shield-check" style="width:0.875rem;height:0.875rem;color:#0F766E;flex-shrink:0;"></i>
-                        {{ __('verify.audit_note', [], app()->getLocale()) ?: 'This access has been logged and is visible to the patient in their portal.' }}
-                    </div>
-                </div>
+                    @if($reference)
+                    <div><dt><i data-lucide="hash"></i>{{ __('verify.meta_reference') }}</dt><dd class="mono">{{ $reference }}</dd></div>
+                    @endif
+                </dl>
+
+                <div class="note"><i data-lucide="lock"></i><span>{{ __('verify.qr_provider_note') }} {{ __('verify.qr_scan_note') }}</span></div>
+            @else
+                <div class="note {{ $state === 'expired' ? 'warn' : 'bad' }}"><i data-lucide="{{ $state === 'expired' ? 'clock' : 'x-circle' }}"></i><span>{{ __('verify.qr_token_expired_ui') }}</span></div>
+                <a class="cta" href="{{ route('verify.health-id') }}"><i data-lucide="search"></i>{{ __('verify.footer_manual_verify') }}</a>
             @endif
-
         </div>
-    </div>
 
-    <div class="verify-footer">
+        <div class="sig" aria-hidden="true">
+            <img src="{{ asset('images/health-id/fingerprint.png') }}" alt="">
+            <img class="s" src="{{ asset('images/health-id/verification-shield.png') }}" alt="">
+            <img src="{{ asset('images/health-id/africa.png') }}" alt="">
+        </div>
+        <div class="sigline">{{ __('verify.secure_eyebrow') }}</div>
+    </article>
+
+    <div class="footer">
         <p>
-            <a href="{{ route('verify.health-id') }}">{{ __('verify.footer_manual_verify', [], app()->getLocale()) ?: 'Manual ID Lookup' }}</a>
+            <a href="{{ route('verify.health-id') }}">{{ __('verify.footer_manual_verify') }}</a>
             &nbsp;·&nbsp;
-            <a href="{{ route('public.help') }}">{{ __('verify.footer_help', [], app()->getLocale()) ?: 'Help Center' }}</a>
+            <a href="{{ route('public.help') }}">{{ __('verify.footer_help') }}</a>
             &nbsp;·&nbsp;
-            <a href="{{ route('public.contact') }}">{{ __('verify.footer_contact', [], app()->getLocale()) ?: 'Contact Support' }}</a>
+            <a href="{{ route('public.contact') }}">{{ __('verify.footer_contact') }}</a>
         </p>
     </div>
-
-</div>
+</main>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     if (typeof lucide !== 'undefined') lucide.createIcons();
-
-    // Auto-reload spinner after 1.5s if result is still null and no error
-    // (in production this would be a real API call from the controller)
-    @if($result === null && !($error ?? null))
-    setTimeout(function() {
-        var spinner = document.querySelector('.state-loading');
-        if (spinner) {
-            spinner.innerHTML = '<p style="font-size:0.875rem;color:#94A3B8;">{{ __('verify.qr_token_expired_ui', [], app()->getLocale()) ?: "Token not found or expired. Please ask the patient to regenerate their QR code." }}</p><div style="margin-top:1.25rem;"><a href="{{ route('verify.health-id') }}" style="display:inline-flex;align-items:center;gap:0.5rem;background:#0F4C81;color:#fff;font-size:0.875rem;font-weight:700;border-radius:0.5rem;padding:0.625rem 1.25rem;text-decoration:none;">{{ __('verify.footer_manual_verify', [], app()->getLocale()) ?: 'Manual ID Lookup' }}</a></div>';
-        }
-    }, 3000);
-    @endif
 });
 </script>
 </body>
