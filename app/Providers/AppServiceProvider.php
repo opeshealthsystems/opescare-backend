@@ -117,6 +117,46 @@ class AppServiceProvider extends ServiceProvider
         Route::middleware('api')
             ->group(base_path('routes/mobile_vitals.php'));
 
+        // Mobile appointments reschedule routes — loaded here rather than in routes/api.php so
+        // parallel work on separate features cannot collide in one file.
+        Route::middleware('api')
+            ->group(base_path('routes/mobile_appointments_reschedule.php'));
+
+        // Mobile doctor chart routes — loaded here rather than in routes/api.php so
+        // parallel work on separate features cannot collide in one file.
+        Route::middleware('api')
+            ->group(base_path('routes/mobile_doctor_chart.php'));
+
+        // Mobile doctor messaging routes — loaded here rather than in routes/api.php so
+        // parallel work on separate features cannot collide in one file.
+        Route::middleware('api')
+            ->group(base_path('routes/mobile_doctor_messaging.php'));
+
+        // Mobile doctor results routes — loaded here rather than in routes/api.php so
+        // parallel work on separate features cannot collide in one file.
+        Route::middleware('api')
+            ->group(base_path('routes/mobile_doctor_results.php'));
+
+        // Mobile doctor schedule routes — loaded here rather than in routes/api.php so
+        // parallel work on separate features cannot collide in one file.
+        Route::middleware('api')
+            ->group(base_path('routes/mobile_doctor_schedule.php'));
+
+        // Mobile labs routes — loaded here rather than in routes/api.php so
+        // parallel work on separate features cannot collide in one file.
+        Route::middleware('api')
+            ->group(base_path('routes/mobile_labs.php'));
+
+        // Mobile patient writes routes — loaded here rather than in routes/api.php so
+        // parallel work on separate features cannot collide in one file.
+        Route::middleware('api')
+            ->group(base_path('routes/mobile_patient_writes.php'));
+
+        // Mobile payments routes — loaded here rather than in routes/api.php so
+        // parallel work on separate features cannot collide in one file.
+        Route::middleware('api')
+            ->group(base_path('routes/mobile_payments.php'));
+
         /*
          * Second-factor and one-time codes.
          *

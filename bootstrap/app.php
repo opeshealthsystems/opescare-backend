@@ -31,6 +31,13 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->api(prepend: [
             \Illuminate\Http\Middleware\HandleCors::class,
+            // Locale for the API. Without this every __() in an API response
+            // rendered in the default locale no matter what the caller asked
+            // for, so the whole French half of the mobile app fell back to
+            // English the moment the server spoke. SetLocale reads
+            // Accept-Language only for stateless requests, so the web group's
+            // ?lang= / session behaviour is unchanged.
+            \App\Http\Middleware\SetLocale::class,
         ]);
         $middleware->api(append: [
             \App\Http\Middleware\DemoSessionMiddleware::class,

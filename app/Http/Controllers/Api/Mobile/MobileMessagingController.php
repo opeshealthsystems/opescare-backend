@@ -79,9 +79,16 @@ class MobileMessagingController extends Controller
                 ? Carbon::parse($participant->last_read_at)
                 : null;
 
+            // `lte`, not `lt`. Both `last_read_at` and `messages.created_at` are
+            // stored to WHOLE SECONDS, so a strict `<` marked any message that
+            // arrived in the same second as a read permanently read — it never
+            // appeared as unread and the patient never knew it existed. Erring
+            // the other way costs one badge that clears a second later, which is
+            // the cheaper mistake by a wide margin. The clinician side of this
+            // same comparison had the identical bug.
             $unread = $lastMessage
                 && $lastMessage->sender_id !== $patientId
-                && (! $lastReadAt || $lastReadAt->lt($lastMessage->created_at));
+                && (! $lastReadAt || $lastReadAt->lte($lastMessage->created_at));
 
             return [
                 'id'           => $thread->id,

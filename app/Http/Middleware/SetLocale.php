@@ -50,8 +50,35 @@ class SetLocale
             return $next($request);
         }
 
-        if (Session::has('locale') && in_array(Session::get('locale'), self::SUPPORTED, true)) {
+        if ($request->hasSession()
+            && Session::has('locale')
+            && in_array(Session::get('locale'), self::SUPPORTED, true)
+        ) {
             App::setLocale(Session::get('locale'));
+
+            return $next($request);
+        }
+
+        // Accept-Language, for STATELESS requests only.
+        //
+        // The mobile app cannot use ?lang= (it is not navigating pages) and has
+        // no session, so every API error came back in the default locale however
+        // the patient had set their phone. Three separate features hit this and
+        // each worked around it by translating from a machine-readable
+        // error_code on the client.
+        //
+        // Guarded on hasSession() so WEB behaviour is untouched. That guard is
+        // not caution for its own sake: the whole point of ?lang= above is that
+        // each page has ONE stable, crawlable address per language for hreflang.
+        // If a bare URL also varied by Accept-Language, /pricing would serve
+        // different languages to different crawlers — exactly what those
+        // alternates exist to prevent.
+        if (! $request->hasSession()) {
+            $preferred = $request->getPreferredLanguage(self::SUPPORTED);
+
+            if (is_string($preferred) && in_array($preferred, self::SUPPORTED, true)) {
+                App::setLocale($preferred);
+            }
         }
 
         return $next($request);

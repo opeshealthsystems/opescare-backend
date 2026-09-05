@@ -2,6 +2,11 @@
 /public/build
 /public/hot
 /public/storage
+# Uploaded files (clinician photos, and anything else written through
+# the private disk). Production is a git checkout, so without this a
+# deploy could commit a real person's uploads into the repository.
+/storage/app/private/*
+!/storage/app/private/.gitignore
 /storage/*.key
 /storage/pail
 /vendor
