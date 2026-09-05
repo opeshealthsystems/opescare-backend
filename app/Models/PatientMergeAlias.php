@@ -87,11 +87,11 @@ class PatientMergeAlias extends Model
      */
     public static function resolveHealthId(string $healthId): ?Patient
     {
-        $alias = static::where('alias_health_id', $healthId)
-            ->with('canonicalPatient')
-            ->first();
-
-        return $alias?->canonicalPatient;
+        // One resolver. This table is merge HISTORY; whether an alias still
+        // resolves is decided by Patient::resolveHealthId(), which follows
+        // `merged_into_patient_id` and the status-bearing `health_id_aliases`
+        // — so an unmerge cannot leave a stale redirect here.
+        return Patient::resolveHealthId($healthId);
     }
 
     /**

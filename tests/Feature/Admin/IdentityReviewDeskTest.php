@@ -19,6 +19,7 @@ class IdentityReviewDeskTest extends MpiTestCase
         foreach ([
             'portals.admin.mpi.index',
             'portals.admin.mpi.detect',
+            'portals.admin.mpi.candidates.raise',
             'portals.admin.mpi.candidates.merge',
             'portals.admin.mpi.candidates.reject',
             'portals.admin.mpi.merges.unmerge',

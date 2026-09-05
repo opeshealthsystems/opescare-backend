@@ -45,6 +45,9 @@ Schedule::command('opescare:execute-account-deletions')->dailyAt('02:30')->witho
 // arrived in the last two days is scanned, against the whole register; it
 // never merges. 03:00 is after retention and deletions have run.
 Schedule::command('mpi:detect --since="2 days"')->dailyAt('03:00')->withoutOverlapping();
+// ...and once a week the whole register, so a night the timer missed cannot
+// leave a registration unscanned for good.
+Schedule::command('mpi:detect --limit=5000')->weeklyOn(0, '03:30')->withoutOverlapping();
 
 // OpesCare: mobile-money charges abandoned mid-flight.
 //

@@ -12,6 +12,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use App\Enums\AuditEventType;
 
 class Patient extends Model
@@ -293,7 +294,21 @@ class Patient extends Model
         ?string $lastName,
         ?string $dob = null,
         ?string $phone = null,
+        ?string $nationalId = null,
     ): ?static {
+        // A national ID belongs to one person: an exact, normalised, scope-blind
+        // hit is a match on its own. Profile completion collects one and never
+        // checked it.
+        if ($nationalId !== null && trim($nationalId) !== '') {
+            $byNationalId = static::withoutGlobalScope('isolate_demo')
+                ->whereRaw('upper(btrim(national_id_number)) = ?', [strtoupper(trim($nationalId))])
+                ->first();
+
+            if ($byNationalId) {
+                return static::followMerge($byNationalId) ?? $byNationalId;
+            }
+        }
+
         // A phone number is the strongest signal here — it is a keyed hash, so
         // this is an exact lookup and needs no name at all.
         if ($phone !== null && trim($phone) !== '') {
@@ -302,7 +317,9 @@ class Patient extends Model
                 ->first();
 
             if ($byPhone) {
-                return $byPhone;
+                // A hit on a merged-away record IS a hit — the person exists,
+                // under the survivor's Health ID.
+                return static::followMerge($byPhone) ?? $byPhone;
             }
         }
 
@@ -317,7 +334,7 @@ class Patient extends Model
             return null;
         }
 
-        return static::withoutGlobalScope('isolate_demo')
+        $hit = static::withoutGlobalScope('isolate_demo')
             ->whereRaw('lower(btrim(first_name)) = ?', [mb_strtolower(trim($firstName))])
             ->whereRaw('lower(btrim(last_name)) = ?', [mb_strtolower(trim($lastName))])
             ->get()
@@ -330,6 +347,8 @@ class Patient extends Model
                     return false;
                 }
             });
+
+        return $hit ? (static::followMerge($hit) ?? $hit) : null;
     }
 
     /**
@@ -381,9 +400,34 @@ class Patient extends Model
             ]);
         }
 
-        // A merged record hands off to its survivor. Bounded: a chain longer
-        // than this is corrupt, and returning the wrong patient is worse than
-        // returning none.
+        return static::followMerge($patient);
+    }
+
+    /**
+     * The patient a UUID opens — following a merge if there was one.
+     *
+     * A stale deep link, a QR payload, or a bookmark may carry the id of a
+     * record that has since been merged away. Opening the retired shell shows
+     * a patient with no history and nothing to say why.
+     */
+    public static function resolveId(string $id): ?static
+    {
+        if (! Str::isUuid($id)) {
+            return null;
+        }
+
+        $patient = static::whereKey($id)->first();
+
+        return $patient ? static::followMerge($patient) : null;
+    }
+
+    /**
+     * A merged record hands off to its survivor. Bounded: a chain longer
+     * than this is corrupt, and returning the wrong patient is worse than
+     * returning none.
+     */
+    protected static function followMerge(self $patient): ?static
+    {
         for ($hop = 0; $hop < 5 && $patient->isMerged(); $hop++) {
             $next = static::whereKey($patient->merged_into_patient_id)->first();
 

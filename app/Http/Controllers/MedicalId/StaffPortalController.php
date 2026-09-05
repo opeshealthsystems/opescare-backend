@@ -54,7 +54,7 @@ class StaffPortalController extends Controller
         $verification = null;
         $healthId = trim((string) $request->input('health_id', ''));
         if ($healthId !== '') {
-            $patient = Patient::where('health_id', $healthId)->first();
+            $patient = Patient::resolveHealthId($healthId);
             if ($patient) {
                 $this->ctx->auditPatientAccess(
                     actionType:   'staff_patient_verification',

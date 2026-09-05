@@ -669,7 +669,8 @@ class MobileDoctorChartController extends Controller
         }
 
         if (Str::isUuid($key)) {
-            return Patient::where('id', $key)->first();
+            // Follows a merge: a stale link may carry a retired record's id.
+            return Patient::resolveId($key);
         }
 
         // Case-folding normalises one whole identifier; the comparison stays

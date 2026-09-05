@@ -4,8 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\Patient;
 use App\Models\AuditEvent;
+use App\Modules\PatientIdentity\Exceptions\DuplicateIdentityFound;
 use App\Modules\PatientIdentity\Services\PatientIdentityService;
-use Exception;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -65,8 +65,8 @@ class PatientIdentityServiceTest extends TestCase
             'phone_number' => '+0987654321',
         ];
 
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage("Duplicate candidate found. Please review existing patients before creating.");
+        // Typed now, and it carries the matches; the intent — a duplicate is refused — is unchanged.
+        $this->expectException(DuplicateIdentityFound::class);
 
         $this->service->createPatientCandidate($duplicateData);
     }

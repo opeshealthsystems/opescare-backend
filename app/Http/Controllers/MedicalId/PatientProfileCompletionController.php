@@ -66,7 +66,7 @@ class PatientProfileCompletionController extends Controller
         // attaching this account to the record we found: linking a login to an
         // existing medical record on a name+dob match is a probabilistic merge,
         // and the platform contract says an uncertain match is a human's call.
-        if (Patient::findExistingIdentity($data['first_name'], $data['last_name'], $data['dob'], $data['phone'])) {
+        if (Patient::findExistingIdentity($data['first_name'], $data['last_name'], $data['dob'], $data['phone'], $data['national_id'] ?? null)) {
             return back()->withInput()->withErrors([
                 'first_name' => __('flash.patient_identity_duplicate'),
             ]);

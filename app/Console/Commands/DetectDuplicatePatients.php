@@ -9,11 +9,11 @@ use Illuminate\Console\Command;
 /**
  * mpi:detect — queue likely duplicate patients for a human to review.
  *
- * The Master Patient Index had a detection routine and nothing that ever ran
- * it. This is the nightly run: newest registrations first, paired against the
- * whole register across every facility, only the ones that arrived since the
- * last pass. It writes candidates and nothing else — no merge happens here,
- * or anywhere, without a person choosing a survivor on the review desk.
+ * The nightly run: newest registrations first, paired against the whole
+ * register across every facility, only what arrived since the last pass.
+ * Pending pairs whose records changed are re-scored. It writes candidates
+ * and nothing else — no merge happens here, or anywhere, without a person
+ * choosing a survivor on the review desk.
  */
 class DetectDuplicatePatients extends Command
 {
@@ -51,8 +51,8 @@ class DetectDuplicatePatients extends Command
         );
 
         $this->table(
-            ['scanned', 'pairs scored', 'queued', 'already known', 'below threshold'],
-            [[$report['scanned'], $report['pairs_scored'], $report['created'], $report['already_known'], $report['below_threshold']]],
+            ['scanned', 'pairs scored', 'queued', 'rescored', 'already known', 'below threshold'],
+            [[$report['scanned'], $report['pairs_scored'], $report['created'], $report['rescored'], $report['already_known'], $report['below_threshold']]],
         );
 
         if ($this->option('dry-run')) {

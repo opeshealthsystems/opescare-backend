@@ -234,7 +234,8 @@ class PharmacyPortalController extends Controller
                 $results = collect([$prescription]);
             }
         } elseif ($query !== '') {
-            $patient = \App\Models\Patient::where('health_id', $query)->first();
+            // Follows a merge: the card at the counter may carry a retired ID.
+            $patient = \App\Models\Patient::resolveHealthId($query);
 
             if ($patient) {
                 $results = Prescription::with(['items', 'facility:id,name', 'prescriber:id,name'])

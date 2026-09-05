@@ -90,7 +90,7 @@ return [
     'empty_merged'   => 'Aucune fusion pour l’instant.',
     'empty_rejected' => 'Aucune paire n’a encore été déclarée comme deux personnes distinctes.',
 
-    'flash_detected' => ':scanned patients analysés ; :created paire(s) mise(s) en file d’examen.',
+    'flash_detected' => ':scanned patients analysés ; :created paire(s) mise(s) en file d’examen, :rescored re-notée(s).',
     'flash_merged'   => 'Fusion effectuée. :moved lignes déplacées vers le dossier conservé ; :kept conservées sur le dossier retiré.',
     'flash_rejected' => 'Enregistré comme deux personnes distinctes.',
     'flash_unmerged' => 'Fusion annulée. Les deux dossiers sont de nouveau actifs.',
@@ -101,4 +101,17 @@ return [
     'error_merge_not_active'     => 'Cette fusion a déjà été annulée.',
     'error_same_patient'         => 'Un dossier ne peut pas être fusionné avec lui-même.',
     'error_generic'              => 'Une erreur est survenue et rien n’a été modifié.',
+
+    // Raising a pair by hand; unmerge refusals
+    'raise_title' => 'Comparer deux identifiants santé',
+    'raise_a' => 'Premier identifiant santé',
+    'raise_b' => 'Second identifiant santé',
+    'raise_note' => 'Ce que vous avez constaté',
+    'raise_note_placeholder' => 'Le patient a présenté les deux cartes au guichet.',
+    'btn_raise' => 'Soumettre à l’examen',
+    'flash_raised' => 'Soumis à l’examen. L’analyse attribue :score à cette paire.',
+    'error_raise_not_found' => 'L’un de ces identifiants santé n’est pas un dossier actif. Un identifiant fusionné renvoie à son dossier conservé — utilisez celui-ci.',
+    'error_unmerge_out_of_order' => 'Le dossier conservé a depuis été fusionné dans un autre. Annulez d’abord cette fusion plus récente.',
+    'error_unmerge_purged' => 'L’un de ces dossiers a été purgé par la suppression de compte. Il n’y a rien à rétablir.',
+    'status_superseded' => 'Remplacé',
 ];

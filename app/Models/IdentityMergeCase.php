@@ -6,6 +6,12 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @deprecated Inherited from the platform's Connect-side merge desk, which
+ *   this fork does not carry. Nothing here writes or reads it. The Finder's
+ *   identity pipeline is MpiCandidate -> PatientMergeService -> PatientMerge.
+ *   Kept only so a shared migration keeps applying; do not build on it.
+ */
 class IdentityMergeCase extends Model
 {
     use HasFactory, HasUuids;

@@ -352,7 +352,7 @@ class MobileEmergencyAccessController extends Controller
         }
 
         if (Str::isUuid($key)) {
-            return Patient::where('id', $key)->first();
+            return Patient::resolveId($key);
         }
 
         // Follows a merge: the card in an unconscious patient's pocket may carry

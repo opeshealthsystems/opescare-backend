@@ -39,10 +39,13 @@ class AdminAppointmentsController extends Controller
             $query->whereDate('scheduled_at', '<=', $dateTo);
         }
 
-        if ($search = $request->input('search')) {
-            $query->whereHas('patient', function ($q) use ($search) {
-                $q->where('health_id', 'like', "%{$search}%");
-            });
+        if ($search = trim((string) $request->input('search'))) {
+            // Exact Health ID only — a LIKE over patients is the enumeration
+            // search the platform contract forbids, admin desk or not. The
+            // lookup follows a merge, so the appointments of a retired ID show
+            // under its survivor.
+            $patient = Patient::resolveHealthId($search);
+            $query->where('patient_id', $patient?->getKey() ?? '00000000-0000-0000-0000-000000000000');
         }
 
         $appointments = $query->orderByDesc('scheduled_at')

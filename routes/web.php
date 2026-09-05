@@ -471,6 +471,7 @@ Route::middleware(['web', 'auth', 'throttle:portal'])->group(function () {
 Route::middleware(['web', 'auth', 'platform.admin'])->group(function () {
     Route::get('/admin/mpi',                                   [\App\Http\Controllers\MedicalId\AdminIdentityReviewController::class, 'index'])->name('portals.admin.mpi.index');
     Route::post('/admin/mpi/detect',                           [\App\Http\Controllers\MedicalId\AdminIdentityReviewController::class, 'detect'])->name('portals.admin.mpi.detect');
+    Route::post('/admin/mpi/candidates',                       [\App\Http\Controllers\MedicalId\AdminIdentityReviewController::class, 'raise'])->name('portals.admin.mpi.candidates.raise');
     Route::post('/admin/mpi/candidates/{candidate}/merge',     [\App\Http\Controllers\MedicalId\AdminIdentityReviewController::class, 'merge'])->name('portals.admin.mpi.candidates.merge');
     Route::post('/admin/mpi/candidates/{candidate}/reject',    [\App\Http\Controllers\MedicalId\AdminIdentityReviewController::class, 'reject'])->name('portals.admin.mpi.candidates.reject');
     Route::post('/admin/mpi/merges/{merge}/unmerge',           [\App\Http\Controllers\MedicalId\AdminIdentityReviewController::class, 'unmerge'])->name('portals.admin.mpi.merges.unmerge');

@@ -115,12 +115,11 @@ class FamilyController extends Controller
         ]);
 
         $search  = $data['health_id_or_email'];
-        $patient = Patient::where('is_demo', false)
-            ->where(function ($q) use ($search) {
-                $q->where('health_id', $search)
-                  ->orWhere('email', $search);
-            })
-            ->first();
+        // Same dead clause as the mobile family search had: is_demo = false
+        // under a scope showing only true. Two exact lookups, each following a
+        // merge where that applies.
+        $patient = Patient::resolveHealthId($search)
+            ?? Patient::where('email', $search)->first();
 
         if (!$patient) {
             return back()->withErrors(['health_id_or_email' => __('flash.family_no_patient_found')]);

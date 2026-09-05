@@ -32,9 +32,12 @@ class VerifyController extends Controller
             'purpose'   => 'required|string|max:60',
         ]);
 
-        $patient = Patient::where('health_id', $request->health_id)
-            ->where('is_demo', false)
-            ->first();
+        // `where('is_demo', false)` under a scope that shows only is_demo = true
+        // meant this page could never verify anyone on a demo host — and on a
+        // production host the scope already partitions, so the clause was
+        // redundant there. resolveHealthId() follows a merge, so a card issued
+        // before one still verifies.
+        $patient = Patient::resolveHealthId((string) $request->health_id);
 
         if (!$patient) {
             return view('verify.health_id', [

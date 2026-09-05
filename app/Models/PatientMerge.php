@@ -28,6 +28,9 @@ class PatientMerge extends Model
         'candidate_id',
         'survivor_patient_id',
         'retired_patient_id',
+        // Plain-text snapshots: the audit trail after a purge SET NULLs the keys.
+        'survivor_health_id',
+        'retired_health_id',
         'merged_by',
         'reason',
         'manifest',

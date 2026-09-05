@@ -59,10 +59,13 @@ class PrescriberController extends Controller
         $patient = null;
         $notFound = false;
 
+        // Both follow a merge: a retired Health ID or record id still opens
+        // the surviving record. A prescriber must not write a script against
+        // a shell that holds none of the patient's history.
         if ($id = $request->input('patient_id')) {
-            $patient = Patient::find($id);
+            $patient = Patient::resolveId((string) $id);
         } elseif ($healthId = trim((string) $request->input('health_id'))) {
-            $patient  = Patient::where('health_id', $healthId)->first();
+            $patient  = Patient::resolveHealthId($healthId);
             $notFound = $patient === null;
         }
 

@@ -12,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 /**
@@ -52,12 +53,9 @@ class AdminIdentityReviewController extends Controller
             20,
         )->withQueryString();
 
-        // What the reviewer needs beside the demographics: how much history
-        // each record carries, and which logins open it. Judging a duplicate
-        // from names alone is how wrong merges happen.
         $patientIds = $candidates->getCollection()
             ->flatMap(fn (MpiCandidate $c) => [$c->source_patient_id, $c->target_patient_id])
-            ->unique()->values()->all();
+            ->filter()->unique()->values()->all();
 
         $footprint = $this->footprint($patientIds);
 
@@ -89,7 +87,39 @@ class AdminIdentityReviewController extends Controller
 
         return redirect()
             ->route('portals.admin.mpi.index')
-            ->with('success', __('mpi.flash_detected', ['scanned' => $report['scanned'], 'created' => $report['created']]));
+            ->with('success', __('mpi.flash_detected', ['scanned' => $report['scanned'], 'created' => $report['created'], 'rescored' => $report['rescored']]));
+    }
+
+    /**
+     * An operator raises a pair by hand — the patient at the counter holding
+     * two cards. Both Health IDs are resolved scope-blind through the register
+     * (a merged-away record is not a party; its survivor is), and the pair
+     * lands on the desk whatever it scores.
+     */
+    public function raise(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'health_id_a' => ['required', 'string', 'max:64'],
+            'health_id_b' => ['required', 'string', 'max:64'],
+            'note'        => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $a = $this->mpi->register()->where('health_id', strtoupper(trim($validated['health_id_a'])))->first();
+        $b = $this->mpi->register()->where('health_id', strtoupper(trim($validated['health_id_b'])))->first();
+
+        if (! $a || ! $b) {
+            return back()->withInput()->with('error', __('mpi.error_raise_not_found'));
+        }
+
+        try {
+            $candidate = $this->mpi->raiseCandidate($a, $b, Auth::id(), $validated['note'] ?? null);
+        } catch (\Throwable $e) {
+            return back()->withInput()->with('error', $this->humanise($e));
+        }
+
+        return redirect()
+            ->route('portals.admin.mpi.index')
+            ->with('success', __('mpi.flash_raised', ['score' => number_format((float) $candidate->match_score, 0)]));
     }
 
     public function merge(Request $request, MpiCandidate $candidate): RedirectResponse
@@ -162,7 +192,7 @@ class AdminIdentityReviewController extends Controller
         }
 
         foreach (['prescriptions', 'appointments', 'encounters'] as $table) {
-            if (! \Illuminate\Support\Facades\Schema::hasTable($table)) {
+            if (! Schema::hasTable($table)) {
                 continue;
             }
             $rows = DB::table($table)->select('patient_id', DB::raw('count(*) as n'))
@@ -187,9 +217,12 @@ class AdminIdentityReviewController extends Controller
             'MPI_CANDIDATE_NOT_PENDING'    => __('mpi.error_not_pending'),
             'MPI_SURVIVOR_NOT_IN_PAIR'     => __('mpi.error_survivor_not_in_pair'),
             'MPI_PATIENT_ALREADY_MERGED',
-            'MPI_SURVIVOR_ALREADY_MERGED'  => __('mpi.error_already_merged'),
+            'MPI_SURVIVOR_ALREADY_MERGED',
+            'MPI_PAIR_ALREADY_MERGED'      => __('mpi.error_already_merged'),
             'MPI_MERGE_NOT_ACTIVE'         => __('mpi.error_merge_not_active'),
             'MPI_MERGE_SAME_PATIENT'       => __('mpi.error_same_patient'),
+            'MPI_UNMERGE_OUT_OF_ORDER'     => __('mpi.error_unmerge_out_of_order'),
+            'MPI_UNMERGE_PARTY_PURGED'     => __('mpi.error_unmerge_purged'),
             default                        => __('mpi.error_generic'),
         };
     }

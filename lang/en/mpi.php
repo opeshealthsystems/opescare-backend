@@ -91,7 +91,7 @@ return [
     'empty_merged'   => 'No merges yet.',
     'empty_rejected' => 'No pairs have been declared different people yet.',
 
-    'flash_detected' => 'Scanned :scanned patients; :created pair(s) queued for review.',
+    'flash_detected' => 'Scanned :scanned patients; :created pair(s) queued for review, :rescored re-scored.',
     'flash_merged'   => 'Merged. :moved rows moved to the surviving record; :kept kept on the retired one.',
     'flash_rejected' => 'Recorded as two different people.',
     'flash_unmerged' => 'Merge undone. Both records are live again.',
@@ -102,4 +102,17 @@ return [
     'error_merge_not_active'     => 'That merge has already been undone.',
     'error_same_patient'         => 'A record cannot be merged with itself.',
     'error_generic'              => 'Something went wrong and nothing was changed.',
+
+    // Raising a pair by hand; unmerge refusals
+    'raise_title' => 'Compare two Health IDs',
+    'raise_a' => 'First Health ID',
+    'raise_b' => 'Second Health ID',
+    'raise_note' => 'What you saw',
+    'raise_note_placeholder' => 'Patient presented both cards at the counter.',
+    'btn_raise' => 'Put on the desk',
+    'flash_raised' => 'On the desk. The scan scores this pair :score.',
+    'error_raise_not_found' => 'One of those Health IDs is not a live record. A merged-away ID resolves to its survivor — use that one.',
+    'error_unmerge_out_of_order' => 'The surviving record has since been merged into another. Undo that later merge first.',
+    'error_unmerge_purged' => 'One of these records has been purged by account deletion. There is nothing to restore into.',
+    'status_superseded' => 'Superseded',
 ];
