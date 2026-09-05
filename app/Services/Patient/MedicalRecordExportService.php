@@ -34,18 +34,29 @@ class MedicalRecordExportService
         $patient = Patient::with([
             'allergies',
             'diagnoses'     => fn ($q) => $q->where('status', 'active'),
-            'prescriptions' => fn ($q) => $q->where('status', 'active'),
+            'prescriptions' => fn ($q) => $q->where('status', 'active')->orderByDesc('prescribed_at'),
+            'prescriptions.items',
+            'prescriptions.facility',
             'vitals'        => fn ($q) => $q->orderByDesc('recorded_at')->limit(3),
             'labResults'    => fn ($q) => $q->orderByDesc('created_at')->limit(10),
             'immunizations',
         ])->findOrFail($patientId);
 
-        $pdf = Pdf::loadView('exports.medical-record', compact('patient', 'options'))
+        // The record sits on the OpesCare Secure sheet (pdf/layouts/secure):
+        // background art, seal, header band and footer repeat on every page.
+        $issuedAt = Carbon::now();
+
+        // `true` merges with the package defaults. Without it setOptions()
+        // replaces the whole Options object, the chroot falls back to
+        // vendor/dompdf and every sheet image under public/ is refused.
+        $pdf = Pdf::loadView('exports.medical-record', compact('patient', 'options', 'issuedAt'))
             ->setPaper('a4', 'portrait')
             ->setOptions([
-                'defaultFont'          => 'sans-serif',
+                'defaultFont'          => 'DejaVu Sans',
                 'isHtml5ParserEnabled' => true,
-            ]);
+                'isFontSubsettingEnabled' => true, // embed the glyphs used, not 1.5 MB of DejaVu
+                'dpi'                  => 96,
+            ], true);
 
         // Include a random suffix so two exports for the same patient within the
         // same second don't collide and overwrite each other.
