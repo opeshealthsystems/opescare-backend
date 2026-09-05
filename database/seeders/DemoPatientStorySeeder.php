@@ -100,6 +100,7 @@ class DemoPatientStorySeeder extends Seeder
             $this->seedConsents($patient, $doctor, $hospital);
             $this->seedAccessLog($patient, $doctor, $hospital);
             $this->seedInvoices($patient, $hospital);
+            $this->seedNotifications($patient, $hospital);
 
             $this->report($patient);
         }
@@ -419,6 +420,69 @@ class DemoPatientStorySeeder extends Seeder
             }
 
             DB::table('mobile_invoices')->updateOrInsert(['reference' => $row['ref']], $values);
+        }
+    }
+
+    // ── Notifications (the app's bell) ───────────────────────────────────────
+
+    /**
+     * The mobile feed reads Laravel's `notifications` table scoped to the
+     * patient (MobileNotificationController::scopedQuery), NOT
+     * `notification_events` — that table feeds the web bell. Four unread
+     * entries that match the story, in the payload shape the real
+     * notification classes write (type · title · message · severity ·
+     * action_url · action_label). Fixed ids, so a re-run rewrites the same
+     * four rows and never piles up.
+     */
+    private function seedNotifications(Patient $patient, string $hospital): void
+    {
+        $morph        = (new Patient())->getMorphClass();
+        $hospitalName = DB::table('facilities')->where('id', $hospital)->value('name') ?? DemoFacilityResolver::PRIMARY_HOSPITAL;
+        $reviewDate   = now()->addWeeks(3)->translatedFormat('j F');
+        $pendingConsent = DemoStoryIds::derived($patient->id, 'demo-story:consent-request:pending');
+
+        $rows = [
+            ['key' => 'consent',  'type' => \App\Notifications\ConsentAccessRequestedNotification::class, 'at' => now()->subDays(2)->setTime(15, 21), 'data' => [
+                'type' => 'consent_request_received', 'severity' => 'high',
+                'title' => 'A facility is asking to see your record',
+                'message' => 'CHU de Yaoundé is asking for access to your health record for treatment. You decide — nothing is shared until you approve.',
+                'consent_request_id' => $pendingConsent, 'facility_name' => 'CHU de Yaoundé', 'purpose' => 'treatment',
+                'action_url' => '/privacy', 'action_label' => 'Review the request',
+            ]],
+            ['key' => 'lab',      'type' => 'lab_result_available',  'at' => now()->subDays(6)->setTime(17, 40), 'data' => [
+                'type' => 'lab_result_available', 'severity' => 'normal',
+                'title' => 'Lab result available — Fasting Blood Glucose',
+                'message' => '5.1 mmol/L, within range. Open Lab Results to see the full report.',
+                'action_url' => '/labs', 'action_label' => 'View result',
+            ]],
+            ['key' => 'rx',       'type' => 'prescription_issued',   'at' => now()->subDays(18)->setTime(10, 6), 'data' => [
+                'type' => 'prescription_issued', 'severity' => 'normal',
+                'title' => 'Prescription issued — Metformin, Amlodipine',
+                'message' => "Your quarterly repeat from {$hospitalName} is ready. Show the prescription code at the pharmacy.",
+                'action_url' => '/prescriptions', 'action_label' => 'View prescription',
+            ]],
+            ['key' => 'appt',     'type' => \App\Notifications\AppointmentSmsReminder::class, 'at' => now()->subDays(1)->setTime(8, 0), 'data' => [
+                'type' => 'appointment_reminder', 'severity' => 'normal',
+                'title' => 'Appointment confirmed',
+                'message' => "Your quarterly review at {$hospitalName} on {$reviewDate} at 09:30 is confirmed.",
+                'appointment_id' => DemoStoryIds::uid($patient->id, DemoCarePathwaySeeder::APPT_UPCOMING),
+                'action_url' => '/appointments', 'action_label' => 'View appointment',
+            ]],
+        ];
+
+        foreach ($rows as $row) {
+            DB::table('notifications')->updateOrInsert(
+                ['id' => DemoStoryIds::derived($patient->id, 'demo-story:notification:' . $row['key'])],
+                [
+                    'type'            => $row['type'],
+                    'notifiable_type' => $morph,
+                    'notifiable_id'   => $patient->id,
+                    'data'            => json_encode($row['data'], JSON_UNESCAPED_UNICODE),
+                    'read_at'         => null,
+                    'created_at'      => $row['at'],
+                    'updated_at'      => $row['at'],
+                ]
+            );
         }
     }
 
