@@ -91,6 +91,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth.mobile'      => \App\Http\Middleware\AuthenticateMobilePatient::class,
             'auth.provider'    => \App\Http\Middleware\AuthenticateMobileProvider::class,
             'guardian.context' => \App\Http\Middleware\GuardianAccessMiddleware::class,
+            // Role → capability gate for professional surfaces (config/staff_capabilities.php).
+            'capability' => \App\Http\Middleware\RequireStaffCapability::class,
             'mfa.verified'     => \App\Http\Middleware\EnsureTwoFactorVerified::class,
             'api.admin'        => \App\Http\Middleware\RequireApiAdminRole::class,
             'verify.integration.client' => \App\Http\Middleware\VerifyIntegrationClient::class,

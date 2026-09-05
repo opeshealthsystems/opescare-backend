@@ -396,4 +396,6 @@ return [
     'qr_code_not_recognised'         => 'Ce n\'est pas un code Identifiant Santé OpesCare.',
     'qr_expired'                     => 'Ce code a expiré. Demandez au patient d\'en présenter un nouveau.',
     'qr_revoked'                     => 'Le patient a retiré ce code. Demandez-lui d\'en présenter un nouveau.',
+
+    'capability_forbidden'           => 'Votre rôle ne comprend pas cette partie d'OpesCare.',
 ];

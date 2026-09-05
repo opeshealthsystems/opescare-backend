@@ -409,4 +409,6 @@ return [
     'qr_code_not_recognised'         => 'That is not an OpesCare Health ID code.',
     'qr_expired'                     => 'This code has expired. Ask the patient to present a new one.',
     'qr_revoked'                     => 'The patient withdrew this code. Ask them to present a new one.',
+
+    'capability_forbidden'           => 'Your role does not include this part of OpesCare.',
 ];

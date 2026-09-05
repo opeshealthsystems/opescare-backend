@@ -65,6 +65,10 @@ class AppServiceProvider extends ServiceProvider
         // @enum($model->status) / @enum($x->severity, 'severity') — render a DB
         // enum value through lang/{locale}/enums.php with a graceful title-case
         // fallback. Keeps status/severity badges bilingual instead of raw English.
+        // @capability('prescribe') … @endcapability — show a sidebar link or a
+        // dashboard tile only to roles that hold the capability (any-of).
+        \Illuminate\Support\Facades\Blade::if('capability', fn (string ...$capabilities) => \App\Support\StaffCapabilities::can(\Illuminate\Support\Facades\Auth::user(), ...$capabilities));
+
         \Illuminate\Support\Facades\Blade::directive('enum', function (string $expression) {
             return "<?php echo e(\App\Support\Enums::label({$expression})); ?>";
         });
