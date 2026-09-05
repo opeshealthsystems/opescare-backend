@@ -29,7 +29,11 @@ yarn-error.log
 /bootstrap/cache/*.php
 /storage/framework/cache/data/*
 /storage/framework/sessions/*
-/storage/framework/views/*.php
+# Compiled Blade. The old `views/*.php` pattern matched only the top level, so
+# the per-worker `views/test_N/` directories a parallel `artisan test` creates
+# were tracked instead — 267 compiled files, rewritten by every run, and
+# deleted wholesale the next time anyone ran `view:cache`.
+/storage/framework/views/**
 /storage/framework/testing/*
 /storage/logs/*.log
 /storage/app/livewire-tmp/*
