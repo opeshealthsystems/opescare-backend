@@ -43,7 +43,35 @@ class RolesSeeder extends Seeder
         ['specialist',           'clinical_provider',       'specialist_doctor',    'Specialist Doctor'],
         ['consultant',           'clinical_provider',       'specialist_doctor',    'Consultant Doctor'],
         ['resident',             'clinical_provider',       'resident_doctor',      'Resident Doctor'],
-        ['visiting_doctor',      'clinical_provider',       'resident_doctor',      'Visiting Doctor'],
+        // visiting_doctor is the other half of the same mistake, and it gets the
+        // same answer for the same reasons.
+        //
+        // A visiting doctor is a senior clinician a facility invites in for
+        // sessions — FacilityStaffInvite::INVITABLE_ROLES lists them beside
+        // 'doctor' and 'consultant', and lang/*/team.php calls them "Visiting
+        // doctor" / "Médecin vacataire". Pointing them at 'resident_doctor'
+        // badged that consultant "Resident Doctor": a TRAINEE label on a
+        // visiting specialist, and a label that contradicted the two other
+        // places on the very same page — layouts/portal.blade.php renders
+        // roles.description ("Visiting Doctor") in the sidebar brand-sub AND
+        // the sidebar footer, so the only thing that ever said "Resident" was
+        // the badge in the middle.
+        //
+        // A distinct 'visiting_doctor' dashboard profile was considered and
+        // rejected. Nothing branches on the difference: EnsurePortalAccess
+        // gates on the ROLE name (visiting_doctor is already in
+        // PORTAL_ROLES['facility']), User::isProfessional() only excludes
+        // patient/developer/platform keys so both read as professional,
+        // ProfessionalProfileController::staffCategory() defaults both to
+        // 'clinical', and both profiles are portal_prefix 'staff' landing on
+        // portals.staff. What a new profile WOULD cost is a fourth copy of
+        // resources/views/partials/sidebars/doctor.blade.php — the layout uses
+        // @includeIf, so a profile key with no matching partial renders an
+        // EMPTY sidebar, which is worse than a generic badge — kept in hand-sync
+        // forever for one string that the page already shows twice.
+        //
+        // 'resident_doctor' now means what its name says: the 'resident' role.
+        ['visiting_doctor',      'clinical_provider',       'doctor',               'Visiting Doctor'],
 
         // Nursing & Midwifery
         ['nurse',                'nursing_midwifery',       'nurse',                'Nurse'],

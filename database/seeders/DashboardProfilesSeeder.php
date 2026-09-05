@@ -61,10 +61,16 @@ class DashboardProfilesSeeder extends Seeder
             ],
             [
                 'key'           => 'resident_doctor',
-                'name'          => 'Resident / Visiting / Multi-Facility Doctor Dashboard',
+                'name'          => 'Resident Doctor Dashboard',
                 'portal_prefix' => 'staff',
                 'landing_route' => 'portals.staff',
-                'description'   => 'Resident, visiting, or multi-facility doctor',
+                // One role, not three. This row was the catch-all for
+                // "resident, visiting, or multi-facility doctor" and badged all
+                // three "Resident Doctor" — a trainee label on two kinds of
+                // senior clinician. multi_doctor moved to 'doctor' first, then
+                // visiting_doctor (reasons in RolesSeeder); only 'resident',
+                // who really is in training, is left.
+                'description'   => 'Doctor in residency training',
             ],
 
             // ── Nursing & Midwifery ───────────────────────────────────────────

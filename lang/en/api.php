@@ -230,6 +230,7 @@ return [
     'notification_acknowledged'     => 'Notification acknowledged',
     'all_notifications_read'        => 'All notifications marked as read',
     'notification_archived'         => 'Notification archived',
+    'push_token_invalid'            => 'This is not an Expo push token. A device fingerprint cannot receive notifications.',
     'notif_title_appointment_reminder' => 'Appointment Reminder',
     'task_acknowledged'             => 'Task acknowledged',
     'task_completed'                => 'Task completed',

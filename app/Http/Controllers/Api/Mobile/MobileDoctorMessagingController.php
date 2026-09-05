@@ -107,6 +107,34 @@ class MobileDoctorMessagingController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        // A query string has no booleans. Laravel's `boolean` rule accepts
+        // 1/0/"1"/"0" but NOT "true"/"false" — which is the most idiomatic
+        // spelling in a URL and exactly what the app sends
+        // (`app/clinician/messages.tsx`: `waiting: { unread: true }`). So the
+        // clinician's DEFAULT Messages tab 422'd on every load with "The unread
+        // field must be true or false", while the consumer nine lines below
+        // already used FILTER_VALIDATE_BOOLEAN, which would have accepted it.
+        // The rule was stricter than its own reader.
+        //
+        // Normalised here rather than fixed in the client because a shipped
+        // native build cannot be corrected on demand — this repairs the app
+        // already on someone's phone, and any other spelling a caller picks.
+        // FILTER_NULL_ON_FAILURE matters: a RECOGNISED spelling is normalised, and
+        // anything else is left untouched so the rule below still rejects it.
+        // Without it, `?unread=banana` would quietly become false and silently
+        // change what the clinician sees instead of saying the request was wrong.
+        if ($request->has('unread')) {
+            $normalised = filter_var(
+                $request->query('unread'),
+                FILTER_VALIDATE_BOOLEAN,
+                FILTER_NULL_ON_FAILURE
+            );
+
+            if ($normalised !== null) {
+                $request->merge(['unread' => $normalised]);
+            }
+        }
+
         $validated = $request->validate([
             'page'     => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:' . self::MAX_PER_PAGE],

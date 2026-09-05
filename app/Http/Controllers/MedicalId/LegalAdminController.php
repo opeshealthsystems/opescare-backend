@@ -12,6 +12,7 @@ use App\Models\PrivacyComplaint;
 use App\Modules\Legal\Services\LegalDocumentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /**
@@ -21,9 +22,30 @@ class LegalAdminController extends Controller
 {
     public function __construct(private readonly LegalDocumentService $legalService) {}
 
-    private function demoActorId(): string
+    /**
+     * The signed-in administrator's user id — a UUID, or null when there is no
+     * one to attribute the act to.
+     *
+     * Every column this feeds is a `uuid` with a foreign key onto `users.id`
+     * and `nullOnDelete()`: `account_closure_requests.reviewed_by`,
+     * `legal_documents.created_by`, `legal_document_versions.published_by`
+     * (2026_05_27_000013_create_legal_compliance_tables).
+     *
+     * This used to return `session('auth_email') ?: 'demo-admin'` — an email
+     * address, and in practice the literal string `demo-admin`, because nothing
+     * in this codebase has ever written `auth_email` into the session. Postgres
+     * answers a non-UUID with
+     * `SQLSTATE[22P02] invalid input syntax for type uuid: "demo-admin"`, so
+     * reviewClosure(), store() and publishVersion() threw on every single call.
+     *
+     * Null is the right fallback, not a placeholder string: the columns are
+     * nullable by design and already drop to null when the user row is deleted.
+     * An unattributed row is a smaller lie than a fabricated actor, and it is
+     * not a 500.
+     */
+    private function actorId(): ?string
     {
-        return session('auth_email') ?: 'demo-admin';
+        return Auth::id();
     }
 
     // ------------------------------------------------------------------
@@ -78,7 +100,7 @@ class LegalAdminController extends Controller
             document:             $document,
             version:              $data['version'],
             contentHtml:          $data['content_html'],
-            publishedBy:          $this->demoActorId(),
+            publishedBy:          $this->actorId(),
             requiresReacceptance: (bool) ($data['requires_reacceptance'] ?? false),
             changeSummary:        $data['change_summary'] ?? '',
             effectiveAt:          $data['effective_at'] ?? null,
@@ -105,7 +127,7 @@ class LegalAdminController extends Controller
             'language'            => $data['language'] ?? 'en',
             'requires_acceptance' => (bool) ($data['requires_acceptance'] ?? true),
             'is_active'           => true,
-            'created_by'          => $this->demoActorId(),
+            'created_by'          => $this->actorId(),
         ]);
 
         return back()->with('success', __('flash.legal_document_created', ['title' => $data['title']]));
@@ -135,7 +157,7 @@ class LegalAdminController extends Controller
 
         $closure->update([
             'status'      => $status,
-            'reviewed_by' => $this->demoActorId(),
+            'reviewed_by' => $this->actorId(),
             'review_note' => $data['review_note'] ?? null,
             'reviewed_at' => now(),
         ]);

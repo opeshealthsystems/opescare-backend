@@ -217,6 +217,7 @@ return [
     'notification_acknowledged'     => 'Notification accusée de réception',
     'all_notifications_read'        => 'Toutes les notifications marquées comme lues',
     'notification_archived'         => 'Notification archivée',
+    'push_token_invalid'            => 'Ceci n\'est pas un jeton push Expo. Une empreinte d\'appareil ne peut pas recevoir de notifications.',
     'notif_title_appointment_reminder' => 'Rappel de rendez-vous',
     'task_acknowledged'             => 'Tâche accusée de réception',
     'task_completed'                => 'Tâche terminée',

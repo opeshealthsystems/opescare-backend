@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Mobile;
 use App\Http\Controllers\Controller;
 use App\Models\MobileAppSetting;
 use App\Models\PushDeviceToken;
+use App\Services\ExpoPushService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -55,13 +56,36 @@ class MobileSettingsController extends Controller
      * Register or update a push device token.
      *
      * POST /api/mobile/push-tokens
+     *
+     * `push_token` must be an Expo push token — `ExponentPushToken[…]` or
+     * `ExpoPushToken[…]`. It used to be `required|string` and nothing more,
+     * which is exactly how `push_device_tokens` filled up with DEVICE
+     * FINGERPRINTS: the mobile client sent its own random device id as the
+     * push token and the endpoint stored it without a murmur. A fingerprint is
+     * not a credential Expo will ever accept, so every row holding one is a
+     * device that can never be reached — a silent, permanent delivery failure
+     * that looks like a successful registration on both ends.
+     *
+     * The check is `ExpoPushService::isExpoPushToken()`, the same predicate the
+     * sender uses to decide what it may put on the wire, so the gate at the
+     * door and the gate at the exit can never drift apart. Do not inline a
+     * second copy of the pattern here.
      */
     public function registerPushToken(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'device_fingerprint' => 'required|string|max:128',
             'platform'           => 'required|in:ios,android,web',
-            'push_token'         => 'required|string',
+            'push_token'         => [
+                'required',
+                'string',
+                'max:255',
+                static function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (! ExpoPushService::isExpoPushToken(is_string($value) ? $value : null)) {
+                        $fail(__('api.push_token_invalid'));
+                    }
+                },
+            ],
         ]);
 
         $patientId = $this->resolvePatientId($request);

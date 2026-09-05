@@ -36,12 +36,18 @@ class LegalDocumentService
     /**
      * Publish a new version of a legal document.
      * Marks all other versions of the same document as non-current.
+     *
+     * `$publishedBy` is a user UUID or null. It lands in
+     * `legal_document_versions.published_by`, a nullable uuid FK onto
+     * `users.id`, so anything that is not a UUID is a Postgres 22P02 rather
+     * than a soft failure. Null is allowed on purpose: the column is nullable
+     * and already drops to null when the publisher's account is deleted.
      */
     public function publishVersion(
         LegalDocument $document,
         string        $version,
         string        $contentHtml,
-        string        $publishedBy,
+        ?string       $publishedBy,
         bool          $requiresReacceptance = false,
         string        $changeSummary = '',
         ?string       $effectiveAt = null,
