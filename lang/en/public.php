@@ -647,6 +647,8 @@ return [
         'role_patient'        => 'Patient',
         'role_patient_verified' => 'Male patient — verified ID, full record',
         'role_patient_provisional' => 'Female patient — provisional ID',
+        'role_child_boy'      => 'Boy — child, verified ID',
+        'role_child_girl'     => 'Girl — child, verified ID',
         'role_guardian'       => 'Guardian',
         'role_doctor'         => 'Doctor',
         'role_multi_doctor'   => 'Multi-Facility Doctor',

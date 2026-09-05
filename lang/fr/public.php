@@ -646,6 +646,8 @@ return [
         'role_patient'        => 'Patient',
         'role_patient_verified' => 'Patient (homme) — identité vérifiée, dossier complet',
         'role_patient_provisional' => 'Patiente — identité provisoire',
+        'role_child_boy'      => 'Garçon — enfant, identité vérifiée',
+        'role_child_girl'     => 'Fille — enfant, identité vérifiée',
         'role_guardian'       => 'Tuteur',
         'role_doctor'         => 'Médecin',
         'role_multi_doctor'   => 'Médecin multi-établissements',

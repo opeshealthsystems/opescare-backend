@@ -27,6 +27,8 @@ class LoginDemoPanelTest extends TestCase
         'demo.facility.ceo@opescare.test',
         'demo.patient@opescare.test',
         'demo.reviewer@opescare.test',
+        'demo.boy@opescare.test',
+        'demo.girl@opescare.test',
         'demo.admin@opescare.test',
         'demo.developer@opescare.test',
     ];

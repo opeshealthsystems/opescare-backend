@@ -187,6 +187,16 @@
                         <span>Demo Reviewer</span>
                         <small>{{ __('public.demo.role_patient_verified') }}</small>
                     </button>
+                    <button type="button" class="demo-login-btn demo-btn-patient" data-demo-role="patient" data-demo-email="demo.boy@opescare.test">
+                        <i data-lucide="baby"></i>
+                        <span>Demo Boy</span>
+                        <small>{{ __('public.demo.role_child_boy') }}</small>
+                    </button>
+                    <button type="button" class="demo-login-btn demo-btn-patient" data-demo-role="patient" data-demo-email="demo.girl@opescare.test">
+                        <i data-lucide="baby"></i>
+                        <span>Demo Girl</span>
+                        <small>{{ __('public.demo.role_child_girl') }}</small>
+                    </button>
                 </div>
             </div>
 
