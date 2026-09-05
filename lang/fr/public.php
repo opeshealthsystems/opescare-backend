@@ -644,6 +644,7 @@ return [
         'common_password'     => 'Mot de passe démo commun',
 
         'role_patient'        => 'Patient',
+        'role_patient_verified' => 'Patient — identité vérifiée, dossier complet',
         'role_guardian'       => 'Tuteur',
         'role_doctor'         => 'Médecin',
         'role_multi_doctor'   => 'Médecin multi-établissements',
@@ -658,6 +659,7 @@ return [
         'role_developer'      => 'Développeur / API',
 
         'org_patient'         => 'Portail Patient Démo',
+        'org_patient_verified' => 'Portail Patient Démo — identité vérifiée',
         'org_guardian'        => 'Portail Tuteur Démo',
         'org_hospital'        => 'Hôpital Central Démo',
         'org_clinic'          => 'Clinique de Ville Démo',

@@ -645,6 +645,7 @@ return [
 
         // Role card labels
         'role_patient'        => 'Patient',
+        'role_patient_verified' => 'Patient — verified ID, full record',
         'role_guardian'       => 'Guardian',
         'role_doctor'         => 'Doctor',
         'role_multi_doctor'   => 'Multi-Facility Doctor',
@@ -660,6 +661,7 @@ return [
 
         // Org labels
         'org_patient'         => 'Demo Patient Portal',
+        'org_patient_verified' => 'Demo Patient Portal — verified identity',
         'org_guardian'        => 'Demo Guardian Portal',
         'org_hospital'        => 'Demo Central Hospital',
         'org_clinic'          => 'Demo City Clinic',

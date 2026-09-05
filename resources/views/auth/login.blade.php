@@ -169,8 +169,13 @@
                 <div class="demo-btn-grid">
                     <button type="button" class="demo-login-btn demo-btn-patient" data-demo-role="patient" data-demo-email="demo.patient@opescare.test">
                         <i data-lucide="user"></i>
-                        <span>Jean Dupont</span>
-                        <small>Patient</small>
+                        <span>Demo Patient</span>
+                        <small>Patient — provisional ID</small>
+                    </button>
+                    <button type="button" class="demo-login-btn demo-btn-patient" data-demo-role="patient" data-demo-email="demo.reviewer@opescare.test">
+                        <i data-lucide="shield-check"></i>
+                        <span>Demo Reviewer</span>
+                        <small>Patient — verified ID, full record</small>
                     </button>
                 </div>
             </div>

@@ -83,7 +83,8 @@
         </div>
         <div class="demo-card-meta">
             <div><strong>Email:</strong> <code>demo.patient@opescare.test</code></div>
-            <div><strong>Health ID:</strong> <code>OC-DEMO-PAT-0001</code></div>
+            <div><strong>Health ID:</strong> <code>{{ \App\Models\Patient::withoutGlobalScopes()->where('email', 'demo.patient@opescare.test')->value('health_id') ?? '—' }}</code></div>
+            <div><strong>Also:</strong> <code>demo.reviewer@opescare.test</code> — verified ID, full record</div>
         </div>
         <form method="POST" action="{{ route('demo.login-as') }}">
             @csrf

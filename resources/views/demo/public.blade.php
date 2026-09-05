@@ -56,6 +56,12 @@
 </div>
 
 {{-- Role Cards Grid --}}
+@php
+    // The Health ID printed on a card is the one the account really has on THIS
+    // estate — a static id here drifted from production the first time the demo
+    // patient was re-created.
+    $healthIdOf = fn (string $email) => \App\Models\Patient::withoutGlobalScopes()->where('email', $email)->value('health_id') ?? '—';
+@endphp
 <div class="demo-grid" role="list">
 
     {{-- Patient --}}
@@ -71,13 +77,41 @@
         </div>
         <div class="demo-card-meta">
             <div><strong>Email:</strong> <code>demo.patient@opescare.test</code></div>
-            <div><strong>Health ID:</strong> <code>OC-DEMO-PAT-0001</code></div>
+            <div><strong>Health ID:</strong> <code>{{ $healthIdOf('demo.patient@opescare.test') }}</code></div>
         </div>
         <div class="demo-card-body">View Health ID, QR code, timeline, lab results, prescriptions, consent and access logs.</div>
         <form method="POST" action="{{ route('demo.login-as') }}">
             @csrf
             <input type="hidden" name="role" value="patient">
             <input type="hidden" name="email" value="demo.patient@opescare.test">
+            <input type="hidden" name="mode" value="public">
+            <button type="submit" class="demo-login-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                {{ $t('login_as', 'Login as') }} {{ $t('role_patient', 'Patient') }}
+            </button>
+        </form>
+    </div>
+
+    {{-- Patient — verified identity, full clinical story (DemoPatientStorySeeder) --}}
+    <div class="demo-card" role="listitem">
+        <div class="demo-card-header">
+            <div class="demo-card-icon teal" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+            </div>
+            <div>
+                <div class="demo-card-role">{{ $t('role_patient_verified', 'Patient — verified ID, full record') }}</div>
+                <div class="demo-card-org">{{ $t('org_patient_verified', 'Demo Patient Portal — verified identity') }}</div>
+            </div>
+        </div>
+        <div class="demo-card-meta">
+            <div><strong>Email:</strong> <code>demo.reviewer@opescare.test</code></div>
+            <div><strong>Health ID:</strong> <code>{{ $healthIdOf('demo.reviewer@opescare.test') }}</code></div>
+        </div>
+        <div class="demo-card-body">Verified Health ID card, live presentation code, diagnoses, allergies, immunisations, labs with a critical result, prescriptions, appointments, referral, care plan, messages, consents, access log and invoices.</div>
+        <form method="POST" action="{{ route('demo.login-as') }}">
+            @csrf
+            <input type="hidden" name="role" value="patient">
+            <input type="hidden" name="email" value="demo.reviewer@opescare.test">
             <input type="hidden" name="mode" value="public">
             <button type="submit" class="demo-login-btn">
                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
