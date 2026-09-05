@@ -26,6 +26,9 @@ class MpiCandidate extends Model
         'status',
         'reviewed_by',
         'reviewed_at',
+        'survivor_patient_id',
+        'review_reason',
+        'detected_by',
     ];
 
     protected $casts = [
@@ -49,6 +52,26 @@ class MpiCandidate extends Model
     public function reviewer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    /** The record the reviewer chose to keep, once merged. */
+    public function survivor(): BelongsTo
+    {
+        return $this->belongsTo(Patient::class, 'survivor_patient_id');
+    }
+
+    /** The merge this decision produced, if any. */
+    public function merge()
+    {
+        // Not latestOfMany(): it adds MAX(id) as a tie-breaker and Postgres
+        // has no max(uuid). Newest-first hasOne is the same relation.
+        return $this->hasOne(PatientMerge::class, 'candidate_id')->orderByDesc('created_at');
+    }
+
+    /** deterministic | probable | possible */
+    public function tier(): string
+    {
+        return \App\Modules\MasterPatientIndex\Services\MasterPatientIndexService::tierFor((float) $this->match_score);
     }
 
     // ── Scopes ────────────────────────────────────────────────────────────

@@ -673,8 +673,9 @@ class MobileDoctorChartController extends Controller
         }
 
         // Case-folding normalises one whole identifier; the comparison stays
-        // an equality on the full Health ID.
-        return Patient::where('health_id', strtoupper($key))->first();
+        // an equality on the full Health ID. Follows a merge: a retired Health
+        // ID still opens the surviving record.
+        return Patient::resolveHealthId($key);
     }
 
     /**

@@ -41,6 +41,11 @@ Schedule::command('consent:expire-lapsed')->hourly()->withoutOverlapping();
 // throughout because locking it would remove the session needed to cancel.
 Schedule::command('opescare:execute-account-deletions')->dailyAt('02:30')->withoutOverlapping();
 
+// Master Patient Index — queue likely duplicates for a human. Only what
+// arrived in the last two days is scanned, against the whole register; it
+// never merges. 03:00 is after retention and deletions have run.
+Schedule::command('mpi:detect --since="2 days"')->dailyAt('03:00')->withoutOverlapping();
+
 // OpesCare: mobile-money charges abandoned mid-flight.
 //
 // A charge still self-closes on the next poll or the patient's next attempt;

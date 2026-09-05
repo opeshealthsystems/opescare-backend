@@ -426,7 +426,8 @@ class MobileConsentRequestController extends Controller
             return null;
         }
 
-        return Patient::where('health_id', $key)->first();
+        // Follows a merge: a retired Health ID still opens the surviving record.
+        return Patient::resolveHealthId($key);
     }
 
     /** A request by id, but only if it belongs to the caller's facility. */

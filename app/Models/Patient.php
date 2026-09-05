@@ -12,6 +12,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use App\Enums\AuditEventType;
 
 class Patient extends Model
 {
@@ -73,6 +74,7 @@ class Patient extends Model
         'cnamgs_verified_at'  => 'datetime',
         'expires_at'          => 'datetime',
         'renewal_required_at' => 'datetime',
+        'merged_at'           => 'datetime',
         // Enum casts — values are stored as strings in the DB; the cast makes the
         // PHP attribute a typed BackedEnum so code can compare with VerificationStatus::Verified
         // rather than the string literal 'verified', preventing typo bugs.
@@ -328,6 +330,91 @@ class Patient extends Model
                     return false;
                 }
             });
+    }
+
+    /**
+     * The patient a Health ID opens — following a merge if there was one.
+     *
+     * Every place a clinician types or scans a Health ID used to do
+     * `Patient::where('health_id', …)->first()`, which is right until the day
+     * two records for one person are merged. From that day the retired ID —
+     * the one printed on the card in the patient's pocket — returns nothing,
+     * and "not found" on a Health ID is indistinguishable from a typo.
+     *
+     * Resolution order:
+     *   1. a live record with this Health ID;
+     *   2. a record that HAD this Health ID and was merged — follow the
+     *      pointer to its survivor (and the survivor's, if it was merged too);
+     *   3. an active alias — the retired ID as recorded at merge time.
+     *
+     * Case-folding here is normalisation of one whole identifier, not a fuzzy
+     * match: the comparison stays an equality on the full Health ID. The scope
+     * the caller is under still applies — this resolves an identifier, it
+     * does not widen who may be seen.
+     */
+    public static function resolveHealthId(string $healthId): ?static
+    {
+        $key = strtoupper(trim($healthId));
+
+        if ($key === '' || strlen($key) > 64) {
+            return null;
+        }
+
+        $patient = static::where('health_id', $key)->first();
+
+        if ($patient === null) {
+            $alias = HealthIdAlias::where('alias_value', $key)->where('status', 'active')->first();
+
+            if ($alias === null) {
+                return null;
+            }
+
+            $patient = static::whereKey($alias->patient_id)->first();
+
+            if ($patient === null) {
+                return null;
+            }
+
+            Log::info(AuditEventType::HealthIdAliasResolved->value, [
+                'alias'       => $key,
+                'resolved_to' => $patient->health_id,
+            ]);
+        }
+
+        // A merged record hands off to its survivor. Bounded: a chain longer
+        // than this is corrupt, and returning the wrong patient is worse than
+        // returning none.
+        for ($hop = 0; $hop < 5 && $patient->isMerged(); $hop++) {
+            $next = static::whereKey($patient->merged_into_patient_id)->first();
+
+            if ($next === null) {
+                return null;
+            }
+
+            Log::info(AuditEventType::HealthIdAliasResolved->value, [
+                'alias'       => $patient->health_id,
+                'resolved_to' => $next->health_id,
+                'via'         => 'merged_into',
+            ]);
+
+            $patient = $next;
+        }
+
+        return $patient->isMerged() ? null : $patient;
+    }
+
+    /** Retired by a merge; its rows and its Health ID now belong to another record. */
+    public function isMerged(): bool
+    {
+        $s = $this->identity_status;
+        $v = $s instanceof IdentityStatus ? $s->value : (string) $s;
+
+        return $v === IdentityStatus::Merged->value;
+    }
+
+    public function mergedInto()
+    {
+        return $this->belongsTo(self::class, 'merged_into_patient_id')->withoutGlobalScope('isolate_demo');
     }
 
     public static function findByPhone(string $phone): ?static

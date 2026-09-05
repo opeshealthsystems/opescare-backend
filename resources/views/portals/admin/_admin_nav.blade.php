@@ -43,6 +43,11 @@
         @php $pendingCreds = rescue(fn () => \App\Models\ProviderCredential::whereNull('verified_at')->where('status', '!=', 'suspended')->count(), 0, false); @endphp
         @if($pendingCreds > 0)<span class="sidebar-badge sidebar-badge--warning">{{ $pendingCreds }}</span>@endif
     </a>
+    <a href="{{ route('portals.admin.mpi.index') }}" class="sidebar-link {{ request()->routeIs('portals.admin.mpi.*') ? 'active' : '' }}">
+        <i data-lucide="git-merge"></i><span>{{ __('mpi.nav', [], $l) ?: 'Patient identity' }}</span>
+        @php $pendingMpi = rescue(fn () => \App\Models\MpiCandidate::where('status', 'pending_review')->count(), 0, false); @endphp
+        @if($pendingMpi > 0)<span class="sidebar-badge sidebar-badge--warning">{{ $pendingMpi }}</span>@endif
+    </a>
 </div>
 
 {{-- Partners --}}

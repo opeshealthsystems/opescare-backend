@@ -52,7 +52,8 @@ class MobilePrescribingController extends Controller
         // match: the comparison stays an equality on the full Health ID.
         $healthId = strtoupper(trim($validated['health_id']));
 
-        $patient = Patient::where('health_id', $healthId)->first();
+        // Follows a merge: a retired Health ID still opens the surviving record.
+        $patient = Patient::resolveHealthId($healthId);
 
         if (! $patient) {
             return response()->json(['message' => __('api.patient_not_found')], 404);

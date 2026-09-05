@@ -355,7 +355,9 @@ class MobileEmergencyAccessController extends Controller
             return Patient::where('id', $key)->first();
         }
 
-        return Patient::where('health_id', strtoupper($key))->first();
+        // Follows a merge: the card in an unconscious patient's pocket may carry
+        // a Health ID that was retired last month.
+        return Patient::resolveHealthId($key);
     }
 
     /**

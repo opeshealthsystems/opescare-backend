@@ -158,13 +158,13 @@ class MobileFamilyController extends Controller
         ]);
 
         $search  = $data['contact'];
-        $patient = Patient::where('is_demo', false)
-            ->where(function ($q) use ($search) {
-                $q->where('health_id', $search)
-                  ->orWhere('email', $search)
-                  ->orWhere('phone', $search);
-            })
-            ->first();
+        // Three exact lookups. This used to filter `is_demo = false` under a
+        // scope that shows only is_demo = true — so it could never find anyone
+        // on this host — and compared a `phone` column that does not exist
+        // (the number is encrypted; it is found by keyed hash).
+        $patient = Patient::resolveHealthId($search)
+            ?? Patient::where('email', $search)->first()
+            ?? Patient::findByPhone($search);
 
         if (!$patient) {
             return response()->json([
