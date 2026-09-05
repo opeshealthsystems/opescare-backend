@@ -26,10 +26,29 @@ Server-rendered **Laravel + Blade** with a REST API, on **PostgreSQL**.
 | Facility directory | browse/search the national facility register |
 
 ## Deliberately absent — do not re-add
-Clinical records, encounters, Health-ID, FHIR R4 / HL7, consent-grant plumbing,
-insurance, billing/subscriptions, inventory ops, telemedicine, DHIS2/PACS
-integrations. They live in the **platform** (`opescare` repo), not here. A
-feature request that needs them belongs in the platform, not in Finder.
+*(Reviewed 2026-09-05. The list below is what remains out of scope; the
+paragraph after it records what has since been brought IN, deliberately and at
+the owner's direction. Per the root brief: where a doc disagrees with the code,
+trust the code and fix the doc.)*
+
+Inventory ops, DHIS2/PACS integrations, insurance claims and subscription
+billing. They live in the **platform** (`opescare` repo), not here. A feature
+request that needs them belongs in the platform, not in Finder.
+
+## No longer absent — brought in on purpose
+This fork has grown past the four services above, each time by an explicit
+decision. Treat these as first-class parts of Finder, not as scope creep to be
+reverted:
+
+| Area | State |
+|---|---|
+| Health ID, patient identity | Live. Registration, recovery, QR, `PatientIdentityService`. Duplicate detection is centralised in `Patient::findExistingIdentity()` — see its docblock before touching any patient-creation path. |
+| Clinical records, encounters | Live. Longitudinal record, prescriptions, labs, vitals, referrals. |
+| Consent-grant plumbing | Live. Request → approve → scoped read, break-glass, access log. `RequireConsentGrant` gates every patient endpoint. |
+| Clinician portal | Live. 39 mobile endpoints, facility switching, rosters. |
+| One-off payments | Live. MTN MoMo / Orange Money against an invoice, `simulated` on demo hosts. This is *pay a bill for care*, NOT insurance or subscriptions — those stay out. |
+| Telemedicine | Still thin: book-to-consult only, no in-app video. |
+| FHIR R4 / HL7 | Still absent. Interop stays in the platform. |
 
 ## Data invariants
 - **PostgreSQL** — never MySQL date functions (`DATE_FORMAT`); use
