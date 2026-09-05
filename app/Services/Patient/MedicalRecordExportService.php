@@ -3,6 +3,7 @@
 namespace App\Services\Patient;
 
 use App\Models\Patient;
+use App\Support\QrSvg;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -12,6 +13,10 @@ class MedicalRecordExportService
     private string $diskName = 'local';
     private string $exportDir = 'exports/medical-records';
 
+    public function __construct(private readonly DocumentVerificationService $verifications)
+    {
+    }
+
     /**
      * Generate a PDF medical record.
      *
@@ -20,7 +25,7 @@ class MedicalRecordExportService
      *
      * Returns absolute path to the generated PDF file.
      */
-    public function generatePdf(string $patientId, array $options = []): string
+    public function generatePdf(string $patientId, array $options = [], ?string $issuedByUserId = null): string
     {
         $defaults = [
             'include_vitals'        => true,
@@ -44,12 +49,18 @@ class MedicalRecordExportService
 
         // The record sits on the OpesCare Secure sheet (pdf/layouts/secure):
         // background art, seal, header band and footer repeat on every page.
-        $issuedAt = Carbon::now();
+        // Every sheet carries a QR code that resolves to /verify/doc/{token},
+        // so the verification row has to exist BEFORE the page is rendered;
+        // the file's fingerprint is sealed onto it once the bytes are final.
+        $issuedAt     = Carbon::now();
+        $issued       = $this->verifications->issue($patient, DocumentVerificationService::TYPE_MEDICAL_RECORD, $issuedByUserId);
+        $verification = $issued['record'];
+        $verifyQr     = QrSvg::pngDataUri($issued['verify_url']);
 
         // `true` merges with the package defaults. Without it setOptions()
         // replaces the whole Options object, the chroot falls back to
         // vendor/dompdf and every sheet image under public/ is refused.
-        $pdf = Pdf::loadView('exports.medical-record', compact('patient', 'options', 'issuedAt'))
+        $pdf = Pdf::loadView('exports.medical-record', compact('patient', 'options', 'issuedAt', 'verification', 'verifyQr'))
             ->setPaper('a4', 'portrait')
             ->setOptions([
                 'defaultFont'          => 'DejaVu Sans',
@@ -63,7 +74,10 @@ class MedicalRecordExportService
         $filename     = sprintf('medical-record-%s-%s-%s.pdf', $patientId, Carbon::now()->format('YmdHis'), \Illuminate\Support\Str::random(6));
         $relativePath = $this->exportDir . '/' . $filename;
 
-        Storage::disk($this->diskName)->put($relativePath, $pdf->output());
+        $bytes = $pdf->output();
+        $this->verifications->seal($verification, $bytes);
+
+        Storage::disk($this->diskName)->put($relativePath, $bytes);
 
         return Storage::disk($this->diskName)->path($relativePath);
     }

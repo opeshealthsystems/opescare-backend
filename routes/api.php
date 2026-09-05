@@ -89,6 +89,9 @@ Route::prefix('mobile')->group(function () {
         // Prescribing from the app — the native half of the prescriber's desk.
         // Patient lookup is an exact Health ID match only (no enumeration).
         Route::get('/doctor/patients/lookup', [\App\Http\Controllers\Api\Mobile\MobilePrescribingController::class, 'lookupPatient']);
+        // The camera path to the same patient: the app posts what it decoded from
+        // the patient's Health ID QR. Throttled like a scanner, not like a search.
+        Route::post('/doctor/patients/scan', [\App\Http\Controllers\Api\Mobile\MobileProviderScanController::class, 'scan'])->middleware('throttle:30,1');
         Route::get('/doctor/prescriptions', [\App\Http\Controllers\Api\Mobile\MobilePrescribingController::class, 'index']);
         Route::post('/doctor/prescriptions', [\App\Http\Controllers\Api\Mobile\MobilePrescribingController::class, 'store']);
         Route::post('/doctor/prescriptions/{id}/void', [\App\Http\Controllers\Api\Mobile\MobilePrescribingController::class, 'void']);

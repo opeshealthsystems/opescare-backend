@@ -214,6 +214,7 @@ Route::middleware(['web', 'throttle:verify'])->group(function () {
     Route::post('/verify/health-id', [\App\Http\Controllers\MedicalId\VerifyController::class, 'healthIdLookup'])->name('verify.health-id.lookup');
     Route::get('/verify/qr/{token}', [\App\Http\Controllers\MedicalId\VerifyController::class, 'qr'])->name('verify.qr');
     Route::get('/verify/rx/{token}', [\App\Http\Controllers\MedicalId\PrescriptionVerifyController::class, 'rx'])->name('verify.rx');
+    Route::get('/verify/doc/{token}', [\App\Http\Controllers\MedicalId\DocumentVerifyController::class, 'show'])->name('verify.document');
 });
 
 // ── Patient profile completion ──────────────────────────────────────────────

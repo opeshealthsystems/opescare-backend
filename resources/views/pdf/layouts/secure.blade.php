@@ -14,15 +14,18 @@
       * No flexbox / grid — tables only.
 
     Slots:  @section('document_title')     the document type ("Medical Record")
-            @section('document_reference') the reference shown in the header
             @section('content')            the body
 
     Variables expected from the caller:
-            $patient  (App\Models\Patient) — holder shown in the header
-            $issuedAt (Carbon)             — defaults to now()
+            $patient      (App\Models\Patient)        — holder shown in the header
+            $issuedAt     (Carbon)                    — defaults to now()
+            $verification (DocumentVerification|null) — reference in the header and under the QR
+            $verifyQr     (string|null)               — data URI of the QR that resolves to /verify/doc/{token}
 --}}
 @php
-    $issuedAt   = $issuedAt ?? now();
+    $issuedAt     = $issuedAt ?? now();
+    $verification = $verification ?? null;
+    $verifyQr     = $verifyQr ?? null;
     $sheet      = public_path('images/health-id/document-sheet-a4.jpg');
     $band       = public_path('images/health-id/sheet-band.jpg');
     $seal       = public_path('images/health-id/sheet-seal.png');
@@ -44,7 +47,7 @@
         /* Real page margins: dompdf starts EVERY page's flow inside them, so a
            long table never runs under the header. The fixed art is offset by
            the negative of these margins to reach the physical page edge. */
-        @page { margin: 33mm 16mm 27mm 16mm; }
+        @page { margin: 33mm 16mm 30mm 16mm; }
 
         /* Brand tokens, mirroring the portal: brand blue #0F4C81, navy ink #0E1729, cream paper #FDF8F0 / #EADFC8. */
         body {
@@ -76,18 +79,22 @@
         .head-doc .meta b { color: #FFFFFF; font-weight: normal; }
         .head-seal img { width: 17mm; height: 17mm; }
 
-        .sheet-foot { position: fixed; bottom: -27mm; left: -16mm; width: 210mm; height: 22mm; z-index: -2; }
+        .sheet-foot { position: fixed; bottom: -30mm; left: -16mm; width: 210mm; height: 25mm; z-index: -2; }
         .foot-micro {
             position: absolute; top: 0; left: 0; width: 210mm; height: 3.2mm;
             background: #0E1729; color: #8FA5C6;
             font-size: 5px; letter-spacing: 1.1px; text-transform: uppercase;
             line-height: 3.2mm; text-align: center; overflow: hidden; white-space: nowrap;
         }
-        .foot-table { position: absolute; top: 5mm; left: 14mm; width: 182mm; border-collapse: collapse; }
+        .foot-table { position: absolute; top: 4.5mm; left: 14mm; width: 182mm; border-collapse: collapse; }
         .foot-table td { vertical-align: top; padding: 0; font-size: 6.8px; color: #5B6B85; line-height: 1.35; }
         .foot-table .shield img { width: 6mm; height: 6mm; }
         .foot-table .page { text-align: right; white-space: nowrap; color: #0F4C81; font-weight: bold; font-size: 7.5px; }
         .foot-table .page .n:after { content: counter(page); }
+        .foot-table .qr { text-align: center; vertical-align: top; }
+        .foot-table .qr img { width: 15mm; height: 15mm; display: block; margin: 0 auto; }
+        .foot-table .qr .cap { font-size: 5.2px; letter-spacing: .8px; text-transform: uppercase; color: #0F4C81; font-weight: bold; margin-top: 1px; white-space: nowrap; }
+        .foot-table .qr .ref { font-family: "DejaVu Sans Mono", monospace; font-size: 5.6px; color: #5B6B85; white-space: nowrap; }
 
         /* Corner markers, drawn in CSS so they stay crisp at any print size. */
         .corner { position: fixed; width: 7mm; height: 7mm; z-index: -1; }
@@ -157,8 +164,8 @@
             <td class="head-doc">
                 <div class="type">@yield('document_title')</div>
                 <div class="meta">
-                    @hasSection('document_reference')
-                        {{ __('export.reference') }} <b>@yield('document_reference')</b> &nbsp;·&nbsp;
+                    @if($verification)
+                        {{ __('export.reference') }} <b>{{ $verification->reference }}</b> &nbsp;·&nbsp;
                     @endif
                     {{ __('export.issued') }} <b>{{ $issuedAt->translatedFormat('d M Y, H:i') }}</b>
                     @if($holderName !== '')
@@ -183,7 +190,14 @@
                 {{ __('export.footer_confidential') }}<br>
                 {{ __('export.footer_verify') }}
             </td>
-            <td class="page" style="width: 24mm;">{{ __('export.page') }} <span class="n"></span></td>
+            <td class="page" style="width: 18mm;">{{ __('export.page') }} <span class="n"></span></td>
+            @if($verifyQr)
+                <td class="qr" style="width: 26mm;">
+                    <img src="{{ $verifyQr }}" alt="">
+                    <div class="cap">{{ __('export.scan_to_verify') }}</div>
+                    @if($verification)<div class="ref">{{ $verification->reference }}</div>@endif
+                </td>
+            @endif
         </tr>
     </table>
 </div>

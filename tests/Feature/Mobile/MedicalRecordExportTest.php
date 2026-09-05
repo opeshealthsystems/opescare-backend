@@ -10,7 +10,10 @@ use App\Models\Patient;
 use App\Models\PatientAccessToken;
 use App\Models\Prescription;
 use App\Models\PrescriptionItem;
+use App\Models\DocumentVerification;
 use App\Models\Visit;
+use App\Services\Patient\DocumentVerificationService;
+use App\Support\QrSvg;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -100,9 +103,13 @@ class MedicalRecordExportTest extends TestCase
             'vitals', 'labResults', 'immunizations',
         ])->findOrFail($this->patient->id);
 
+        $issued = app(DocumentVerificationService::class)->issue($patient, DocumentVerificationService::TYPE_MEDICAL_RECORD);
+
         return view('exports.medical-record', [
-            'patient'  => $patient,
-            'issuedAt' => now(),
+            'patient'      => $patient,
+            'issuedAt'     => now(),
+            'verification' => $issued['record'],
+            'verifyQr'     => QrSvg::pngDataUri($issued['verify_url']),
             'options'  => array_fill_keys(['include_vitals', 'include_diagnoses', 'include_medications', 'include_labs', 'include_immunizations'], true),
         ])->render();
     }
@@ -121,6 +128,12 @@ class MedicalRecordExportTest extends TestCase
         $this->assertNotFalse($pdf);
         $this->assertStringStartsWith('%PDF-', $pdf);
         $this->assertGreaterThan(100_000, strlen($pdf), 'The sheet art (background, seal, band) should be embedded in the PDF.');
+
+        // The export issued exactly one verifiable document and sealed the file's fingerprint onto it.
+        $verification = DocumentVerification::where('patient_id', $this->patient->id)->sole();
+        $this->assertSame(DocumentVerificationService::TYPE_MEDICAL_RECORD, $verification->document_type);
+        $this->assertSame(hash('sha256', $pdf), $verification->sha256);
+        $this->assertMatchesRegularExpression('/^OC-DOC-[A-Z2-9]{4}-[A-Z2-9]{4}$/', $verification->reference);
     }
 
     public function test_record_sits_on_the_secure_sheet_with_the_seal(): void
@@ -133,6 +146,9 @@ class MedicalRecordExportTest extends TestCase
         }
 
         $this->assertStringContainsString('OpesCare Secure document', $html);
+        $this->assertStringContainsString('data:image/png;base64,', $html, 'The verification QR is missing from the sheet.');
+        $this->assertStringContainsString('Scan to verify', $html);
+        $this->assertMatchesRegularExpression('/OC-DOC-[A-Z2-9]{4}-[A-Z2-9]{4}/', $html);
         $this->assertStringContainsString('CM-HID-TEST-EXPO-0001', $html);
         $this->assertStringContainsString('Amlodipine', $html);
         $this->assertStringContainsString('30 days', $html);

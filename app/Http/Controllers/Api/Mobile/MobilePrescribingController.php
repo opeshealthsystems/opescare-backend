@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Patient;
 use App\Models\Prescription;
 use App\Services\Clinical\PrescriptionService;
+use App\Support\ProviderPatientSummary;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -221,16 +222,7 @@ class MobilePrescribingController extends Controller
      */
     private function formatPatient(Patient $patient): array
     {
-        return [
-            'id'            => $patient->id,
-            'health_id'     => $patient->health_id,
-            'first_name'    => $patient->first_name,
-            'last_name'     => $patient->last_name,
-            'full_name'     => trim($patient->first_name . ' ' . $patient->last_name),
-            'date_of_birth' => $patient->date_of_birth?->toDateString(),
-            'sex'           => $patient->sex,
-            'blood_group'   => $patient->blood_group,
-        ];
+        return ProviderPatientSummary::from($patient);
     }
 
     /**

@@ -391,4 +391,9 @@ return [
     'prescription_voided'            => 'Ordonnance annulée.',
     'prescription_void_failed'       => "L'ordonnance n'a pas pu être annulée. Veuillez réessayer.",
     'prescription_not_voidable'      => "Cette ordonnance ne peut plus être annulée.",
+
+    // Scanner soignant (POST /mobile/doctor/patients/scan)
+    'qr_code_not_recognised'         => 'Ce n\'est pas un code Identifiant Santé OpesCare.',
+    'qr_expired'                     => 'Ce code a expiré. Demandez au patient d\'en présenter un nouveau.',
+    'qr_revoked'                     => 'Le patient a retiré ce code. Demandez-lui d\'en présenter un nouveau.',
 ];

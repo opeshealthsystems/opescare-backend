@@ -90,7 +90,7 @@ class MedicalRecordExportController extends Controller
             'include_immunizations' => 'nullable|boolean',
         ]);
 
-        $path = $this->exportService->generatePdf($patientId, $validated);
+        $path = $this->exportService->generatePdf($patientId, $validated, $request->attributes->get('patient_user_id'));
 
         $this->auditExport($request, $patientId, 'pdf');
 

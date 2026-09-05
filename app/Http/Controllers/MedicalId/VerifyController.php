@@ -127,25 +127,7 @@ class VerifyController extends Controller
      */
     private function failureState(string $rawToken): string
     {
-        $parts = explode('_', $rawToken, 3); // ['qrx', lookupId, secret]
-
-        if (count($parts) !== 3 || $parts[0] !== 'qrx') {
-            return 'invalid';
-        }
-
-        $row = HealthIdQrToken::where('lookup_id', $parts[1])->first();
-
-        if (!$row) {
-            return 'invalid';
-        }
-        if ($row->status === 'revoked') {
-            return 'revoked';
-        }
-        if ($row->expires_at && Carbon::parse($row->expires_at)->isPast()) {
-            return 'expired';
-        }
-
-        return 'invalid';
+        return $this->qrService->failureState($rawToken);
     }
 
     /**

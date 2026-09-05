@@ -161,4 +161,22 @@ return [
     'rx_status_entered_in_error'    => 'Entered in error',
     'rx_status_amended'             => 'Amended — superseded',
     'rx_status_unknown'             => 'Unknown',
+
+    // OpesCare Secure DOCUMENT verifier (/verify/doc/{token})
+    'doc_title'                     => 'Document Verification — OpesCare',
+    'doc_heading'                   => 'Secure document check',
+    'doc_subheading'                => 'The QR code on an OpesCare document resolves here. It confirms the document was issued by OpesCare and has not been withdrawn.',
+    'doc_valid_title'               => 'Genuine document',
+    'doc_valid_body'                => 'Issued by OpesCare and still standing. Check the reference and holder against the paper in your hand.',
+    'doc_revoked_title'             => 'Document withdrawn',
+    'doc_revoked_body'              => 'This document was withdrawn after it was issued — it may have been reissued with corrections. Do not rely on it.',
+    'doc_invalid_title'             => 'Not a recognised document',
+    'doc_invalid_body'              => 'This code does not match any document OpesCare issued. It may have been altered or copied from another document.',
+    'doc_holder'                    => 'Holder',
+    'doc_issued'                    => 'Issued',
+    'doc_fingerprint'               => 'File fingerprint',
+    'doc_scans'                     => 'Times verified',
+    'doc_note'                      => 'This check was counted on the document\'s record. When you are signed in as a provider it also appears in the patient\'s access log.',
+    'doc_type_medical_record'       => 'Medical record',
+    'doc_type_unknown'              => 'OpesCare document',
 ];

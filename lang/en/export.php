@@ -80,4 +80,5 @@ return [
     'dose_number'        => 'Dose',
     'lot_number'         => 'Lot number',
 
+    'scan_to_verify'     => 'Scan to verify',
 ];

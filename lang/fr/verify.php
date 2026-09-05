@@ -161,4 +161,22 @@ return [
     'rx_status_entered_in_error'    => 'Saisie erronée',
     'rx_status_amended'             => 'Modifiée — remplacée',
     'rx_status_unknown'             => 'Inconnu',
+
+    // Vérificateur de DOCUMENT sécurisé OpesCare (/verify/doc/{token})
+    'doc_title'                     => 'Vérification de document — OpesCare',
+    'doc_heading'                   => 'Contrôle d\'un document sécurisé',
+    'doc_subheading'                => 'Le code QR d\'un document OpesCare mène ici. Il confirme que le document a été émis par OpesCare et n\'a pas été retiré.',
+    'doc_valid_title'               => 'Document authentique',
+    'doc_valid_body'                => 'Émis par OpesCare et toujours valable. Comparez la référence et le titulaire avec le document que vous tenez.',
+    'doc_revoked_title'             => 'Document retiré',
+    'doc_revoked_body'              => 'Ce document a été retiré après son émission — il a peut-être été réémis avec des corrections. Ne vous y fiez pas.',
+    'doc_invalid_title'             => 'Document non reconnu',
+    'doc_invalid_body'              => 'Ce code ne correspond à aucun document émis par OpesCare. Il a peut-être été altéré ou copié depuis un autre document.',
+    'doc_holder'                    => 'Titulaire',
+    'doc_issued'                    => 'Émis le',
+    'doc_fingerprint'               => 'Empreinte du fichier',
+    'doc_scans'                     => 'Vérifications',
+    'doc_note'                      => 'Ce contrôle a été compté sur la fiche du document. Si vous êtes connecté en tant que professionnel, il apparaît aussi dans le journal d\'accès du patient.',
+    'doc_type_medical_record'       => 'Dossier médical',
+    'doc_type_unknown'              => 'Document OpesCare',
 ];

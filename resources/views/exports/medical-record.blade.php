@@ -9,7 +9,6 @@
 @extends('pdf.layouts.secure')
 
 @section('document_title', __('export.record_title'))
-@section('document_reference', $patient->health_id ?? '')
 
 @php
     $dash = __('export.not_recorded');
