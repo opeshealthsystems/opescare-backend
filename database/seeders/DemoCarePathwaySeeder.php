@@ -6,9 +6,13 @@ use App\Models\Appointment;
 use App\Models\CarePlan;
 use App\Models\CarePlanGoal;
 use App\Models\CarePlanIntervention;
+use App\Models\Patient;
 use App\Models\PatientSurvey;
 use App\Models\ReferralCase;
 use App\Models\SurveyResponse;
+use Database\Seeders\Support\DemoCareTeam;
+use Database\Seeders\Support\DemoFacilityResolver;
+use Database\Seeders\Support\TargetsDemoPatient;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Seeder;
@@ -16,15 +20,14 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Demo care pathway for the ONE demo patient (Demo Patient One,
- * 00000000-0000-0000-0000-300000000001) — appointments, referral, care plan
+ * Demo care pathway for a demo patient — appointments, referral, care plan
  * and satisfaction surveys.
  *
  * Those four mobile screens render empty states with a clean database. This
  * fills them with a *single coherent history* rather than scattered rows:
  *
- *   2023-02  Type 2 diabetes diagnosed at Hôpital Central de Yaoundé (Metformin)
- *   2024-06  Hypertension added (Amlodipine)
+ *   -3 years       Type 2 diabetes diagnosed at Hôpital Central de Yaoundé (Metformin)
+ *   -18 months     Hypertension added (Amlodipine)
  *   ~5 weeks ago   BP still above target -> cardiology referral to Dr. Ibrahim Sow
  *   ~5 days ago    interim blood-pressure check (completed) -> survey still open
  *   +3 weeks       next quarterly review (the home screen "Upcoming" card)
@@ -33,39 +36,32 @@ use Illuminate\Support\Facades\DB;
  * every date is computed from `now()` at run time so the demo never goes stale.
  *
  * Deliberate boundaries:
- *   - Writes clinical rows for exactly ONE patient (self::PATIENT). If the
- *     patient, the real hospital rows or the demo clinicians are missing the
- *     seeder warns and returns rather than attaching invented history to a
- *     real facility or a real patient.
+ *   - Writes clinical rows for exactly ONE patient per run — the canonical demo
+ *     patient, or the one given to `forPatient()`. If the patient, the real
+ *     hospital rows or the demo clinicians are missing the seeder warns and
+ *     returns rather than attaching invented history to a real facility or a
+ *     real patient.
  *   - Facilities and clinicians are RESOLVED BY QUERY, never invented:
- *       * Hôpital Central de Yaoundé / CHU de Yaoundé come from
- *         `care_facilities.facility_name` -> `care_facilities.facility_id`,
- *         i.e. the internal `facilities` id. That is the same id
+ *       * Hôpital Central de Yaoundé / CHU de Yaoundé come from the
+ *         `care_facilities` registry through DemoFacilityResolver, which links
+ *         the directory row to its operational `facilities` id — the same id
  *         MobileAppointmentController::book() stores, so a seeded appointment
  *         is indistinguishable from a booked one and stays linkable from the
- *         directory. Only rows with a non-null `facility_id` are bookable —
- *         both hospitals used here are in that set.
- *       * Dr. Amara Diallo and Dr. Ibrahim Sow are looked up in `users`; the
- *         specialist's title comes from his real `staff_profiles.job_title`
- *         ("Cardiologist"), it is not hard-coded prose.
- *   - Idempotent: every row carries a stable UUID in the reserved
- *     00000000-0000-0000-0a0x- demo space and is upserted, so running twice
- *     writes the same rows (with dates refreshed relative to the new "now").
- *   - Statuses are the values the DB check constraints and the mobile
- *     controllers actually accept — see the tables at each step. There is no
- *     backed enum for appointment / referral / care-plan status in app/Enums,
- *     so these are held as private constants here instead of loose literals.
+ *         directory.
+ *       * Dr. Amara Diallo and Dr. Ibrahim Sow come from DemoCareTeam; the
+ *         specialist's title comes from his `staff_profiles.job_title`.
+ *   - Idempotent: every row carries a stable UUID (reserved 0a0x space for the
+ *     canonical patient, derived for anyone else) and is upserted, so running
+ *     twice writes the same rows (with dates refreshed relative to the new "now").
  *   - NOT registered in DatabaseSeeder — run it explicitly:
  *         php artisan db:seed --class=DemoCarePathwaySeeder
  */
 class DemoCarePathwaySeeder extends Seeder
 {
-    private const PATIENT    = '00000000-0000-0000-0000-300000000001'; // Demo Patient One
-    private const DOCTOR     = '00000000-0000-0000-0000-200000000001'; // Dr. Amara Diallo (GP)
-    private const SPECIALIST = '00000000-0000-0000-0000-200000000011'; // Dr. Ibrahim Sow (Cardiologist)
+    use TargetsDemoPatient;
 
     /** Directory names — resolved to internal `facilities` ids at run time. */
-    private const HOME_HOSPITAL     = 'Hôpital Central de Yaoundé';
+    private const HOME_HOSPITAL     = DemoFacilityResolver::PRIMARY_HOSPITAL;
     private const CARDIOLOGY_CENTRE = 'CHU de Yaoundé';
 
     /**
@@ -106,13 +102,13 @@ class DemoCarePathwaySeeder extends Seeder
     /** SurveyService::TEMPLATES key — drives the questions the form renderer draws. */
     private const SURVEY_TEMPLATE = 'post_visit';
 
-    // Stable ids — reserved demo space, one block per table.
-    private const APPT_UPCOMING     = '00000000-0000-0000-0a01-000000000001';
-    private const APPT_BP_CHECK     = '00000000-0000-0000-0a01-000000000002';
-    private const APPT_REVIEW_Q1    = '00000000-0000-0000-0a01-000000000003';
-    private const APPT_CANCELLED_ID = '00000000-0000-0000-0a01-000000000004';
-    private const APPT_REVIEW_Q2    = '00000000-0000-0000-0a01-000000000005';
-    private const APPT_NO_SHOW_ID   = '00000000-0000-0000-0a01-000000000006';
+    // Reserved ids — one block per table; derived per patient by uid().
+    public const APPT_UPCOMING     = '00000000-0000-0000-0a01-000000000001';
+    public const APPT_BP_CHECK     = '00000000-0000-0000-0a01-000000000002';
+    public const APPT_REVIEW_Q1    = '00000000-0000-0000-0a01-000000000003';
+    public const APPT_CANCELLED_ID = '00000000-0000-0000-0a01-000000000004';
+    public const APPT_REVIEW_Q2    = '00000000-0000-0000-0a01-000000000005';
+    public const APPT_NO_SHOW_ID   = '00000000-0000-0000-0a01-000000000006';
 
     private const REFERRAL = '00000000-0000-0000-0a02-000000000001';
     private const PLAN     = '00000000-0000-0000-0a03-000000000001';
@@ -122,25 +118,28 @@ class DemoCarePathwaySeeder extends Seeder
 
     public function run(): void
     {
-        if (! DB::table('patients')->where('id', self::PATIENT)->exists()) {
+        // Through the model, not the query builder: date_of_birth is encrypted
+        // at rest and only the cast decrypts it.
+        $patient = Patient::query()->withoutGlobalScopes()->find($this->patientId());
+
+        if (! $patient) {
             $this->command?->warn('DemoCarePathwaySeeder skipped: demo patient not present.');
             return;
         }
 
-        $homeFacilityId       = $this->resolveBookableFacilityId(self::HOME_HOSPITAL);
-        $cardiologyFacilityId = $this->resolveBookableFacilityId(self::CARDIOLOGY_CENTRE);
+        $homeFacilityId       = $this->resolveFacilityId(self::HOME_HOSPITAL);
+        $cardiologyFacilityId = $this->resolveFacilityId(self::CARDIOLOGY_CENTRE);
 
         if (! $homeFacilityId || ! $cardiologyFacilityId) {
             $this->command?->warn(
-                'DemoCarePathwaySeeder skipped: no bookable facility linked for "'
-                . self::HOME_HOSPITAL . '" / "' . self::CARDIOLOGY_CENTRE
-                . '". Run BookableFacilitySlotsSeeder first.'
+                'DemoCarePathwaySeeder skipped: "' . self::HOME_HOSPITAL . '" / "' . self::CARDIOLOGY_CENTRE
+                . '" not found in the care_facilities registry.'
             );
             return;
         }
 
-        $doctorId     = $this->resolveUserId(self::DOCTOR);
-        $specialistId = $this->resolveUserId(self::SPECIALIST);
+        $doctorId     = DemoCareTeam::doctor();
+        $specialistId = DemoCareTeam::specialist();
 
         if (! $doctorId) {
             $this->command?->warn('DemoCarePathwaySeeder skipped: Dr. Amara Diallo not present.');
@@ -148,11 +147,11 @@ class DemoCarePathwaySeeder extends Seeder
         }
 
         $this->seedAppointments($homeFacilityId, $doctorId);
-        $this->seedReferral($homeFacilityId, $cardiologyFacilityId, $doctorId, $specialistId);
+        $this->seedReferral($homeFacilityId, $cardiologyFacilityId, $doctorId, $specialistId, $patient);
         $this->seedCarePlan($homeFacilityId, $doctorId);
         $this->seedSurveys($homeFacilityId);
 
-        $this->command?->info('DemoCarePathwaySeeder: care pathway ready for ' . self::PATIENT . '.');
+        $this->command?->info('DemoCarePathwaySeeder: care pathway ready for ' . $this->patientId() . '.');
     }
 
     // ── Appointments ─────────────────────────────────────────────────────────
@@ -163,11 +162,12 @@ class DemoCarePathwaySeeder extends Seeder
      */
     private function seedAppointments(string $facilityId, string $providerId): void
     {
+        $patientId  = $this->patientId();
         $upcomingAt = Carbon::now()->addWeeks(3)->setTime(9, 30);
 
         // The card the home screen renders: facility, provider, date/time, reason.
-        $this->upsert(Appointment::class, self::APPT_UPCOMING, [
-            'patient_id'       => self::PATIENT,
+        $this->upsert(Appointment::class, $this->uid(self::APPT_UPCOMING), [
+            'patient_id'       => $patientId,
             'facility_id'      => $facilityId,
             'provider_id'      => $providerId,
             'appointment_type' => self::TYPE_FOLLOW_UP,
@@ -181,8 +181,8 @@ class DemoCarePathwaySeeder extends Seeder
         // Interim BP check five days ago. This is the visit the still-open
         // satisfaction survey below belongs to.
         $bpCheckAt = Carbon::now()->subDays(5)->setTime(11, 0);
-        $this->upsert(Appointment::class, self::APPT_BP_CHECK, [
-            'patient_id'       => self::PATIENT,
+        $this->upsert(Appointment::class, $this->uid(self::APPT_BP_CHECK), [
+            'patient_id'       => $patientId,
             'facility_id'      => $facilityId,
             'provider_id'      => $providerId,
             'appointment_type' => self::TYPE_FOLLOW_UP,
@@ -197,8 +197,8 @@ class DemoCarePathwaySeeder extends Seeder
         // Last quarterly review — ten weeks ago (three weeks from now completes
         // the ~13-week cadence).
         $lastReviewAt = Carbon::now()->subWeeks(10)->setTime(9, 30);
-        $this->upsert(Appointment::class, self::APPT_REVIEW_Q1, [
-            'patient_id'       => self::PATIENT,
+        $this->upsert(Appointment::class, $this->uid(self::APPT_REVIEW_Q1), [
+            'patient_id'       => $patientId,
             'facility_id'      => $facilityId,
             'provider_id'      => $providerId,
             'appointment_type' => self::TYPE_FOLLOW_UP,
@@ -210,27 +210,27 @@ class DemoCarePathwaySeeder extends Seeder
             'reason'           => 'Quarterly diabetes and hypertension review — HbA1c 7.8%, blood pressure above target.',
         ]);
 
-        // Cancelled — she was in Douala for work (the one episode of care in
-        // Douala in her history).
+        // Cancelled — travelling to Douala for work (the one episode of care in
+        // Douala in the history).
         $cancelledAt = Carbon::now()->subWeeks(16)->setTime(14, 0);
-        $this->upsert(Appointment::class, self::APPT_CANCELLED_ID, [
-            'patient_id'          => self::PATIENT,
+        $this->upsert(Appointment::class, $this->uid(self::APPT_CANCELLED_ID), [
+            'patient_id'          => $patientId,
             'facility_id'         => $facilityId,
             'provider_id'         => $providerId,
             'appointment_type'    => self::TYPE_FOLLOW_UP,
             'status'              => self::APPT_CANCELLED,
             'scheduled_at'        => $cancelledAt,
             'booked_by_type'      => 'patient',
-            'booked_by_id'        => self::PATIENT,
+            'booked_by_id'        => $patientId,
             'reason'              => 'Blood-pressure check.',
             'cancellation_reason' => 'Cancelled by the patient — travelling to Douala for work; rescheduled into the next quarterly review.',
             'cancelled_at'        => $cancelledAt->copy()->subDays(2),
-            'cancelled_by_id'     => self::PATIENT,
+            'cancelled_by_id'     => $patientId,
         ]);
 
         $reviewQ2At = Carbon::now()->subWeeks(23)->setTime(10, 0);
-        $this->upsert(Appointment::class, self::APPT_REVIEW_Q2, [
-            'patient_id'       => self::PATIENT,
+        $this->upsert(Appointment::class, $this->uid(self::APPT_REVIEW_Q2), [
+            'patient_id'       => $patientId,
             'facility_id'      => $facilityId,
             'provider_id'      => $providerId,
             'appointment_type' => self::TYPE_FOLLOW_UP,
@@ -244,8 +244,8 @@ class DemoCarePathwaySeeder extends Seeder
 
         // Missed review — exercises the no_show pill.
         $noShowAt = Carbon::now()->subWeeks(36)->setTime(8, 30);
-        $this->upsert(Appointment::class, self::APPT_NO_SHOW_ID, [
-            'patient_id'       => self::PATIENT,
+        $this->upsert(Appointment::class, $this->uid(self::APPT_NO_SHOW_ID), [
+            'patient_id'       => $patientId,
             'facility_id'      => $facilityId,
             'provider_id'      => $providerId,
             'appointment_type' => self::TYPE_FOLLOW_UP,
@@ -268,7 +268,8 @@ class DemoCarePathwaySeeder extends Seeder
         string $referringFacilityId,
         string $receivingFacilityId,
         string $referringProviderId,
-        ?string $specialistId
+        ?string $specialistId,
+        Patient $patient
     ): void {
         $specialist = $specialistId
             ? DB::table('users')->where('id', $specialistId)->first(['name'])
@@ -278,13 +279,19 @@ class DemoCarePathwaySeeder extends Seeder
             ? DB::table('staff_profiles')->where('user_id', $specialistId)->first(['job_title', 'department'])
             : null;
 
-        $specialistName = $specialist->name ?? 'Dr. Ibrahim Sow';
+        $specialistName = $specialist->name ?? DemoCareTeam::SPECIALIST['name'];
         $specialty      = $specialistProfile->department ?? 'Cardiology';
+
+        // The summary describes the person the record belongs to, not a fixed
+        // "34-year-old woman": age from the date of birth, noun from the sex.
+        $age  = $patient->date_of_birth ? Carbon::instance($patient->date_of_birth)->age : null;
+        $noun = strtolower((string) $patient->sex) === 'male' ? 'man' : (strtolower((string) $patient->sex) === 'female' ? 'woman' : 'adult');
+        $who  = ($age !== null ? "{$age}-year-old " : '') . $noun;
 
         $referredAt = Carbon::now()->subWeeks(5)->setTime(12, 15);
 
-        $this->upsert(ReferralCase::class, self::REFERRAL, [
-            'patient_id'              => self::PATIENT,
+        $this->upsert(ReferralCase::class, $this->uid(self::REFERRAL), [
+            'patient_id'              => $this->patientId(),
             'referring_facility_id'   => $referringFacilityId,
             'referring_provider_id'   => $referringProviderId,
             'receiving_facility_id'   => $receivingFacilityId,
@@ -294,7 +301,7 @@ class DemoCarePathwaySeeder extends Seeder
             'urgency'                 => 'routine',
             'status'                  => self::REFERRAL_ACCEPTED,
             'reason'                  => 'Hypertension review — blood pressure persistently above 140/90 mmHg on Amlodipine 5 mg despite good adherence.',
-            'clinical_summary'        => '34-year-old woman with Type 2 diabetes (diagnosed February 2023, on Metformin 1000 mg twice daily) and hypertension (diagnosed June 2024, on Amlodipine 5 mg once daily). Last HbA1c 7.8%. Home readings average 146/92 mmHg. Requesting a cardiology opinion on antihypertensive escalation and cardiovascular risk assessment. ALLERGIES: penicillin (severe — anaphylaxis), peanuts (moderate).',
+            'clinical_summary'        => ucfirst($who) . ' with Type 2 diabetes (diagnosed three years ago, on Metformin 1000 mg twice daily) and hypertension (diagnosed eighteen months ago, on Amlodipine 5 mg once daily). Last HbA1c 7.8%. Home readings average 146/92 mmHg. Requesting a cardiology opinion on antihypertensive escalation and cardiovascular risk assessment. ALLERGIES: penicillin (severe — anaphylaxis), peanuts (moderate).',
             'included_record_types'   => ['conditions', 'medications', 'allergies', 'lab_results', 'vitals'],
             'expires_at'              => $referredAt->copy()->addDays(90),
             'accepted_at'             => $referredAt->copy()->addDays(4),
@@ -317,13 +324,14 @@ class DemoCarePathwaySeeder extends Seeder
     private function seedCarePlan(string $facilityId, string $createdBy): void
     {
         $startedOn = Carbon::now()->subWeeks(10)->startOfDay();
+        $planId    = $this->uid(self::PLAN);
 
-        $this->upsert(CarePlan::class, self::PLAN, [
-            'patient_id'  => self::PATIENT,
+        $this->upsert(CarePlan::class, $planId, [
+            'patient_id'  => $this->patientId(),
             'facility_id' => $facilityId,
             'created_by'  => $createdBy,
             'title'       => 'Glycaemic control and blood-pressure management',
-            'description' => 'Twelve-month plan for Type 2 diabetes (diagnosed February 2023) and hypertension (diagnosed June 2024). Targets HbA1c below 7.0% and home blood pressure below 130/80 mmHg through medication, home monitoring, diet and activity. Reviewed every three months at ' . self::HOME_HOSPITAL . '. Penicillin allergy (severe) — no beta-lactams.',
+            'description' => 'Twelve-month plan for Type 2 diabetes and hypertension. Targets HbA1c below 7.0% and home blood pressure below 130/80 mmHg through medication, home monitoring, diet and activity. Reviewed every three months at ' . self::HOME_HOSPITAL . '. Penicillin allergy (severe) — no beta-lactams.',
             'start_date'  => $startedOn->toDateString(),
             'end_date'    => $startedOn->copy()->addYear()->toDateString(),
             'status'      => self::PLAN_ACTIVE,
@@ -331,133 +339,35 @@ class DemoCarePathwaySeeder extends Seeder
         ]);
 
         $goals = [
-            [
-                'id'          => '00000000-0000-0000-0a04-000000000001',
-                'goal_text'   => 'Bring HbA1c below 7.0% (7.8% at the last review).',
-                'target_date' => Carbon::now()->addWeeks(3)->toDateString(),
-                'status'      => self::GOAL_IN_PROGRESS,
-                'achieved_at' => null,
-                'notes'       => 'Down from 8.4% at diagnosis. Metformin 1000 mg twice daily continued; re-check at the next quarterly review.',
-            ],
-            [
-                'id'          => '00000000-0000-0000-0a04-000000000002',
-                'goal_text'   => 'Record a home blood-pressure reading twice weekly in the OpesCare app.',
-                'target_date' => Carbon::now()->subWeeks(6)->toDateString(),
-                'status'      => self::GOAL_ACHIEVED,
-                'achieved_at' => Carbon::now()->subWeeks(5)->setTime(9, 0),
-                'notes'       => 'Logging consistently since the referral. Average 146/92 mmHg — readings shared with cardiology.',
-            ],
-            [
-                'id'          => '00000000-0000-0000-0a04-000000000003',
-                'goal_text'   => 'Keep home blood pressure below 130/80 mmHg.',
-                'target_date' => Carbon::now()->addWeeks(9)->toDateString(),
-                'status'      => self::GOAL_IN_PROGRESS,
-                'achieved_at' => null,
-                'notes'       => 'Still above target on Amlodipine 5 mg. Awaiting the cardiology opinion before escalating.',
-            ],
-            [
-                'id'          => '00000000-0000-0000-0a04-000000000004',
-                'goal_text'   => 'Complete a dietary review with the clinic nutritionist.',
-                'target_date' => Carbon::now()->addWeeks(6)->toDateString(),
-                'status'      => self::GOAL_PENDING,
-                'achieved_at' => null,
-                'notes'       => 'Low-salt, reduced-carbohydrate plan. Peanut allergy (moderate) must be flagged to the nutritionist.',
-            ],
-            [
-                'id'          => '00000000-0000-0000-0a04-000000000005',
-                'goal_text'   => 'Attend the structured diabetes self-management education session.',
-                'target_date' => Carbon::now()->subWeeks(7)->toDateString(),
-                'status'      => self::GOAL_ACHIEVED,
-                'achieved_at' => Carbon::now()->subWeeks(7)->setTime(15, 30),
-                'notes'       => 'Group session completed at the outpatient clinic.',
-            ],
-            [
-                'id'          => '00000000-0000-0000-0a04-000000000006',
-                'goal_text'   => 'Book the annual diabetic retinal screening.',
-                'target_date' => Carbon::now()->addWeeks(20)->toDateString(),
-                'status'      => self::GOAL_PENDING,
-                'achieved_at' => null,
-                'notes'       => 'Due twelve months after the last screening.',
-            ],
+            ['id' => '00000000-0000-0000-0a04-000000000001', 'goal_text' => 'Bring HbA1c below 7.0% (7.8% at the last review).',                          'target_date' => Carbon::now()->addWeeks(3)->toDateString(),  'status' => self::GOAL_IN_PROGRESS, 'achieved_at' => null,                                          'notes' => 'Down from 8.4% at diagnosis. Metformin 1000 mg twice daily continued; re-check at the next quarterly review.'],
+            ['id' => '00000000-0000-0000-0a04-000000000002', 'goal_text' => 'Record a home blood-pressure reading twice weekly in the OpesCare app.',      'target_date' => Carbon::now()->subWeeks(6)->toDateString(),  'status' => self::GOAL_ACHIEVED,    'achieved_at' => Carbon::now()->subWeeks(5)->setTime(9, 0),     'notes' => 'Logging consistently since the referral. Average 146/92 mmHg — readings shared with cardiology.'],
+            ['id' => '00000000-0000-0000-0a04-000000000003', 'goal_text' => 'Keep home blood pressure below 130/80 mmHg.',                                'target_date' => Carbon::now()->addWeeks(9)->toDateString(),  'status' => self::GOAL_IN_PROGRESS, 'achieved_at' => null,                                          'notes' => 'Still above target on Amlodipine 5 mg. Awaiting the cardiology opinion before escalating.'],
+            ['id' => '00000000-0000-0000-0a04-000000000004', 'goal_text' => 'Complete a dietary review with the clinic nutritionist.',                    'target_date' => Carbon::now()->addWeeks(6)->toDateString(),  'status' => self::GOAL_PENDING,     'achieved_at' => null,                                          'notes' => 'Low-salt, reduced-carbohydrate plan. Peanut allergy (moderate) must be flagged to the nutritionist.'],
+            ['id' => '00000000-0000-0000-0a04-000000000005', 'goal_text' => 'Attend the structured diabetes self-management education session.',          'target_date' => Carbon::now()->subWeeks(7)->toDateString(),  'status' => self::GOAL_ACHIEVED,    'achieved_at' => Carbon::now()->subWeeks(7)->setTime(15, 30),   'notes' => 'Group session completed at the outpatient clinic.'],
+            ['id' => '00000000-0000-0000-0a04-000000000006', 'goal_text' => 'Book the annual diabetic retinal screening.',                                'target_date' => Carbon::now()->addWeeks(20)->toDateString(), 'status' => self::GOAL_PENDING,     'achieved_at' => null,                                          'notes' => 'Due twelve months after the last screening.'],
         ];
 
         foreach ($goals as $goal) {
-            $id = $goal['id'];
+            $id = $this->uid($goal['id']);
             unset($goal['id']);
-            $this->upsert(CarePlanGoal::class, $id, $goal + ['care_plan_id' => self::PLAN]);
+            $this->upsert(CarePlanGoal::class, $id, $goal + ['care_plan_id' => $planId]);
         }
 
         $interventions = [
-            [
-                'id'                => '00000000-0000-0000-0a05-000000000001',
-                'intervention_type' => 'medication',
-                'description'       => 'Metformin 1000 mg orally twice daily with meals.',
-                'frequency'         => 'Twice daily',
-                'responsible_party' => 'Dr. Amara Diallo',
-                'status'            => self::INTERVENTION_ACTIVE,
-            ],
-            [
-                'id'                => '00000000-0000-0000-0a05-000000000002',
-                'intervention_type' => 'medication',
-                'description'       => 'Amlodipine 5 mg orally once daily in the morning.',
-                'frequency'         => 'Once daily',
-                'responsible_party' => 'Dr. Amara Diallo',
-                'status'            => self::INTERVENTION_ACTIVE,
-            ],
-            [
-                'id'                => '00000000-0000-0000-0a05-000000000003',
-                'intervention_type' => 'monitoring',
-                'description'       => 'Home blood-pressure reading, logged in the OpesCare app.',
-                'frequency'         => 'Twice weekly',
-                'responsible_party' => 'Patient',
-                'status'            => self::INTERVENTION_ACTIVE,
-            ],
-            [
-                'id'                => '00000000-0000-0000-0a05-000000000004',
-                'intervention_type' => 'monitoring',
-                'description'       => 'HbA1c and fasting glucose at each quarterly review.',
-                'frequency'         => 'Every 3 months',
-                'responsible_party' => 'Outpatient Clinic',
-                'status'            => self::INTERVENTION_ACTIVE,
-            ],
-            [
-                'id'                => '00000000-0000-0000-0a05-000000000005',
-                'intervention_type' => 'diet',
-                'description'       => 'Reduced-carbohydrate, low-salt meal plan. Peanut-free (moderate allergy).',
-                'frequency'         => 'Daily',
-                'responsible_party' => 'Patient',
-                'status'            => self::INTERVENTION_ACTIVE,
-            ],
-            [
-                'id'                => '00000000-0000-0000-0a05-000000000006',
-                'intervention_type' => 'exercise',
-                'description'       => 'Brisk walking for 30 minutes.',
-                'frequency'         => '5 days per week',
-                'responsible_party' => 'Patient',
-                'status'            => self::INTERVENTION_ACTIVE,
-            ],
-            [
-                'id'                => '00000000-0000-0000-0a05-000000000007',
-                'intervention_type' => 'referral',
-                'description'       => 'Cardiology opinion on antihypertensive escalation and cardiovascular risk.',
-                'frequency'         => 'One-off',
-                'responsible_party' => 'Dr. Ibrahim Sow',
-                'status'            => self::INTERVENTION_ACTIVE,
-            ],
-            [
-                'id'                => '00000000-0000-0000-0a05-000000000008',
-                'intervention_type' => 'education',
-                'description'       => 'Structured diabetes self-management education session.',
-                'frequency'         => 'One-off',
-                'responsible_party' => 'Outpatient Clinic',
-                'status'            => self::INTERVENTION_COMPLETED,
-            ],
+            ['id' => '00000000-0000-0000-0a05-000000000001', 'intervention_type' => 'medication', 'description' => 'Metformin 1000 mg orally twice daily with meals.',                          'frequency' => 'Twice daily',     'responsible_party' => DemoCareTeam::DOCTOR['name'],     'status' => self::INTERVENTION_ACTIVE],
+            ['id' => '00000000-0000-0000-0a05-000000000002', 'intervention_type' => 'medication', 'description' => 'Amlodipine 5 mg orally once daily in the morning.',                       'frequency' => 'Once daily',      'responsible_party' => DemoCareTeam::DOCTOR['name'],     'status' => self::INTERVENTION_ACTIVE],
+            ['id' => '00000000-0000-0000-0a05-000000000003', 'intervention_type' => 'monitoring', 'description' => 'Home blood-pressure reading, logged in the OpesCare app.',                 'frequency' => 'Twice weekly',    'responsible_party' => 'Patient',                        'status' => self::INTERVENTION_ACTIVE],
+            ['id' => '00000000-0000-0000-0a05-000000000004', 'intervention_type' => 'monitoring', 'description' => 'HbA1c and fasting glucose at each quarterly review.',                     'frequency' => 'Every 3 months',  'responsible_party' => 'Outpatient Clinic',              'status' => self::INTERVENTION_ACTIVE],
+            ['id' => '00000000-0000-0000-0a05-000000000005', 'intervention_type' => 'diet',       'description' => 'Reduced-carbohydrate, low-salt meal plan. Peanut-free (moderate allergy).', 'frequency' => 'Daily',           'responsible_party' => 'Patient',                        'status' => self::INTERVENTION_ACTIVE],
+            ['id' => '00000000-0000-0000-0a05-000000000006', 'intervention_type' => 'exercise',   'description' => 'Brisk walking for 30 minutes.',                                             'frequency' => '5 days per week', 'responsible_party' => 'Patient',                        'status' => self::INTERVENTION_ACTIVE],
+            ['id' => '00000000-0000-0000-0a05-000000000007', 'intervention_type' => 'referral',   'description' => 'Cardiology opinion on antihypertensive escalation and cardiovascular risk.', 'frequency' => 'One-off',         'responsible_party' => DemoCareTeam::SPECIALIST['name'], 'status' => self::INTERVENTION_ACTIVE],
+            ['id' => '00000000-0000-0000-0a05-000000000008', 'intervention_type' => 'education',  'description' => 'Structured diabetes self-management education session.',                    'frequency' => 'One-off',         'responsible_party' => 'Outpatient Clinic',              'status' => self::INTERVENTION_COMPLETED],
         ];
 
         foreach ($interventions as $intervention) {
-            $id = $intervention['id'];
+            $id = $this->uid($intervention['id']);
             unset($intervention['id']);
-            $this->upsert(CarePlanIntervention::class, $id, $intervention + ['care_plan_id' => self::PLAN]);
+            $this->upsert(CarePlanIntervention::class, $id, $intervention + ['care_plan_id' => $planId]);
         }
     }
 
@@ -480,10 +390,12 @@ class DemoCarePathwaySeeder extends Seeder
      */
     private function seedSurveys(string $facilityId): void
     {
+        $doneId = $this->uid(self::SURVEY_DONE);
+
         // Completed — follows the quarterly review ten weeks ago.
         $doneSentAt = Carbon::now()->subWeeks(10)->setTime(16, 0);
-        $this->upsert(PatientSurvey::class, self::SURVEY_DONE, [
-            'patient_id'   => self::PATIENT,
+        $this->upsert(PatientSurvey::class, $doneId, [
+            'patient_id'   => $this->patientId(),
             'facility_id'  => $facilityId,
             'template_key' => self::SURVEY_TEMPLATE,
             'status'       => self::SURVEY_COMPLETED,
@@ -494,10 +406,10 @@ class DemoCarePathwaySeeder extends Seeder
         ]);
 
         $answers = [
-            ['00000000-0000-0000-0a07-000000000001', 'overall_experience',    'rating_5', 5,    null],
-            ['00000000-0000-0000-0a07-000000000002', 'wait_time',             'rating_5', 3,    null],
-            ['00000000-0000-0000-0a07-000000000003', 'provider_communication', 'rating_5', 5,   null],
-            ['00000000-0000-0000-0a07-000000000004', 'would_recommend',       'yes_no',   1,    null],
+            ['00000000-0000-0000-0a07-000000000001', 'overall_experience',     'rating_5', 5,    null],
+            ['00000000-0000-0000-0a07-000000000002', 'wait_time',              'rating_5', 3,    null],
+            ['00000000-0000-0000-0a07-000000000003', 'provider_communication', 'rating_5', 5,    null],
+            ['00000000-0000-0000-0a07-000000000004', 'would_recommend',        'yes_no',   1,    null],
             [
                 '00000000-0000-0000-0a07-000000000005',
                 'comments',
@@ -510,11 +422,11 @@ class DemoCarePathwaySeeder extends Seeder
         $template = collect(app(\App\Services\Patient\SurveyService::class)->getTemplate(self::SURVEY_TEMPLATE))
             ->keyBy('key');
 
-        foreach ($answers as [$id, $questionKey, $type, $numeric, $text]) {
+        foreach ($answers as [$reservedId, $questionKey, $type, $numeric, $text]) {
             $question = $template->get($questionKey);
 
-            $this->upsert(SurveyResponse::class, $id, [
-                'patient_survey_id' => self::SURVEY_DONE,
+            $this->upsert(SurveyResponse::class, $this->uid($reservedId), [
+                'patient_survey_id' => $doneId,
                 'question_key'      => $questionKey,
                 'question_text'     => $question['text'] ?? $questionKey,
                 'response_type'     => $question['type'] ?? $type,
@@ -525,10 +437,10 @@ class DemoCarePathwaySeeder extends Seeder
         }
 
         // Still open — sent after the blood-pressure check five days ago, so it
-        // is inside the 7-day window and she can still fill it in.
+        // is inside the 7-day window and can still be filled in.
         $pendingSentAt = Carbon::now()->subDays(5)->setTime(12, 30);
-        $this->upsert(PatientSurvey::class, self::SURVEY_PENDING, [
-            'patient_id'   => self::PATIENT,
+        $this->upsert(PatientSurvey::class, $this->uid(self::SURVEY_PENDING), [
+            'patient_id'   => $this->patientId(),
             'facility_id'  => $facilityId,
             'template_key' => self::SURVEY_TEMPLATE,
             'status'       => self::SURVEY_SENT,
@@ -542,22 +454,15 @@ class DemoCarePathwaySeeder extends Seeder
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     /**
-     * Directory name -> internal `facilities` id.
-     *
-     * Only `care_facilities` rows with a non-null `facility_id` are bookable
-     * (17 when this was written, 121 since BookableFacilityNetworkSeeder — do
-     * not hardcode the number). Slots and appointments hang off that id, and it
-     * is the id MobileAppointmentController::book() writes to
-     * `appointments.facility_id`.
-     * Returning null for an unlinked facility keeps the seeder from writing an
-     * appointment the app cannot link back to the directory.
+     * Directory name -> internal `facilities` id, through DemoFacilityResolver:
+     * the registry row is the identity, the operational row is created and
+     * linked when the institution has none yet (which also makes it bookable —
+     * `care_facilities.facility_id` is what the directory and the booking
+     * controller key on). Null when the institution is not in the registry.
      */
-    private function resolveBookableFacilityId(string $facilityName): ?string
+    private function resolveFacilityId(string $facilityName): ?string
     {
-        $facilityId = DB::table('care_facilities')
-            ->where('facility_name', $facilityName)
-            ->whereNotNull('facility_id')
-            ->value('facility_id');
+        $facilityId = DemoFacilityResolver::resolve($facilityName);
 
         if (! $facilityId) {
             return null;
@@ -566,11 +471,6 @@ class DemoCarePathwaySeeder extends Seeder
         return DB::table('facilities')->where('id', $facilityId)->exists()
             ? (string) $facilityId
             : null;
-    }
-
-    private function resolveUserId(string $userId): ?string
-    {
-        return DB::table('users')->where('id', $userId)->exists() ? $userId : null;
     }
 
     /**

@@ -8,6 +8,9 @@ use App\Models\LabResult;
 use App\Models\Patient;
 use App\Models\ReferenceRange;
 use App\Models\User;
+use Database\Seeders\Support\DemoCareTeam;
+use Database\Seeders\Support\DemoFacilityResolver;
+use Database\Seeders\Support\TargetsDemoPatient;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -17,7 +20,9 @@ use Illuminate\Support\Str;
  *
  * Everything written here is marked `is_demo = true` and carries a
  * `demo_seed_key`, so re-running the seeder updates its own rows instead of
- * stacking duplicate panels, and a demo reset can find them.
+ * stacking duplicate panels, and a demo reset can find them. Given a target
+ * patient (`forPatient()`), the keys carry that patient's prefix, so two demo
+ * patients each own their panels.
  *
  * ── The demo is designed to prove the honest paths, not to look tidy ──────
  *
@@ -43,6 +48,8 @@ use Illuminate\Support\Str;
  */
 class DemoLabResultsSeeder extends Seeder
 {
+    use TargetsDemoPatient;
+
     /** Prefix for every demo_seed_key this seeder owns. */
     private const KEY = 'demo_labs_v1';
 
@@ -79,6 +86,12 @@ class DemoLabResultsSeeder extends Seeder
         // withoutGlobalScopes so the seeder works whether or not the process is
         // running with OPESCARE_DEMO_MODE on; the row it wants is explicitly
         // the demo one either way.
+        if ($this->targetPatientId !== null) {
+            $patient = Patient::query()->withoutGlobalScopes()->find($this->targetPatientId);
+
+            return $patient && $patient->is_demo ? $patient : null;
+        }
+
         return Patient::query()
             ->withoutGlobalScopes()
             ->where('is_demo', true)
@@ -87,8 +100,10 @@ class DemoLabResultsSeeder extends Seeder
     }
 
     /**
-     * A demo facility that is registered AND listed on the care map, so the
-     * collection screen has a real address to show.
+     * A facility that is registered AND listed on the care map, so the
+     * collection screen has a real address to show: a demo laboratory when
+     * the estate has one, else the real laboratory of the story (Centre
+     * Pasteur), linked through DemoFacilityResolver.
      *
      * @return object{facility_id: string, care_facility_id: string, name: string}|null
      */
@@ -101,6 +116,16 @@ class DemoLabResultsSeeder extends Seeder
             ->orderByRaw("case when lower(f.type) = 'laboratory' then 0 when lower(f.type) = 'hospital' then 1 else 2 end")
             ->first(['f.id as facility_id', 'cf.id as care_facility_id', 'f.name as name']);
 
+        if ($row === null) {
+            $facilityId = DemoFacilityResolver::laboratory();
+            $row = $facilityId
+                ? DB::table('facilities as f')
+                    ->join('care_facilities as cf', 'cf.facility_id', '=', 'f.id')
+                    ->where('f.id', $facilityId)
+                    ->first(['f.id as facility_id', 'cf.id as care_facility_id', 'f.name as name'])
+                : null;
+        }
+
         return $row === null ? null : (object) [
             'facility_id'      => (string) $row->facility_id,
             'care_facility_id' => (string) $row->care_facility_id,
@@ -110,20 +135,22 @@ class DemoLabResultsSeeder extends Seeder
 
     private function clinicianId(): ?string
     {
-        return User::query()
-            ->withoutGlobalScopes()
-            ->where('is_demo', true)
-            ->where('name', 'ilike', '%Dr.%')
-            ->value('id');
+        return DemoCareTeam::doctor()
+            ?? User::query()
+                ->withoutGlobalScopes()
+                ->where('is_demo', true)
+                ->where('name', 'ilike', '%Dr.%')
+                ->value('id');
     }
 
     private function labTechId(): ?string
     {
-        return User::query()
-            ->withoutGlobalScopes()
-            ->where('is_demo', true)
-            ->where('name', 'ilike', '%Lab%')
-            ->value('id')
+        return DemoCareTeam::labTech()
+            ?? User::query()
+                ->withoutGlobalScopes()
+                ->where('is_demo', true)
+                ->where('name', 'ilike', '%Lab%')
+                ->value('id')
             ?? $this->clinicianId();
     }
 
@@ -153,9 +180,9 @@ class DemoLabResultsSeeder extends Seeder
         foreach ($ranges as [$code, $name, $unit, $sex, $ageGroup, $low, $high, $critLow, $critHigh]) {
             ReferenceRange::query()->updateOrCreate(
                 [
-                    'test_code' => $code,
-                    'sex'       => $sex,
-                    'age_group' => $ageGroup,
+                    'test_code'   => $code,
+                    'sex'         => $sex,
+                    'age_group'   => $ageGroup,
                     'facility_id' => null,
                 ],
                 [
@@ -181,16 +208,16 @@ class DemoLabResultsSeeder extends Seeder
     private function seedCatalogue(object $facility): void
     {
         $tests = [
-            ['FBC',  'Full Blood Count',           'Whole blood (EDTA)'],
-            ['RFT',  'Renal Function Test',        'Serum'],
-            ['LFT',  'Liver Function Test',        'Serum'],
-            ['LIPID', 'Lipid Panel',               'Serum (fasting)'],
-            ['GLUF', 'Fasting Blood Glucose',      'Fluoride plasma'],
-            ['HBA1C', 'Glycated Haemoglobin',      'Whole blood (EDTA)'],
-            ['MRDT', 'Malaria Rapid Diagnostic Test', 'Whole blood'],
-            ['FERR', 'Ferritin',                   'Serum'],
-            ['TSH',  'Thyroid Stimulating Hormone', 'Serum'],
-            ['URIC', 'Urine Culture',              'Mid-stream urine'],
+            ['FBC',   'Full Blood Count',              'Whole blood (EDTA)'],
+            ['RFT',   'Renal Function Test',           'Serum'],
+            ['LFT',   'Liver Function Test',           'Serum'],
+            ['LIPID', 'Lipid Panel',                   'Serum (fasting)'],
+            ['GLUF',  'Fasting Blood Glucose',         'Fluoride plasma'],
+            ['HBA1C', 'Glycated Haemoglobin',          'Whole blood (EDTA)'],
+            ['MRDT',  'Malaria Rapid Diagnostic Test', 'Whole blood'],
+            ['FERR',  'Ferritin',                      'Serum'],
+            ['TSH',   'Thyroid Stimulating Hormone',   'Serum'],
+            ['URIC',  'Urine Culture',                 'Mid-stream urine'],
         ];
 
         foreach ($tests as [$code, $name, $specimen]) {
@@ -346,7 +373,7 @@ class DemoLabResultsSeeder extends Seeder
         foreach ($orders as $spec) {
             $orderedAt = now()->subDays($spec['days_ago'])->setTime(8, 30);
             $resulted  = $spec['results'] !== [];
-            $seedKey   = self::KEY . ':' . $spec['key'];
+            $seedKey   = $this->seedKey(self::KEY . ':' . $spec['key']);
 
             $order = LabOrder::query()
                 ->withoutGlobalScopes()
@@ -390,7 +417,7 @@ class DemoLabResultsSeeder extends Seeder
     private function seedResults(LabOrder $order, Patient $patient, array $spec, \Illuminate\Support\Carbon $orderedAt, ?string $tech): void
     {
         foreach ($spec['results'] as $index => [$analyte, $value, $unit, $flag, $reference, $note]) {
-            $seedKey = self::KEY . ':' . $spec['key'] . ':' . $index;
+            $seedKey = $this->seedKey(self::KEY . ':' . $spec['key'] . ':' . $index);
 
             $attributes = [
                 'lab_order_id'    => $order->id,

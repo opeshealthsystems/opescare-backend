@@ -44,18 +44,25 @@ class DemoNotificationsSeeder extends Seeder
         'low_stock_alert',
         'staff_joined',
         'health_tip',
+        'lab_result_available',
+        'prescription_issued',
+    ];
+
+    /** The patient logins that get the patient-side notifications below. */
+    public const PATIENT_EMAILS = [
+        'demo.patient@opescare.test',
+        'demo.reviewer@opescare.test',
     ];
 
     public function run(): void
     {
         // Resolve the demo accounts by email; skip any that are missing so this
         // seeder is safe to run before/independently of the full demo estate.
-        $emails = [
+        $emails = array_merge([
             'demo.receptionist@opescare.test',
             'demo.pharmacist@opescare.test',
             'demo.facility.admin@opescare.test',
-            'demo.patient@opescare.test',
-        ];
+        ], self::PATIENT_EMAILS);
 
         $userIdByEmail = [];
         foreach ($emails as $email) {
@@ -114,18 +121,30 @@ class DemoNotificationsSeeder extends Seeder
                 'Dr. Amara Diallo now has access to the facility desk.',
                 '/facility/staff'],
 
-            // Patient appointment confirmation.
-            ['demo.patient@opescare.test', 'appointment_confirmed', 'appointment', 'normal', false, 30,
-                'Appointment confirmed',
-                'Your appointment on Sep 5 at 14:00 is confirmed.',
-                '/portal/notifications'],
+        ];
 
-            // Patient general health tip.
-            ['demo.patient@opescare.test', 'health_tip', 'general', 'normal', false, 44,
+        // Patient-side notifications — the same set for every demo patient
+        // login, so each reviewer sees a populated bell. Dates are relative
+        // to now, like the story they belong to (DEMO_DATA_BRIEF.md).
+        $reviewDate = now()->addWeeks(3)->format('j M');
+        foreach (self::PATIENT_EMAILS as $patientEmail) {
+            $events[] = [$patientEmail, 'lab_result_available', 'general', 'high', false, 6,
+                'Lab result available — Fasting Blood Glucose',
+                '5.1 mmol/L, within range. Open Lab Results to see the full report.',
+                '/portal/notifications'];
+            $events[] = [$patientEmail, 'prescription_issued', 'pharmacy', 'normal', false, 26,
+                'Prescription issued — Metformin, Amlodipine',
+                'Your quarterly repeat is ready to collect. Show the prescription code at the pharmacy.',
+                '/portal/notifications'];
+            $events[] = [$patientEmail, 'appointment_confirmed', 'appointment', 'normal', false, 30,
+                'Appointment confirmed',
+                "Your quarterly review on {$reviewDate} at 09:30 is confirmed.",
+                '/portal/notifications'];
+            $events[] = [$patientEmail, 'health_tip', 'general', 'normal', false, 44,
                 'Health tip: stay hydrated',
                 'Drink water regularly, especially during the dry season.',
-                '/portal/notifications'],
-        ];
+                '/portal/notifications'];
+        }
 
         $seeded = 0;
         foreach ($events as [$email, $eventType, $category, $priority, $requiresAck, $hoursAgo, $title, $body, $url]) {

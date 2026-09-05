@@ -3,22 +3,25 @@
 namespace Database\Seeders;
 
 use Carbon\Carbon;
+use Database\Seeders\Support\DemoCareTeam;
 use Database\Seeders\Support\DemoFacilityResolver;
+use Database\Seeders\Support\TargetsDemoPatient;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Demo vitals for the ONE demo patient, so the mobile Health Vitals card has
+ * Demo vitals for a demo patient, so the mobile Health Vitals card has
  * something real to render.
  *
  * Deliberate boundaries:
- *   - Touches exactly one patient (self::PATIENT) and one facility — her real
- *     hospital, resolved from the directory at run time. It will NOT run
- *     against a database where either is missing, so it can never attach
- *     invented readings to an arbitrary facility or to a real patient.
- *   - Everything it writes carries a stable UUID in the reserved
- *     00000000-0000-0000-00xx- demo space and every row is prefixed/labelled
- *     as demo data (visit `is_demo`, triage complaint, lab notes).
+ *   - Touches exactly one patient per run (the canonical demo patient, or the
+ *     one given to `forPatient()`) and one facility — the real hospital,
+ *     resolved from the directory at run time. It will NOT run against a
+ *     database where either is missing, so it can never attach invented
+ *     readings to an arbitrary facility or to a real patient.
+ *   - Every row carries a stable UUID (reserved 00000000-0000-0000-00xx- space
+ *     for the canonical patient, derived for anyone else) and is labelled as
+ *     demo data (visit `is_demo`, triage complaint, lab notes).
  *   - Idempotent: re-running inserts nothing new.
  *   - NOT registered in DatabaseSeeder — run it explicitly:
  *         php artisan db:seed --class=DemoPatientVitalsSeeder
@@ -32,61 +35,61 @@ use Illuminate\Support\Facades\DB;
  */
 class DemoPatientVitalsSeeder extends Seeder
 {
-    private const PATIENT  = '00000000-0000-0000-0000-300000000001'; // Demo Patient One
-    // Resolved at run time to her real hospital; the literal below is only a
-    // fallback for a database whose directory has not been seeded yet.
-    private const FACILITY_FALLBACK = '00000000-0000-0000-0000-100000000001';
-
-    private string $facility = self::FACILITY_FALLBACK;
-    private const NURSE    = '00000000-0000-0000-0000-200000000010'; // Nurse Fatou
-    private const DOCTOR   = '00000000-0000-0000-0000-200000000001'; // Dr. Amara Diallo
+    use TargetsDemoPatient;
 
     private const VISIT      = '00000000-0000-0000-0011-100000000001';
     private const TRIAGE     = '00000000-0000-0000-0012-100000000001';
     private const LAB_ORDER  = '00000000-0000-0000-0013-100000000001';
     private const LAB_RESULT = '00000000-0000-0000-0014-100000000001';
+    private const VITALS_TODAY     = '00000000-0000-0000-0015-100000000001';
+    private const VITALS_LAST_WEEK = '00000000-0000-0000-0015-100000000002';
+
+    private string $facility = '';
 
     public function run(): void
     {
-        if (! DB::table('patients')->where('id', self::PATIENT)->exists()) {
+        if (! DB::table('patients')->where('id', $this->patientId())->exists()) {
             $this->command?->warn('DemoPatientVitalsSeeder skipped: demo patient not present.');
             return;
         }
 
-        $this->facility = DemoFacilityResolver::primaryHospital() ?? self::FACILITY_FALLBACK;
+        $facility = DemoFacilityResolver::primaryHospital();
 
-        if (! DB::table('facilities')->where('id', $this->facility)->exists()) {
+        if (! $facility || ! DB::table('facilities')->where('id', $facility)->exists()) {
             $this->command?->warn('DemoPatientVitalsSeeder skipped: no resolvable facility.');
             return;
         }
+        $this->facility = $facility;
 
-        $nurse  = DB::table('users')->where('id', self::NURSE)->exists() ? self::NURSE : null;
-        $doctor = DB::table('users')->where('id', self::DOCTOR)->exists() ? self::DOCTOR : null;
+        $nurse  = DemoCareTeam::nurse();
+        $doctor = DemoCareTeam::doctor();
 
         // The reference screen reads "Last updated: Today, 7:30 AM".
-        $today     = Carbon::today()->setTime(7, 30);
-        $lastWeek  = Carbon::today()->subDays(9)->setTime(11, 15);
+        $today    = Carbon::today()->setTime(7, 30);
+        $lastWeek = Carbon::today()->subDays(9)->setTime(11, 15);
 
-        $this->upsertVisit($lastWeek);
+        $this->upsertVisit($lastWeek, $doctor);
         $this->upsertTriage($nurse);
-        $this->upsertVitals($today, $lastWeek, $nurse);
+        $this->upsertVitals($today, $lastWeek, $nurse ?? $doctor);
         $this->upsertGlucose($today, $doctor);
 
-        $this->command?->info('DemoPatientVitalsSeeder: demo vitals ready for ' . self::PATIENT . '.');
+        $this->command?->info('DemoPatientVitalsSeeder: demo vitals ready for ' . $this->patientId() . '.');
     }
 
     /** One closed demo visit to hang the triage record off. */
-    private function upsertVisit(Carbon $startedAt): void
+    private function upsertVisit(Carbon $startedAt, ?string $doctor): void
     {
-        if (DB::table('visits')->where('id', self::VISIT)->exists()) {
+        $id = $this->uid(self::VISIT);
+
+        if (DB::table('visits')->where('id', $id)->exists()) {
             return;
         }
 
         DB::table('visits')->insert([
-            'id'          => self::VISIT,
-            'patient_id'  => self::PATIENT,
+            'id'          => $id,
+            'patient_id'  => $this->patientId(),
             'facility_id' => $this->facility,
-            'provider_id' => DB::table('users')->where('id', self::DOCTOR)->exists() ? self::DOCTOR : null,
+            'provider_id' => $doctor,
             'visit_type'  => 'outpatient',
             'status'      => 'closed',
             'started_at'  => $startedAt,
@@ -99,13 +102,15 @@ class DemoPatientVitalsSeeder extends Seeder
 
     private function upsertTriage(?string $nurse): void
     {
-        if (DB::table('triage_records')->where('id', self::TRIAGE)->exists()) {
+        $id = $this->uid(self::TRIAGE);
+
+        if (DB::table('triage_records')->where('id', $id)->exists()) {
             return;
         }
 
         DB::table('triage_records')->insert([
-            'id'                   => self::TRIAGE,
-            'visit_id'             => self::VISIT,
+            'id'                   => $id,
+            'visit_id'             => $this->uid(self::VISIT),
             'nurse_id'             => $nurse,
             'presenting_complaint' => 'DEMO DATA — routine wellness check, no complaint',
             'pain_score'           => 0,
@@ -120,48 +125,30 @@ class DemoPatientVitalsSeeder extends Seeder
      * `patient_id` and a real `recorded_at`. Two rows, not one, so the
      * endpoint's "newest wins per measure" merge is exercised by real data.
      */
-    private function upsertVitals(Carbon $today, Carbon $lastWeek, ?string $nurse): void
+    private function upsertVitals(Carbon $today, Carbon $lastWeek, ?string $recordedBy): void
     {
         $rows = [
-            [
-                'id'                  => '00000000-0000-0000-0015-100000000001',
-                'recorded_at'         => $today,
-                'temperature'         => 36.8,
-                'pulse_rate'          => 72,
-                'respiratory_rate'    => 16,
-                'systolic_bp'         => 120,
-                'diastolic_bp'        => 80,
-                'oxygen_saturation'   => 98,
-                'weight_kg'           => 74.50,
-                'height_cm'           => 176.00,
-            ],
-            [
-                'id'                  => '00000000-0000-0000-0015-100000000002',
-                'recorded_at'         => $lastWeek,
-                'temperature'         => 37.1,
-                'pulse_rate'          => 78,
-                'respiratory_rate'    => 17,
-                'systolic_bp'         => 124,
-                'diastolic_bp'        => 82,
-                'oxygen_saturation'   => 97,
-                'weight_kg'           => 75.20,
-                'height_cm'           => 176.00,
-            ],
+            ['id' => self::VITALS_TODAY,     'recorded_at' => $today,    'temperature' => 36.8, 'pulse_rate' => 72, 'respiratory_rate' => 16, 'systolic_bp' => 120, 'diastolic_bp' => 80, 'oxygen_saturation' => 98, 'weight_kg' => 74.50, 'height_cm' => 176.00],
+            ['id' => self::VITALS_LAST_WEEK, 'recorded_at' => $lastWeek, 'temperature' => 37.1, 'pulse_rate' => 78, 'respiratory_rate' => 17, 'systolic_bp' => 124, 'diastolic_bp' => 82, 'oxygen_saturation' => 97, 'weight_kg' => 75.20, 'height_cm' => 176.00],
         ];
 
         foreach ($rows as $row) {
-            if (DB::table('triage_vital_signs')->where('id', $row['id'])->exists()) {
+            $id = $this->uid($row['id']);
+            unset($row['id']);
+
+            if (DB::table('triage_vital_signs')->where('id', $id)->exists()) {
                 continue;
             }
 
             DB::table('triage_vital_signs')->insert(array_merge($row, [
-                'triage_record_id'    => self::TRIAGE,
-                'visit_id'            => self::VISIT,
-                'patient_id'          => self::PATIENT,
+                'id'                  => $id,
+                'triage_record_id'    => $this->uid(self::TRIAGE),
+                'visit_id'            => $this->uid(self::VISIT),
+                'patient_id'          => $this->patientId(),
                 'gcs_score'           => 15,
                 'pain_score'          => 0,
                 'consciousness_level' => 'alert',
-                'recorded_by'         => $nurse ?? self::NURSE,
+                'recorded_by'         => $recordedBy,
                 'created_at'          => $row['recorded_at'],
                 'updated_at'          => $row['recorded_at'],
             ]));
@@ -175,12 +162,15 @@ class DemoPatientVitalsSeeder extends Seeder
      */
     private function upsertGlucose(Carbon $today, ?string $doctor): void
     {
-        if (! DB::table('lab_orders')->where('id', self::LAB_ORDER)->exists()) {
+        $orderId  = $this->uid(self::LAB_ORDER);
+        $resultId = $this->uid(self::LAB_RESULT);
+
+        if (! DB::table('lab_orders')->where('id', $orderId)->exists()) {
             DB::table('lab_orders')->insert([
-                'id'                  => self::LAB_ORDER,
-                'patient_id'          => self::PATIENT,
+                'id'                  => $orderId,
+                'patient_id'          => $this->patientId(),
                 'facility_id'         => $this->facility,
-                'visit_id'            => self::VISIT,
+                'visit_id'            => $this->uid(self::VISIT),
                 'ordered_by'          => $doctor,
                 'test_name'           => 'DEMO DATA — Random blood glucose',
                 'test_code'           => 'GLU',
@@ -195,14 +185,14 @@ class DemoPatientVitalsSeeder extends Seeder
             ]);
         }
 
-        if (DB::table('lab_results')->where('id', self::LAB_RESULT)->exists()) {
+        if (DB::table('lab_results')->where('id', $resultId)->exists()) {
             return;
         }
 
         DB::table('lab_results')->insert([
-            'id'              => self::LAB_RESULT,
-            'lab_order_id'    => self::LAB_ORDER,
-            'patient_id'      => self::PATIENT,
+            'id'              => $resultId,
+            'lab_order_id'    => $orderId,
+            'patient_id'      => $this->patientId(),
             'parameter_name'  => 'Glucose (random)',
             'value'           => '102',
             'unit'            => 'mg/dL',
