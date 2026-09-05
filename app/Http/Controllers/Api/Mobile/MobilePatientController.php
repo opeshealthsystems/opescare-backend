@@ -11,8 +11,10 @@ use App\Models\LabOrder;
 use App\Models\Patient;
 use App\Models\Prescription;
 use App\Models\Visit;
+use App\Support\PatientVocabulary;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Lang;
 
 /**
  * Mobile Patient API — Patient Profile & Timeline
@@ -93,11 +95,28 @@ class MobilePatientController extends Controller
      *
      * GET /api/mobile/timeline
      * Query params: limit (default 20)
+     *
+     * ── `summary` vs `summary_label` ──────────────────────────────────────
+     *
+     * `summary` is the English string this endpoint has always emitted —
+     * "Prescription — 3 item(s)". It is unchanged, because clients in the field
+     * parse it (the records screen splits on the em dash to recover the count
+     * and the visit type).
+     *
+     * It was also being printed verbatim as a row title on the home screen, so
+     * a French-speaking patient read "Prescription — 1 item(s)" in the middle
+     * of an otherwise French app — with the lazy "(s)" plural that English
+     * readers got too. `summary_label` is that same line in the patient's
+     * language with a real plural, and `detail_label` is just its tail, for a
+     * row whose title already names the kind of entry. Both are built from
+     * lang/{en,fr}/patient_timeline.php, so the wording lives in one place
+     * rather than being re-derived on each screen.
      */
     public function getTimeline(Request $request): JsonResponse
     {
         $patientId = $this->resolvePatientId($request);
         $limit     = min((int) $request->query('limit', 20), 100);
+        $locale    = PatientVocabulary::locale($request);
 
         $events = collect();
 
@@ -109,12 +128,21 @@ class MobilePatientController extends Controller
             ->get();
 
         foreach ($visits as $v) {
+            $visitType = $v->visit_type ?? 'outpatient';
+            // An unlisted visit type is passed through as recorded, never
+            // renamed from the shape of its token.
+            $visitTypeLabel = Lang::has('patient_timeline.visit_type.' . $visitType, $locale)
+                ? __('patient_timeline.visit_type.' . $visitType, [], $locale)
+                : $visitType;
+
             $events->push([
                 'event_type'    => 'visit',
                 'id'            => $v->id,
                 'facility_name' => $v->facility?->name,
                 'occurred_at'   => $v->created_at->toIso8601String(),
-                'summary'       => 'Clinical visit — ' . ($v->visit_type ?? 'outpatient'),
+                'summary'       => 'Clinical visit — ' . $visitType,
+                'summary_label' => __('patient_timeline.visit', ['type' => $visitTypeLabel], $locale),
+                'detail_label'  => $visitTypeLabel,
             ]);
         }
 
@@ -133,6 +161,9 @@ class MobilePatientController extends Controller
                 'facility_name' => $l->facility?->name,
                 'occurred_at'   => $l->resulted_at?->toIso8601String() ?? $l->ordered_at->toIso8601String(),
                 'summary'       => 'Lab result — ' . $l->test_name,
+                // The test name is clinical data and is never translated.
+                'summary_label' => __('patient_timeline.lab_result', ['test' => $l->test_name], $locale),
+                'detail_label'  => $l->test_name,
             ]);
         }
 
@@ -144,12 +175,16 @@ class MobilePatientController extends Controller
             ->get();
 
         foreach ($prescriptions as $p) {
+            $itemCount = $p->items->count();
+
             $events->push([
                 'event_type'    => 'prescription',
                 'id'            => $p->id,
                 'facility_name' => $p->facility?->name,
                 'occurred_at'   => $p->prescribed_at->toIso8601String(),
-                'summary'       => 'Prescription — ' . $p->items->count() . ' item(s)',
+                'summary'       => 'Prescription — ' . $itemCount . ' item(s)',
+                'summary_label' => trans_choice('patient_timeline.prescription', $itemCount, ['count' => $itemCount], $locale),
+                'detail_label'  => trans_choice('patient_timeline.detail_prescription', $itemCount, ['count' => $itemCount], $locale),
             ]);
         }
 

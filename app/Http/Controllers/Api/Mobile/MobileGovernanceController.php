@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Mobile;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\AccessLogResource;
 use App\Http\Resources\ConsentRequestResource;
 use App\Http\Resources\DataExportRequestResource;
 use App\Models\AccessLog;
@@ -13,6 +14,7 @@ use App\Models\DataExportRequest;
 use App\Modules\Governance\Services\ConsentService;
 use App\Modules\Governance\Services\CorrectionRequestService;
 use App\Modules\Governance\Services\DataExportService;
+use App\Support\PatientVocabulary;
 use Illuminate\Http\Request;
 
 /**
@@ -132,6 +134,24 @@ class MobileGovernanceController extends Controller
 
     // ── Access logs ───────────────────────────────────────────────────────────
 
+    /**
+     * "Who opened my record, and why?"
+     *
+     * The rows used to go out as raw models, so the patient read the audit
+     * column itself: `Treatment:treating clinician` — the reason and the
+     * authority the read rested on, glued with a colon and title-cased by the
+     * client, identical in French because nothing was ever translated. That is
+     * the shorthand the platform writes to itself; it answers neither question
+     * this screen exists to answer.
+     *
+     * Both halves are now resolved server-side by App\Support\PatientVocabulary
+     * against lang/{en,fr}/access_log.php, in the patient's language. The raw
+     * `purpose` still travels beside the label: this is an audit trail, and
+     * what was recorded is never replaced by how it is rendered. A value with
+     * no entry in that vocabulary is passed through exactly as stored and
+     * marked `purpose_recognised: false` — it is never given a name it did not
+     * have.
+     */
     public function listAccessLogs(Request $request)
     {
         $patientId = $request->attributes->get('patient_id');
@@ -143,6 +163,39 @@ class MobileGovernanceController extends Controller
             ->with('facility:id,name,type')
             ->latest()
             ->paginate(50);
+
+        $locale = PatientVocabulary::locale($request);
+
+        // The paginator's own envelope (current_page / last_page / per_page /
+        // total) is what the client pages on, so only the items are rewritten.
+        $logs->setCollection(
+            $logs->getCollection()->map(function (AccessLog $log) use ($request, $locale) {
+                $purpose  = PatientVocabulary::accessPurpose($log->purpose, $locale);
+                $category = PatientVocabulary::dataCategory($log->data_category, $locale);
+
+                return AccessLogResource::make($log)->toArray($request) + [
+                    // Carried over from the eager load: the client names the
+                    // facility that opened the record, and AccessLogResource
+                    // holds only its id.
+                    'facility' => $log->relationLoaded('facility') && $log->facility
+                        ? [
+                            'id'   => $log->facility->id,
+                            'name' => $log->facility->name,
+                            'type' => $log->facility->type,
+                        ]
+                        : null,
+
+                    'purpose_label'       => $purpose['label'] ?? null,
+                    'purpose_basis'       => $purpose['basis'] ?? null,
+                    'purpose_basis_label' => $purpose['basis_label'] ?? null,
+                    'purpose_recognised'  => $purpose['recognised'] ?? null,
+                    'purpose_note'        => $purpose['note'] ?? null,
+
+                    'data_category_label'      => $category['label'] ?? null,
+                    'data_category_recognised' => $category['recognised'] ?? null,
+                ];
+            })
+        );
 
         return response()->json($logs, 200);
     }

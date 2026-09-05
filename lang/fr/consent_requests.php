@@ -24,7 +24,7 @@ return [
 
     // ── La notification du patient ───────────────────────────────────────
     'notify_title'  => 'Un établissement demande à consulter votre dossier',
-    'notify_body'   => ":facility demande l'accès à votre dossier de santé pour :purpose. C'est vous qui décidez — rien n'est partagé tant que vous n'avez pas approuvé.",
+    'notify_body'   => ":facility demande l'accès à votre dossier de santé. Motif indiqué : :purpose. C'est vous qui décidez — rien n'est partagé tant que vous n'avez pas approuvé.",
     'notify_action' => 'Examiner la demande',
 
     // ── Statut de la demande ─────────────────────────────────────────────
@@ -36,6 +36,17 @@ return [
         'expired'                    => 'Expirée',
         'withdrawn'                  => 'Retirée',
     ],
+
+    // ── Durée de l'accès demandé ─────────────────────────────────────────
+    'duration' => [
+        'minutes' => ':count minute|:count minutes',
+        'hours'   => ':count heure|:count heures',
+        'days'    => ':count jour|:count jours',
+    ],
+
+    // ── Lorsqu'un code ne peut pas être résolu ───────────────────────────
+    'scope_unrecognised'   => "L'un des codes ci-dessus ne fait pas partie du vocabulaire de données d'OpesCare : il est affiché exactement tel qu'il a été enregistré, sans lui inventer de nom. Demandez à l'établissement ce qu'il recouvre — il peut recouvrir plus qu'il n'y paraît.",
+    'purpose_unrecognised' => "Ce code de motif ne fait pas partie du vocabulaire d'OpesCare : il est affiché exactement tel qu'il a été enregistré. Demandez à l'établissement ce qu'il signifie.",
 
     // ── Motif de la demande d'accès ──────────────────────────────────────
     'purpose' => [

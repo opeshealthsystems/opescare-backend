@@ -7,6 +7,24 @@
  * This namespace was previously missing entirely, so every sidebar role badge
  * rendered the raw key (e.g. "portal.doctor_role") in both locales. EN and FR
  * MUST keep identical keys (enforced by scripts/i18n-audit.php).
+ *
+ * ── `role_name.*` — the OTHER role label on the same page ──────────────────
+ *
+ * The `*_role` keys above are keyed by DASHBOARD PROFILE, and there are far
+ * fewer profiles than roles: many roles share one. The sidebar brand-sub, the
+ * sidebar footer and the topbar do not show the profile badge — they show
+ * `roles.description`, a column on the `roles` table, and a database column is
+ * not translatable. So a French-speaking visiting doctor read "Visiting Doctor"
+ * in three places on every portal page while the badge between them was
+ * correctly French, and lang/fr/team.php had been carrying "Médecin vacataire"
+ * the whole time for the invitation list.
+ *
+ * `role_name.*` is keyed by `roles.name` — the role slug — and covers every
+ * row RolesSeeder plants. The English values are the descriptions verbatim, so
+ * nothing changes for an English reader; layouts/portal.blade.php falls back to
+ * the column for any role that has no entry here, which is what a role added to
+ * the table but not to lang/ should look like: the stored English, not a blank
+ * and not a guess.
  */
 return [
     'api_partner_admin_role'        => 'API Partner Admin',
@@ -63,4 +81,94 @@ return [
     'triage_nurse_role'             => 'Triage Nurse',
     'ward_nurse_role'               => 'Ward Nurse',
     'webhook_manager_role'          => 'Webhook Manager',
+
+    /*
+     * Keyed by `roles.name`. Mirrors RolesSeeder::ROLES — a role added there
+     * needs an entry here and in lang/fr/portal.php, or the portal falls back
+     * to the English `roles.description` column for it.
+     */
+    'role_name' => [
+        'api_partner'               => 'API Partner Admin',
+        'api_technical'             => 'API Technical User',
+        'audit_reviewer'            => 'Audit Reviewer',
+        'billing_officer'           => 'Billing Officer',
+        'branch_admin'              => 'Branch / Multi-Facility Admin',
+        'bridge_admin'              => 'Bridge Agent Admin',
+        'bridge_agent'              => 'Bridge Agent Device Account',
+        'caregiver'                 => 'Caregiver Account',
+        'cashier'                   => 'Cashier',
+        'clinic_admin'              => 'Clinic Admin',
+        'compliance_officer'        => 'Compliance Officer',
+        'consultant'                => 'Consultant Doctor',
+        'data_protection_officer'   => 'Data Protection Officer',
+        'data_quality_reviewer'     => 'Data Quality Reviewer',
+        'data_steward'              => 'Data Steward',
+        'dependent_manager'         => 'Dependent Manager Account',
+        'developer'                 => 'Developer Account',
+        'developer_org_admin'       => 'Developer Organization Admin',
+        'dispensing_officer'        => 'Dispensing Officer',
+        'doctor'                    => 'General Doctor',
+        'emergency_access_reviewer' => 'Emergency Access Reviewer',
+        'emergency_contact'         => 'Emergency Contact Account',
+        'facility_admin'            => 'Facility Admin',
+        'facility_ceo'              => 'Hospital Director / Facility Executive',
+        'facility_device'           => 'Facility Device Account',
+        'finance'                   => 'Facility Finance Role',
+        'finance_manager'           => 'Finance Manager',
+        'front_desk'                => 'Front Desk Officer',
+        'guardian'                  => 'Guardian / Parent Account',
+        'health_program_manager'    => 'Health Program Manager',
+        'hospital_admin'            => 'Hospital Admin',
+        'insurance_admin'           => 'Insurance Admin',
+        'insurance_claims'          => 'Insurance Claims Officer',
+        'insurance_finance'         => 'Insurance Finance / Payment Officer',
+        'insurance_preauth'         => 'Insurance Pre-Authorization Officer',
+        'insurance_reviewer'        => 'Insurance Reviewer',
+        'integration_device'        => 'Integration Device Account',
+        'intern'                    => 'Intern / Trainee',
+        'kiosk'                     => 'Kiosk / Shared Workstation',
+        'lab_manager'               => 'Lab Manager',
+        'lab_scientist'             => 'Lab Scientist',
+        'lab_validator'             => 'Lab Result Validator',
+        'labtech'                   => 'Lab Technician',
+        'legal_admin'               => 'Legal Document Admin',
+        'lite_device'               => 'OpesCare Lite Device Account',
+        'lite_facility'             => 'OpesCare Lite Facility Account',
+        'lite_offline_sync'         => 'OpesCare Lite Offline Sync Account',
+        'lite_staff'                => 'OpesCare Lite Staff Account',
+        'medical_supervisor'        => 'Medical School Supervisor',
+        'medicine_stock'            => 'Medicine Stock Manager',
+        'midwife'                   => 'Midwife',
+        'mobile_clinic_team'        => 'Mobile Clinic Team',
+        'multi_doctor'              => 'Multi-Facility Doctor',
+        'ngo_admin'                 => 'Health Organization / NGO Admin',
+        'nurse'                     => 'Nurse',
+        'nurse_supervisor'          => 'Nurse Supervisor',
+        'outreach_team'             => 'Outreach Team',
+        'partner_technical'         => 'Partner Technical Contact',
+        'patient'                   => 'Patient Account',
+        'pharmacist'                => 'Pharmacist',
+        'pharmacy_manager'          => 'Pharmacy Manager',
+        'pharmacy_technician'       => 'Pharmacy Technician',
+        'platform_admin'            => 'Platform Owner',
+        'privacy_officer'           => 'Privacy Officer',
+        'product_admin'             => 'Product Admin',
+        'public_health_api'         => 'Public Health Reporting API Client',
+        'receptionist'              => 'Receptionist / Front Desk',
+        'reconciliation_officer'    => 'Reconciliation Officer',
+        'records_officer'           => 'Records Officer',
+        'resident'                  => 'Resident Doctor',
+        'sample_collection'         => 'Sample Collection Officer',
+        'sandbox_developer'         => 'Sandbox Developer',
+        'security_officer'          => 'Security Officer',
+        'specialist'                => 'Specialist Doctor',
+        'student_doctor'            => 'Student Doctor',
+        'student_nurse'             => 'Student Nurse',
+        'super_admin'               => 'Super Admin',
+        'system_admin'              => 'System Administrator',
+        'triage_nurse'              => 'Triage Nurse',
+        'visiting_doctor'           => 'Visiting Doctor',
+        'ward_nurse'                => 'Ward Nurse',
+        'webhook_manager'           => 'Webhook Manager',
+    ],
 ];

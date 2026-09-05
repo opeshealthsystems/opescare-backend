@@ -30,8 +30,29 @@
     <div class="sidebar-overlay" id="sidebar-overlay" aria-hidden="true"></div>
 
     @php
-        $sidebarProfileKey  = auth()->user()?->role?->dashboard_profile_key ?? 'patient';
-        $sidebarRoleLabel   = auth()->user()?->role?->description ?? (auth()->user()?->roleName() ?? 'Portal');
+        $sidebarRole        = auth()->user()?->role;
+        $sidebarProfileKey  = $sidebarRole?->dashboard_profile_key ?? 'patient';
+
+        /*
+         * The role label shown in the brand-sub, the sidebar footer and the
+         * topbar — three places on every portal page, in every role.
+         *
+         * It used to be `roles.description` straight off the table. That is a
+         * database column, so it is English and only English: a French-speaking
+         * visiting doctor read "Visiting Doctor" three times per page while the
+         * badge between those two lines said "Médecin vacataire", which
+         * lang/fr/ had been carrying all along. `portal.role_name.*` is keyed
+         * by the role slug and translated on both sides.
+         *
+         * The column stays as the fallback, on purpose: a role seeded into the
+         * table with no lang entry yet should read as its stored English name,
+         * not as a blank sidebar and not as a slug.
+         */
+        $sidebarRoleKey     = $sidebarRole?->name;
+        $sidebarRoleLabel   = $sidebarRoleKey && \Illuminate\Support\Facades\Lang::has('portal.role_name.' . $sidebarRoleKey)
+            ? __('portal.role_name.' . $sidebarRoleKey)
+            : ($sidebarRole?->description ?? (auth()->user()?->roleName() ?? 'Portal'));
+
         $topbarFacilityName = auth()->user()?->primaryFacility?->name;
     @endphp
 

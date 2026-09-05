@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Mobile;
 use App\Http\Controllers\Controller;
 use App\Models\ConsentGrant;
 use App\Modules\Governance\Services\AccessLogService;
+use App\Support\PatientVocabulary;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -322,6 +323,9 @@ class MobileConsentLedgerController extends Controller
 
         $revokeBlock = $this->revokeBlock($state, $userId, $locale);
 
+        $scopes  = PatientVocabulary::scopes($grant->scope, $locale);
+        $purpose = PatientVocabulary::purpose($request?->purpose, $locale);
+
         return [
             // The id POST /api/mobile/consents/{id}/revoke takes. Named
             // `consent_grant_id` as well as `id` so no client has to guess
@@ -354,6 +358,28 @@ class MobileConsentLedgerController extends Controller
 
             'scope'   => is_array($grant->scope) ? array_values($grant->scope) : [],
             'purpose' => $request?->purpose,
+
+            // ── The same codes, in words ─────────────────────────────────
+            //
+            // `scope` above is the stored vocabulary and stays exactly as
+            // stored. What the patient READS is resolved here, out of the same
+            // lang files and the same allow-list the clinician's picker is
+            // built from, so `patient.summary` reaches this screen as "Record
+            // summary" / "Résumé du dossier" rather than as itself.
+            //
+            // This column really does hold values from outside that vocabulary
+            // — `patients:read`, the B2B Connect token scope, is in the table
+            // today — and those are the ones that matter most. PatientVocabulary
+            // marks them `recognised: false`, hands back the raw code as its
+            // own label, and sets `scope_note` to say OpesCare has no name for
+            // it and to ask what it covers. Title-casing it into "Patients:
+            // Read" would be a guess about how much of a medical record
+            // somebody can open, on the screen where the patient decides
+            // whether to let them keep opening it.
+            'scope_items'   => $scopes['items'],
+            'scope_note'    => $scopes['note'],
+            'purpose_label' => $purpose['label'] ?? null,
+            'purpose_note'  => $purpose['note'] ?? null,
 
             // WHY this grant exists at all. `facility_policy` is the one a
             // patient most needs to see: it was not granted by them.
