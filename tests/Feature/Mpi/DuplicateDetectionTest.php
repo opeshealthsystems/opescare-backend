@@ -116,8 +116,11 @@ class DuplicateDetectionTest extends MpiTestCase
         [$score, $reasons] = $this->mpi->scoreMatch($a, $b);
 
         $this->assertContains('phone_differs', $reasons);
-        // name 40 + dob 20 + sex 10 − phone 15 = 55: the reviewer never sees it.
-        $this->assertLessThan(MasterPatientIndexService::MATCH_THRESHOLD, $score);
+        // name 40 + dob 20 + sex 10 − phone 5 = 65. On the desk as "possible",
+        // with the mismatch shown: two phones for one person is ordinary here,
+        // and the one confirmed duplicate on production is exactly this shape.
+        $this->assertSame(65.0, $score);
+        $this->assertSame('possible', MasterPatientIndexService::tierFor($score));
     }
 
     public function test_an_estimated_date_of_birth_is_worth_less(): void

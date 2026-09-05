@@ -80,7 +80,15 @@ final class MasterPatientIndexService
     private const W_IDENTIFIER    = 50.0;
 
     // Contradiction. A field both records fill in differently.
-    private const P_PHONE_DIFFERS       = -15.0;
+    //
+    // A phone mismatch is deliberately MILD. A person has one sex and one date
+    // of birth, but in a dual-SIM market — where this platform's own payment
+    // rails assume an MTN line and an Orange line — two phones for one person
+    // is ordinary. The first calibration used -15 and scored the one confirmed
+    // duplicate on production at 55: name, DOB and sex all matched and the
+    // desk never saw it. The chip still says "phones differ"; the reviewer
+    // weighs it, the score does not.
+    private const P_PHONE_DIFFERS       = -5.0;
     private const P_DOB_DIFFERS         = -25.0;
     private const P_SEX_DIFFERS         = -30.0;
     private const P_NATIONAL_ID_DIFFERS = -40.0;
