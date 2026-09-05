@@ -324,6 +324,7 @@ return [
     'mfa_setup_required' => 'La configuration de l\'authentification multifacteur est requise pour ce rôle. Contactez un administrateur pour finaliser l\'inscription avant de vous connecter.',
     'auth_code_invalid' => 'Le code d\'authentification est invalide.',
     'patient_identity_duplicate' => 'Un dossier correspondant à cette identité existe déjà dans notre registre maître des patients. Veuillez contacter l\'assistance pour récupérer votre identifiant santé existant.',
+    'family_member_already_registered' => 'Cette personne possède déjà un identifiant santé OpesCare. Invitez-la plutôt : l’invitation lui demande son accord, seul moyen pour que le dossier d’une personne devienne visible par une autre.',
     'developer_request_submitted' => 'Votre demande API/développeur a été soumise. Notre comité d\'interopérabilité examinera les portées de votre système.',
     'staff_account_activated' => 'Votre compte personnel sécurisé a été activé. Vous pouvez maintenant vous connecter.',
     'authentication_complete' => 'Authentification terminée. Bienvenue sur OpesCare.',

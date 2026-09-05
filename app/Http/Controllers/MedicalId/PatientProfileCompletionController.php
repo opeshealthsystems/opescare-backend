@@ -59,6 +59,19 @@ class PatientProfileCompletionController extends Controller
             'emergency_phone'        => 'nullable|string|max:30',
         ]);
 
+        // A signed-in user completing their profile is the LAST place a second
+        // Health ID for the same human should appear, because the person is
+        // already known to the platform — they just arrived under a different
+        // account. Refuse and send them to Health ID recovery rather than
+        // attaching this account to the record we found: linking a login to an
+        // existing medical record on a name+dob match is a probabilistic merge,
+        // and the platform contract says an uncertain match is a human's call.
+        if (Patient::findExistingIdentity($data['first_name'], $data['last_name'], $data['dob'], $data['phone'])) {
+            return back()->withInput()->withErrors([
+                'first_name' => __('flash.patient_identity_duplicate'),
+            ]);
+        }
+
         $patient = DB::transaction(function () use ($data, $user) {
             // The country code is the Health ID prefix. It is a deployment
             // property of the platform, not something a patient types into a

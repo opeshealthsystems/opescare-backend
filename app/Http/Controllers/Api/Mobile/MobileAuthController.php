@@ -223,7 +223,7 @@ class MobileAuthController extends Controller
         // phone_number is stored encrypted (see Patient::setPhoneNumberAttribute), so
         // uniqueness can't be checked via a `unique:patients,phone_number` validation
         // rule — it has to go through the keyed-hash lookup like every other phone match.
-        if (Patient::findByPhone($data['phone'])) {
+        if (Patient::findExistingIdentity(null, null, null, $data['phone'])) {
             return response()->json(['message' => __('api.phone_already_registered')], 409);
         }
 
@@ -231,16 +231,12 @@ class MobileAuthController extends Controller
         // as a conflict so the app can point the patient at existing-Health-ID recovery
         // instead of silently creating a second identity for the same person).
         //
-        // date_of_birth is stored via Laravel's encrypter (random IV per value, see
-        // Patient::getDateOfBirthAttribute), so a raw `where('date_of_birth', ...)`
-        // comparison against ciphertext can never match — narrow by name in SQL, then
-        // decrypt each same-name candidate's DOB in PHP to compare.
-        $duplicate = Patient::where('first_name', $data['first_name'])
-            ->where('last_name', $data['last_name'])
-            ->get()
-            ->contains(fn (Patient $candidate) => $candidate->date_of_birth?->toDateString() === $data['dob']);
-
-        if ($duplicate) {
+        // The comparison lives in Patient::findExistingIdentity(): it ignores the demo
+        // partition (a person on the other side of it is still that person), normalises
+        // the submitted date before comparing, and matches names case- and
+        // whitespace-insensitively. The version inlined here did none of those, and
+        // production carries two Health IDs for one human as a result.
+        if (Patient::findExistingIdentity($data['first_name'], $data['last_name'], $data['dob'])) {
             return response()->json(['message' => __('flash.patient_identity_duplicate')], 409);
         }
 

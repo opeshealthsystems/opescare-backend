@@ -324,6 +324,7 @@ return [
     'mfa_setup_required' => 'Multi-factor authentication setup is required for this role. Contact an administrator to complete enrollment before signing in.',
     'auth_code_invalid' => 'The authentication code is invalid.',
     'patient_identity_duplicate' => 'A record matching this identity already exists in our master patient registry. Please contact assistance to recover your existing Health ID.',
+    'family_member_already_registered' => 'This person already has a Health ID on OpesCare. Invite them instead — inviting asks them to agree, which is the only way one person\'s record becomes visible to another.',
     'developer_request_submitted' => 'Your API/developer request has been submitted. Our interoperability panel will review your system scopes.',
     'staff_account_activated' => 'Your secure staff account has been activated. You may now sign in.',
     'authentication_complete' => 'Authentication complete. Welcome to OpesCare.',

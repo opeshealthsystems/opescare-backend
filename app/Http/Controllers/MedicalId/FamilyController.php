@@ -54,6 +54,16 @@ class FamilyController extends Controller
             'access_level' => 'required|in:full,read_only',
         ]);
 
+        // Someone who already holds a Health ID must not be given a second one
+        // as a dependent. The invite flow (sendInvite/acceptInvite) is the path
+        // for a person who already exists — it asks THEM, which is the only way
+        // one person's record may become visible to another.
+        if (Patient::findExistingIdentity($data['first_name'], $data['last_name'], $data['date_of_birth'])) {
+            return back()->withInput()->withErrors([
+                'first_name' => __('flash.family_member_already_registered'),
+            ]);
+        }
+
         $gen         = new HealthIdGeneratorService();
         $countryCode = Auth::user()?->patient?->country_code ?? 'CM';
 

@@ -241,6 +241,95 @@ class Patient extends Model
     /**
      * Find a patient by phone number using the keyed hash (efficient, encrypted-safe lookup).
      */
+    /**
+     * Does a human with this identity already hold a Health ID?
+     *
+     * ─────────────────────────────────────────────────────────────────────
+     * WHY THIS IS ONE FUNCTION, AND WHY IT IGNORES THE DEMO SCOPE
+     * ─────────────────────────────────────────────────────────────────────
+     *
+     * Four places create a patient — mobile registration, web signup, the two
+     * family screens, and profile completion. Only registration checked for a
+     * duplicate at all, and its check had three ways to miss:
+     *
+     *  1. IT RAN INSIDE THE DEMO PARTITION. `IsDemoRecord` splits this table
+     *     in two and every plain `Patient::where()` sees only its own half.
+     *     "Does this person already exist?" is not a question about the half
+     *     of the register this request may browse — it is a question about
+     *     the register. Asked scoped, a person on the other side of the
+     *     partition returns zero rows, which is indistinguishable from "no
+     *     duplicate". A silent miss on an identity check mints a second
+     *     Health ID for a human who already had one.
+     *
+     *  2. IT COMPARED THE RAW REQUEST STRING TO A NORMALISED DATE.
+     *     `'dob' => 'required|date'` accepts `1990-01-01`, `01/01/1990`,
+     *     `1990-01-01T00:00:00.000Z` and `January 1, 1990` — all the same
+     *     day, none of them string-equal to `->toDateString()`. The stored
+     *     value is normalised on the way in, so the comparison has to
+     *     normalise on the way out too, or three of those four formats walk
+     *     straight past the guard.
+     *
+     *  3. IT MATCHED NAMES EXACTLY. Postgres `=` is case- and
+     *     whitespace-sensitive, so "jude", "Jude " and "Jude" are three
+     *     different people to it and one person to everyone else.
+     *
+     * `date_of_birth` is encrypted with a random IV per value, so it cannot
+     * be compared in SQL at all: narrow by name in the database, decrypt the
+     * handful of same-name candidates in PHP. Names are the only axis coarse
+     * enough to filter on and cheap enough to decrypt behind.
+     *
+     * Returning the match rather than a boolean lets a caller decide between
+     * refusing, linking, or sending the person to Health ID recovery. This
+     * NEVER merges anything: per the platform contract, an uncertain match is
+     * a human's decision.
+     *
+     * @param  string|null  $dob    any format Laravel's `date` rule accepts
+     * @param  string|null  $phone  raw; hashed here, never compared in clear
+     */
+    public static function findExistingIdentity(
+        ?string $firstName,
+        ?string $lastName,
+        ?string $dob = null,
+        ?string $phone = null,
+    ): ?static {
+        // A phone number is the strongest signal here — it is a keyed hash, so
+        // this is an exact lookup and needs no name at all.
+        if ($phone !== null && trim($phone) !== '') {
+            $byPhone = static::withoutGlobalScope('isolate_demo')
+                ->where('phone_number_hash', static::phoneHash($phone))
+                ->first();
+
+            if ($byPhone) {
+                return $byPhone;
+            }
+        }
+
+        if ($firstName === null || $lastName === null || $dob === null) {
+            return null;
+        }
+
+        try {
+            $target = Carbon::parse($dob)->toDateString();
+        } catch (\Throwable) {
+            // Unparseable input is the validator's problem, not this guard's.
+            return null;
+        }
+
+        return static::withoutGlobalScope('isolate_demo')
+            ->whereRaw('lower(btrim(first_name)) = ?', [mb_strtolower(trim($firstName))])
+            ->whereRaw('lower(btrim(last_name)) = ?', [mb_strtolower(trim($lastName))])
+            ->get()
+            ->first(function (self $candidate) use ($target) {
+                try {
+                    return $candidate->date_of_birth?->toDateString() === $target;
+                } catch (\Throwable) {
+                    // A row we cannot decrypt cannot be ruled a match; say so by
+                    // skipping it rather than by throwing the registration away.
+                    return false;
+                }
+            });
+    }
+
     public static function findByPhone(string $phone): ?static
     {
         return static::where('phone_number_hash', static::phoneHash($phone))->first();

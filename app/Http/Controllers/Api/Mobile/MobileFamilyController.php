@@ -70,6 +70,13 @@ class MobileFamilyController extends Controller
         $firstName = $nameParts[0];
         $lastName  = $nameParts[1] ?? '';
 
+        // Same rule as the web family screen: a person who already holds a
+        // Health ID is invited, not re-created. Auto-linking them here would
+        // hand one person's record to another on a name+dob guess.
+        if (Patient::findExistingIdentity($firstName, $lastName, $data['date_of_birth'], $data['phone'] ?? null)) {
+            return response()->json(['message' => __('flash.family_member_already_registered')], 409);
+        }
+
         $gen         = new HealthIdGeneratorService();
         $countryCode = $user->patient?->country_code ?? 'CM';
 
