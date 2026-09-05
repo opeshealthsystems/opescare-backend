@@ -461,6 +461,35 @@ Route::middleware(['web', 'auth', 'throttle:portal'])->group(function () {
     Route::delete('/portals/listing/services/{service}', [\App\Http\Controllers\CareMap\FacilityListingController::class, 'destroyService'])->name('portals.listing.services.destroy');
 });
 
+/*
+ * Legal & compliance desk.
+ *
+ * LegalAdminController shipped with nine admin methods, five Blade views and
+ * all 94 of its EN/FR strings — and no routes. `route:list --path=legal`
+ * returned only the two PUBLIC pages, so every admin screen here
+ * (closure requests, privacy complaints, minor transitions, the document
+ * publisher) was unreachable: not URL-only, but with no URL at all. The
+ * closures table even carried an empty `row-actions` cell where its
+ * approve/reject buttons belonged.
+ *
+ * That is the wiring the fork dropped, not a feature being re-added — the
+ * controller, the views and the translations were all already here.
+ */
+Route::middleware(['web', 'auth', 'platform.admin'])->group(function () {
+    Route::get('/admin/legal',                          [\App\Http\Controllers\MedicalId\LegalAdminController::class, 'index'])->name('portals.admin.legal.index');
+    Route::post('/admin/legal',                         [\App\Http\Controllers\MedicalId\LegalAdminController::class, 'store'])->name('portals.admin.legal.store');
+    Route::get('/admin/legal/documents/{document}',     [\App\Http\Controllers\MedicalId\LegalAdminController::class, 'show'])->name('portals.admin.legal.show');
+    Route::post('/admin/legal/documents/{document}/versions', [\App\Http\Controllers\MedicalId\LegalAdminController::class, 'publishVersion'])->name('portals.admin.legal.versions.publish');
+
+    Route::get('/admin/legal/closures',                 [\App\Http\Controllers\MedicalId\LegalAdminController::class, 'closureRequests'])->name('portals.admin.legal.closures');
+    Route::post('/admin/legal/closures/{closure}/review', [\App\Http\Controllers\MedicalId\LegalAdminController::class, 'reviewClosure'])->name('portals.admin.legal.closures.review');
+
+    Route::get('/admin/legal/complaints',               [\App\Http\Controllers\MedicalId\LegalAdminController::class, 'privacyComplaints'])->name('portals.admin.legal.complaints');
+    Route::post('/admin/legal/complaints/{complaint}/resolve', [\App\Http\Controllers\MedicalId\LegalAdminController::class, 'resolveComplaint'])->name('portals.admin.legal.complaints.resolve');
+
+    Route::get('/admin/legal/minor-transitions',        [\App\Http\Controllers\MedicalId\LegalAdminController::class, 'minorTransitions'])->name('portals.admin.legal.minor_transitions');
+});
+
 Route::middleware(['web', 'auth', 'platform.admin'])->group(function () {
     Route::get('/admin/care-map/review', [\App\Http\Controllers\MedicalId\AdminDirectoryReviewController::class, 'index'])->name('admin.care-map.review');
 

@@ -41,7 +41,46 @@
                             <span class="badge badge--{{ $c->statusColor() }} badge-sm">@enum($c->status)</span>
                         </td>
                         <td data-label="{{ __('public.adm_legal_complaints_col_received') }}" class="td-muted">{{ $c->created_at->format('d M Y') }}</td>
-                        <td class="row-actions"></td>
+                        {{--
+                            Empty cell, same as the closures table: the column,
+                            the controller action and the button string all
+                            existed with nothing rendering a control.
+
+                            Resolving takes WORDS, not a click — the controller
+                            requires 10 characters minimum — so this is a
+                            disclosure with a textarea rather than a bare
+                            button. A privacy complaint closed with no account
+                            of what was done is the one thing a regulator will
+                            ask to see and the one thing that would not be
+                            there.
+
+                            Already-resolved rows get no form: `resolved_at`
+                            and the resolution text are the record, and a
+                            second submission would quietly overwrite the first
+                            with no history of the change.
+                        --}}
+                        <td class="row-actions">
+                            @if(! in_array($c->status, ['resolved', 'closed'], true))
+                                <details class="inline-disclosure">
+                                    <summary class="btn btn-secondary btn-sm">
+                                        <i data-lucide="check-circle"></i> {{ __('public.adm_legal_complaints_btn_resolve') }}
+                                    </summary>
+                                    <form method="POST" action="{{ route('portals.admin.legal.complaints.resolve', $c->id) }}" class="stack-form"
+                                          onsubmit="return confirm('{{ __('public.adm_legal_complaints_confirm_resolve') }}')">
+                                        @csrf
+                                        <label class="form-label" for="resolution-{{ $c->id }}">{{ __('public.adm_legal_complaints_resolution_label') }}</label>
+                                        <textarea id="resolution-{{ $c->id }}" name="resolution" class="form-control" rows="4"
+                                                  minlength="10" maxlength="1000" required></textarea>
+                                        <p class="form-hint">{{ __('public.adm_legal_complaints_resolution_hint') }}</p>
+                                        <button type="submit" class="btn btn-success btn-sm">
+                                            <i data-lucide="check"></i> {{ __('public.adm_legal_complaints_btn_resolve') }}
+                                        </button>
+                                    </form>
+                                </details>
+                            @else
+                                <span class="td-muted">&mdash;</span>
+                            @endif
+                        </td>
                     </tr>
                 @empty
                     <tr><td colspan="6" class="td-muted empty-cell">{{ __('public.adm_legal_complaints_empty') }}</td></tr>

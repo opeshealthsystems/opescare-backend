@@ -42,7 +42,47 @@
                             <span class="badge badge--{{ $req->statusColor() }} badge-sm">@enum($req->status)</span>
                         </td>
                         <td data-label="{{ __('public.adm_legal_closures_col_requested') }}" class="td-muted">{{ $req->created_at->format('d M Y') }}</td>
-                        <td class="row-actions"></td>
+                        {{--
+                            The cell was empty: the column, the controller
+                            action and both button strings all existed, and
+                            nothing ever rendered a control into it.
+
+                            Only a request still awaiting review gets buttons.
+                            `account_closure_requests` is shared with the
+                            patient-facing self-service deletion flow
+                            (App\Services\Compliance\AccountDeletionService),
+                            which moves rows through
+                            pending → cancelled/completed/purged on the
+                            patient's own authority. Those are not this desk's
+                            to approve, and an approve button on a row the
+                            patient already cancelled would be a way to
+                            un-cancel it.
+
+                            Approve is the destructive half — it is what puts a
+                            person's record on the path to deletion — so it
+                            confirms; reject does not.
+                        --}}
+                        <td class="row-actions">
+                            @if($req->status === 'pending')
+                                <form method="POST" action="{{ route('portals.admin.legal.closures.review', $req->id) }}" class="inline-form"
+                                      onsubmit="return confirm('{{ __('public.adm_legal_closures_confirm_approve') }}')">
+                                    @csrf
+                                    <input type="hidden" name="action" value="approve">
+                                    <button type="submit" class="btn btn-success btn-sm">
+                                        <i data-lucide="check"></i> {{ __('public.adm_legal_closures_btn_approve') }}
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ route('portals.admin.legal.closures.review', $req->id) }}" class="inline-form">
+                                    @csrf
+                                    <input type="hidden" name="action" value="reject">
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        <i data-lucide="x"></i> {{ __('public.adm_legal_closures_btn_reject') }}
+                                    </button>
+                                </form>
+                            @else
+                                <span class="td-muted">—</span>
+                            @endif
+                        </td>
                     </tr>
                 @empty
                     <tr><td colspan="7" class="td-muted empty-cell">{{ __('public.adm_legal_closures_empty') }}</td></tr>

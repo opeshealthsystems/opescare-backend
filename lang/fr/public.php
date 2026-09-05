@@ -4896,6 +4896,8 @@ return [
     'adm_legal_complaints_col_received'      => 'Reçue le',
     'adm_legal_complaints_confirm_resolve'   => 'Marquer comme résolu ?',
     'adm_legal_complaints_btn_resolve'       => 'Résoudre',
+    'adm_legal_complaints_resolution_label' => 'Comment la plainte a-t-elle été traitée ?',
+    'adm_legal_complaints_resolution_hint' => 'Ce qui a été examiné, ce qui a été constaté et ce qui a été communiqué au plaignant. Consigné avec la plainte et consultable ultérieurement par un régulateur.',
     'adm_legal_complaints_empty'             => 'Aucune plainte relative à la vie privée.',
 
     // Admin – Transitions des mineurs

@@ -72,6 +72,30 @@
     </a>
 </div>
 
+{{-- Compliance --}}
+<div class="sidebar-nav-section">
+    <div class="sidebar-nav-label">{{ __('public.portal.nav_compliance', [], $l) ?: 'Compliance' }}</div>
+    <a href="{{ route('portals.admin.legal.index') }}" class="sidebar-link {{ request()->routeIs('portals.admin.legal.index') || request()->routeIs('portals.admin.legal.show') || request()->routeIs('portals.admin.legal.store') || request()->routeIs('portals.admin.legal.versions.*') ? 'active' : '' }}">
+        <i data-lucide="scale"></i><span>{{ __('public.adm_legal_page_title', [], $l) ?: 'Legal Documents' }}</span>
+    </a>
+    <a href="{{ route('portals.admin.legal.closures') }}" class="sidebar-link {{ request()->routeIs('portals.admin.legal.closures*') ? 'active' : '' }}">
+        <i data-lucide="user-x"></i><span>{{ __('public.adm_legal_btn_closures', [], $l) ?: 'Closure Requests' }}</span>
+        {{-- Only requests still awaiting a human. The patient-facing deletion
+             flow writes pending/cancelled/completed/purged and never 'pending'
+             review, so this counts exactly what this desk has to act on. --}}
+        @php $pendingClosures = rescue(fn () => \App\Models\AccountClosureRequest::where('status', 'pending')->count(), 0, false); @endphp
+        @if($pendingClosures > 0)<span class="sidebar-badge sidebar-badge--warning">{{ $pendingClosures }}</span>@endif
+    </a>
+    <a href="{{ route('portals.admin.legal.complaints') }}" class="sidebar-link {{ request()->routeIs('portals.admin.legal.complaints*') ? 'active' : '' }}">
+        <i data-lucide="message-square-warning"></i><span>{{ __('public.adm_legal_btn_complaints', [], $l) ?: 'Privacy Complaints' }}</span>
+        @php $openComplaints = rescue(fn () => \App\Models\PrivacyComplaint::whereIn('status', ['open', 'investigating'])->count(), 0, false); @endphp
+        @if($openComplaints > 0)<span class="sidebar-badge sidebar-badge--warning">{{ $openComplaints }}</span>@endif
+    </a>
+    <a href="{{ route('portals.admin.legal.minor_transitions') }}" class="sidebar-link {{ request()->routeIs('portals.admin.legal.minor_transitions*') ? 'active' : '' }}">
+        <i data-lucide="user-round-cog"></i><span>{{ __('public.adm_legal_btn_minor_transitions', [], $l) ?: 'Minor Transitions' }}</span>
+    </a>
+</div>
+
 {{-- Control Center --}}
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_control_center', [], $l) ?: 'Control Center' }}</div>

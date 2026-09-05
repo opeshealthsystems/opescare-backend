@@ -4645,6 +4645,8 @@ return [
     'adm_legal_complaints_col_received'      => 'Received',
     'adm_legal_complaints_confirm_resolve'   => 'Mark as resolved?',
     'adm_legal_complaints_btn_resolve'       => 'Resolve',
+    'adm_legal_complaints_resolution_label' => 'How was it resolved?',
+    'adm_legal_complaints_resolution_hint' => 'What was investigated, what was found, and what the complainant was told. Recorded against the complaint and readable later by a regulator.',
     'adm_legal_complaints_empty'             => 'No privacy complaints on file.',
 
     // Admin – Legal minor transitions
