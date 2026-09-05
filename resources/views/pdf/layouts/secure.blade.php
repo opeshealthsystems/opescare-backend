@@ -72,7 +72,7 @@
         .brand-kicker { font-size: 7px; color: #EADFC8; text-transform: uppercase; letter-spacing: 1.6px; margin-top: 1.5px; }
         .head-doc { text-align: right; }
         .head-doc .type { font-size: 12.5px; font-weight: bold; color: #FFFFFF; line-height: 1.15; }
-        .head-doc .meta { font-size: 7.5px; color: #C9D3E3; margin-top: 2px; }
+        .head-doc .meta { font-size: 7.2px; color: #C9D3E3; margin-top: 2px; white-space: nowrap; }
         .head-doc .meta b { color: #FFFFFF; font-weight: normal; }
         .head-seal img { width: 17mm; height: 17mm; }
 
@@ -150,7 +150,7 @@
     <table class="head-table">
         <tr>
             <td class="head-seal" style="width: 19mm;"><img src="{{ $seal }}" alt=""></td>
-            <td style="width: 70mm;">
+            <td style="width: 52mm;">
                 <div class="brand-word">{{ __('export.brand') }}</div>
                 <div class="brand-kicker">{{ __('export.secure_kicker') }}</div>
             </td>
