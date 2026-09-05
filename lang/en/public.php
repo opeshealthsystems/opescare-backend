@@ -645,7 +645,8 @@ return [
 
         // Role card labels
         'role_patient'        => 'Patient',
-        'role_patient_verified' => 'Patient — verified ID, full record',
+        'role_patient_verified' => 'Male patient — verified ID, full record',
+        'role_patient_provisional' => 'Female patient — provisional ID',
         'role_guardian'       => 'Guardian',
         'role_doctor'         => 'Doctor',
         'role_multi_doctor'   => 'Multi-Facility Doctor',

@@ -644,7 +644,8 @@ return [
         'common_password'     => 'Mot de passe démo commun',
 
         'role_patient'        => 'Patient',
-        'role_patient_verified' => 'Patient — identité vérifiée, dossier complet',
+        'role_patient_verified' => 'Patient (homme) — identité vérifiée, dossier complet',
+        'role_patient_provisional' => 'Patiente — identité provisoire',
         'role_guardian'       => 'Tuteur',
         'role_doctor'         => 'Médecin',
         'role_multi_doctor'   => 'Médecin multi-établissements',
