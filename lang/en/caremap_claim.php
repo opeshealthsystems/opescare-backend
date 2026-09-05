@@ -199,4 +199,17 @@ return [
     'error_import_no_match'   => 'There is no matched listing to merge into.',
     'error_generic'           => 'Something went wrong. Please try again.',
 
+
+    // ── Joining a listing to a facility (Unlinked listings tab) ──────
+    'tab_unlinked' => 'Unlinked listings',
+    'link_warning' => 'A directory listing that is not joined to a facility is invisible to every search for doctors, bookable appointments and connected services — the facility is in the directory and still cannot be found. Only pairs that share a name exactly, where the facility has no listing yet, are offered here. Check that these are the same institution before joining them.',
+    'link_none' => 'Every listing with an obvious partner is already joined.',
+    'link_col_listing' => 'Directory listing',
+    'link_col_facility' => 'Facility on the platform',
+    'link_col_action' => 'Join',
+    'link_action' => 'Join them',
+    'flash_listing_linked' => 'Listing joined to the facility. Its clinicians and bookable appointments are now findable.',
+    'error_link_not_offered' => 'That pairing is no longer offered. The desk only joins listings and facilities that share a name exactly and are both unattached — reload and check.',
+    'error_listing_already_linked' => 'That listing already belongs to a facility. A listing is a hospital’s public identity and is never moved from one facility to another here.',
+    'error_facility_already_listed' => 'That facility already has a directory listing. A second one would be a duplicate.',
 ];

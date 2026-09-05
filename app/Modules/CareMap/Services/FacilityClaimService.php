@@ -4,6 +4,7 @@ namespace App\Modules\CareMap\Services;
 
 use App\Enums\FacilityClaimStatus;
 use App\Models\CareFacility;
+use App\Models\Facility;
 use App\Models\FacilityClaim;
 use App\Models\FacilityRegistry;
 use App\Models\FacilityUpdateAudit;
@@ -358,6 +359,93 @@ class FacilityClaimService
      * the reason and asks for review — so an admin can finish it by hand
      * rather than wonder why nothing happened.
      */
+    /**
+     * Join a listing to a facility because an ADMIN said so.
+     *
+     * The claim path (below) can only finish a link when a claim exists to
+     * finish. Every listing that predates the claim flow — including, on
+     * production, the only hospital in the register that has a doctor — has
+     * no claim and never will, so without this there is no way to link one at
+     * all: not a screen, not a command, nothing. The gap was invisible because
+     * the symptom appears somewhere else entirely, in a patient's empty
+     * "Find a doctor".
+     *
+     * The admin names both sides, so the "which of this person's postings did
+     * they mean" question does not arise. The two refusals that are about the
+     * data rather than the actor still do:
+     *
+     *   - a listing that is already joined is never repointed, because a
+     *     directory listing is a hospital's public identity;
+     *   - a facility does not get a second listing, because that is how the
+     *     duplicate rows in this table got here.
+     *
+     * @throws \Exception LISTING_ALREADY_LINKED | FACILITY_ALREADY_LISTED
+     */
+    public function linkListingToFacility(string $listingId, string $facilityId, $adminId): CareFacility
+    {
+        $listing = CareFacility::findOrFail($listingId);
+
+        if ($listing->facility_id !== null) {
+            throw new \Exception('LISTING_ALREADY_LINKED');
+        }
+
+        // findOrFail so a bad id is a 404, not a silent link to nothing.
+        $facility = Facility::findOrFail($facilityId);
+
+        if (CareFacility::where('facility_id', $facility->id)->whereKeyNot($listing->id)->exists()) {
+            throw new \Exception('FACILITY_ALREADY_LISTED');
+        }
+
+        DB::transaction(function () use ($listing, $facility, $adminId): void {
+            $listing->update(['facility_id' => $facility->id]);
+
+            FacilityUpdateAudit::create([
+                'facility_id'     => $listing->id,
+                'actor_id'        => $adminId,
+                'actor_type'      => 'admin',
+                'field_changed'   => 'facility_id',
+                'old_value'       => null,
+                'new_value'       => (string) $facility->id,
+                'source'          => 'admin_directory_link',
+                'requires_review' => false,
+                'created_at'      => now(),
+            ]);
+        });
+
+        return $listing->refresh();
+    }
+
+    /**
+     * Unlinked listings that have an unambiguous partner waiting.
+     *
+     * Deliberately NOT a facility picker. A free search over 346 tenants on a
+     * screen whose whole job is deciding which hospital is which invites the
+     * mis-click this method exists to prevent, so the desk only offers pairs
+     * the data already agrees on: same name, and a facility that has no
+     * listing yet. Anything less obvious than that is a judgement the desk
+     * cannot help with and should not pretend to.
+     *
+     * @return \Illuminate\Support\Collection<int, object>
+     */
+    public function unlinkedListingsWithCandidate(int $limit = 100)
+    {
+        return collect(DB::select('
+            SELECT cf.id            AS listing_id,
+                   cf.facility_name AS listing_name,
+                   cf.city          AS listing_city,
+                   cf.facility_type AS listing_type,
+                   f.id             AS facility_id,
+                   f.name           AS facility_name,
+                   f.type           AS facility_type_tenant
+              FROM care_facilities cf
+              JOIN facilities f
+                ON lower(trim(f.name)) = lower(trim(cf.facility_name))
+             WHERE cf.facility_id IS NULL
+               AND NOT EXISTS (SELECT 1 FROM care_facilities x WHERE x.facility_id = f.id)
+             ORDER BY cf.facility_name
+             LIMIT ?', [$limit]));
+    }
+
     private function linkListingToClaimantFacility(CareFacility $listing, ?string $claimantId, $adminId): void
     {
         if ($listing->facility_id !== null || $claimantId === null) {

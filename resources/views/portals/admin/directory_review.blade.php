@@ -62,6 +62,11 @@
         <span>{{ __('caremap_claim.tab_imports') }}</span>
         <span class="dr-tab-count">{{ $pendingImportCount }}</span>
     </a>
+    <a href="{{ route('admin.care-map.review', ['tab' => 'unlinked']) }}" class="dr-tab {{ $tab === 'unlinked' ? 'active' : '' }}">
+        <i data-lucide="unlink"></i>
+        <span>{{ __('caremap_claim.tab_unlinked') }}</span>
+        <span class="dr-tab-count">{{ $unlinkedListings->count() }}</span>
+    </a>
 </div>
 
 @if($tab === 'claims')
@@ -196,6 +201,69 @@
                             </td>
                         </tr>
                     @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @endif
+
+@elseif($tab === 'unlinked')
+
+    {{-- ══ Unlinked listings ═════════════════════════════════════════════ --}}
+    {{--
+        `care_facilities.facility_id` is the only join between the public
+        directory and the operational facilities a clinician holds a posting
+        at. A listing without it is invisible to every "has doctors",
+        "bookable" and "connected" question the app asks — the facility is in
+        the directory and still cannot be found. Approving a claim now fills
+        it in, but a listing that predates the claim flow has no claim to
+        approve, and this is the only place that join can be made by hand.
+    --}}
+    <div class="alert alert-warning mb-6">
+        <i data-lucide="shield-alert"></i>
+        <div>{{ __('caremap_claim.link_warning') }}</div>
+    </div>
+
+    @if($unlinkedListings->isEmpty())
+        <div class="panel">
+            <div class="empty-state">
+                <i data-lucide="check-circle"></i>
+                <p>{{ __('caremap_claim.link_none') }}</p>
+            </div>
+        </div>
+    @else
+        <div class="panel">
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>{{ __('caremap_claim.link_col_listing') }}</th>
+                            <th>{{ __('caremap_claim.link_col_facility') }}</th>
+                            <th>{{ __('caremap_claim.link_col_action') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($unlinkedListings as $row)
+                            <tr>
+                                <td data-label="{{ __('caremap_claim.link_col_listing') }}">
+                                    <div class="td-strong">{{ $row->listing_name }}</div>
+                                    <div class="td-muted">{{ $row->listing_city }} · {{ $row->listing_type }}</div>
+                                </td>
+                                <td data-label="{{ __('caremap_claim.link_col_facility') }}">
+                                    <div class="td-strong">{{ $row->facility_name }}</div>
+                                    <div class="td-muted">{{ $row->facility_type_tenant }}</div>
+                                </td>
+                                <td class="row-actions" data-label="{{ __('caremap_claim.link_col_action') }}">
+                                    <form method="POST" action="{{ route('admin.care-map.review.listings.link', $row->listing_id) }}" class="inline-form">
+                                        @csrf
+                                        <input type="hidden" name="facility_id" value="{{ $row->facility_id }}">
+                                        <button type="submit" class="btn btn-success btn-sm">
+                                            <i data-lucide="link"></i> {{ __('caremap_claim.link_action') }}
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
                     </tbody>
                 </table>
             </div>

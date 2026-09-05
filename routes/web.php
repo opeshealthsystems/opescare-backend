@@ -468,6 +468,8 @@ Route::middleware(['web', 'auth', 'platform.admin'])->group(function () {
     Route::post('/admin/care-map/review/claims/{claim}/reject',  [\App\Http\Controllers\MedicalId\AdminDirectoryReviewController::class, 'rejectClaim'])->name('admin.care-map.review.claims.reject');
     Route::post('/admin/care-map/review/claims/{claim}/revoke',  [\App\Http\Controllers\MedicalId\AdminDirectoryReviewController::class, 'revokeClaim'])->name('admin.care-map.review.claims.revoke');
 
+    Route::post('/admin/care-map/review/listings/{listing}/link',   [\App\Http\Controllers\MedicalId\AdminDirectoryReviewController::class, 'linkListing'])->name('admin.care-map.review.listings.link');
+
     Route::post('/admin/care-map/review/imports/{review}/accept', [\App\Http\Controllers\MedicalId\AdminDirectoryReviewController::class, 'acceptImport'])->name('admin.care-map.review.imports.accept');
     Route::post('/admin/care-map/review/imports/{review}/merge',  [\App\Http\Controllers\MedicalId\AdminDirectoryReviewController::class, 'mergeImport'])->name('admin.care-map.review.imports.merge');
     Route::post('/admin/care-map/review/imports/{review}/reject', [\App\Http\Controllers\MedicalId\AdminDirectoryReviewController::class, 'rejectImport'])->name('admin.care-map.review.imports.reject');

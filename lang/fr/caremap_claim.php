@@ -199,4 +199,17 @@ return [
     'error_import_no_match'   => 'Il n\'y a aucune fiche correspondante avec laquelle fusionner.',
     'error_generic'           => 'Une erreur est survenue. Veuillez réessayer.',
 
+
+    // ── Joining a listing to a facility (Unlinked listings tab) ──────
+    'tab_unlinked' => 'Fiches non rattachées',
+    'link_warning' => 'Une fiche du répertoire qui n’est rattachée à aucun établissement reste invisible pour toute recherche de médecins, de rendez-vous réservables et de services connectés : l’établissement figure dans le répertoire et demeure introuvable. Seules les paires portant exactement le même nom, dont l’établissement n’a pas encore de fiche, sont proposées ici. Vérifiez qu’il s’agit bien de la même institution avant de les rattacher.',
+    'link_none' => 'Toutes les fiches ayant une correspondance évidente sont déjà rattachées.',
+    'link_col_listing' => 'Fiche du répertoire',
+    'link_col_facility' => 'Établissement sur la plateforme',
+    'link_col_action' => 'Rattacher',
+    'link_action' => 'Les rattacher',
+    'flash_listing_linked' => 'Fiche rattachée à l’établissement. Ses cliniciens et ses rendez-vous réservables sont désormais trouvables.',
+    'error_link_not_offered' => 'Cette correspondance n’est plus proposée. Le bureau ne rattache que les fiches et les établissements portant exactement le même nom et tous deux non rattachés — rechargez et vérifiez.',
+    'error_listing_already_linked' => 'Cette fiche appartient déjà à un établissement. Une fiche est l’identité publique d’un hôpital et n’est jamais transférée d’un établissement à un autre ici.',
+    'error_facility_already_listed' => 'Cet établissement possède déjà une fiche dans le répertoire. Une seconde serait un doublon.',
 ];

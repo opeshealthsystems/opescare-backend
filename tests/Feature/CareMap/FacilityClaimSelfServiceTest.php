@@ -804,4 +804,132 @@ class FacilityClaimSelfServiceTest extends TestCase
         ];
     }
 
+
+    // ─── 10. The admin desk that joins a listing to a facility ──────────────
+    //
+    // The claim path can only finish a link when a claim exists to finish.
+    // Every listing that predates the claim flow has none and never will, so
+    // without this desk there is no way to join one at all — and an unjoined
+    // listing is invisible to every "has doctors / bookable / connected"
+    // query, which is how a hospital ends up in the directory and still
+    // unfindable.
+
+    /** A listing and a facility that share a name exactly — the offered pair. */
+    private function offeredPair(string $name = 'Hôpital Central de Test'): array
+    {
+        return [$this->listing(['facility_name' => $name]), $this->tenant($name)];
+    }
+
+    public function test_an_admin_can_join_an_offered_listing_to_its_facility(): void
+    {
+        [$listing, $tenant] = $this->offeredPair();
+        $admin = $this->platformAdmin();
+
+        $response = $this->actingAs($admin)
+            ->from(route('admin.care-map.review', ['tab' => 'unlinked']))
+            ->post(route('admin.care-map.review.listings.link', $listing->id), [
+                'facility_id' => $tenant->id,
+            ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+
+        $listing->refresh();
+        $this->assertSame((string) $tenant->id, (string) $listing->facility_id);
+
+        $this->assertDatabaseHas('facility_update_audits', [
+            'facility_id'   => $listing->id,
+            'actor_id'      => $admin->id,
+            'field_changed' => 'facility_id',
+            'new_value'     => (string) $tenant->id,
+            'source'        => 'admin_directory_link',
+        ]);
+    }
+
+    public function test_the_desk_lists_the_pair_and_stops_listing_it_once_joined(): void
+    {
+        [$listing, $tenant] = $this->offeredPair('Clinique Trouvable');
+        $admin = $this->platformAdmin();
+
+        $this->actingAs($admin)
+            ->get(route('admin.care-map.review', ['tab' => 'unlinked']))
+            ->assertOk()
+            ->assertSee('Clinique Trouvable');
+
+        $this->claims->linkListingToFacility($listing->id, $tenant->id, $admin->id);
+
+        $this->actingAs($admin)
+            ->get(route('admin.care-map.review', ['tab' => 'unlinked']))
+            ->assertOk()
+            ->assertDontSee('Clinique Trouvable');
+    }
+
+    public function test_a_facility_id_the_desk_never_offered_is_refused(): void
+    {
+        [$listing] = $this->offeredPair();
+
+        // A real facility, but not the one paired with this listing. Without
+        // the candidate check the form would be an "attach any listing to any
+        // facility" endpoint wearing a one-click button's clothes.
+        $unrelated = $this->tenant('Somewhere Else Entirely');
+        $admin     = $this->platformAdmin();
+
+        $this->actingAs($admin)
+            ->from(route('admin.care-map.review', ['tab' => 'unlinked']))
+            ->post(route('admin.care-map.review.listings.link', $listing->id), [
+                'facility_id' => $unrelated->id,
+            ])
+            ->assertSessionHas('error');
+
+        $listing->refresh();
+        $this->assertNull($listing->facility_id);
+    }
+
+    public function test_a_listing_that_already_belongs_to_a_facility_is_never_moved(): void
+    {
+        $incumbent = $this->tenant('Incumbent General');
+        $listing   = $this->listing(['facility_name' => 'Incumbent General', 'facility_id' => $incumbent->id]);
+        $admin     = $this->platformAdmin();
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('LISTING_ALREADY_LINKED');
+
+        $this->claims->linkListingToFacility($listing->id, $this->tenant('Poacher')->id, $admin->id);
+    }
+
+    public function test_a_facility_does_not_get_a_second_listing(): void
+    {
+        $tenant = $this->tenant('Double Trouble');
+        $this->listing(['facility_name' => 'Double Trouble', 'facility_id' => $tenant->id]);
+        $second = $this->listing(['facility_name' => 'Double Trouble']);
+        $admin  = $this->platformAdmin();
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('FACILITY_ALREADY_LISTED');
+
+        $this->claims->linkListingToFacility($second->id, $tenant->id, $admin->id);
+    }
+
+    public function test_a_non_platform_user_cannot_reach_the_desk_or_the_action(): void
+    {
+        [$listing, $tenant] = $this->offeredPair();
+
+        // Seeded by platformAdmin(); a plain user has no platform tier.
+        $this->platformAdmin();
+        $outsider = User::factory()->create(['status' => 'active']);
+
+        $this->actingAs($outsider)
+            ->get(route('admin.care-map.review', ['tab' => 'unlinked']))
+            ->assertForbidden();
+
+        $this->actingAs($outsider)
+            ->post(route('admin.care-map.review.listings.link', $listing->id), [
+                'facility_id' => $tenant->id,
+            ])
+            ->assertForbidden();
+
+        $listing->refresh();
+        $this->assertNull($listing->facility_id);
+    }
+
 }

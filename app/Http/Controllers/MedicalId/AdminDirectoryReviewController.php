@@ -40,7 +40,18 @@ class AdminDirectoryReviewController extends Controller
 
     public function index(Request $request): View
     {
-        $tab = $request->query('tab') === 'imports' ? 'imports' : 'claims';
+        $tab = match ($request->query('tab')) {
+            'imports'  => 'imports',
+            'unlinked' => 'unlinked',
+            default    => 'claims',
+        };
+
+        // Listings with no `facility_id` and an unambiguous partner. This is
+        // the only place in the app where that join can be made by hand, and
+        // it has to exist: a listing that predates the claim flow has no claim
+        // for approval to finish, and until it is joined the facility is
+        // invisible to every "has doctors / bookable / connected" query.
+        $unlinkedListings = $this->claims->unlinkedListingsWithCandidate();
 
         $pendingClaims = FacilityClaim::with(['careFacility', 'claimant', 'facility'])
             ->open()
@@ -101,6 +112,7 @@ class AdminDirectoryReviewController extends Controller
             'osmAttribution'  => $this->attributionFor($importReviews->getCollection()),
             'activeReason'    => $request->query('reason'),
             'pendingClaimCount'  => $pendingClaims->total(),
+            'unlinkedListings'  => $unlinkedListings,
             'pendingImportCount' => (int) ($statusCounts[FacilityImportReviewStatus::Pending->value] ?? 0),
         ]);
     }
@@ -160,6 +172,44 @@ class AdminDirectoryReviewController extends Controller
         $this->claims->approveClaim($claim, Auth::id());
 
         return back()->with('success', __('caremap_claim.flash_claim_approved'));
+    }
+
+    /**
+     * Join a listing to the facility the desk offered beside it.
+     *
+     * The facility id is submitted rather than re-derived, so it is checked
+     * against the same candidate query that produced the button: a posted id
+     * that is not a live candidate is refused. Without that, the form would
+     * be an "attach any listing to any facility" endpoint wearing a
+     * one-click button's clothes.
+     */
+    public function linkListing(Request $request, string $listing): RedirectResponse
+    {
+        $validated = $request->validate([
+            'facility_id' => ['required', 'uuid'],
+        ]);
+
+        $offered = $this->claims->unlinkedListingsWithCandidate()
+            ->first(fn (object $row) => (string) $row->listing_id === $listing
+                && (string) $row->facility_id === $validated['facility_id']);
+
+        if (! $offered) {
+            return back()->with('error', __('caremap_claim.error_link_not_offered'));
+        }
+
+        try {
+            $this->claims->linkListingToFacility($listing, $validated['facility_id'], Auth::id());
+        } catch (\Throwable $e) {
+            $message = match ($e->getMessage()) {
+                'LISTING_ALREADY_LINKED' => __('caremap_claim.error_listing_already_linked'),
+                'FACILITY_ALREADY_LISTED' => __('caremap_claim.error_facility_already_listed'),
+                default => __('caremap_claim.error_generic'),
+            };
+
+            return back()->with('error', $message);
+        }
+
+        return back()->with('success', __('caremap_claim.flash_listing_linked'));
     }
 
     public function rejectClaim(Request $request, string $claim): RedirectResponse
