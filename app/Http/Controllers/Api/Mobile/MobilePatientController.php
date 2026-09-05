@@ -50,6 +50,7 @@ class MobilePatientController extends Controller
             'blood_group'       => $patient->blood_group,
             'address'           => $patient->address,
             'emergency_contact' => $patient->emergency_contact,
+            'photo_url'         => \App\Support\PatientPhoto::urlFor($patient),
             'status'            => $patient->identity_status ?? 'active',
             'allergies_count'   => $allergiesCount,
             'conditions_count'  => $conditionsCount,
@@ -85,6 +86,7 @@ class MobilePatientController extends Controller
             'sex'          => $patient->sex,
             'dob'          => $patient->date_of_birth?->toDateString(),
             'blood_type'   => $patient->blood_group,
+            'photo_url'    => \App\Support\PatientPhoto::urlFor($patient),
             'qr_payload'   => $qrPayload,
             'status'       => $patient->identity_status ?? 'active',
         ]);
@@ -324,6 +326,7 @@ class MobilePatientController extends Controller
             'blood_group'       => $patient->blood_group,
             'address'           => $patient->address,
             'emergency_contact' => $patient->emergency_contact,
+            'photo_url'         => \App\Support\PatientPhoto::urlFor($patient),
             'status'            => $patient->identity_status ?? 'active',
             'allergies_count'   => $allergiesCount,
             'conditions_count'  => $conditionsCount,

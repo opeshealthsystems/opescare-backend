@@ -47,6 +47,12 @@ class Patient extends Model
         'push_token',
         'push_platform',
         'facility_id',
+        // The patient's own photo (private disk path + server-read MIME).
+        // Written only by MobilePatientPhotoController via forceFill; listed so
+        // a plain fill() in a seeder/test can set them too.
+        'photo_path',
+        'photo_mime',
+        'photo_updated_at',
     ];
 
     // is_demo is intentionally excluded from $fillable.

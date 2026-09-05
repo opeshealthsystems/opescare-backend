@@ -95,11 +95,20 @@ Route::prefix('mobile')->group(function () {
     });
 
     // Protected mobile endpoints — require valid patient Bearer token
+    // The patient's photo, served to an <img> that cannot carry a bearer
+    // token: the SIGNATURE is the authorisation, minted for 60 minutes by
+    // PatientPhoto::urlFor() and checked here by the `signed` middleware.
+    Route::get('/patients/{patient}/photo', [\App\Http\Controllers\Api\Mobile\MobilePatientPhotoController::class, 'show'])
+        ->middleware('signed')
+        ->name('mobile.patient.photo');
+
     Route::middleware('auth.mobile')->group(function () {
 
         // Patient profile
         Route::get('/me', [\App\Http\Controllers\Api\Mobile\MobilePatientController::class, 'getMe']);
         Route::patch('/me', [\App\Http\Controllers\Api\Mobile\MobilePatientController::class, 'updateMe']);
+        Route::post('/me/photo', [\App\Http\Controllers\Api\Mobile\MobilePatientPhotoController::class, 'upload']);
+        Route::delete('/me/photo', [\App\Http\Controllers\Api\Mobile\MobilePatientPhotoController::class, 'destroy']);
         Route::get('/timeline', [\App\Http\Controllers\Api\Mobile\MobilePatientController::class, 'getTimeline']);
 
         // QR Code
