@@ -139,12 +139,12 @@
                     <button type="button" class="demo-login-btn demo-btn-clinical" data-demo-role="doctor" data-demo-email="demo.doctor@opescare.test">
                         <i data-lucide="stethoscope"></i>
                         <span>Dr. Amara Diallo</span>
-                        <small>{{ __('public.role_doctor') }}</small>
+                        <small>{{ __('public.demo.role_doctor') }}</small>
                     </button>
                     <button type="button" class="demo-login-btn demo-btn-clinical" data-demo-role="nurse" data-demo-email="demo.nurse@opescare.test">
                         <i data-lucide="heart-pulse"></i>
                         <span>Nurse Fatou Traoré</span>
-                        <small>{{ __('public.role_nurse') }}</small>
+                        <small>{{ __('public.demo.role_nurse') }}</small>
                     </button>
                     <button type="button" class="demo-login-btn demo-btn-clinical" data-demo-role="pharmacist" data-demo-email="demo.pharmacist@opescare.test">
                         <i data-lucide="pill"></i>
@@ -180,12 +180,12 @@
                     <button type="button" class="demo-login-btn demo-btn-patient" data-demo-role="patient" data-demo-email="demo.patient@opescare.test">
                         <i data-lucide="user"></i>
                         <span>Demo Patient</span>
-                        <small>{{ __('public.role_patient_provisional') }}</small>
+                        <small>{{ __('public.demo.role_patient_provisional') }}</small>
                     </button>
                     <button type="button" class="demo-login-btn demo-btn-patient" data-demo-role="patient" data-demo-email="demo.reviewer@opescare.test">
                         <i data-lucide="shield-check"></i>
                         <span>Demo Reviewer</span>
-                        <small>{{ __('public.role_patient_verified') }}</small>
+                        <small>{{ __('public.demo.role_patient_verified') }}</small>
                     </button>
                 </div>
             </div>

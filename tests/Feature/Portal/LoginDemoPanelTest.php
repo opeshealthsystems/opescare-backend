@@ -46,11 +46,14 @@ class LoginDemoPanelTest extends TestCase
             $this->assertStringContainsString('data-demo-email="' . $email . '"', $html, "No one-click button for {$email}.");
         }
 
-        // The two patients are told apart by sex and identity state.
-        $this->assertStringContainsString(__('public.role_patient_provisional'), $html);
-        $this->assertStringContainsString(__('public.role_patient_verified'), $html);
-        $this->assertStringContainsString(__('public.role_doctor'), $html);
-        $this->assertStringContainsString(__('public.role_nurse'), $html);
+        // The two patients are told apart by sex and identity state, and the
+        // labels are the translated text — never a raw lang key. Literal
+        // strings on purpose: comparing __() to itself would pass on a typo.
+        $this->assertStringContainsString('Female patient', $html);
+        $this->assertStringContainsString('Male patient', $html);
+        $this->assertStringContainsString('<small>Doctor</small>', $html);
+        $this->assertStringContainsString('<small>Nurse</small>', $html);
+        $this->assertStringNotContainsString('public.demo.', $html, 'A demo label rendered as a raw translation key.');
     }
 
     public function test_the_panel_is_absent_outside_demo_mode(): void
