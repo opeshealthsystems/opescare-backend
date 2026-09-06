@@ -22,6 +22,9 @@
             <h1 class="f-auth-title">{{ __('onboarding.patient.headline') }}</h1>
             <p class="f-auth-sub">{{ __('onboarding.patient.subheadline') }}</p>
 
+            {{-- The emblem the Health ID being created will carry. --}}
+            @include('auth.partials.secure_seal')
+
             {{-- Why an account helps — one line, per the redesign brief --}}
             <p class="f-auth-benefit">
                 @include('partials.finder.icon', ['name' => 'calendar', 'size' => 16])

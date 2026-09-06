@@ -44,6 +44,7 @@ return [
         'select_option' => 'Choose option...',
         'upload_file' => 'Upload Supporting Document',
         'file_hint' => 'Accepted file formats: PDF, JPG, PNG (Max 5MB)',
+        'secure_seal' => 'OpesCare Secure Health ID',
     ],
 
     // Login View Strings
@@ -57,7 +58,7 @@ return [
         'submit_signin' => 'Sign in securely',
         'submit_otp' => 'Sign in with OTP code',
         'no_account' => 'New to OpesCare?',
-        'create_account' => 'Create an account',
+        'create_account' => 'Create your Health ID',
         'security_note' => 'For your safety, never share your OpesCare login details, OTP codes, or temporary access links with anyone.',
         'errors' => [
             'invalid_credentials' => 'The email, phone number, or password is incorrect.',
@@ -139,9 +140,9 @@ return [
         'subheadline' => 'An email address and a password. That is all we need to get started.',
         'email' => 'Email address',
         'password' => 'Password',
-        'submit' => 'Create account',
+        'submit' => 'Create my Health ID',
         'back' => 'Back',
-        'headline' => 'Create your OpesCare account',
+        'headline' => 'Create your Health ID',
         'password_hint' => 'At least 8 characters.',
         'password_confirm' => 'Confirm password',
         'next_step_note' => 'Once you are in, we will ask for your name and date of birth so your Health ID can be issued.',
@@ -150,7 +151,7 @@ return [
         'email_taken' => 'An account already exists for that email address.',
         'account_created' => 'Account created. One more step to get your Health ID.',
         'profile_complete' => 'Your Health ID is :health_id. Take it to any OpesCare facility to have your identity verified.',
-        'title' => 'Create your OpesCare account',
+        'title' => 'Create your Health ID',
         'subtitle' => 'Your Health ID helps approved healthcare providers identify your records safely when you need care.',
         'sec_basic' => '1. Basic Information',
         'sec_identity' => '2. Identity Checklist',

@@ -44,6 +44,7 @@ return [
         'select_option' => 'Choisissez une option...',
         'upload_file' => 'Importer un document justificatif',
         'file_hint' => 'Formats acceptés : PDF, JPG, PNG (Max 5 Mo)',
+        'secure_seal' => 'Identifiant Santé OpesCare Secure',
     ],
 
     // Login View Strings
@@ -57,7 +58,7 @@ return [
         'submit_signin' => 'Se connecter de manière sécurisée',
         'submit_otp' => 'Se connecter avec un code OTP',
         'no_account' => 'Nouveau sur OpesCare ?',
-        'create_account' => 'Créer un compte',
+        'create_account' => 'Créer votre Identifiant Santé',
         'security_note' => 'Pour votre sécurité, ne partagez jamais vos identifiants OpesCare, vos codes OTP ou vos liens d\'accès temporaires avec quiconque.',
         'errors' => [
             'invalid_credentials' => 'L\'adresse e-mail, le numéro de téléphone ou le mot de passe est incorrect.',
@@ -139,9 +140,9 @@ return [
         'subheadline' => 'Une adresse e-mail et un mot de passe. C\'est tout ce qu\'il faut pour commencer.',
         'email' => 'Adresse e-mail',
         'password' => 'Mot de passe',
-        'submit' => 'Créer le compte',
+        'submit' => 'Créer mon Identifiant Santé',
         'back' => 'Retour',
-        'headline' => 'Créez votre compte OpesCare',
+        'headline' => 'Créez votre Identifiant Santé',
         'password_hint' => 'Au moins 8 caractères.',
         'password_confirm' => 'Confirmez le mot de passe',
         'next_step_note' => 'Une fois connecté, nous vous demanderons votre nom et votre date de naissance afin de délivrer votre identifiant de santé.',
@@ -150,7 +151,7 @@ return [
         'email_taken' => 'Un compte existe déjà pour cette adresse e-mail.',
         'account_created' => 'Compte créé. Encore une étape pour obtenir votre identifiant de santé.',
         'profile_complete' => 'Votre identifiant de santé est :health_id. Présentez-le dans un établissement OpesCare pour faire vérifier votre identité.',
-        'title' => 'Créez votre compte OpesCare',
+        'title' => 'Créez votre Identifiant Santé',
         'subtitle' => 'Votre ID Santé aide les prestataires autorisés à identifier vos dossiers en toute sécurité lors de vos soins.',
         'sec_basic' => '1. Informations Personnelles',
         'sec_identity' => '2. Informations d\'Identité',

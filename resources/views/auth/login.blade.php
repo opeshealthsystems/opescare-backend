@@ -8,6 +8,10 @@
             <h1 class="f-auth-title">{{ __('onboarding.login.welcome_back') }}</h1>
             <p class="f-auth-sub">{{ __('onboarding.login.subheadline') }}</p>
 
+            {{-- The Health ID's seal, under the heading block and above the form —
+                 the same spot the app gives it beneath its "Welcome back" header. --}}
+            @include('auth.partials.secure_seal')
+
             @if(session('success'))
                 <div class="f-auth-alert f-auth-alert--success" role="status">
                     @include('partials.finder.icon', ['name' => 'check', 'size' => 18])

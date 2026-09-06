@@ -1440,3 +1440,88 @@ body.auth-body {
         padding: 0.3rem 0.55rem;
     }
 }
+
+/* ── OpesCare Secure seal — sign-in / "Create your Health ID" ─────────────
+   Layered like the app's SealSystem (components/health-id/Layers.tsx):
+   aura 1.6× · holographic ring 1.24× · seal 1×, all centred on a fixed
+   116px box so the heading and the form never move while the art loads.
+   Colour comes from the foundation tokens (--f-brand / --f-wash), never a
+   literal hex. Markup: resources/views/auth/partials/secure_seal.blade.php */
+.f-auth-seal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 20px;
+}
+
+.f-auth-seal__art {
+    position: relative;
+    width: 116px;
+    height: 116px;
+    flex-shrink: 0;
+}
+
+.f-auth-seal__aura,
+.f-auth-seal__ring,
+.f-auth-seal__mark {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    margin: auto;
+    display: block;
+}
+
+.f-auth-seal__aura {
+    width: 116px;
+    height: 116px;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, var(--f-wash), transparent);
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--f-brand) 22%, transparent), transparent);
+    animation: f-auth-seal-breathe 2.6s ease-in-out infinite;
+    will-change: opacity, transform;
+}
+
+.f-auth-seal__ring {
+    width: 89px;
+    height: 89px;
+    object-fit: contain;
+    opacity: .9;
+    animation: f-auth-seal-spin 14s linear infinite;
+    will-change: transform;
+}
+
+.f-auth-seal__mark {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+    filter: drop-shadow(0 6px 14px color-mix(in srgb, var(--f-brand) 20%, transparent));
+}
+
+.f-auth-seal__caption {
+    margin: 0;
+    font-size: .6875rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--f-brand);
+    text-align: center;
+}
+
+@keyframes f-auth-seal-spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes f-auth-seal-breathe {
+    0%, 100% { opacity: .55; transform: scale(.94); }
+    50%      { opacity: .95; transform: scale(1.04); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .f-auth-seal__ring,
+    .f-auth-seal__aura {
+        animation: none;
+    }
+}
