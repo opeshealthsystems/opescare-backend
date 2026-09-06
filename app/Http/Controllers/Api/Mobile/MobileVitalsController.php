@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Mobile;
 
 use App\Http\Controllers\Controller;
 use App\Models\TriageVitalSign;
+use App\Support\VitalBandResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -28,6 +29,16 @@ use Illuminate\Support\Facades\DB;
  * is read from — including the laboratory's own `flag`, which is a better
  * interpretation than any range this controller could hardcode.
  *
+ * THE BANDS ARE NOT THIS FILE'S TO DECIDE. Every `status` word below comes from
+ * App\Support\VitalBandResolver and from nowhere else. The bands used to live
+ * here as private methods reachable by nothing, so the Health Passport's vitals
+ * page — reading the same two tables for the same patient — could show no
+ * interpretation at all rather than copy them and become a second,
+ * independently drifting reader. That is the exact failure
+ * App\Support\ResultFlagResolver was created to close for laboratory results.
+ * This controller now asks the shared authority and prints its answer; it
+ * performs no comparison of its own, anywhere.
+ *
  * Clinical honesty rules this endpoint obeys:
  *   - Every measure carries its OWN `recorded_at`. A vital taken three weeks
  *     ago is never presented as if it were taken this morning.
@@ -38,6 +49,13 @@ use Illuminate\Support\Facades\DB;
  *     `unknown` is returned rather than a guess whenever the unit or the
  *     clinical context (fasting vs random glucose, adult vs paediatric) makes
  *     a range unsafe to apply.
+ *   - `status_source` travels WITH the status, because a band this platform
+ *     derived must never be presented as a laboratory's or a clinician's own
+ *     verdict. `adult_bands` says this platform derived it from ADULT bands —
+ *     so a child's reading is banded as an adult's and the payload admits it
+ *     rather than hiding it; `lab` says a laboratory recorded the flag itself;
+ *     and it is null when the status is `unknown`, because nobody said
+ *     anything.
  *
  * Isolation: `patient_id` comes only from `$request->attributes`, set by the
  * AuthenticateMobilePatient middleware from the bearer token. It is never read
@@ -206,13 +224,18 @@ class MobileVitalsController extends Controller
             return [];
         }
 
+        // The resolver holds the precedence: the bench's own flag first, then —
+        // and only then — the adult random-glucose band, unit-aware.
+        $verdict = VitalBandResolver::forLabGlucose($row->flag, (string) $row->value, $row->unit);
+
         return [[
-            'key'         => 'blood_sugar',
-            'value'       => trim((string) $row->value),
-            'unit'        => $row->unit !== null ? trim((string) $row->unit) : null,
-            'status'      => $this->glucoseStatus((string) $row->value, $row->unit, $row->flag),
-            'recorded_at' => $at,
-            'source'      => 'lab',
+            'key'           => 'blood_sugar',
+            'value'         => trim((string) $row->value),
+            'unit'          => $row->unit !== null ? trim((string) $row->unit) : null,
+            'status'        => $verdict['band'],
+            'status_source' => $verdict['source'],
+            'recorded_at'   => $at,
+            'source'        => 'lab',
         ]];
     }
 
@@ -249,13 +272,18 @@ class MobileVitalsController extends Controller
 
         $value = (float) $raw;
 
+        // The unit is handed over, not assumed: the resolver returns no opinion
+        // rather than a band read in the wrong unit.
+        $verdict = VitalBandResolver::resolve($key, $value, null, $unit);
+
         return [
-            'key'         => $key,
-            'value'       => $decimals > 0 ? number_format($value, $decimals, '.', '') : (string) (int) round($value),
-            'unit'        => $unit,
-            'status'      => $this->classify($key, $value),
-            'recorded_at' => $at,
-            'source'      => $source,
+            'key'           => $key,
+            'value'         => $decimals > 0 ? number_format($value, $decimals, '.', '') : (string) (int) round($value),
+            'unit'          => $unit,
+            'status'        => $verdict['band'],
+            'status_source' => $verdict['source'],
+            'recorded_at'   => $at,
+            'source'        => $source,
         ];
     }
 
@@ -274,113 +302,17 @@ class MobileVitalsController extends Controller
         $sys = (int) $systolic;
         $dia = (int) $diastolic;
 
+        $verdict = VitalBandResolver::resolve(VitalBandResolver::BLOOD_PRESSURE, $sys, $dia, 'mmHg');
+
         return [
-            'key'         => 'blood_pressure',
-            'value'       => "{$sys}/{$dia}",
-            'unit'        => 'mmHg',
-            'status'      => $this->bloodPressureStatus($sys, $dia),
-            'recorded_at' => $at,
-            'source'      => $source,
+            'key'           => 'blood_pressure',
+            'value'         => "{$sys}/{$dia}",
+            'unit'          => 'mmHg',
+            'status'        => $verdict['band'],
+            'status_source' => $verdict['source'],
+            'recorded_at'   => $at,
+            'source'        => $source,
         ];
-    }
-
-    // ── Advisory classification (NOT a diagnosis) ────────────────────────────
-
-    /**
-     * Adult advisory bands. `critical` means "a clinician should look at this
-     * now", not "the patient is in danger" — only a clinician decides that.
-     */
-    private function classify(string $key, float $value): string
-    {
-        return match ($key) {
-            'heart_rate' => match (true) {
-                $value < 40 || $value > 130 => 'critical',
-                $value < 60                 => 'low',
-                $value > 100                => 'high',
-                default                     => 'normal',
-            },
-            'oxygen_saturation' => match (true) {
-                $value < 90  => 'critical',
-                $value < 94  => 'low',
-                $value > 100 => 'unknown',   // impossible reading — do not endorse it
-                default      => 'normal',
-            },
-            'temperature' => match (true) {
-                $value <= 35.0 || $value >= 40.0 => 'critical',
-                $value < 36.0                    => 'low',
-                $value > 38.0                    => 'high',
-                default                          => 'normal',
-            },
-            'respiratory_rate' => match (true) {
-                $value < 8 || $value > 30 => 'critical',
-                $value < 12               => 'low',
-                $value > 20               => 'high',
-                default                   => 'normal',
-            },
-            default => 'unknown',
-        };
-    }
-
-    private function bloodPressureStatus(int $systolic, int $diastolic): string
-    {
-        return match (true) {
-            $systolic >= 180 || $diastolic >= 120 || $systolic < 90 => 'critical',
-            $systolic >= 140 || $diastolic >= 90                    => 'high',
-            $systolic < 100 || $diastolic < 60                      => 'low',
-            default                                                 => 'normal',
-        };
-    }
-
-    /**
-     * Glucose. The laboratory's own flag is authoritative when present.
-     *
-     * Without a flag, the value is only classified when the unit is one this
-     * code understands, and then only against a RANDOM-glucose band — the
-     * fasting state is not recorded anywhere in the schema, and applying a
-     * fasting band to a post-meal sample would call a healthy patient
-     * diabetic. Anything else returns `unknown`.
-     */
-    private function glucoseStatus(string $value, ?string $unit, ?string $flag): string
-    {
-        $normalisedFlag = strtolower(trim((string) $flag));
-
-        if ($normalisedFlag !== '') {
-            return match ($normalisedFlag) {
-                'hh'                 => 'critical',
-                'll'                 => 'critical',
-                'h', 'high'          => 'high',
-                'l', 'low'           => 'low',
-                'n', 'normal'        => 'normal',
-                'a', 'abnormal'      => 'abnormal',
-                default              => 'unknown',
-            };
-        }
-
-        if (! is_numeric(str_replace(',', '.', trim($value)))) {
-            return 'unknown';
-        }
-
-        $number = (float) str_replace(',', '.', trim($value));
-        $unitKey = strtolower(str_replace(' ', '', (string) $unit));
-
-        // Normalise to mg/dL, the unit the advisory band below is written in.
-        $mgdl = match ($unitKey) {
-            'mg/dl', 'mgdl', 'mg/100ml' => $number,
-            'mmol/l', 'mmoll'           => $number * 18.0,
-            'g/l', 'gl'                 => $number * 100.0,
-            default                     => null,
-        };
-
-        if ($mgdl === null) {
-            return 'unknown';
-        }
-
-        return match (true) {
-            $mgdl < 54 || $mgdl >= 300 => 'critical',
-            $mgdl < 70                 => 'low',
-            $mgdl > 140                => 'high',
-            default                    => 'normal',
-        };
     }
 
     // ── Auth ─────────────────────────────────────────────────────────────────

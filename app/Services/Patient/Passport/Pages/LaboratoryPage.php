@@ -139,10 +139,7 @@ class LaboratoryPage extends PageSource
         }
 
         $sections[] = $this->table(
-            // No passport.sections key names a laboratory order; this one is
-            // the platform's own label for the same records and is already
-            // 1:1 in EN/FR.
-            __('account_deletion.kept_items.lab_orders'),
+            __('passport.sections.lab_orders'),
             [
                 __('passport.columns.test'),
                 __('passport.columns.ordered'),

@@ -51,6 +51,11 @@ return [
             'message' => ':pharmacy a préparé l\'ordonnance :reference. Apportez votre identifiant santé pour la retirer.',
             'action'  => 'Voir l\'ordonnance',
         ],
+        'prescription_partially_dispensed' => [
+            'title'   => 'Une partie de votre ordonnance a été délivrée',
+            'message' => ':pharmacy a délivré une partie de l’ordonnance :reference. Le reste reste à retirer.',
+            'action'  => 'Voir l’ordonnance',
+        ],
         'prescription_dispensed' => [
             'title'   => 'Votre ordonnance a été délivrée',
             'message' => ':pharmacy a délivré l\'ordonnance :reference. Elle est désormais inscrite dans votre dossier de santé.',

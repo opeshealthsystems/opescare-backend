@@ -54,6 +54,10 @@ return [
     'next_appointment' => 'Next appointment',
     'checked_against' => 'Checked against',
     'checked_against_value' => 'The national register, at the moment of the check',
+
+    // Every word a status can be spelled with, so that FormatsRecords::statusLabel()
+    // never has to fall back to the tidied English word. A missing key here is
+    // not a blank page — it is an English word on a French reader's passport.
     'status_active'      => 'Active',
     'status_provisional' => 'Provisional',
     'status_suspended'   => 'Suspended',
@@ -91,6 +95,54 @@ return [
     'status_ama' => 'Against medical advice',
     'status_deceased' => 'Deceased',
     'status_cancelled'   => 'Cancelled',
+
+    // Referral lifecycle (referral_cases.status) and clinical triage
+    // (referral_cases.urgency). `emergency` is also an encounter_type, so the
+    // word has to read correctly both as a triage level and as a kind of visit.
+    'status_sent' => 'Sent',
+    'status_accepted' => 'Accepted',
+    'status_rejected' => 'Rejected',
+    'status_routine' => 'Routine',
+    'status_urgent' => 'Urgent',
+    'status_emergency' => 'Emergency',
+
+    // Consent requests, correction requests and family links — the decisions a
+    // patient makes about their own record.
+    'status_approved' => 'Approved',
+    'status_denied' => 'Denied',
+    'status_declined' => 'Declined',
+    'status_withdrawn' => 'Withdrawn',
+    'status_pending_patient_approval' => 'Awaiting your approval',
+    'status_pending_invite' => 'Invitation pending',
+    'status_treatment' => 'Treatment',
+
+    // A record another record has replaced, and cover that has run out.
+    // `status_suspended_policy` exists because `status_suspended` is already the
+    // credential's word; it is addressed by name, not derived from a stored value.
+    'status_superseded' => 'Superseded',
+    'status_lapsed' => 'Lapsed',
+    'status_suspended_policy' => 'Suspended',
+
+    // Care-team roles (care_team_members.role).
+    'status_attending' => 'Attending',
+    'status_consulting' => 'Consulting',
+    'status_nursing' => 'Nursing',
+    'status_pharmacy' => 'Pharmacy',
+    'status_social_work' => 'Social work',
+
+    // Immunisation and preventive screening.
+    'status_administered' => 'Administered',
+    'status_given' => 'Given',
+    'status_not_given' => 'Not given',
+    'status_refused' => 'Refused',
+    'status_due' => 'Due',
+
+    // Insurance plan types, as insurance_plans.plan_type records them. Without
+    // these the tidier turned `nhia` into the meaningless word "Nhia".
+    'plan_type_nhia'     => 'National health insurance',
+    'plan_type_mutual'   => 'Health mutual',
+    'plan_type_employer' => 'Employer scheme',
+    'plan_type_private'  => 'Private insurance',
 
     'pages' => [
         'cover' => [
@@ -264,6 +316,12 @@ return [
         'vitals' => 'Latest measurements',
         'care_plans' => 'Plans',
         'emergency' => 'In an emergency',
+        // Headings pages had to borrow from elsewhere for want of their own.
+        'sharing_history' => 'Sharing history',
+        'primary_care_provider' => 'Primary care provider',
+        'facilities' => 'Facilities',
+        'outcome' => 'Outcome',
+        'corrections' => 'Corrections',
     ],
 
     // The column headers, block captions and section names the approved
@@ -334,6 +392,19 @@ return [
         'started' => 'Started',
         'review' => 'Review',
         'detail' => 'Detail',
+        // Headings the vocabulary was missing. `urgency` is triage and is NOT
+        // `flag`; `impression` is the radiologist's conclusion and is NOT
+        // `findings`; `lot`, `manufacturer` and `site` name what a vaccination
+        // record holds and could not be printed for want of a heading.
+        'urgency' => 'Urgency',
+        'impression' => 'Impression',
+        'recommendation' => 'Recommendation',
+        'insurer' => 'Insurer',
+        'qualification' => 'Qualification',
+        'address' => 'Address',
+        'lot' => 'Lot number',
+        'manufacturer' => 'Manufacturer',
+        'site' => 'Injection site',
     ],
 
     'blocks' => [
@@ -364,6 +435,8 @@ return [
         'vaccines' => 'Vaccines',
         'admissions' => 'Admissions',
         'documents' => 'Documents',
+        'studies' => 'Studies',
+        'readings' => 'Readings',
     ],
 
 ];

@@ -412,9 +412,22 @@ class PharmacyDeskService
      *
      * Per-item quantities and the pharmacist's note are recorded on the
      * items' `dispense_notes` (the one mutable field of an item); the
-     * clinical order itself is untouched. PrescriptionService then marks
-     * every item and the prescription dispensed, stamps the dispenser
-     * (`$actorId` — the provider the token names) and audits it.
+     * clinical order itself is untouched. PrescriptionService then marks the
+     * lines dispensed, derives the header status from them, stamps the
+     * dispenser (`$actorId` — the provider the token names) and audits it.
+     *
+     * WHICH lines were handed over:
+     *   - no `items` at all  → every outstanding line (the walk-in counter,
+     *     where the whole script goes over the counter at once);
+     *   - `items` given      → exactly those lines, so a counter that hands
+     *     over one drug and keeps the other on order leaves the script
+     *     `partially_dispensed` and still on the bench. A line listed with an
+     *     explicit `quantity_dispensed` of 0 says "none of this one left the
+     *     shelf" and is NOT handed over.
+     *
+     * The routing status only reaches `dispensed` when nothing is outstanding —
+     * a partially filled script has to stay in the queue, because the patient
+     * is still owed a drug.
      *
      * @param  list<array{id: string, quantity_dispensed?: int|null}>  $items
      * @throws PharmacyDeskException
@@ -439,9 +452,10 @@ class PharmacyDeskService
 
         $notes = $notes !== null ? trim($notes) : null;
 
-        DB::transaction(function () use ($rx, $actorId, $items, $notes, $lines) {
-            $touched = [];
+        // null = hand the whole script over; a list = only these lines.
+        $handOver = $this->linesHandedOver($items);
 
+        DB::transaction(function () use ($rx, $actorId, $items, $notes, $lines, $handOver) {
             foreach ($items as $line) {
                 /** @var PrescriptionItem $item */
                 $item  = $lines[(string) $line['id']];
@@ -457,13 +471,17 @@ class PharmacyDeskService
                 if ($parts !== []) {
                     $item->dispense_notes = implode(' · ', $parts);
                     $item->save();
-                    $touched[(string) $item->id] = true;
                 }
             }
 
-            // A note with no per-item lines applies to every line.
+            // A note with no per-item lines applies to every line still owed —
+            // never to one already handed over at an earlier visit, whose own
+            // note is the record of that hand-over.
             if ($notes !== null && $notes !== '' && $items === []) {
                 foreach ($lines as $item) {
+                    if (! $item->isOutstanding()) {
+                        continue;
+                    }
                     $item->dispense_notes = $notes;
                     $item->save();
                 }
@@ -472,21 +490,32 @@ class PharmacyDeskService
             try {
                 // No 'notes' option on purpose: the service would copy it onto
                 // every item and overwrite the per-item lines written above.
-                $this->prescriptions->dispense($rx, $actorId, []);
+                $this->prescriptions->dispense($rx, $actorId, ['item_ids' => $handOver]);
             } catch (\LogicException $e) {
                 throw $e->getMessage() === 'PRESCRIPTION_ALREADY_DISPENSED'
                     ? PharmacyDeskException::invalidTransition()
                     : PharmacyDeskException::notDispensable();
             }
 
-            $this->routing->markDispensed((string) $rx->id);
+            // Only a script with nothing outstanding leaves the bench. A
+            // partial one keeps its open routing status so it stays in the
+            // queue and can be completed on the patient's next visit.
+            if ($rx->refresh()->status === 'dispensed') {
+                $this->routing->markDispensed((string) $rx->id);
+            }
         });
 
         $rx = $rx->fresh(['items', 'patient', 'prescriber:id,name']);
 
+        // What the patient is told has to match what they were handed. A
+        // partial hand-over announced as "dispensed" tells someone their
+        // prescription is complete when half of it is still on the shelf, and
+        // they stop expecting the rest.
+        $partial = strtolower((string) $rx->status) === 'partially_dispensed';
+
         $this->notifyPatient(
             $rx->patient,
-            'prescription_dispensed',
+            $partial ? 'prescription_partially_dispensed' : 'prescription_dispensed',
             'pharmacy_prescription_dispensed',
             ['pharmacy' => $facility->name, 'reference' => $rx->reference],
             self::ACTION_URL_PRESCRIPTIONS,
@@ -502,6 +531,41 @@ class PharmacyDeskService
         if (! $rx->isDispensable()) {
             throw PharmacyDeskException::notDispensable();
         }
+    }
+
+    /**
+     * Which lines the pharmacist says actually left the shelf.
+     *
+     * An empty body is the walk-in case — the whole script goes over the
+     * counter — and returns null, meaning "every outstanding line". Otherwise
+     * the listed ids are handed over, except any listed with an explicit
+     * `quantity_dispensed` of 0: a counter form that shows every line and asks
+     * for a quantity against each needs a way to say "none of this one", and
+     * zero is that way. Without it a partial hand-over could never be recorded
+     * from a form that lists the whole script.
+     *
+     * @param  list<array{id: string, quantity_dispensed?: int|null}>  $items
+     * @return list<string>|null
+     */
+    private function linesHandedOver(array $items): ?array
+    {
+        if ($items === []) {
+            return null;
+        }
+
+        $ids = [];
+
+        foreach ($items as $line) {
+            $quantity = $line['quantity_dispensed'] ?? null;
+
+            if ($quantity !== null && (int) $quantity === 0) {
+                continue;
+            }
+
+            $ids[] = (string) $line['id'];
+        }
+
+        return $ids;
     }
 
     // ══════════════════════════════════════════════════════════════════════

@@ -48,6 +48,18 @@ class Prescription extends Model
         'amended',
     ];
 
+    /**
+     * Statuses that still owe the patient medicine, and so are the ones every
+     * "current medication" reader must include: the pharmacy queue, the
+     * dispensing basis of ClinicalRelationshipGate, and the passport pages.
+     *
+     * `partially_dispensed` belongs here for the same reason `active` does — a
+     * script with one drug collected and one still on the shelf is a live
+     * script. It was in the schema and read in a dozen places long before
+     * anything wrote it; dispensingStatusFromItems() is what finally does.
+     */
+    public const OPEN_STATUSES = ['active', 'partially_dispensed'];
+
     protected $fillable = [
         // Short human-quotable handle (RX-XXXX-XXXX) — what a pharmacy is told
         // down a phone or reads off a printed script. Set by the migration's
@@ -194,6 +206,47 @@ class Prescription extends Model
     public function isTerminal(): bool
     {
         return in_array((string) $this->status, self::TERMINAL_STATUSES, true);
+    }
+
+    /**
+     * What the LINES say the header status should be.
+     *
+     * The header is derived, never asserted. `prescription_items.status` is
+     * where a hand-over is actually recorded, one drug at a time; this is the
+     * single place that reads those lines back into the one word the queue,
+     * the relationship gate and the passport all read.
+     *
+     *   every fillable line handed over  → 'dispensed'
+     *   some but not all                 → 'partially_dispensed'
+     *   none, or nothing left to fill    → null  (the caller keeps the status
+     *                                             it has: an issued-but-uncollected
+     *                                             script is still 'active', and a
+     *                                             wholly cancelled one is not
+     *                                             "dispensed")
+     *
+     * Cancelled / voided / entered-in-error lines are not outstanding, so a
+     * script whose only remaining line was cancelled reads as fully dispensed.
+     *
+     * @param  \Illuminate\Support\Collection<int,PrescriptionItem>|null  $items
+     *         already-loaded lines, to save a query inside a transaction that
+     *         has just written them.
+     */
+    public function dispensingStatusFromItems(?\Illuminate\Support\Collection $items = null): ?string
+    {
+        $fillable = ($items ?? $this->items()->get())
+            ->reject(fn (PrescriptionItem $line) => $line->isClosed());
+
+        if ($fillable->isEmpty()) {
+            return null;
+        }
+
+        $handedOver = $fillable->filter(fn (PrescriptionItem $line) => $line->isDispensed())->count();
+
+        if ($handedOver === 0) {
+            return null;
+        }
+
+        return $handedOver === $fillable->count() ? 'dispensed' : 'partially_dispensed';
     }
 
     /** Can a pharmacy still dispense against it? */

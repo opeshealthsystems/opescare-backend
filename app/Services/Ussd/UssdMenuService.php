@@ -106,7 +106,8 @@ class UssdMenuService {
 
     private function showPrescriptions(UssdSession $session): string {
         if (!$session->patient_id) return 'END No patient record linked to this number.';
-        $rxs = \App\Models\Prescription::where('patient_id', $session->patient_id)->where('status', 'active')->latest()->take(3)->with('items')->get();
+        // OPEN_STATUSES, not 'active' alone: a half-collected script is still live.
+        $rxs = \App\Models\Prescription::where('patient_id', $session->patient_id)->whereIn('status', \App\Models\Prescription::OPEN_STATUSES)->latest()->take(3)->with('items')->get();
         if ($rxs->isEmpty()) return 'END No active prescriptions.';
         $text = "Active prescriptions:\n";
         foreach ($rxs as $rx) {

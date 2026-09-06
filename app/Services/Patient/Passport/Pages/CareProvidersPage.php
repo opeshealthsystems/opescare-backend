@@ -630,7 +630,7 @@ class CareProvidersPage extends PageSource
                     // number, which only it holds.
                     $resolved[$key] = [
                         'name'    => $known['name'] !== '' ? $known['name'] : trim((string) $row->facility_name),
-                        'type'    => $known['type'] !== '' ? $known['type'] : trim((string) $row->facility_type),
+                        'type'    => $known['type'] !== '' ? $known['type'] : $this->facilityType($row->facility_type),
                         'contact' => $this->publishedNumber($row->phone_primary),
                     ];
                 }
@@ -659,4 +659,22 @@ class CareProvidersPage extends PageSource
     {
         return array_values(array_unique(array_filter(array_map('strval', $ids))));
     }
+
+    /**
+     * The kind of facility, in the reader's language.
+     *
+     * `care_facilities.facility_type` is a closed vocabulary the public
+     * directory already translates, so the passport asks for that word instead
+     * of printing the English token to a French reader.
+     */
+    private function facilityType(?string $type): string
+    {
+        $raw = strtolower(trim((string) $type));
+        $key = 'finder_directory.types.' . $raw;
+
+        return $raw !== '' && \Illuminate\Support\Facades\Lang::has($key)
+            ? __($key)
+            : $this->statusLabel($type);
+    }
+
 }

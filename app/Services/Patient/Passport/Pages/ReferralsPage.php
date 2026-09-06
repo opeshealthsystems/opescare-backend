@@ -91,12 +91,11 @@ use Illuminate\Support\Collection;
  *    hands across a counter should publish a clinician's personal number or
  *    their login address. The receiving clinician is named — that name is
  *    written on the referral itself — and nothing more.
- *  • URGENCY has no column heading in the shared vocabulary. It is carried
- *    under `columns.flag` ("Flag" / "Signalement"), which is the nearest
- *    existing word for a marker that makes a row demand attention, and the
- *    column appears only when at least one referral is not routine — a column
- *    of "Routine" tells the reader nothing. The missing `columns.urgency` is
- *    named in the handover.
+ *  • URGENCY is carried under `columns.urgency` ("Urgency" / "Degré d’urgence").
+ *    It is triage, and deliberately NOT `columns.flag`: a flag is what a
+ *    laboratory says about a result, and the two must not share a heading.
+ *    The column appears only when at least one referral is not routine — a
+ *    column of "Routine" tells the reader nothing.
  */
 class ReferralsPage extends PageSource
 {
@@ -185,7 +184,7 @@ class ReferralsPage extends PageSource
         $items[] = $this->item(__('passport.columns.referred_to'), $this->destination($referral, $facilities));
 
         if (($urgency = $this->urgency($referral)) !== null) {
-            $items[] = $this->item(__('passport.columns.flag'), $urgency['label'], $urgency['tone']);
+            $items[] = $this->item(__('passport.columns.urgency'), $urgency['label'], $urgency['tone']);
         }
 
         $items[] = $this->item(__('passport.columns.reason'), trim((string) $referral->reason));
@@ -238,7 +237,7 @@ class ReferralsPage extends PageSource
         ];
 
         if ($showsFlag) {
-            $columns[] = __('passport.columns.flag');
+            $columns[] = __('passport.columns.urgency');
         }
 
         // Never dropped, however uniform the rows look: it is the only thing

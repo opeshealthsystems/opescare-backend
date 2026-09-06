@@ -39,7 +39,10 @@ class MedicalRecordExportService
         $patient = Patient::with([
             'allergies',
             'diagnoses'     => fn ($q) => $q->where('status', 'active'),
-            'prescriptions' => fn ($q) => $q->where('status', 'active')->orderByDesc('prescribed_at'),
+            // OPEN_STATUSES, not 'active' alone. A script the patient has only
+            // half collected is still a medicine they are on; dropping it from
+            // their own record export would hide a live prescription.
+            'prescriptions' => fn ($q) => $q->whereIn('status', \App\Models\Prescription::OPEN_STATUSES)->orderByDesc('prescribed_at'),
             'prescriptions.items',
             'prescriptions.facility',
             'vitals'        => fn ($q) => $q->orderByDesc('recorded_at')->limit(3),

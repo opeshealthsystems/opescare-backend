@@ -24,6 +24,17 @@ class PrescriptionItem extends Model
     use HasFactory, HasUuids;
     use \App\Traits\HasFacilityScope;
 
+    /**
+     * Line statuses that close a line WITHOUT it ever being handed over.
+     *
+     * A cancelled line is not outstanding — nobody is waiting to collect it —
+     * so a script whose only remaining line was cancelled is fully dispensed,
+     * not partially. The table documents `pending|dispensed|cancelled`; the two
+     * FHIR-shaped siblings are listed as well so a line closed under either
+     * vocabulary counts the same way.
+     */
+    public const CLOSED_STATUSES = ['cancelled', 'voided', 'entered_in_error'];
+
     /** The clinical order itself — frozen at the moment of prescribing. */
     public const IMMUTABLE_ATTRIBUTES = [
         'prescription_id',
@@ -99,6 +110,18 @@ class PrescriptionItem extends Model
     public function isDispensed(): bool
     {
         return $this->status === 'dispensed';
+    }
+
+    /** Cancelled, voided or entered in error: this line will never be handed over. */
+    public function isClosed(): bool
+    {
+        return in_array((string) $this->status, self::CLOSED_STATUSES, true);
+    }
+
+    /** Still owed to the patient — neither handed over nor cancelled. */
+    public function isOutstanding(): bool
+    {
+        return ! $this->isDispensed() && ! $this->isClosed();
     }
 
     /** Human-readable line, preferring the catalogue name when it is linked. */

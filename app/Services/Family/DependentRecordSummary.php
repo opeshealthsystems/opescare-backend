@@ -88,7 +88,10 @@ final class DependentRecordSummary
         return [
             'allergies'            => AllergyRecord::where('patient_id', $patientId)->where('status', 'active')->count(),
             'diagnoses'            => Diagnosis::where('patient_id', $patientId)->whereIn('status', ['active', 'chronic'])->count(),
-            'active_prescriptions' => Prescription::where('patient_id', $patientId)->where('status', 'active')->count(),
+            // OPEN_STATUSES, not 'active' alone: a script with one drug still
+            // to collect is `partially_dispensed`, and a guardian counting
+            // their dependent's live medicines must see it.
+            'active_prescriptions' => Prescription::where('patient_id', $patientId)->whereIn('status', Prescription::OPEN_STATUSES)->count(),
             'lab_results'          => LabResult::where('patient_id', $patientId)->count(),
             'immunizations'        => ImmunizationRecord::where('patient_id', $patientId)->where('status', '!=', 'entered_in_error')->count(),
             'last_visit_at'        => ($lastVisit?->started_at ?? $lastVisit?->created_at)?->toIso8601String(),

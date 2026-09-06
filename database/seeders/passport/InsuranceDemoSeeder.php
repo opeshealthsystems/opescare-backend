@@ -197,8 +197,9 @@ class InsuranceDemoSeeder extends Seeder
     /**
      * The three real plans, resolved by provider code and plan code.
      *
-     * `CameroonInsurancePlansSeeder` is not registered in DatabaseSeeder, so a
-     * host can have the fifteen insurers and none of their products. Rather
+     * `CameroonInsurancePlansSeeder` is registered in DatabaseSeeder now, but
+     * this seeder is also run on its own and against hosts seeded before that,
+     * where the fifteen insurers exist and none of their products do. Rather
      * than copy plan definitions here — a second source of truth that would
      * quietly drift from the first — the reference seeders that own that data
      * are run once, and only when what is needed is genuinely absent.

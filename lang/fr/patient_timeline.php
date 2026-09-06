@@ -28,6 +28,8 @@ return [
         'outpatient'     => 'Consultation externe',
         'inpatient'      => 'Hospitalisation',
         'emergency'      => 'Urgences',
+        'telemedicine' => 'Téléconsultation',
+        'referral' => 'Orientation',
         'lab-only'       => 'Laboratoire uniquement',
         'pharmacy-only'  => 'Pharmacie uniquement',
     ],

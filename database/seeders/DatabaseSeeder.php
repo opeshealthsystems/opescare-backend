@@ -45,6 +45,13 @@ class DatabaseSeeder extends Seeder
             // fills NULLs and never inserts.
             MinsanteCat14BackfillSeeder::class,
             CameroonInsuranceSeeder::class,
+            // The insurers are only half the record: without their products a
+            // fresh host has fifteen companies and nothing anyone can hold, so
+            // the insurance page and the purchase flow both read empty. Must
+            // follow CameroonInsuranceSeeder — this one resolves each plan's
+            // owner by `insurance_providers.code` and skips (with a warning)
+            // any insurer that is not there yet.
+            CameroonInsurancePlansSeeder::class,
             CareMapRegistryStubSeeder::class,
             PharmacyCatalogSeeder::class,
             // Must follow PharmacyCatalogSeeder: that seeder pins 6 curated

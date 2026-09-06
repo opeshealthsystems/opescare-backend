@@ -51,6 +51,11 @@ return [
             'message' => ':pharmacy has prepared prescription :reference. Bring your Health ID to collect it.',
             'action'  => 'View prescription',
         ],
+        'prescription_partially_dispensed' => [
+            'title'   => 'Part of your prescription has been dispensed',
+            'message' => ':pharmacy has dispensed part of prescription :reference. The rest is still to collect.',
+            'action'  => 'View prescription',
+        ],
         'prescription_dispensed' => [
             'title'   => 'Your prescription has been dispensed',
             'message' => ':pharmacy has dispensed prescription :reference. It is now recorded in your health record.',

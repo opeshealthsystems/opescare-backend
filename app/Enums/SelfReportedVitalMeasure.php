@@ -126,10 +126,11 @@ enum SelfReportedVitalMeasure: string
 
     /**
      * Contexts this measure may carry. Only glucose has one, and it matters:
-     * MobileVitalsController returns `unknown` for every laboratory glucose
-     * precisely because "the fasting state is not recorded anywhere in the
-     * schema, and applying a fasting band to a post-meal sample would call a
-     * healthy patient diabetic". The patient knows; this asks them.
+     * App\Support\VitalBandResolver bands every laboratory glucose against the
+     * wider RANDOM band precisely because "the fasting state is not recorded
+     * anywhere in the schema, and applying a fasting band to a post-meal sample
+     * would call a healthy patient diabetic". The patient knows; this asks
+     * them.
      *
      * @return string[]
      */

@@ -83,7 +83,7 @@
             </div>
             @endif
 
-            @if(in_array($rx->status, ['dispensed', 'active', 'partial']))
+            @if(in_array($rx->status, ['dispensed', 'active', 'partially_dispensed']))
             <div class="pf-appt__actions">
                 <button type="button" class="f-btn" onclick="pfOpenModal('refill-rx-{{ $rx->id }}')">
                     @include('partials.finder.icon', ['name' => 'refresh-cw', 'size' => 16])
@@ -102,7 +102,7 @@
     @endif
 
     @foreach($prescriptions as $rx)
-        @if(in_array($rx->status, ['dispensed', 'active', 'partial']))
+        @if(in_array($rx->status, ['dispensed', 'active', 'partially_dispensed']))
         <div id="refill-rx-{{ $rx->id }}" class="pf-modal-backdrop" hidden>
             <div class="pf-modal" role="dialog" aria-modal="true" aria-labelledby="refill-rx-{{ $rx->id }}-title">
                 <h3 id="refill-rx-{{ $rx->id }}-title">

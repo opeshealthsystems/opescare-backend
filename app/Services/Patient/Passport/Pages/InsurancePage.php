@@ -7,6 +7,7 @@ use App\Models\PatientInsurancePolicy;
 use App\Services\Patient\Passport\PageSource;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Lang;
 
 /**
  * Page 22 — Insurance & Coverage.
@@ -152,7 +153,7 @@ class InsurancePage extends PageSource
         ];
 
         if (($type = $this->word($plan?->plan_type)) !== '') {
-            $items[] = $this->item(__('passport.columns.type'), $this->statusLabel($type));
+            $items[] = $this->item(__('passport.columns.type'), $this->planTypeLabel($type));
         }
 
         // Only worth a row when the patient is NOT the principal member: "Self"
@@ -236,7 +237,7 @@ class InsurancePage extends PageSource
                 // A plain string, not cell(): a plan with no recorded type has
                 // nothing missing from it, and "Not recorded" repeated down an
                 // optional column reads as a gap where there is none.
-                $row[] = $type === '' ? '' : $this->statusLabel($type);
+                $row[] = $type === '' ? '' : $this->planTypeLabel($type);
             }
 
             $row[] = $this->cell((string) $policy->policy_number);
@@ -447,6 +448,22 @@ class InsurancePage extends PageSource
         } catch (\Throwable) {
             return null;
         }
+    }
+
+    /**
+     * A plan type in words somebody at a cashier's window recognises.
+     *
+     * `insurance_plans.plan_type` holds a coded token — nhia, mutual, employer,
+     * private — and the shared status tidier turned `nhia` into "Nhia", a word
+     * that names nothing in either language. Those four are translated properly.
+     * A token this schema has not met falls back to the tidier rather than being
+     * dropped: an untranslated type is still a fact the record holds.
+     */
+    private function planTypeLabel(string $type): string
+    {
+        $key = 'passport.plan_type_' . $type;
+
+        return Lang::has($key) ? __($key) : $this->statusLabel($type);
     }
 
     /** A recorded word, lowered and trimmed, for comparison against a list. */

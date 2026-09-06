@@ -7,6 +7,7 @@ use App\Enums\VitalProvenance;
 use App\Models\Patient;
 use App\Models\PatientRecordedVital;
 use App\Services\Patient\Passport\PageSource;
+use App\Support\VitalBandResolver;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -51,41 +52,61 @@ use Illuminate\Support\Facades\Lang;
  * measurement" — because the title alone can be skimmed past and that sentence
  * cannot.
  *
- * ── THIS PAGE FLAGS NOTHING, AND THAT IS DELIBERATE ───────────────────────
+ * ── THE FLAG IS NOT THIS FILE'S TO DECIDE ─────────────────────────────────
  *
- * No value on this page carries a high / low / normal word or a coloured pill.
- * There is no vital-sign equivalent of App\Support\ResultFlagResolver in this
- * codebase: the only adult advisory bands that exist are PRIVATE methods on
- * App\Http\Controllers\Api\Mobile\MobileVitalsController (`classify()`,
- * `bloodPressureStatus()`), reachable by nothing else. Copying those numbers
- * into this file would make the passport a second, independently drifting
- * reader of the same values — which is the exact failure ResultFlagResolver
- * was created to close, after three readers of `lab_results` classified the
- * same potassium three different ways.
+ * This page used to flag nothing at all, and said so at length: there was no
+ * vital-sign equivalent of App\Support\ResultFlagResolver, the only adult bands
+ * in the codebase were PRIVATE methods on MobileVitalsController reachable by
+ * nothing else, and copying those numbers here would have made the passport a
+ * second, independently drifting reader of the same values — the exact failure
+ * ResultFlagResolver was created to close after three readers of `lab_results`
+ * classified the same potassium three different ways.
  *
- * The other candidates are worse. SelfReportedVitalMeasure::primaryBounds()
- * looks like a range and is not one — its own docblock says these are "no
- * living human ever measured this" bounds, so a systolic of 210 sits happily
- * inside them. TriageVitalSign::hasFeverFlag() and hasHypoxiaFlag() are real
- * advisory helpers, but they cover temperature and saturation only; using them
- * would put a red pill on a temperature and NOTHING beside a blood pressure of
- * 196/124, which a reader would take as "the blood pressure was looked at and
- * was fine". Partial flagging is more dangerous than none.
+ * THAT REASONING IS NOW SUPERSEDED, ON ITS OWN TERMS. Its closing sentence was
+ * "if this platform later grows a shared vitals-band authority, this page
+ * should ask it and print its answer; it must never do the arithmetic itself."
+ * App\Support\VitalBandResolver is that authority: the bands moved out of the
+ * controller into it, the controller now asks it, and so does this page. No
+ * comparison is performed in this file, anywhere — not one threshold, not one
+ * inequality. The two surfaces cannot drift because there is only one of them.
  *
- * So the page prints the value, the unit, when it was taken and who took it,
- * and leaves the reading of it to the clinician — which is the one thing that
- * is certainly correct. If this platform later grows a shared vitals-band
- * authority, this page should ask it and print its answer; it must never do
- * the arithmetic itself.
+ * The old objection that survived is PARTIAL FLAGGING: a red pill on a
+ * temperature and nothing beside a blood pressure of 196/124 reads as "the
+ * blood pressure was looked at and was fine". Two things answer it:
+ *
+ *   - A NORMAL reading gets a pill too. Absence of a pill therefore means "not
+ *     assessed", not "assessed and fine" — the inference the old docblock
+ *     feared is the one that can no longer be drawn.
+ *   - The resolver bands every measure on this page except WEIGHT, which it
+ *     refuses on purpose (a body weight has no adult range without a height,
+ *     and this page reads none). That refusal is PRINTED, as the passport's own
+ *     "Not recorded" in the Flag column, exactly as the laboratory page prints
+ *     an unflagged analyte. A blank flag is a visible blank, not a silence.
+ *
+ * The other candidates remain rejected for their original reasons.
+ * SelfReportedVitalMeasure::primaryBounds() looks like a range and is not one —
+ * its own docblock says these are "no living human ever measured this" bounds,
+ * so a systolic of 210 sits happily inside them. TriageVitalSign::hasFeverFlag()
+ * and hasHypoxiaFlag() cover temperature and saturation only.
+ *
+ * ── AND THE PATIENT'S OWN READINGS ARE STILL NOT FLAGGED ──────────────────
+ *
+ * The self-reported block carries no band and must not. VitalProvenance says a
+ * home reading "has not been checked by a health worker and is not a clinical
+ * measurement", and the callout above the table says it to the reader in words.
+ * A clinical pill on an unverified number would contradict the sentence printed
+ * directly above it, and would turn a supermarket cuff into a diagnosis. The
+ * asymmetry between the two blocks is the point of the page.
  *
  * ── WHAT THE APPROVED SHEETS SHOW THAT THIS DEPLOYMENT CANNOT SUPPLY ──────
  *
  * The measurement sheets carry a per-analyte trend chart, a status donut and a
  * counted-tile header. The charts are a rendering the passport block API has no
- * shape for, and the tiles would have to count "normal" against "abnormal" —
- * a classification this page has just refused to make, so counting it would
- * smuggle it back in. `passport.stats.*` has no key for a measurement count in
- * any case. All three are left out rather than approximated.
+ * shape for. The tiles are now countable — the resolver would answer for each
+ * row — but `passport.stats.*` has no key for a measurement count, and a tile
+ * counted over facility and home readings together would undo the separation
+ * this whole page is built around. All three are left out rather than
+ * approximated.
  */
 class VitalsPage extends PageSource
 {
@@ -109,6 +130,19 @@ class VitalsPage extends PageSource
      */
     private const RECENT_PER_MEASURE = 4;
 
+    /**
+     * The resolver's four severities → the design's pill tones, identical to
+     * the laboratory page's mapping so one document does not colour "critical"
+     * two ways. `info` is the resolver's word for "nothing was compared", and
+     * it deliberately gets no pill rather than a neutral-looking one.
+     */
+    private const TONES = [
+        'critical' => 'danger',
+        'warning'  => 'warning',
+        'success'  => 'success',
+        'info'     => null,
+    ];
+
     public function build(Patient $patient): array
     {
         $sections = [];
@@ -122,6 +156,10 @@ class VitalsPage extends PageSource
                     __('passport.columns.measure'),
                     __('passport.columns.value'),
                     __('passport.columns.unit'),
+                    // The band column exists on the FACILITY table only. There
+                    // is no matching column on the self-reported table below,
+                    // so the two blocks cannot be misread as one.
+                    __('passport.columns.flag'),
                     __('passport.columns.measured'),
                     __('passport.columns.facility'),
                 ],
@@ -186,11 +224,12 @@ class VitalsPage extends PageSource
         $rows = [];
 
         foreach ($readings as $reading) {
-            foreach ($this->measuresOf($reading) as [$label, $value, $unit]) {
+            foreach ($this->measuresOf($reading) as [$label, $value, $unit, $band]) {
                 $rows[] = [
                     $this->cell($label),
                     $this->cell($value),
                     $this->cell($unit),
+                    $this->bandCell($band),
                     $this->cell($this->date($reading['at'], 'd M Y, H:i')),
                     $this->cell((string) ($reading['facility'] ?? '')),
                 ];
@@ -198,6 +237,43 @@ class VitalsPage extends PageSource
         }
 
         return $rows;
+    }
+
+    /**
+     * The resolver's verdict on one printed measure.
+     *
+     * The value handed to the resolver is the one PRINTED beside the pill, not
+     * the raw column: this is a document someone reads on paper, and a pill
+     * that cannot be justified against the number next to it is worse than no
+     * pill. (A 38.04 °C stored at two decimals prints as 38.0; it is banded as
+     * 38.0.)
+     *
+     * @param  string|SelfReportedVitalMeasure  $measure
+     * @return array{band: string, source: string|null, measure: string|null, numeric: float|null, secondary: float|null}
+     */
+    private function band(string|SelfReportedVitalMeasure $measure, ?string $value, string $unit, ?string $secondary = null): array
+    {
+        return VitalBandResolver::resolve($measure, $value, $secondary, $unit);
+    }
+
+    /**
+     * The band as a cell. `unknown` — no opinion — prints the passport's own
+     * blank and carries NO pill, exactly as the laboratory page prints an
+     * analyte nobody compared to anything. A green pill there would be a
+     * reassurance the record never gave.
+     *
+     * @param  array{band: string, source: string|null}  $verdict
+     * @return array{v: string, pill?: string}
+     */
+    private function bandCell(array $verdict): array
+    {
+        $key = VitalBandResolver::labelKey($verdict['band']);
+
+        if ($key === null) {
+            return $this->cell('');
+        }
+
+        return $this->cell(__($key), self::TONES[VitalBandResolver::severity($verdict['band'])] ?? null);
     }
 
     /**
@@ -293,8 +369,13 @@ class VitalsPage extends PageSource
      * A null column produces NO row. Nothing is zero-filled, averaged or
      * carried forward from an earlier reading.
      *
+     * Each measure carries the shared resolver's verdict with it. Every one of
+     * the six asks the same authority, including WEIGHT — which the resolver
+     * answers with "no opinion", and which therefore prints a blank flag rather
+     * than being quietly left out of the question.
+     *
      * @param  array<string,mixed>  $reading
-     * @return list<array{0:string,1:string,2:string}>  [label, value, unit]
+     * @return list<array{0:string,1:string,2:string,3:array<string,mixed>}>  [label, value, unit, verdict]
      */
     private function measuresOf(array $reading): array
     {
@@ -304,8 +385,14 @@ class VitalsPage extends PageSource
             // No patient-facing measure name exists for pulse, respiratory
             // rate or saturation — a patient cannot record them at home, so
             // SelfReportedVitalMeasure has no case for them. These are the
-            // triage screen's own labels for the same three numbers.
-            $out[] = [__('staff_clinical.vital_pulse'), $pulse, 'bpm'];
+            // triage screen's own labels for the same three numbers, and the
+            // resolver's own keys for the same three bands.
+            $out[] = [
+                __('staff_clinical.vital_pulse'),
+                $pulse,
+                'bpm',
+                $this->band(VitalBandResolver::HEART_RATE, $pulse, 'bpm'),
+            ];
         }
 
         $systolic  = $this->number($reading['systolic'], 0);
@@ -318,11 +405,22 @@ class VitalsPage extends PageSource
                 $this->measureName(SelfReportedVitalMeasure::BloodPressure),
                 $systolic . '/' . $diastolic,
                 SelfReportedVitalMeasure::BloodPressure->defaultUnit(),
+                $this->band(
+                    SelfReportedVitalMeasure::BloodPressure,
+                    $systolic,
+                    SelfReportedVitalMeasure::BloodPressure->defaultUnit(),
+                    $diastolic
+                ),
             ];
         }
 
         if (($spo2 = $this->number($reading['spo2'], 0)) !== null) {
-            $out[] = [__('staff_clinical.vital_spo2'), $spo2, '%'];
+            $out[] = [
+                __('staff_clinical.vital_spo2'),
+                $spo2,
+                '%',
+                $this->band(VitalBandResolver::OXYGEN_SATURATION, $spo2, '%'),
+            ];
         }
 
         if (($temperature = $this->number($reading['temperature'], 1)) !== null) {
@@ -330,11 +428,21 @@ class VitalsPage extends PageSource
                 $this->measureName(SelfReportedVitalMeasure::Temperature),
                 $temperature,
                 SelfReportedVitalMeasure::Temperature->defaultUnit(),
+                $this->band(
+                    SelfReportedVitalMeasure::Temperature,
+                    $temperature,
+                    SelfReportedVitalMeasure::Temperature->defaultUnit()
+                ),
             ];
         }
 
         if (($respiratory = $this->number($reading['respiratory'], 0)) !== null) {
-            $out[] = [__('staff_clinical.vital_rr'), $respiratory, '/min'];
+            $out[] = [
+                __('staff_clinical.vital_rr'),
+                $respiratory,
+                '/min',
+                $this->band(VitalBandResolver::RESPIRATORY_RATE, $respiratory, '/min'),
+            ];
         }
 
         if (($weight = $this->number($reading['weight'], 1)) !== null) {
@@ -342,6 +450,13 @@ class VitalsPage extends PageSource
                 $this->measureName(SelfReportedVitalMeasure::Weight),
                 $weight,
                 SelfReportedVitalMeasure::Weight->defaultUnit(),
+                // Asked, and answered "no band". The blank in the flag column
+                // is the resolver's refusal, printed.
+                $this->band(
+                    SelfReportedVitalMeasure::Weight,
+                    $weight,
+                    SelfReportedVitalMeasure::Weight->defaultUnit()
+                ),
             ];
         }
 
@@ -358,6 +473,12 @@ class VitalsPage extends PageSource
      * mistyped reading that the patient took back is part of the history of the
      * record, but it is not a value anyone should treat as current, and a
      * passport shows current values.
+     *
+     * NO BAND IS ASKED FOR HERE, and none is printed. These readings are
+     * unverified by design — the callout directly above this table says so in
+     * the platform's own approved words — and a clinical pill on an unchecked
+     * home number would contradict the sentence it sits under. The resolver
+     * would happily band a home blood pressure; it is not asked.
      *
      * @return list<list<array{v:string,pill?:string}>>
      */

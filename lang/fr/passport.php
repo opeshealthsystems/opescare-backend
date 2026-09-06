@@ -5,8 +5,8 @@
 | Health Passport
 |--------------------------------------------------------------------------
 |
-| Les trente pages du Passeport de sante OpesCare, dans l’ordre canonique.
-| L’Identifiant Sante dit qui vous etes ; le Passeport organise le dossier.
+| Les trente pages du Passeport de santé OpesCare, dans l’ordre canonique.
+| L’Identifiant Santé dit qui vous êtes ; le Passeport organise le dossier.
 |
 | Page titles live here rather than in the builder so both languages are
 | edited together and stay 1:1 (scripts/i18n-audit.php enforces it).
@@ -17,43 +17,48 @@ return [
 
     'title'          => 'Passeport de santé',
     'open'           => 'Ouvrir mon Passeport de santé',
-    'subtitle'       => 'Votre dossier, organise en trente pages',
+    'subtitle'       => 'Votre dossier, organisé en trente pages',
     'pages_label'    => 'Pages',
     'page_of'        => 'Page :number sur :total',
-    'previous'       => 'Precedent',
+    'previous'       => 'Précédent',
     'next'           => 'Suivant',
     'loading'        => 'Chargement de votre Passeport de santé…',
-    'empty'          => 'Rien n\'a encore ete enregistre sur cette page.',
-    'empty_hint'     => 'Elle se remplit a mesure que vos soins sont enregistres. Une page vide signifie qu\'aucune donnee n\'a ete enregistree, pas qu\'il en manque.',
-    'error'          => 'Cette page n\'a pas pu etre chargee.',
-    'try_again'      => 'Reessayer',
-    'current'        => 'A jour',
-    'cached'         => 'Copie enregistree',
-    'demo'           => 'Compte de demonstration — ceci n\'est pas un justificatif reel',
+    'empty'          => 'Rien n’a encore été enregistré sur cette page.',
+    'empty_hint'     => 'Elle se remplit à mesure que vos soins sont enregistrés. Une page vide signifie qu’aucune donnée n’a été enregistrée, pas qu’il en manque.',
+    'error'          => 'Cette page n’a pas pu être chargée.',
+    'try_again'      => 'Réessayer',
+    'current'        => 'À jour',
+    'cached'         => 'Copie enregistrée',
+    'demo'           => 'Compte de démonstration — ceci n’est pas un justificatif réel',
     'secure'         => 'OpesCare Secure',
-    'tagline'        => 'PERSONNES • DONNEES • CONFIANCE • MEILLEURE SANTE • AFRIQUE',
+    'tagline'        => 'PERSONNES • DONNÉES • CONFIANCE • MEILLEURE SANTÉ • AFRIQUE',
     'not_recorded'   => 'Non renseigné',
     'status'         => 'Statut',
     'health_id'      => 'Identifiant Santé',
     'version'        => 'Version',
-    'last_updated'   => 'Derniere mise a jour',
+    'last_updated'   => 'Dernière mise à jour',
     'none_recorded'  => 'Aucun enregistrement',
     'common_name'    => 'Nom',
     'dob'            => 'Date de naissance',
     'sex'            => 'Sexe',
     'sex_male'       => 'Masculin',
-    'sex_female'     => 'Feminin',
+    'sex_female'     => 'Féminin',
     'blood_group'    => 'Groupe sanguin',
     'allergies_label' => 'Allergies',
-    'emergency_contact' => 'Contact d\'urgence',
+    'emergency_contact' => 'Contact d’urgence',
     'recorded'       => 'Enregistré',
     'as_prescribed'  => 'Selon la prescription',
-    'care_team_member' => 'Membre de l\'equipe soignante',
-    'a_facility'     => 'Un etablissement',
-    'until'          => 'Jusqu\'au :date',
+    'care_team_member' => 'Membre de l’équipe soignante',
+    'a_facility'     => 'Un établissement',
+    'until'          => 'Jusqu’au :date',
     'next_appointment' => 'Prochain rendez-vous',
     'checked_against' => 'Vérifié auprès de',
-    'checked_against_value' => 'Le registre national, au moment de la verification',
+    'checked_against_value' => 'Le registre national, au moment de la vérification',
+
+    // Chaque mot qu’un statut peut prendre, pour que FormatsRecords::statusLabel()
+    // n’ait jamais à se rabattre sur le mot anglais remis en forme. Une clé
+    // manquante ici ne donne pas une page vide : elle donne un mot anglais sur
+    // le passeport d’un lecteur francophone.
     'status_active'      => 'Actif',
     'status_provisional' => 'Provisoire',
     'status_suspended'   => 'Suspendu',
@@ -92,34 +97,84 @@ return [
     'status_deceased' => 'Décédé',
     'status_cancelled'   => 'Annulé',
 
+    // Cycle de vie d’une orientation (referral_cases.status) et tri clinique
+    // (referral_cases.urgency). « emergency » est aussi un type de consultation :
+    // le mot doit se lire aussi bien comme niveau de tri que comme type de visite.
+    'status_sent' => 'Envoyé',
+    'status_accepted' => 'Accepté',
+    'status_rejected' => 'Rejeté',
+    'status_routine' => 'Non urgent',
+    'status_urgent' => 'Urgent',
+    'status_emergency' => 'Urgence',
+
+    // Demandes de consentement, demandes de correction et liens familiaux —
+    // les décisions que le patient prend sur son propre dossier.
+    'status_approved' => 'Approuvé',
+    'status_denied' => 'Refusé',
+    'status_declined' => 'Décliné',
+    'status_withdrawn' => 'Retiré',
+    'status_pending_patient_approval' => 'En attente de votre accord',
+    'status_pending_invite' => 'Invitation en attente',
+    'status_treatment' => 'Soins',
+
+    // Un enregistrement qu’un autre a remplacé, et une couverture arrivée à
+    // terme. « status_suspended_policy » existe parce que « status_suspended »
+    // est déjà le mot du justificatif ; on l’appelle par son nom, il n’est pas
+    // déduit d’une valeur enregistrée.
+    'status_superseded' => 'Remplacé',
+    'status_lapsed' => 'Échu',
+    'status_suspended_policy' => 'Suspendue',
+
+    // Rôles au sein de l’équipe soignante (care_team_members.role).
+    'status_attending' => 'Médecin référent',
+    'status_consulting' => 'Médecin consultant',
+    'status_nursing' => 'Soins infirmiers',
+    'status_pharmacy' => 'Pharmacie',
+    'status_social_work' => 'Service social',
+
+    // Vaccination et dépistage.
+    'status_administered' => 'Administré',
+    'status_given' => 'Administré',
+    'status_not_given' => 'Non administré',
+    'status_refused' => 'Refusé',
+    'status_due' => 'À faire',
+
+    // Types de couverture, tels que insurance_plans.plan_type les enregistre.
+    // Sans ces clés, le formateur transformait « nhia » en « Nhia », un mot
+    // qui ne veut rien dire.
+    'plan_type_nhia'     => 'Assurance maladie nationale',
+    'plan_type_mutual'   => 'Mutuelle de santé',
+    'plan_type_employer' => 'Régime employeur',
+    'plan_type_private'  => 'Assurance privée',
+
     'pages' => [
         'cover' => [
             'title'    => 'Passeport de santé',
             'subtitle' => 'Votre dossier de santé longitudinal sécurisé',
         ],
         'patient-identity' => [
-            'title'    => 'Identite du patient',
-            'subtitle' => 'A qui appartient ce dossier',
+            'title'    => 'Identité du patient',
+            'subtitle' => 'À qui appartient ce dossier',
         ],
         'emergency-profile' => [
             'title'    => 'Profil d’urgence',
             'subtitle' => 'Ce dont un soignant a besoin en urgence',
         ],
         'medical-summary' => [
-            'title'    => 'Resume medical',
+            'title'    => 'Résumé médical',
             'subtitle' => 'Une vue d’ensemble de votre dossier',
         ],
         'allergies-alerts' => [
             'title'    => 'Allergies et alertes',
-            'subtitle' => 'Informations de securite a verifier en premier',
+            'subtitle' => 'Informations de sécurité à vérifier en premier',
         ],
         'current-medications' => [
             'title'    => 'Traitements en cours',
-            'subtitle' => 'Les medicaments que vous prenez actuellement',
+            'subtitle' => 'Les médicaments que vous prenez actuellement',
         ],
         'conditions' => [
             'title'    => 'Pathologies',
-            'subtitle' => 'Votre liste de problemes dans le temps',
+            'subtitle' => 'Votre liste de problèmes dans le temps',
         ],
         'encounters' => [
             'title'    => 'Consultations',
@@ -135,7 +190,7 @@ return [
         ],
         'laboratory' => [
             'title'    => 'Résultats de laboratoire',
-            'subtitle' => 'Analyses et leurs resultats',
+            'subtitle' => 'Analyses et leurs résultats',
         ],
         'radiology' => [
             'title'    => 'Radiologie et imagerie',
@@ -143,39 +198,39 @@ return [
         ],
         'cardiology' => [
             'title'    => 'Cardiologie',
-            'subtitle' => 'Examens et resultats cardiaques',
+            'subtitle' => 'Examens et résultats cardiaques',
         ],
         'immunization' => [
             'title'    => 'Carnet de vaccination',
-            'subtitle' => 'Les vaccins que vous avez recus',
+            'subtitle' => 'Les vaccins que vous avez reçus',
         ],
         'prescriptions' => [
             'title'    => 'Ordonnances',
-            'subtitle' => 'Les medicaments qui vous ont ete prescrits',
+            'subtitle' => 'Les médicaments qui vous ont été prescrits',
         ],
         'dispensing' => [
             'title'    => 'Délivrances',
-            'subtitle' => 'Ce qu’une pharmacie a delivre',
+            'subtitle' => 'Ce qu’une pharmacie a délivré',
         ],
         'referrals' => [
             'title'    => 'Orientations',
-            'subtitle' => 'Prise en charge et orientations vers un specialiste',
+            'subtitle' => 'Prise en charge et orientations vers un spécialiste',
         ],
         'medical-certificates' => [
-            'title'    => 'Certificats medicaux',
-            'subtitle' => 'Les certificats qui vous ont ete delivres',
+            'title'    => 'Certificats médicaux',
+            'subtitle' => 'Les certificats qui vous ont été délivrés',
         ],
         'discharge-summary' => [
             'title'    => 'Comptes rendus de sortie',
-            'subtitle' => 'Comment vos sejours se sont conclus',
+            'subtitle' => 'Comment vos séjours se sont conclus',
         ],
         'maternal-child' => [
             'title'    => 'Santé maternelle et infantile',
             'subtitle' => 'Dossiers de grossesse et de santé de l’enfant',
         ],
         'care-providers' => [
-            'title'    => 'Equipe soignante',
-            'subtitle' => 'L’equipe qui participe a vos soins',
+            'title'    => 'Équipe soignante',
+            'subtitle' => 'L’équipe qui participe à vos soins',
         ],
         'insurance' => [
             'title'    => 'Assurance et couverture',
@@ -183,11 +238,11 @@ return [
         ],
         'consent-sharing' => [
             'title'    => 'Consentement et partage',
-            'subtitle' => 'Qui vous avez autorise a consulter votre dossier',
+            'subtitle' => 'Qui vous avez autorisé à consulter votre dossier',
         ],
         'verification' => [
-            'title'    => 'Centre de verification',
-            'subtitle' => 'Prouvez que ce dossier est le votre et a jour',
+            'title'    => 'Centre de vérification',
+            'subtitle' => 'Prouvez que ce dossier est le vôtre et à jour',
         ],
         'vitals' => [
             'title'    => 'Signes vitaux',
@@ -195,7 +250,7 @@ return [
         ],
         'family-genetic' => [
             'title'    => 'Antécédents familiaux',
-            'subtitle' => 'Pathologies presentes dans votre famille',
+            'subtitle' => 'Pathologies présentes dans votre famille',
         ],
         'preventive-screening' => [
             'title'    => 'Prévention et dépistage',
@@ -238,7 +293,7 @@ return [
         'who_has_access' => 'Qui a accès',
         'imaging_reports' => 'Comptes rendus d’imagerie',
         'recent_results' => 'Résultats récents',
-        'identity' => 'Identite',
+        'identity' => 'Identité',
         'credential' => 'Justificatif',
         'summary' => 'En un coup d’œil',
         'allergies' => 'Allergies',
@@ -256,14 +311,20 @@ return [
         'referrals' => 'Orientations',
         'documents' => 'Documents',
         'discharge' => 'Sorties',
-        'providers' => 'Votre equipe soignante',
+        'providers' => 'Votre équipe soignante',
         'insurance' => 'Couverture',
         'consent' => 'Autorisations actives',
         'verification_history' => 'Historique des vérifications',
-        'verification' => 'Comment verifier',
-        'vitals' => 'Dernieres mesures',
+        'verification' => 'Comment vérifier',
+        'vitals' => 'Dernières mesures',
         'care_plans' => 'Plans',
         'emergency' => 'En cas d’urgence',
+        // Titres que des pages devaient emprunter ailleurs, faute des leurs.
+        'sharing_history' => 'Historique des partages',
+        'primary_care_provider' => 'Professionnel de santé référent',
+        'facilities' => 'Établissements',
+        'outcome' => 'Issue',
+        'corrections' => 'Corrections',
     ],
 
     // The column headers, block captions and section names the approved
@@ -334,6 +395,20 @@ return [
         'started' => 'Débuté le',
         'review' => 'Revue',
         'detail' => 'Détail',
+        // Titres qui manquaient au vocabulaire. « urgency » est le tri clinique
+        // et n’est PAS « flag » ; « impression » est la conclusion du radiologue
+        // et n’est PAS « findings » ; « lot », « manufacturer » et « site »
+        // nomment ce que contient un carnet de vaccination et ne pouvaient pas
+        // être imprimés faute d’en-tête.
+        'urgency' => 'Degré d’urgence',
+        'impression' => 'Interprétation',
+        'recommendation' => 'Recommandation',
+        'insurer' => 'Assureur',
+        'qualification' => 'Qualification',
+        'address' => 'Adresse',
+        'lot' => 'Numéro de lot',
+        'manufacturer' => 'Fabricant',
+        'site' => 'Site d’injection',
     ],
 
     'blocks' => [
@@ -364,6 +439,8 @@ return [
         'vaccines' => 'Vaccins',
         'admissions' => 'Hospitalisations',
         'documents' => 'Documents',
+        'studies' => 'Examens',
+        'readings' => 'Relevés',
     ],
 
 ];

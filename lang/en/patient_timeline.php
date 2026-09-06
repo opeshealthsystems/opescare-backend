@@ -41,6 +41,8 @@ return [
         'outpatient'     => 'Outpatient',
         'inpatient'      => 'Inpatient',
         'emergency'      => 'Emergency',
+        'telemedicine' => 'Telemedicine',
+        'referral' => 'Referral',
         'lab-only'       => 'Laboratory only',
         'pharmacy-only'  => 'Pharmacy only',
     ],

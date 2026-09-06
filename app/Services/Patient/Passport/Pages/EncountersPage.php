@@ -88,7 +88,7 @@ class EncountersPage extends PageSource
                 ],
                 $encounters->map(fn (Encounter $e) => [
                     $this->cell($this->date($e->started_at)),
-                    $this->cell($this->statusLabel($e->encounter_type)),
+                    $this->cell($this->visitType($e->encounter_type)),
                     $this->cell((string) ($facilities[(string) $e->facility_id] ?? '')),
                     $this->cell((string) ($providers[(string) $e->attending_provider_id] ?? '')),
                     $this->cell((string) $e->reason_for_encounter),
@@ -143,7 +143,7 @@ class EncountersPage extends PageSource
             ->filter(fn (Encounter $e) => trim((string) $e->discharge_disposition) !== '')
             ->map(fn (Encounter $e) => [
                 $this->cell($this->date($e->started_at)),
-                $this->cell($this->statusLabel($e->encounter_type)),
+                $this->cell($this->visitType($e->encounter_type)),
                 $this->cell((string) ($facilities[(string) $e->facility_id] ?? '')),
                 $this->cell(trim((string) $e->discharge_disposition)),
             ])
@@ -231,4 +231,24 @@ class EncountersPage extends PageSource
             return [];
         }
     }
+
+    /**
+     * The kind of visit, in the reader's language.
+     *
+     * `encounter_type` is a closed vocabulary and this platform already
+     * translates it for the patient's own timeline, so the passport asks for
+     * that word rather than growing a second one — two names for one visit
+     * type is how a document starts disagreeing with itself. A value the map
+     * has not met falls back to the tidied recorded word.
+     */
+    private function visitType(?string $type): string
+    {
+        $raw = strtolower(trim((string) $type));
+        $key = 'patient_timeline.visit_type.' . $raw;
+
+        return $raw !== '' && \Illuminate\Support\Facades\Lang::has($key)
+            ? __($key)
+            : $this->statusLabel($type);
+    }
+
 }

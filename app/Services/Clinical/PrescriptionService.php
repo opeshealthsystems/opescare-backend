@@ -107,12 +107,30 @@ class PrescriptionService
     }
 
     /**
-     * Record a dispense against a prescription.
+     * Record a hand-over against a prescription.
      *
-     * Refuses a second dispense outright: a repeat POST from the pharmacy queue
-     * must not silently re-stamp a prescription that is already handed over.
+     * A hand-over is recorded ON THE LINES — `prescription_items.status` is the
+     * only place that knows which drug actually left the shelf. The header is
+     * then DERIVED from them (Prescription::dispensingStatusFromItems), never
+     * asserted: every fillable line handed over reads 'dispensed', some but not
+     * all reads 'partially_dispensed'. Before this, the header was hard-set to
+     * 'dispensed' on every call, so `partially_dispensed` — a status the schema
+     * allows and six readers check for — could never be written at all.
      *
-     * @throws \LogicException when the prescription is not dispensable.
+     * Refuses a second dispense of a FULLY dispensed script outright: a repeat
+     * POST from the pharmacy queue must not re-stamp a completed hand-over. A
+     * partially dispensed one is still open and may be completed later.
+     *
+     * Options:
+     *   notes     — written onto each line this call hands over.
+     *   item_ids  — the lines actually handed over. Omit (or null) to hand over
+     *               every outstanding line, which is what the pharmacy portal
+     *               and the walk-in counter do; pass a list to record a partial
+     *               hand-over. Ids that are already dispensed, cancelled or not
+     *               on this prescription are ignored.
+     *
+     * @throws \LogicException when the prescription is not dispensable, or when
+     *                         the call would hand over nothing at all.
      */
     public function dispense(Prescription $prescription, ?string $actorId = null, array $options = []): Prescription
     {
@@ -124,26 +142,72 @@ class PrescriptionService
             throw new \LogicException('PRESCRIPTION_NOT_DISPENSABLE');
         }
 
-        DB::transaction(function () use ($prescription, $actorId, $options) {
-            foreach ($prescription->items()->get() as $item) {
-                if ($item->isDispensed()) {
+        $only = isset($options['item_ids']) && $options['item_ids'] !== null
+            ? array_map('strval', (array) $options['item_ids'])
+            : null;
+
+        $handedOver = 0;
+        $derived    = null;
+
+        DB::transaction(function () use ($prescription, $actorId, $options, $only, &$handedOver, &$derived) {
+            $lines = $prescription->items()->get();
+
+            foreach ($lines as $item) {
+                // Already handed over, or cancelled and never going to be.
+                if (! $item->isOutstanding()) {
                     continue;
                 }
+                // A partial hand-over: only the lines the pharmacist listed.
+                if ($only !== null && ! in_array((string) $item->id, $only, true)) {
+                    continue;
+                }
+
                 $item->status         = 'dispensed';
                 $item->dispensed_at   = now();
                 $item->dispense_notes = $options['notes'] ?? $item->dispense_notes;
                 $item->save();
+                $handedOver++;
             }
 
-            $prescription->status       = 'dispensed';
-            $prescription->dispensed_at = now();
+            $derived = $prescription->dispensingStatusFromItems($lines);
+
+            // Nothing left the shelf and there is nothing to put right either:
+            // a no-op, not a dispense. Say so, rather than returning an
+            // untouched script as though the counter had done something. The
+            // exception is a header that disagrees with its own lines — a row
+            // written before the header was derived — which is corrected here
+            // exactly as the repair migration would.
+            if ($handedOver === 0 && ($derived === null || $derived === $prescription->status)) {
+                throw new \LogicException('PRESCRIPTION_NO_ITEMS_TO_DISPENSE');
+            }
+
+            if ($derived !== null) {
+                $prescription->status = $derived;
+            }
+
+            // Who recorded the hand-over — stamped on a partial too, so the
+            // record names the pharmacist behind the counter either way. WHEN
+            // it was dispensed is only true once nothing is outstanding, and is
+            // never re-stamped: the first completion is the one that counts.
             $prescription->dispensed_by = $actorId ?? $this->ctx->actorId();
+
+            if ($prescription->status === 'dispensed' && $prescription->dispensed_at === null) {
+                $prescription->dispensed_at = now();
+            }
+
             $prescription->save();
         });
 
-        $this->audit('prescription_dispensed', $prescription, $actorId, [
-            'reason' => 'Prescription dispensed',
-        ]);
+        $partial = $derived === 'partially_dispensed';
+
+        $this->audit(
+            $partial ? 'prescription_partially_dispensed' : 'prescription_dispensed',
+            $prescription,
+            $actorId,
+            ['reason' => $partial
+                ? 'Prescription partially dispensed — ' . $handedOver . ' item(s) handed over'
+                : 'Prescription dispensed'],
+        );
 
         return $prescription->refresh();
     }
