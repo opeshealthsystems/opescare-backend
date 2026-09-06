@@ -158,8 +158,8 @@ abstract class PageSource
     {
         return match (strtolower(trim((string) $severity))) {
             'severe', 'critical', 'high', 'life_threatening' => 'danger',
-            'moderate', 'medium'                             => 'warning',
-            'mild', 'low'                                    => 'caution',
+            'moderate', 'medium', 'warning'                  => 'warning',
+            'mild', 'low', 'info'                            => 'caution',
             default                                          => null,
         };
     }
@@ -168,7 +168,9 @@ abstract class PageSource
     protected function statusTone(?string $status): ?string
     {
         return match (strtolower(trim((string) $status))) {
-            'active', 'completed', 'resolved', 'verified', 'dispensed' => 'success',
+            'active', 'completed', 'resolved', 'verified', 'dispensed',
+            'chronic', 'confirmed', 'discharged'                        => 'success',
+            'transferred'                                              => 'neutral',
             'pending', 'in_progress', 'partially_dispensed', 'booked'  => 'warning',
             'cancelled', 'expired', 'revoked', 'failed'                => 'danger',
             default                                                    => null,

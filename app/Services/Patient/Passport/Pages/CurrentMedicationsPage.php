@@ -97,7 +97,7 @@ class CurrentMedicationsPage extends PageSource
                     __('passport.columns.dose'),
                     // No passport.columns.route exists yet; prescriber.route is
                     // the same word and is already 1:1 in EN/FR.
-                    __('prescriber.route'),
+                    __('passport.columns.route'),
                     __('passport.columns.frequency'),
                     __('passport.columns.prescribed'),
                     __('passport.columns.status'),

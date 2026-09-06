@@ -76,6 +76,16 @@ return [
     'status_confirmed' => 'Confirmed',
     'status_verified' => 'Verified',
     'status_inactive' => 'Inactive',
+    'status_chronic' => 'Chronic',
+    'status_entered_in_error' => 'Entered in error',
+    'status_discharged' => 'Discharged',
+    'status_transferred' => 'Transferred',
+    'status_voided' => 'Voided',
+    'status_amended' => 'Amended',
+    'status_final' => 'Final',
+    'status_preliminary' => 'Preliminary',
+    'status_corrected' => 'Corrected',
+    'status_draft' => 'Draft',
     'status_cancelled'   => 'Cancelled',
 
     'pages' => [
@@ -233,9 +243,11 @@ return [
         'conditions' => 'Conditions',
         'encounters' => 'Recent encounters',
         'admissions' => 'Admissions',
+        'lab_orders' => 'Laboratory orders',
         'laboratory' => 'Recent results',
         'imaging' => 'Imaging',
         'immunisations' => 'Vaccines given',
+        'awaiting_collection' => 'Awaiting collection',
         'prescriptions' => 'Prescriptions',
         'dispensing' => 'Dispensed',
         'referrals' => 'Referrals',
@@ -339,6 +351,7 @@ return [
     ],
 
     'stats' => [
+        'dispensed' => 'Dispensed',
         'conditions' => 'Conditions',
         'medicines' => 'Medicines',
         'encounters' => 'Visits',

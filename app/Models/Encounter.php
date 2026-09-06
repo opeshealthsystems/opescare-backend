@@ -53,7 +53,14 @@ class Encounter extends Model
 
     public function facility(): BelongsTo
     {
-        return $this->belongsTo(CareFacility::class, 'facility_id');
+        // encounters.facility_id names a row in the tenant `facilities`
+        // register, not the public care-facility directory. Pointed at
+        // CareFacility this returned null for every real encounter.
+        // The demo isolation scope hides real facility rows, and an
+        // encounter whose facility silently reads as "not recorded" is
+        // worse than one that names where it happened.
+        return $this->belongsTo(Facility::class, 'facility_id')
+            ->withoutGlobalScope('isolate_demo');
     }
 
     public function admission(): BelongsTo
