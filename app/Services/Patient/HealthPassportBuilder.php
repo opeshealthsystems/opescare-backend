@@ -510,10 +510,10 @@ class HealthPassportBuilder
             return [];
         }
 
-        $names = User::whereIn('id', $rows->pluck('user_id')->filter()->all())->pluck('name', 'id');
+        $names = User::whereIn('id', $rows->pluck('provider_id')->filter()->all())->pluck('name', 'id');
 
         return [$this->section('providers', $rows->map(fn ($m) => $this->item(
-            (string) ($names[$m->user_id] ?? __('passport.care_team_member')),
+            (string) ($names[$m->provider_id] ?? __('passport.care_team_member')),
             (string) ($m->role ?? __('passport.recorded'))
         ))->all())];
     }

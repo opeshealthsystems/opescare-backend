@@ -7,6 +7,7 @@ use App\Enums\VitalProvenance;
 use App\Models\Patient;
 use App\Models\PatientRecordedVital;
 use App\Services\Patient\Passport\PageSource;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Lang;
@@ -174,8 +175,12 @@ class VitalsPage extends PageSource
         $readings = $this->triageReadings($patient)
             ->concat($this->legacyReadings($patient))
             ->filter(fn (array $r) => $r['at'] !== null)
-            // The timestamp decides, never the table a reading came from.
-            ->sortByDesc('at')
+            // The timestamp decides, never the table a reading came from — and
+            // it is compared as a moment rather than as the string the driver
+            // happened to return, because the two tables need not format their
+            // timestamps identically and a lexicographic tie would silently
+            // reorder a patient's history.
+            ->sortByDesc(fn (array $r) => $this->sortableMoment($r['at']))
             ->take(self::RECENT_READINGS);
 
         $rows = [];
@@ -458,6 +463,22 @@ class VitalsPage extends PageSource
     private function measureName(SelfReportedVitalMeasure $measure): string
     {
         return __($measure->labelKey());
+    }
+
+    /**
+     * A reading's moment as a comparable integer.
+     *
+     * An unparseable timestamp sorts LAST rather than first: a row whose date
+     * cannot be read must not be able to present itself as the most recent
+     * observation on the page.
+     */
+    private function sortableMoment(mixed $value): int
+    {
+        try {
+            return Carbon::parse($value)->getTimestamp();
+        } catch (\Throwable) {
+            return PHP_INT_MIN;
+        }
     }
 
     /**

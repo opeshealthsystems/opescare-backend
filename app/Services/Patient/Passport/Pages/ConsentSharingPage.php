@@ -77,6 +77,31 @@ use Illuminate\Support\Facades\DB;
  */
 class ConsentSharingPage extends PageSource
 {
+    /**
+     * Reading order of the bases inside "who has access": what the patient
+     * granted, then who stands in for them, then the platform's own rules.
+     */
+    private const GROUP_GRANT            = 0;
+    private const GROUP_GUARDIAN         = 1;
+    private const GROUP_CARE_TEAM        = 2;
+    private const GROUP_FACILITY_EPISODE = 3;
+
+    /**
+     * Family-link statuses, and how each should read.
+     *
+     * `pending_invite` is deliberately amber and not green: an invitation
+     * nobody has accepted is not access, and colouring it like a live
+     * permission would overstate what is happening to the record.
+     */
+    private const LINK_TONES = [
+        'active'         => 'success',
+        'pending_invite' => 'warning',
+        'revoked'        => 'danger',
+        'expired'        => 'danger',
+        'cancelled'      => 'neutral',
+        'declined'       => 'neutral',
+    ];
+
     /** Consent-request statuses, and how each should read. */
     private const REQUEST_TONES = [
         'pending_patient_approval' => 'warning',
@@ -203,6 +228,7 @@ class ConsentSharingPage extends PageSource
 
             return [
                 'live'  => $live,
+                'group' => self::GROUP_GRANT,
                 'sort'  => $grant->created_at ? Carbon::parse($grant->created_at)->getTimestamp() : 0,
                 'cells' => [
                     $this->cell((string) ($facilities[$grant->facility_id] ?? __('passport.a_facility'))),
@@ -251,6 +277,7 @@ class ConsentSharingPage extends PageSource
 
             return [
                 'live'  => $live,
+                'group' => self::GROUP_GUARDIAN,
                 'sort'  => $since ? Carbon::parse($since)->getTimestamp() : 0,
                 'cells' => [
                     $this->cell((string) ($guardians[$link->guardian_user_id] ?? '')),
@@ -261,7 +288,10 @@ class ConsentSharingPage extends PageSource
                             ? $this->date($link->age_transition_expires_at)
                             : __('passport.none_recorded')
                     ),
-                    $this->cell($this->statusLabel($status), $this->statusTone($status)),
+                    $this->cell(
+                        $this->statusLabel($status),
+                        self::LINK_TONES[$status] ?? $this->statusTone($status)
+                    ),
                 ],
             ];
         })->all();
@@ -292,6 +322,7 @@ class ConsentSharingPage extends PageSource
 
         return $members->map(fn (CareTeamMember $member) => [
             'live'  => true,
+            'group' => self::GROUP_CARE_TEAM,
             'sort'  => $member->joined_at ? Carbon::parse($member->joined_at)->getTimestamp() : 0,
             'cells' => [
                 $this->cell((string) ($providers[$member->provider_id] ?? __('passport.care_team_member'))),
@@ -347,6 +378,7 @@ class ConsentSharingPage extends PageSource
 
             $rows[] = [
                 'live'  => true,
+                'group' => self::GROUP_FACILITY_EPISODE,
                 'sort'  => $episode['last']?->getTimestamp() ?? 0,
                 'cells' => [
                     $this->cell((string) ($facilities[$facilityId] ?? __('passport.a_facility'))),

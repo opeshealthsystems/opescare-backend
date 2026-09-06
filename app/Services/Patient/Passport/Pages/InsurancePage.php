@@ -128,10 +128,10 @@ class InsurancePage extends PageSource
     /**
      * The cover that pays first, as the sheet's label/value block.
      *
-     * The identity spine — scheme, policy number, member id, dates, status — is
-     * always drawn, because a blank member id on the page is itself what the
-     * cashier needs to know. The rest appears only where the record holds it,
-     * so the block is not padded with rows that say nothing.
+     * The identity spine — insurer, plan, policy number, member id, dates,
+     * status — is always drawn, because a blank member id on the page is itself
+     * what the cashier needs to know. The rest appears only where the record
+     * holds it, so the block is not padded with rows that say nothing.
      */
     private function primary(PatientInsurancePolicy $policy): array
     {
@@ -139,7 +139,14 @@ class InsurancePage extends PageSource
         $provider = $plan?->provider;
 
         $items = [
-            $this->item(__('passport.columns.scheme'), (string) ($plan?->name ?? '')),
+            // Scheme is the insurer, Plan is the product they sold — the same
+            // two words in the same two roles everywhere on this page. The
+            // insurer is NOT filed under `columns.provider`: that key reads
+            // "Professionnel" in French, which a reader would take for the
+            // clinician who treated them, on the one page where the question is
+            // who pays.
+            $this->item(__('passport.columns.scheme'), (string) ($provider?->name ?? '')),
+            $this->item(__('passport.columns.plan'), (string) ($plan?->name ?? '')),
             $this->item(__('passport.columns.policy_number'), (string) $policy->policy_number),
             $this->item(__('passport.columns.member_id'), (string) $policy->member_id),
         ];
@@ -168,10 +175,6 @@ class InsurancePage extends PageSource
             $this->statusLabel($status),
             $this->statusTone($status)
         );
-
-        if ($provider && trim((string) $provider->name) !== '') {
-            $items[] = $this->item(__('passport.columns.provider'), trim((string) $provider->name));
-        }
 
         if ($provider && trim((string) $provider->contact_phone) !== '') {
             $items[] = $this->item(__('passport.columns.contact'), trim((string) $provider->contact_phone));
@@ -211,7 +214,7 @@ class InsurancePage extends PageSource
             }
         }
 
-        $columns = [__('passport.columns.scheme')];
+        $columns = [__('passport.columns.plan')];
 
         if ($withType) {
             $columns[] = __('passport.columns.type');
@@ -272,17 +275,17 @@ class InsurancePage extends PageSource
                 continue;
             }
 
-            $scheme = trim((string) ($policy->plan?->name ?? ''));
+            $planName = trim((string) ($policy->plan?->name ?? ''));
 
             foreach ($this->coveredServices($policy->plan?->covered_services) as $service) {
-                $key = strtolower($service . '|' . $scheme);
+                $key = strtolower($service . '|' . $planName);
 
                 if (isset($seen[$key])) {
                     continue;
                 }
 
                 $seen[$key] = true;
-                $rows[]     = [$this->cell($service), $this->cell($scheme)];
+                $rows[]     = [$this->cell($service), $this->cell($planName)];
             }
         }
 
@@ -292,7 +295,7 @@ class InsurancePage extends PageSource
 
         return $this->table(
             __('passport.sections.cover_benefits'),
-            [__('passport.columns.cover'), __('passport.columns.scheme')],
+            [__('passport.columns.cover'), __('passport.columns.plan')],
             $rows,
             'teal',
             'check-circle'
