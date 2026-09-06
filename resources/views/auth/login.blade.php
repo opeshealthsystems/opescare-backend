@@ -88,7 +88,7 @@
              `download` names the saved file; the server also sends the Android
              package type and a Content-Disposition, because an APK is a ZIP
              underneath and a browser left to guess saves it as one. --}}
-        @php($apkPath = public_path('downloads/opescare-finder.apk'))
+        @php $apkPath = public_path('downloads/opescare-finder.apk'); @endphp
         @if(is_file($apkPath))
         <div class="f-auth-app">
             <a class="f-auth-app__btn" href="{{ url('/downloads/opescare-finder.apk') }}"

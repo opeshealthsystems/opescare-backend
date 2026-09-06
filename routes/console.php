@@ -20,6 +20,11 @@ Artisan::command('inspire', function () {
 // OpesCare: automated encrypted backup schedule (PR-10 Task 2)
 Schedule::command('backup:run')->dailyAt('01:00');
 Schedule::command('backup:monitor')->dailyAt('09:00');
+// Mail deliverability. Every message this platform sent bounced for an unknown
+// stretch because the sending domain published a null MX, and nothing said so:
+// the MTA accepts a message before it tries to deliver it, so the application
+// saw a success every time. A daily check is how that stops being invisible.
+Schedule::command('mail:health')->dailyAt('08:00')->withoutOverlapping();
 Schedule::command('backup:clean')->daily();
 
 // OpesCare: data retention enforcement (PR-9 Task 2)
