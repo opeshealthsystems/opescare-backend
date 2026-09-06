@@ -155,6 +155,11 @@
                         <span>Aïcha Coulibaly</span>
                         <small>Pharmacist</small>
                     </button>
+                    <button type="button" class="demo-login-btn demo-btn-clinical" data-demo-role="labtech" data-demo-email="demo.labtech@opescare.test">
+                        <i data-lucide="flask-conical"></i>
+                        <span>Lab Tech Boubacar Keïta</span>
+                        <small>Lab technician</small>
+                    </button>
                     <button type="button" class="demo-login-btn demo-btn-clinical" data-demo-role="receptionist" data-demo-email="demo.receptionist@opescare.test">
                         <i data-lucide="monitor"></i>
                         <span>Front Desk — Aminata</span>
