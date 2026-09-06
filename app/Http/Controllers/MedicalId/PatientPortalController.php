@@ -15,6 +15,7 @@ use App\Models\OfficialDocument;
 use App\Models\Patient;
 use App\Models\Prescription;
 use App\Services\Identity\QrTokenService;
+use App\Services\Patient\PatientDocumentService;
 use App\Services\Portal\PortalContextService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use chillerlan\QRCode\QRCode;
@@ -724,12 +725,45 @@ class PatientPortalController extends Controller
             );
         }
 
-        return view('portals.patient.documents', compact('patient', 'documents'));
+        // What the record can produce right now, rendered on request and
+        // never stored. This is what a patient can actually take away;
+        // the issued-document rows above are a separate, older register.
+        $available = $patient ? app(PatientDocumentService::class)->available($patient) : [];
+
+        return view('portals.patient.documents', compact('patient', 'documents', 'available'));
     }
 
     /**
      * Download a released official document PDF
      */
+    /**
+     * Hand the patient one of their documents, generated now.
+     *
+     * Nothing is stored. The sheet is rendered from the record at the moment of
+     * the request and streamed straight out, so what the patient takes away is
+     * the record as it stands rather than a copy of how it looked whenever some
+     * file happened to be written. See PatientDocumentService for why that is
+     * the design and not an optimisation.
+     *
+     * The patient is resolved the same way every other page in this portal
+     * resolves it — including a guardian who has switched to a dependent — and
+     * the service refuses any record that does not belong to them.
+     */
+    public function renderDocument(Request $request, PatientDocumentService $documents, string $type, ?string $record = null)
+    {
+        $patient = $this->resolveViewingPatient();
+        abort_if(! $patient, 403);
+
+        $this->ctx->auditPatientAccess(
+            actionType:   'patient_document_generated',
+            resourceType: 'PatientDocument',
+            resourceId:   $record ?? $type,
+            patientId:    $patient->id,
+        );
+
+        return $documents->download($patient, $type, $record, $request->user()?->id);
+    }
+
     public function documentDownload(Request $request, string $id)
     {
         $patient = $this->resolveViewingPatient();

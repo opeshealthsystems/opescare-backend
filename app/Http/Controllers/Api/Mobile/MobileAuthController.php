@@ -258,11 +258,11 @@ class MobileAuthController extends Controller
                     'phone_number'        => $data['phone'],
                     'email'               => $data['email'] ?? null,
                     'country_code'        => $countryCode,
-                    'emergency_contact'   => json_encode([
+                    'emergency_contact'   => [
                         'name'         => $data['emergency_name'],
                         'relationship' => $data['emergency_relationship'],
                         'phone'        => $data['emergency_phone'],
-                    ]),
+                    ],
                     'identity_status'     => 'provisional',
                     'verification_status' => 'unverified',
                 ]);

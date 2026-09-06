@@ -91,12 +91,15 @@ class PatientProfileCompletionController extends Controller
                 'national_id_number' => $data['national_id'] ?? null,
                 'country_code'       => $countryCode,
                 'address'            => trim((string) ($data['city'] ?? '')) ?: null,
+                // The column is an `array` cast: encoding here would store a
+                // JSON string of a JSON string and read back as text, which
+                // every reader treats as "no contact recorded".
                 'emergency_contact'  => ($data['emergency_name'] ?? null)
-                    ? json_encode([
+                    ? [
                         'name'         => $data['emergency_name'],
                         'relationship' => $data['emergency_relationship'] ?? null,
                         'phone'        => $data['emergency_phone'] ?? null,
-                    ])
+                    ]
                     : null,
                 // Provisional until a facility verifies them in person; that is
                 // what the verification workflow is for.

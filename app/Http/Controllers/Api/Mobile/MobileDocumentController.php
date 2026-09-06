@@ -4,6 +4,10 @@ namespace App\Http\Controllers\Api\Mobile;
 
 use App\Http\Controllers\Controller;
 use App\Models\OfficialDocument;
+use App\Models\Patient;
+use App\Services\Patient\PatientDocumentService;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -54,8 +58,15 @@ class MobileDocumentController extends Controller
 
         $docs = $query->paginate($limit);
 
+        // Documents the record can produce on request, appended to the issued
+        // register. They are rendered at the moment of download and never
+        // stored, which is why they cannot be listed from a table of files.
+        $onDemand = $documentType === null && $docs->currentPage() === 1
+            ? $this->downloadable($patientId)
+            : [];
+
         return response()->json([
-            'data'       => $docs->map(fn ($d) => $this->formatDocument($d)),
+            'data'       => $docs->map(fn ($d) => $this->formatDocument($d))->concat($onDemand)->values(),
             'pagination' => [
                 'total'        => $docs->total(),
                 'per_page'     => $docs->perPage(),
@@ -91,6 +102,46 @@ class MobileDocumentController extends Controller
     }
 
     // -------------------------------------------------------------------------
+
+    /**
+     * What this patient could download right now, rendered on request.
+     *
+     * These have no row in `official_documents` and never will: the sheet is
+     * built from the record when the patient asks for it and dropped once it
+     * has been handed over. The id is a stable handle for the app, not a
+     * database key.
+     *
+     * @return list<array<string,mixed>>
+     */
+    private function downloadable(string $patientId): array
+    {
+        $patient = Patient::withoutGlobalScopes()->find($patientId);
+
+        if ($patient === null) {
+            return [];
+        }
+
+        return array_map(fn (array $item) => [
+            'id'                => $item['type'] . ':' . ($item['record'] ?? 'all'),
+            'document_type'     => $item['type'],
+            'title'             => $item['title'],
+            'facility_name'     => null,
+            'issued_at'         => $item['date'] ? Carbon::parse($item['date'])->toIso8601String() : null,
+            'document_number'   => $item['reference'],
+            'verification_code' => null,
+            // Signed and short-lived: the app hands this to the system browser,
+            // which carries no bearer token, so the link authenticates itself.
+            'download_url'      => URL::temporarySignedRoute(
+                'mobile.documents.download',
+                now()->addMinutes(15),
+                array_filter([
+                    'type'    => $item['type'],
+                    'patient' => (string) $patient->id,
+                    'record'  => $item['record'],
+                ])
+            ),
+        ], app(PatientDocumentService::class)->available($patient));
+    }
 
     private function formatDocument(OfficialDocument $d): array
     {

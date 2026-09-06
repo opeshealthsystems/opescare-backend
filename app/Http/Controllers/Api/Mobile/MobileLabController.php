@@ -7,7 +7,6 @@ use App\Http\Controllers\Controller;
 use App\Models\LabOrder;
 use App\Models\LabResult;
 use App\Models\LabResultInterpretation;
-use App\Models\OfficialDocument;
 use App\Models\Patient;
 use App\Models\User;
 use App\Modules\Notifications\Models\NotificationEvent;
@@ -21,6 +20,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use App\Services\Patient\PatientDocumentService;
 
 /**
  * Mobile Patient API — Laboratory results.
@@ -221,7 +221,7 @@ class MobileLabController extends Controller
             'data' => [
                 'order'    => $this->presentOne($order, $patient),
                 'patient'  => $this->presentPatient($patient),
-                'document' => $this->presentDocument($this->findReportDocument($patientId, $order), $order),
+                'document' => $this->presentDocument($order),
             ],
         ]);
     }
@@ -229,31 +229,33 @@ class MobileLabController extends Controller
     /**
      * GET /api/mobile/labs/{id}/report/download
      *
-     * Streams the signed PDF. Reached through a short-lived signed link (see
-     * presentDocument) because the app hands the URL to the system browser,
-     * which carries no bearer token. The signature is scoped to this one order
-     * and expires; the handler still re-checks that the document belongs to the
-     * order and that a file is actually on disk before streaming anything.
+     * Renders the report and streams it. Reached through a short-lived signed
+     * link (see presentDocument) because the app hands the URL to the system
+     * browser, which carries no bearer token. The signature is scoped to this
+     * one order and expires; the handler still re-resolves the order under the
+     * patient it names before rendering anything.
+     *
+     * The PDF is built here and now from the released results, and is never
+     * written to disk. Until this change the handler read
+     * `official_documents.pdf_path`, which nothing in this codebase has ever
+     * written — so every Download button in the app returned "no report file
+     * for this order".
      */
-    public function download(Request $request, string $id): StreamedResponse
+    public function download(Request $request, PatientDocumentService $documents, string $id): StreamedResponse
     {
         abort_unless($request->hasValidSignature(), 403, 'This download link has expired.');
 
         $patientId = (string) $request->query('patient');
         abort_if($patientId === '' || ! Str::isUuid($patientId), 404);
 
-        $order    = $this->findOrder($patientId, $id);
-        $document = $this->findReportDocument($patientId, $order);
+        // Re-resolve the order under the patient the signature names, so a
+        // valid link for one patient cannot be pointed at another's panel.
+        $order   = $this->findOrder($patientId, $id);
+        $patient = $this->patient($patientId);
 
-        abort_if($document === null || blank($document->pdf_path), 404, 'No report file for this order.');
+        abort_if($patient === null, 404);
 
-        $disk = Storage::disk(config('filesystems.default'));
-        abort_unless($disk->exists($document->pdf_path), 404, 'No report file for this order.');
-
-        return $disk->download(
-            $document->pdf_path,
-            Str::slug($order->test_name ?: 'laboratory-report') . '.pdf'
-        );
+        return $documents->download($patient, PatientDocumentService::LABORATORY_REPORT, (string) $order->id);
     }
 
     /**
@@ -603,61 +605,31 @@ class MobileLabController extends Controller
 
     // ── Report document ──────────────────────────────────────────────────────
 
-    /**
-     * The signed PDF for this order, or null.
-     *
-     * The link is by explicit reference: an `official_documents` row whose
-     * payload names this order id. There is deliberately no fuzzy match on
-     * patient plus date plus test name — that would eventually attach one
-     * patient's report to the wrong panel, and a wrong report is worse than no
-     * report.
-     */
-    private function findReportDocument(string $patientId, LabOrder $order): ?OfficialDocument
-    {
-        return OfficialDocument::query()
-            ->where('patient_id', $patientId)
-            ->where('status', 'issued')
-            ->whereNotNull('pdf_path')
-            ->where(function ($query) use ($order) {
-                $query->whereRaw("payload_json->>'lab_order_id' = ?", [(string) $order->id])
-                    ->orWhereRaw("payload_json->>'order_id' = ?", [(string) $order->id]);
-            })
-            ->orderByDesc('issued_at')
-            ->first();
-    }
 
     /**
      * @return array<string, mixed>|null
      */
-    private function presentDocument(?OfficialDocument $document, LabOrder $order): ?array
+    /** The statuses that mean the laboratory has released the panel. */
+    private const RELEASED_STATUSES = ['resulted', 'completed', 'released', 'reported'];
+
+    private function presentDocument(LabOrder $order): ?array
     {
-        if ($document === null) {
+        // A report exists once the laboratory has released the panel and not
+        // before: offering a download of unreleased values would hand a patient
+        // a result no clinician has checked, which is what the release step is
+        // there to prevent.
+        if (! in_array(strtolower((string) $order->status), self::RELEASED_STATUSES, true)) {
             return null;
-        }
-
-        $disk = Storage::disk(config('filesystems.default'));
-        $path = (string) $document->pdf_path;
-
-        // A row that points at a file the disk does not hold is not a document
-        // the patient can be offered. Reporting it would produce a Download
-        // button that always fails.
-        if (! $disk->exists($path)) {
-            return null;
-        }
-
-        $size = null;
-        try {
-            $size = $disk->size($path);
-        } catch (\Throwable) {
-            $size = null; // Unknown size prints as "—", never as 0 bytes.
         }
 
         return [
-            'id'         => (string) $document->id,
-            'label'      => $this->blankToNull($document->title),
+            'id'         => (string) $order->id,
+            'label'      => $this->blankToNull($order->test_name),
             'file_type'  => 'pdf',
-            'file_size'  => $size,
-            'created_at' => $document->issued_at?->toIso8601String(),
+            // Unknown until the sheet is rendered, and it is rendered on the
+            // way out. The app prints an unknown size as a dash, never as 0.
+            'file_size'  => null,
+            'created_at' => $order->resulted_at?->toIso8601String(),
             // Short-lived and signed: the app opens this in the system browser,
             // which carries no bearer token, so the URL has to authenticate
             // itself. It names one order, for one patient, for 15 minutes.
@@ -666,7 +638,7 @@ class MobileLabController extends Controller
                 now()->addMinutes(self::DOWNLOAD_LINK_TTL_MINUTES),
                 [
                     'id'      => (string) $order->id,
-                    'patient' => (string) $document->patient_id,
+                    'patient' => (string) $order->patient_id,
                 ]
             ),
         ];

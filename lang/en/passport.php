@@ -86,6 +86,10 @@ return [
     'status_preliminary' => 'Preliminary',
     'status_corrected' => 'Corrected',
     'status_draft' => 'Draft',
+    'status_home' => 'Home',
+    'status_referral' => 'Referred on',
+    'status_ama' => 'Against medical advice',
+    'status_deceased' => 'Deceased',
     'status_cancelled'   => 'Cancelled',
 
     'pages' => [

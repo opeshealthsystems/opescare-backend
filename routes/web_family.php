@@ -38,6 +38,24 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'platform.adm
         Route::get('/patient/timeline',                [PatientPortalController::class, 'timeline'])->name('portals.patient.timeline');
         Route::get('/patient/documents',               [PatientPortalController::class, 'documents'])->name('portals.patient.documents');
         Route::get('/patient/documents/{id}/download', [PatientPortalController::class, 'documentDownload'])->name('portals.patient.documents.download');
+
+        // Documents a patient can take away with them. Each is rendered from
+        // the record at the moment of the request and never stored, so the
+        // sheet is always current and there is no copy of anyone's record
+        // sitting on a disk waiting to go stale or leak. `{type}` is one of
+        // PatientDocumentService::types(); `{record}` names the lab order,
+        // prescription or admission the sheet is about.
+        Route::get('/patient/documents/{type}/{record}.pdf', [PatientPortalController::class, 'renderDocument'])
+            ->where('type', '[a-z_]{4,32}')
+            ->whereUuid('record')
+            ->middleware('throttle:portal.qr')
+            ->name('portals.patient.documents.render');
+
+        Route::get('/patient/documents/{type}.pdf', [PatientPortalController::class, 'renderDocument'])
+            ->where('type', '[a-z_]{4,32}')
+            ->middleware('throttle:portal.qr')
+            ->name('portals.patient.documents.render-whole');
+
         Route::get('/patient/allergies',               [PatientPortalController::class, 'allergies'])->name('portals.patient.allergies');
         Route::get('/patient/clinical-history',        [PatientPortalController::class, 'clinicalHistory'])->name('portals.patient.clinical');
         Route::get('/patient/care-plans',              [PatientPortalController::class, 'carePlans'])->name('portals.patient.care-plans');

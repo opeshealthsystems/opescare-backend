@@ -86,6 +86,10 @@ return [
     'status_preliminary' => 'Préliminaire',
     'status_corrected' => 'Corrigé',
     'status_draft' => 'Brouillon',
+    'status_home' => 'Domicile',
+    'status_referral' => 'Transféré',
+    'status_ama' => 'Contre avis médical',
+    'status_deceased' => 'Décédé',
     'status_cancelled'   => 'Annulé',
 
     'pages' => [
