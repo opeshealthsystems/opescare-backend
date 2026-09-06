@@ -169,6 +169,13 @@ class MobileEmergencyAccessController extends Controller
             ], 503);
         }
 
+        if ($result['status'] === EmergencyAccessService::STATUS_WITHHELD) {
+            return response()->json([
+                'message'    => __('emergency_access.withheld_by_patient'),
+                'error_code' => 'EMERGENCY_WITHHELD_BY_PATIENT',
+            ], 403);
+        }
+
         if ($result['status'] === EmergencyAccessService::STATUS_REVOCATION_LOCKED) {
             return response()->json([
                 'message'     => __('emergency_access.revoked_by_patient'),

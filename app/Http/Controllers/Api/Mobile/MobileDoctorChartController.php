@@ -594,6 +594,21 @@ class MobileDoctorChartController extends Controller
      * @param  callable(Patient):mixed  $build
      * @param  bool  $envelopeFromBuilder  the builder returns ['payload'=>…, 'meta'=>…] itself
      */
+    /**
+     * What a clinician still sees when the patient has kept their record
+     * behind consent — the portal's "masked preview".
+     *
+     * Identity, allergies and current medicines, and nothing else. That is not
+     * an arbitrary line: it is the same set this platform's own emergency page
+     * treats as the minimum a clinician must have. Withholding an allergy or a
+     * current medicine from someone about to prescribe is how a patient is
+     * harmed by their own privacy setting, and a privacy control that can kill
+     * its owner is not one worth having. Everything that is history rather than
+     * safety — the problem list, encounters, vitals, diagnoses, orders — waits
+     * for the patient to say yes.
+     */
+    private const PREVIEW_CATEGORIES = ['patient_identity', 'allergies', 'medications'];
+
     private function chart(
         Request $request,
         string $id,
@@ -623,6 +638,21 @@ class MobileDoctorChartController extends Controller
             return response()->json([
                 'message'         => __('doctor_chart.no_clinical_relationship'),
                 'error_code'      => 'NO_CLINICAL_RELATIONSHIP',
+                'required_action' => 'request_consent',
+            ], 403);
+        }
+
+        // The patient asked that their full record stay behind their consent,
+        // and no explicit grant exists — so this basis opens the preview and
+        // no more. The refusal names the reason and the way out, because a
+        // clinician who is told "ask the patient" can ask; one handed an empty
+        // list reads it as "nothing recorded" and acts on that.
+        if (! $verdict->coversFullRecord() && ! in_array($dataCategory, self::PREVIEW_CATEGORIES, true)) {
+            $this->auditDenial($patient, $clinicianId, $facilityId, $dataCategory, $resourceType);
+
+            return response()->json([
+                'message'         => __('doctor_chart.consent_required'),
+                'error_code'      => 'CONSENT_REQUIRED',
                 'required_action' => 'request_consent',
             ], 403);
         }

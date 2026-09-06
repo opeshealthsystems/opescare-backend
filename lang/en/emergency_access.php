@@ -43,4 +43,5 @@ return [
     // ── Infrastructure ───────────────────────────────────────────────────
     'audit_unavailable' => 'Emergency access could not be recorded, so nothing has been opened. Access that leaves no trail is never granted. Try again, and use the paper emergency procedure if this persists.',
 
+    'withheld_by_patient' => 'This patient has turned off emergency access to their record. Ask the patient, their family or their guardian; this attempt has been recorded.',
 ];

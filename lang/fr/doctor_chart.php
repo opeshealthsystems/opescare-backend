@@ -35,4 +35,5 @@ return [
     // Durée d'un traitement prescrit, rendue depuis prescription_items.duration_days.
     'duration_days' => ':days jours',
 
+    'consent_required' => 'Ce patient garde son dossier complet derrière son consentement. Vous voyez son identité, ses allergies et ses médicaments en cours ; demandez-lui l’accès pour le reste.',
 ];

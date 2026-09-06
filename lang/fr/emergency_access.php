@@ -43,4 +43,5 @@ return [
     // ── Infrastructure ───────────────────────────────────────────────────
     'audit_unavailable' => 'L’accès d’urgence n’a pas pu être enregistré : rien n’a donc été ouvert. Un accès qui ne laisse aucune trace n’est jamais accordé. Réessayez et, si le problème persiste, utilisez la procédure d’urgence papier.',
 
+    'withheld_by_patient' => 'Ce patient a désactivé l’accès d’urgence à son dossier. Demandez au patient, à sa famille ou à son tuteur ; cette tentative a été enregistrée.',
 ];

@@ -67,6 +67,8 @@ class EmergencyAccessService
     public const STATUS_REUSED = 'reused';
     public const STATUS_RATE_LIMITED = 'rate_limited';
     public const STATUS_REVOCATION_LOCKED = 'revocation_locked';
+    /** The patient turned emergency access off in their own settings. */
+    public const STATUS_WITHHELD = 'withheld_by_patient';
 
     public function requestEmergencyAccess(
         string $patientId,
@@ -224,6 +226,35 @@ class EmergencyAccessService
         ?string $ipAddress = null
     ): array {
         $now = Carbon::now();
+
+        // 0. The patient turned emergency access off. That switch has been in
+        //    the portal all along and was honoured nowhere, which made it a
+        //    promise the platform did not keep.
+        //
+        //    The refusal is loud, not silent. A clinician told "this patient
+        //    has withheld emergency access" knows to ask the patient, their
+        //    family or their guardian; one handed an empty record reads it as
+        //    "nothing recorded" and treats on that. It is also flagged, because
+        //    a break-glass attempt against a patient who said no is exactly the
+        //    event a reviewer needs to see.
+        if (! $patient->allowsEmergencyAccess()) {
+            $this->flagIncident(
+                'emergency_access_withheld',
+                'high',
+                "Break-glass attempted on a patient who has turned emergency access off"
+                    . " (clinician {$clinicianId}, facility {$facilityId}).",
+                $clinicianId
+            );
+
+            return [
+                'status'      => self::STATUS_WITHHELD,
+                'event'       => null,
+                'repeat'      => false,
+                'notified'    => false,
+                'retry_after' => null,
+                'prior_count' => $this->grantCountForPatient($patient->id, $clinicianId),
+            ];
+        }
 
         // 1. Already holding one? Hand back the same grant.
         $existing = $this->activeGrantFor($patient->id, $clinicianId, $facilityId);

@@ -10,6 +10,7 @@ use App\Models\ImagingOrder;
 use App\Models\LabOrder;
 use App\Models\MedicineReservation;
 use App\Models\PharmacyRoute;
+use App\Models\Patient;
 use App\Models\Prescription;
 use App\Models\User;
 use Illuminate\Support\Carbon;
@@ -123,11 +124,22 @@ final class ClinicalRelationshipGate
     /** The access-log purpose written when the gate refuses. */
     public const NO_RELATIONSHIP_PURPOSE = 'treatment:no_relationship';
 
+    /** The whole record. */
+    public const SCOPE_FULL    = 'full';
+
+    /**
+     * Identity, allergies and current medicines only — what the portal
+     * calls a "masked preview".
+     */
+    public const SCOPE_PREVIEW = 'preview';
+
     /**
      * @param  string|null  $basis  one of BASES, or null when nothing holds
      */
-    private function __construct(public readonly ?string $basis)
-    {
+    private function __construct(
+        public readonly ?string $basis,
+        public readonly string $scope = self::SCOPE_FULL,
+    ) {
     }
 
     /**
@@ -148,7 +160,7 @@ final class ClinicalRelationshipGate
 
         // 1. On this clinician's own schedule.
         if (Appointment::where('patient_id', $patientId)->where('provider_id', $clinicianId)->exists()) {
-            return new self(self::APPOINTMENT);
+            return self::held(self::APPOINTMENT, $patientId, $facilityId);
         }
 
         // 2. A current member of this patient's care team.
@@ -159,7 +171,7 @@ final class ClinicalRelationshipGate
                 ->whereNull('left_at')
                 ->exists()
         ) {
-            return new self(self::CARE_TEAM);
+            return self::held(self::CARE_TEAM, $patientId, $facilityId);
         }
 
         // 3. This clinician personally did something clinical for this patient.
@@ -170,19 +182,20 @@ final class ClinicalRelationshipGate
             || ImagingOrder::where('patient_id', $patientId)->where('ordered_by', $clinicianId)->exists();
 
         if ($ownAct) {
-            return new self(self::TREATING_CLINICIAN);
+            return self::held(self::TREATING_CLINICIAN, $patientId, $facilityId);
         }
 
         // 4. An episode of care at the clinician's OWN facility — the token's
         //    facility, which no caller can name — that is open, still ahead,
         //    or recent enough to still be care rather than history.
         if ($facilityId && self::hasFacilityEpisode($patientId, $facilityId)) {
-            return new self(self::FACILITY_EPISODE);
+            return self::held(self::FACILITY_EPISODE, $patientId, $facilityId);
         }
 
         // 5. The patient has granted this facility access outright.
         if ($facilityId && self::hasActiveConsentGrant($patientId, $facilityId)) {
-            return new self(self::CONSENT_GRANT);
+            // An explicit grant IS the consent the preference asks for.
+            return new self(self::CONSENT_GRANT, self::SCOPE_FULL);
         }
 
         // 6. (opt-in) The token's facility is filling the patient's script.
@@ -191,10 +204,44 @@ final class ClinicalRelationshipGate
             && in_array(self::DISPENSING, $alsoAllow, true)
             && self::hasDispensingRelationship($patientId, $facilityId, $clinicianId)
         ) {
-            return new self(self::DISPENSING);
+            return self::held(self::DISPENSING, $patientId, $facilityId);
         }
 
         return self::none();
+    }
+
+    /**
+     * A holding verdict, scoped by what the patient asked for.
+     *
+     * The five default bases are all implicit — an appointment, a shared
+     * facility, a clinical act. None of them is the patient saying yes. So when
+     * the patient has asked that their record stay behind consent, an implicit
+     * basis opens the preview and no more; the full record needs a grant.
+     */
+    private static function held(string $basis, string $patientId, ?string $facilityId): self
+    {
+        $patient = Patient::withoutGlobalScopes()
+            ->select(['id', 'privacy_preferences'])
+            ->find($patientId);
+
+        if (! $patient || ! $patient->requiresConsentForFullRecord()) {
+            return new self($basis, self::SCOPE_FULL);
+        }
+
+        // The patient wants their record behind consent — so the question is
+        // simply whether they have given this facility one, NOT which basis
+        // happened to match first. An earlier basis short-circuits the search
+        // for a REASON to act; it must not quietly withdraw a consent the
+        // patient actually gave.
+        $consented = $facilityId && self::hasActiveConsentGrant($patientId, $facilityId);
+
+        return new self($basis, $consented ? self::SCOPE_FULL : self::SCOPE_PREVIEW);
+    }
+
+    /** May this verdict reach past the masked preview? */
+    public function coversFullRecord(): bool
+    {
+        return $this->holds() && $this->scope === self::SCOPE_FULL;
     }
 
     /** The refusing verdict. */

@@ -525,4 +525,45 @@ class Patient extends Model
     {
         return $this->hasMany(PatientMergeAlias::class, 'canonical_patient_id');
     }
+
+    /**
+     * Has this patient asked that their full record stay behind consent?
+     *
+     * Defaults to TRUE, matching the switch the portal shows checked. A
+     * preference the patient sees as on must behave as on; defaulting to false
+     * here would leave every patient believing they had a protection they did
+     * not have — which is the bug this method exists to end.
+     */
+    public function requiresConsentForFullRecord(): bool
+    {
+        $prefs = $this->privacy_preferences;
+
+        if (! is_array($prefs) || ! array_key_exists('require_consent_for_full_record', $prefs)) {
+            return true;
+        }
+
+        return (bool) $prefs['require_consent_for_full_record'];
+    }
+
+    /**
+     * May a clinician break glass on this record?
+     *
+     * Defaults to TRUE — the portal shows it checked, and emergency access is
+     * the platform's standing behaviour. A patient who turns it OFF is refused
+     * break-glass, and the refusal is explicit rather than silent: a clinician
+     * who is told "the patient has withheld emergency access" knows to ask the
+     * patient or their family, where an empty record would read as "nothing
+     * recorded" and be acted on.
+     */
+    public function allowsEmergencyAccess(): bool
+    {
+        $prefs = $this->privacy_preferences;
+
+        if (! is_array($prefs) || ! array_key_exists('emergency_access_allowed', $prefs)) {
+            return true;
+        }
+
+        return (bool) $prefs['emergency_access_allowed'];
+    }
+
 }

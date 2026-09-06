@@ -34,4 +34,5 @@ return [
     // A prescribed course length, rendered from prescription_items.duration_days.
     'duration_days' => ':days days',
 
+    'consent_required' => 'This patient keeps their full record behind their consent. You can see their identity, allergies and current medicines; ask them to grant access for the rest.',
 ];
