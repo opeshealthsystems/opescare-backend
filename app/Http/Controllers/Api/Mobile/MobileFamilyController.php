@@ -303,11 +303,11 @@ class MobileFamilyController extends Controller
 
         [$patient, $contact] = $this->resolveInvitee($data);
 
+        // Uniform answer: whether or not the contact belongs to an OpesCare
+        // patient, the caller hears the same thing, so this endpoint cannot be
+        // used to test phone numbers or e-mail addresses for an account.
         if (! $patient) {
-            return response()->json([
-                'message'    => __('family_api.invitation_not_sent'),
-                'error_code' => 'invitation_not_sent',
-            ], 422);
+            return response()->json(['message' => __('family_api.invitation_queued')], 202);
         }
 
         if ($patient->id === $user->patient_id) {
@@ -347,18 +347,9 @@ class MobileFamilyController extends Controller
             $dependentUser->notify(new \App\Notifications\FamilyInviteNotification($link, $rawToken));
         }
 
-        return response()->json([
-            'message' => __('api.invitation_sent'),
-            'data'    => [
-                'id'           => $link->id,
-                'contact'      => $contact,
-                'relationship' => $link->relationship,
-                'access_level' => $link->access_level,
-                'status'       => $link->status,
-                'sent_at'      => $link->created_at?->toDateString(),
-                'expires_at'   => $link->invite_expires_at?->toDateString(),
-            ],
-        ], 201);
+        // Same body and status as the not-found branch (see above). The
+        // pending row appears in GET /family/invitations, by short name only.
+        return response()->json(['message' => __('family_api.invitation_queued')], 202);
     }
 
     /**
@@ -572,7 +563,12 @@ class MobileFamilyController extends Controller
             'created_by'                => $link->created_by,
             'age_transition_expires_at' => $link->age_transition_expires_at?->toIso8601String(),
             'dependent_consented_at'    => $link->dependent_consented_at?->toIso8601String(),
-            'patient'                   => $patient ? [
+            // Before the person has accepted, the guardian learns nothing about
+            // them beyond a short name — no Health ID, no demographics, no photo.
+            'patient'                   => $patient ? ($link->status !== FamilyLink::STATUS_ACTIVE ? [
+                'display_name' => $this->shortName($patient),
+                'full_name'    => $this->shortName($patient),
+            ] : [
                 'id'              => $patient->id,
                 'health_id'       => $patient->health_id,
                 'full_name'       => trim("{$patient->first_name} {$patient->last_name}"),
@@ -588,7 +584,7 @@ class MobileFamilyController extends Controller
                 'photo_url'       => PatientPhoto::urlFor($patient),
                 'identity_status' => $patient->identity_status ?? 'active',
                 'status'          => $patient->identity_status ?? 'active',
-            ] : null,
+            ]) : null,
         ];
     }
 }

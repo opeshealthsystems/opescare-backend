@@ -269,4 +269,27 @@ class FamilyActAsDependentTest extends FamilyTestCase
             ->assertForbidden()
             ->assertJsonPath('error_code', 'dependent_forbidden');
     }
+
+    public function test_a_read_only_link_gets_the_dependents_card_without_a_qr_to_present(): void
+    {
+        $this->link->update(['access_level' => FamilyLink::ACCESS_READ_ONLY]);
+
+        $card = $this->as($this->actingFor($this->g['headers'], $this->child))
+            ->getJson('/api/mobile/health-id-card')
+            ->assertOk()
+            ->json();
+
+        $this->assertSame($this->child->health_id, $card['health_id']);
+        $this->assertNull($card['qr_payload'] ?? null);
+    }
+
+    public function test_the_guardians_own_inbox_surfaces_never_run_as_the_dependent(): void
+    {
+        foreach (['/api/mobile/notifications', '/api/mobile/messages/threads'] as $path) {
+            $this->as($this->actingFor($this->g['headers'], $this->child))
+                ->getJson($path)
+                ->assertForbidden()
+                ->assertJsonPath('error_code', 'dependent_forbidden');
+        }
+    }
 }

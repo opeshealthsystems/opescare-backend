@@ -54,4 +54,5 @@ return [
     'notification_declined_title'   => ':name declined your invitation',
     'notification_declined_message' => 'No link was created. You can send a new invitation later.',
     'notification_answer_action'    => 'Open Family',
+    'invitation_queued' => 'If this person holds an OpesCare Health ID, they will receive your invitation in their app. It will appear under your pending invitations once sent.',
 ];

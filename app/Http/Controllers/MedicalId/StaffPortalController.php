@@ -237,7 +237,9 @@ class StaffPortalController extends Controller
     public function appointmentsCheckIn(Request $request, string $id, AppointmentService $svc)
     {
         try {
-            $appointment = Appointment::findOrFail($id);
+            // Scoped to this session's facility, like confirm/cancel — a bare
+            // findOrFail let any staff user check a patient in at another facility.
+            $appointment = $this->ctx->scopeToFacility(Appointment::query())->findOrFail($id);
             $svc->checkIn($appointment, $this->ctx->actorId());
 
             return redirect()->route('portals.staff.appointments')
@@ -249,7 +251,7 @@ class StaffPortalController extends Controller
 
     public function appointmentsNoShow(Request $request, string $id)
     {
-        $appointment = Appointment::findOrFail($id);
+        $appointment = $this->ctx->scopeToFacility(Appointment::query())->findOrFail($id);
         $appointment->update([
             'status'     => 'no_show',
             'no_show_at' => now(),

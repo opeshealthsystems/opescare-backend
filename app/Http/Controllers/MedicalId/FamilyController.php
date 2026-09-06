@@ -202,21 +202,9 @@ class FamilyController extends Controller
             'country_code'    => $countryCode,
         ];
 
+        try {
         DB::transaction(function () use ($data, $identity, $countryCode, $isDemo) {
-            try {
-                $patient = app(PatientIdentityService::class)->createPatientCandidate($identity, Auth::id());
-            } catch (DuplicateIdentityFound) {
-                // The MPI saw a look-alike the exact-identity check above did not
-                // (a namesake, a shared household phone). A child registered by
-                // their parent is a new person, not a merge candidate: mint the
-                // Health ID directly — the pattern DemoChildrenSeeder uses — and
-                // let the nightly MPI scan raise the pair for human review if it
-                // still looks alike. Nothing is merged automatically.
-                $patient = app(HealthIdGeneratorService::class)->generate(
-                    $countryCode,
-                    fn (string $healthId) => Patient::create($identity + ['health_id' => $healthId])
-                );
-            }
+            $patient = app(PatientIdentityService::class)->createPatientCandidate($identity, Auth::id());
 
             if ((bool) $patient->is_demo !== $isDemo) {
                 $patient->forceFill(['is_demo' => $isDemo])->save();
@@ -238,6 +226,13 @@ class FamilyController extends Controller
                 patientId:    $patient->id,
             );
         });
+        } catch (DuplicateIdentityFound) {
+            // The MPI saw a person who may already hold a Health ID. A real
+            // child is never created past that check: the parent is sent to
+            // the invitation, which links the existing record with consent.
+            return redirect()->route('portals.patient.family.invite')->withInput()
+                ->with('error', __('family.child_may_exist'));
+        }
 
         return redirect()->route('portals.patient.family')
             ->with('success', __('flash.dependent_added'));
@@ -626,6 +621,7 @@ class FamilyController extends Controller
         $link->update([
             'status'            => 'active',
             'created_by'        => 'invite_accepted',
+            'dependent_consented_at' => now(),
             'invite_token'      => null,
             'invite_expires_at' => null,
         ]);

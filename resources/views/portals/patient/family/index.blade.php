@@ -101,10 +101,10 @@
                 <div class="pf-avatar">{{ strtoupper(substr($dep?->first_name ?? 'D', 0, 1)) }}</div>
                 <div style="flex:1;min-width:0;">
                     <div style="font-weight:750;color:var(--f-ink);">
-                        {{ $dep ? trim(($dep->first_name ?? '') . ' ' . ($dep->last_name ?? '')) : (__('public.portal.unknown_patient', [], $l) ?: 'Unknown patient') }}
+                        {{ $dep ? ($link->status === 'active' ? trim(($dep->first_name ?? '') . ' ' . ($dep->last_name ?? '')) : trim(($dep->first_name ?? '') . ' ' . mb_substr((string) ($dep->last_name ?? ''), 0, 1) . '.')) : (__('public.portal.unknown_patient', [], $l) ?: 'Unknown patient') }}
                         @if($dep && $viewingId === $dep->id)<span class="f-badge f-badge--good" style="margin-left:6px;">{{ __('family.dash_currently_viewing') }}</span>@endif
                     </div>
-                    @if($dep)
+                    @if($dep && $link->status === 'active')
                     <div class="f-small f-muted" style="font-family:ui-monospace,Menlo,Consolas,monospace;">{{ $dep->health_id }}</div>
                     @endif
                 </div>

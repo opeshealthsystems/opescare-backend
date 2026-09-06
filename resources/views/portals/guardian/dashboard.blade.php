@@ -110,11 +110,11 @@
                 <div class="pf-avatar">{{ strtoupper(substr($dep?->first_name ?? 'D', 0, 1)) }}</div>
                 <div style="flex:1;min-width:0;">
                     <div style="font-weight:750;color:var(--f-ink);display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;">
-                        {{ $depName ?? __('public.portal.unknown_patient', [], $l) }}
-                        @if($age !== null)<span class="f-badge pf-badge--muted">{{ __('family.dash_age', ['age' => $age]) }}</span>@endif
+                        {{ $link->status === 'active' ? ($depName ?? __('public.portal.unknown_patient', [], $l)) : ($dep ? trim(($dep->first_name ?? '') . ' ' . mb_substr((string) ($dep->last_name ?? ''), 0, 1) . '.') : __('public.portal.unknown_patient', [], $l)) }}
+                        @if($age !== null && $link->status === 'active')<span class="f-badge pf-badge--muted">{{ __('family.dash_age', ['age' => $age]) }}</span>@endif
                         @if($isOpen)<span class="f-badge f-badge--good">{{ __('family.dash_currently_viewing') }}</span>@endif
                     </div>
-                    @if($dep)
+                    @if($dep && $link->status === 'active')
                     <div class="f-small f-muted" style="font-family:ui-monospace,Menlo,Consolas,monospace;">{{ $dep->health_id }}</div>
                     @endif
                 </div>

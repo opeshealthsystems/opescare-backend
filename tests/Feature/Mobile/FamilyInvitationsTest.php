@@ -40,14 +40,14 @@ class FamilyInvitationsTest extends FamilyTestCase
 
         $response = $this->as($this->g['headers'])
             ->postJson('/api/mobile/family/invitations', ['health_id' => 'cm-hid-eldr-0001-ab12', 'relationship' => 'child'])
-            ->assertCreated()
-            ->assertJsonPath('data.relationship', 'child')
-            ->assertJsonPath('data.access_level', 'read_only')
-            ->assertJsonPath('data.status', 'pending_invite')
-            ->assertJsonPath('data.contact', 'cm-hid-eldr-0001-ab12')
-            ->assertJsonStructure(['message', 'data' => ['id', 'contact', 'relationship', 'access_level', 'status', 'sent_at', 'expires_at']]);
+            ->assertStatus(202)
+            ->assertJsonPath('message', __('family_api.invitation_queued'))
+            ->assertJsonMissingPath('data');
 
-        $link = FamilyLink::findOrFail($response->json('data.id'));
+        $link = FamilyLink::where('dependent_patient_id', $elder->id)->firstOrFail();
+        $this->assertSame('child', $link->relationship);
+        $this->assertSame('read_only', $link->access_level);
+        $this->assertSame('pending_invite', $link->status);
         $this->assertSame($elder->id, $link->dependent_patient_id);
         $this->assertSame($this->g['user']->id, $link->guardian_user_id);
         $this->assertSame('guardian_invited', $link->created_by);
@@ -69,29 +69,36 @@ class FamilyInvitationsTest extends FamilyTestCase
         $this->assertStringContainsString('Marie Guardian', $bell[0]['title']);
     }
 
-    public function test_a_partial_or_unknown_health_id_is_refused_without_saying_whether_anyone_exists(): void
+    public function test_a_partial_or_unknown_contact_gets_the_same_answer_as_a_real_one(): void
     {
         $this->makeElder();
 
+        // Unknown or partial: nothing is created, and the answer is byte-identical
+        // to the one a real contact gets, so the endpoint cannot be used to test
+        // whether a phone number, e-mail or Health ID belongs to anyone.
+        $bodies = [];
         foreach (['CM-HID-ELDR', 'CM-HID-ELDR-0001', 'CM-HID-ZZZZ-9999-ZZ99', '%'] as $probe) {
-            $this->as($this->g['headers'])
+            $bodies[] = $this->as($this->g['headers'])
                 ->postJson('/api/mobile/family/invitations', ['health_id' => $probe, 'relationship' => 'child'])
-                ->assertUnprocessable()
-                ->assertJsonPath('error_code', 'invitation_not_sent')
-                ->assertJsonPath('message', __('family_api.invitation_not_sent'));
+                ->assertStatus(202)
+                ->assertJsonMissingPath('error_code')
+                ->json();
         }
-
-        $this->as($this->g['headers'])
+        $bodies[] = $this->as($this->g['headers'])
             ->postJson('/api/mobile/family/invitations', ['email' => 'nobody@example.test', 'relationship' => 'child'])
-            ->assertUnprocessable()
-            ->assertJsonPath('error_code', 'invitation_not_sent');
-
-        $this->as($this->g['headers'])
+            ->assertStatus(202)->json();
+        $bodies[] = $this->as($this->g['headers'])
             ->postJson('/api/mobile/family/invitations', ['phone' => '+237600000000', 'relationship' => 'child'])
-            ->assertUnprocessable()
-            ->assertJsonPath('error_code', 'invitation_not_sent');
-
+            ->assertStatus(202)->json();
         $this->assertSame(0, FamilyLink::count());
+
+        $real = $this->as($this->g['headers'])
+            ->postJson('/api/mobile/family/invitations', ['health_id' => 'CM-HID-ELDR-0001-AB12', 'relationship' => 'child'])
+            ->assertStatus(202)->json();
+        $this->assertSame(1, FamilyLink::count());
+        foreach ($bodies as $body) {
+            $this->assertSame($real, $body, 'A miss and a hit must be indistinguishable to the caller.');
+        }
     }
 
     public function test_invite_by_email_and_by_phone_are_exact_lookups(): void
@@ -101,13 +108,12 @@ class FamilyInvitationsTest extends FamilyTestCase
 
         $this->as($this->g['headers'])
             ->postJson('/api/mobile/family/invitations', ['email' => 'Elder@Example.test', 'relationship' => 'child'])
-            ->assertCreated();
+            ->assertStatus(202);
         $this->assertDatabaseHas('family_links', ['dependent_patient_id' => $byEmail->id, 'status' => 'pending_invite']);
 
         $this->as($this->g['headers'])
             ->postJson('/api/mobile/family/invitations', ['phone' => '+237699000222', 'relationship' => 'child', 'access_level' => 'full'])
-            ->assertCreated()
-            ->assertJsonPath('data.access_level', 'full');
+            ->assertStatus(202);
         $this->assertDatabaseHas('family_links', ['dependent_patient_id' => $byPhone->id, 'access_level' => 'full']);
     }
 
@@ -118,14 +124,12 @@ class FamilyInvitationsTest extends FamilyTestCase
 
         $this->as($this->g['headers'])
             ->postJson('/api/mobile/family/invitations', ['contact' => 'CM-HID-ELDR-0001-AB12', 'relationship' => 'caregiver', 'access_level' => 'view_only'])
-            ->assertCreated()
-            ->assertJsonPath('data.access_level', 'read_only');
+            ->assertStatus(202);
         $this->assertDatabaseHas('family_links', ['dependent_patient_id' => $a->id, 'access_level' => 'read_only']);
 
         $this->as($this->g['headers'])
             ->postJson('/api/mobile/family/invitations', ['contact' => 'papa@example.test', 'relationship' => 'caregiver', 'access_level' => 'guardian'])
-            ->assertCreated()
-            ->assertJsonPath('data.access_level', 'full');
+            ->assertStatus(202);
         $this->assertDatabaseHas('family_links', ['dependent_patient_id' => $b->id, 'access_level' => 'full']);
     }
 
@@ -157,7 +161,7 @@ class FamilyInvitationsTest extends FamilyTestCase
             ->assertJsonPath('message', __('api.cannot_link_self'));
 
         $this->makeElder();
-        $this->as($this->g['headers'])->postJson('/api/mobile/family/invitations', ['health_id' => 'CM-HID-ELDR-0001-AB12', 'relationship' => 'child'])->assertCreated();
+        $this->as($this->g['headers'])->postJson('/api/mobile/family/invitations', ['health_id' => 'CM-HID-ELDR-0001-AB12', 'relationship' => 'child'])->assertStatus(202);
         $this->as($this->g['headers'])->postJson('/api/mobile/family/invitations', ['health_id' => 'CM-HID-ELDR-0001-AB12', 'relationship' => 'child'])->assertConflict();
     }
 
@@ -167,9 +171,11 @@ class FamilyInvitationsTest extends FamilyTestCase
         $this->makeUserFor($elder, ['name' => 'Demo Grandmother']);
         $elderHeaders = $this->headersFor($elder);
 
-        $linkId = $this->as($this->g['headers'])
+        $this->as($this->g['headers'])
             ->postJson('/api/mobile/family/invitations', ['health_id' => 'CM-HID-ELDR-0001-AB12', 'relationship' => 'child'])
-            ->assertCreated()->json('data.id');
+            ->assertStatus(202);
+        // The 202 carries no id on purpose (see sendInvitation); read the row back.
+        $linkId = FamilyLink::where('status', FamilyLink::STATUS_PENDING_INVITE)->latest('created_at')->value('id');
 
         $incoming = $this->as($elderHeaders)->getJson('/api/mobile/family/invitations/incoming')->assertOk();
         $incoming->assertJsonCount(1, 'data')
@@ -225,9 +231,11 @@ class FamilyInvitationsTest extends FamilyTestCase
         $this->makeUserFor($elder);
         $elderHeaders = $this->headersFor($elder);
 
-        $linkId = $this->as($this->g['headers'])
+        $this->as($this->g['headers'])
             ->postJson('/api/mobile/family/invitations', ['health_id' => 'CM-HID-ELDR-0001-AB12', 'relationship' => 'child'])
-            ->assertCreated()->json('data.id');
+            ->assertStatus(202);
+        // The 202 carries no id on purpose (see sendInvitation); read the row back.
+        $linkId = FamilyLink::where('status', FamilyLink::STATUS_PENDING_INVITE)->latest('created_at')->value('id');
 
         $this->as($elderHeaders)
             ->postJson("/api/mobile/family/invitations/{$linkId}/decline")
@@ -241,7 +249,7 @@ class FamilyInvitationsTest extends FamilyTestCase
         // Declined is terminal: the pair may be invited again (partial unique index).
         $this->as($this->g['headers'])
             ->postJson('/api/mobile/family/invitations', ['health_id' => 'CM-HID-ELDR-0001-AB12', 'relationship' => 'child'])
-            ->assertCreated();
+            ->assertStatus(202);
 
         // Declining twice, or accepting after declining, finds nothing.
         $this->as($elderHeaders)->postJson("/api/mobile/family/invitations/{$linkId}/accept")->assertNotFound();
@@ -250,9 +258,11 @@ class FamilyInvitationsTest extends FamilyTestCase
     public function test_only_the_invitee_can_answer(): void
     {
         $elder = $this->makeElder();
-        $linkId = $this->as($this->g['headers'])
+        $this->as($this->g['headers'])
             ->postJson('/api/mobile/family/invitations', ['health_id' => 'CM-HID-ELDR-0001-AB12', 'relationship' => 'child'])
-            ->assertCreated()->json('data.id');
+            ->assertStatus(202);
+        // The 202 carries no id on purpose (see sendInvitation); read the row back.
+        $linkId = FamilyLink::where('status', FamilyLink::STATUS_PENDING_INVITE)->latest('created_at')->value('id');
 
         // A bystander, and the guardian who sent it.
         $this->as($this->headersFor($this->makePatient()))
@@ -285,16 +295,20 @@ class FamilyInvitationsTest extends FamilyTestCase
     {
         $this->makeElder();
 
-        $first = $this->as($this->g['headers'])
+        $this->as($this->g['headers'])
             ->postJson('/api/mobile/family/invitations', ['health_id' => 'CM-HID-ELDR-0001-AB12', 'relationship' => 'child'])
-            ->assertCreated()->json('data.id');
+            ->assertStatus(202);
+        // The 202 carries no id on purpose (see sendInvitation); read the row back.
+        $first = FamilyLink::where('status', FamilyLink::STATUS_PENDING_INVITE)->latest('created_at')->value('id');
 
         $this->as($this->g['headers'])->deleteJson("/api/mobile/family/invitations/{$first}")->assertOk();
         $this->assertDatabaseHas('family_links', ['id' => $first, 'status' => 'cancelled']);
 
-        $second = $this->as($this->g['headers'])
+        $this->as($this->g['headers'])
             ->postJson('/api/mobile/family/invitations', ['health_id' => 'CM-HID-ELDR-0001-AB12', 'relationship' => 'child'])
-            ->assertCreated()->json('data.id');
+            ->assertStatus(202);
+        // The 202 carries no id on purpose (see sendInvitation); read the row back.
+        $second = FamilyLink::where('status', FamilyLink::STATUS_PENDING_INVITE)->latest('created_at')->value('id');
 
         $this->assertNotSame($first, $second);
         $this->assertSame(2, DB::table('family_links')->count());
@@ -305,7 +319,7 @@ class FamilyInvitationsTest extends FamilyTestCase
         $this->makeElder();
         $this->as($this->g['headers'])
             ->postJson('/api/mobile/family/invitations', ['phone' => '+237699000111', 'relationship' => 'child'])
-            ->assertCreated();
+            ->assertStatus(202);
 
         $this->as($this->g['headers'])->getJson('/api/mobile/family/invitations')->assertOk()
             ->assertJsonCount(1, 'data')
@@ -313,5 +327,25 @@ class FamilyInvitationsTest extends FamilyTestCase
             ->assertJsonPath('data.0.access_level', 'read_only')
             ->assertJsonPath('data.0.status', 'pending_invite')
             ->assertJsonStructure(['data' => [['id', 'contact', 'relationship', 'access_level', 'status', 'method', 'sent_at', 'expires_at']]]);
+    }
+
+    /** Until the person accepts, the guardian learns a short name and nothing else. */
+    public function test_a_pending_invitee_is_only_a_short_name_in_the_family_list(): void
+    {
+        $elder = $this->makeElder(['first_name' => 'Grandma', 'last_name' => 'Ndi']);
+
+        $this->as($this->g['headers'])
+            ->postJson('/api/mobile/family/invitations', ['health_id' => 'CM-HID-ELDR-0001-AB12', 'relationship' => 'child'])
+            ->assertStatus(202);
+
+        $row = collect($this->as($this->g['headers'])->getJson('/api/mobile/family')->assertOk()->json('data'))
+            ->firstWhere('status', 'pending_invite');
+
+        $this->assertNotNull($row);
+        $this->assertSame('Grandma N.', $row['patient']['display_name']);
+        foreach (['id', 'health_id', 'dob', 'date_of_birth', 'sex', 'blood_type', 'photo_url', 'age'] as $secret) {
+            $this->assertArrayNotHasKey($secret, $row['patient'], "A pending invitee's {$secret} must not be exposed.");
+        }
+        $this->assertStringNotContainsString($elder->health_id, json_encode($row));
     }
 }

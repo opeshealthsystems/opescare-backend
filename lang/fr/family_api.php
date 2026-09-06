@@ -54,4 +54,5 @@ return [
     'notification_declined_title'   => ':name a refusé votre invitation',
     'notification_declined_message' => "Aucun lien n'a été créé. Vous pourrez envoyer une nouvelle invitation plus tard.",
     'notification_answer_action'    => 'Ouvrir Famille',
+    'invitation_queued' => 'Si cette personne possède un Identifiant Santé OpesCare, elle recevra votre invitation dans son application. Elle apparaîtra dans vos invitations en attente une fois envoyée.',
 ];

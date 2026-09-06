@@ -201,5 +201,5 @@ return [
 
     // ── Guardian onboarding exit ───────────────────────────────────────
     'pending_next_steps'      => 'You can already set up who you care for:',
-
+    'child_may_exist' => 'Someone with these details may already hold an OpesCare Health ID. Invite them instead, so their existing record is linked with their consent.',
 ];

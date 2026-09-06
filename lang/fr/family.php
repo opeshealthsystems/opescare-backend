@@ -197,5 +197,5 @@ return [
 
     // ── Sortie de l’attente tuteur ────────────────────────────────────
     'pending_next_steps'      => 'Vous pouvez déjà indiquer de qui vous vous occupez :',
-
+    'child_may_exist' => 'Une personne avec ces informations possède peut-être déjà un Identifiant Santé OpesCare. Invitez-la plutôt, afin de relier son dossier existant avec son consentement.',
 ];

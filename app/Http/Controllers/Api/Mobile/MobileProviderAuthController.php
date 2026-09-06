@@ -95,7 +95,7 @@ class MobileProviderAuthController extends Controller
         // on this surface — refuse the session rather than mint one that every
         // clinician route will turn away. Same shape as the middleware refusal
         // so the app can recognise it.
-        if (StaffCapabilities::forRole($user->role?->name) === []) {
+        if (StaffCapabilities::forRole(StaffCapabilities::roleFor($user, $this->resolveFacilityId($user))) === []) {
             return response()->json([
                 'message'    => __('api.provider_role_not_clinical'),
                 'error_code' => 'role_forbidden',

@@ -118,4 +118,24 @@ class StaffAppointmentBookScopeTest extends TestCase
             ->assertRedirect(route('portals.staff.appointments.create'))
             ->assertSessionHasErrors('patient_id');
     }
+
+    public function test_check_in_and_no_show_cannot_touch_another_facilitys_appointment(): void
+    {
+        // check-in wraps its work in try/catch and reports the miss as a flash
+        // (302 back); no-show has no such wrapper and 404s. Either way nothing
+        // at the other facility changes and no visit is opened there.
+        $this->asReceptionist()
+            ->post(route('portals.staff.appointments.check-in', $this->theirsAppt->id))
+            ->assertRedirect();
+        $this->asReceptionist()
+            ->post(route('portals.staff.appointments.no-show', $this->theirsAppt->id))
+            ->assertNotFound();
+        $this->assertDatabaseHas('appointments', ['id' => $this->theirsAppt->id, 'status' => 'scheduled']);
+        $this->assertDatabaseMissing('visits', ['patient_id' => $this->patient->id, 'facility_id' => $this->theirs->id]);
+
+        $this->asReceptionist()
+            ->post(route('portals.staff.appointments.no-show', $this->mineAppt->id))
+            ->assertRedirect(route('portals.staff.appointments'));
+        $this->assertDatabaseHas('appointments', ['id' => $this->mineAppt->id, 'status' => 'no_show']);
+    }
 }

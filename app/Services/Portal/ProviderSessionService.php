@@ -116,7 +116,7 @@ class ProviderSessionService
         return [
             'id'             => $user->getKey(),
             'name'           => $user->name,
-            'role'           => $user->role?->name,
+            'role'           => \App\Support\StaffCapabilities::roleFor($user, $facilityId) ?? $user->role?->name,
             'facility_id'    => $facilityId,
             'facility_name'  => $facilityId
                 ? Facility::withoutGlobalScope('isolate_demo')->whereKey($facilityId)->value('name')

@@ -232,9 +232,9 @@ Route::prefix('mobile')->group(function () {
 
         // Family management (guardians & dependents)
         Route::get('/family',                         [\App\Http\Controllers\Api\Mobile\MobileFamilyController::class, 'index']);
-        Route::post('/family',                        [\App\Http\Controllers\Api\Mobile\MobileFamilyController::class, 'store']);
+        Route::post('/family',                        [\App\Http\Controllers\Api\Mobile\MobileFamilyController::class, 'store'])->middleware('throttle:10,1');
         Route::get('/family/invitations',             [\App\Http\Controllers\Api\Mobile\MobileFamilyController::class, 'invitations']);
-        Route::post('/family/invitations',            [\App\Http\Controllers\Api\Mobile\MobileFamilyController::class, 'sendInvitation']);
+        Route::post('/family/invitations',            [\App\Http\Controllers\Api\Mobile\MobileFamilyController::class, 'sendInvitation'])->middleware('throttle:10,1');
         Route::delete('/family/invitations/{id}',     [\App\Http\Controllers\Api\Mobile\MobileFamilyController::class, 'cancelInvitation']);
 
         // Notification centre

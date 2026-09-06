@@ -53,6 +53,9 @@ class ActAsDependent
         'push-tokens',
         'settings',
         'offline',
+        'messages',
+        'notifications',
+        'support',
     ];
 
     public function handle(Request $request, Closure $next): Response

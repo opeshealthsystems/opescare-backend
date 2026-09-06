@@ -73,7 +73,12 @@ class MobilePatientController extends Controller
 
         // One shape for the patient's own card and a dependent's card
         // (family member detail) — see HealthIdCardPayload.
-        return response()->json(\App\Support\HealthIdCardPayload::for($patient));
+        // A read-only guardian acting for a dependent sees the card but gets no
+        // QR to present with — the same rule the family member detail applies.
+        $link   = $request->attributes->get('family_link');
+        $withQr = ! ($link instanceof \App\Models\FamilyLink && $link->isReadOnly());
+
+        return response()->json(\App\Support\HealthIdCardPayload::for($patient, withQr: $withQr));
     }
 
     /**
