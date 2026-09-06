@@ -61,14 +61,8 @@ class LabDeskController extends LabDeskBaseController
 
         $orders = $this->desk->orders($facilityId, $status, $urgency);
 
-        $this->audit(
-            $request,
-            $orders->pluck('patient_id')->all(),
-            'lab_desk_worklist',
-            'LabOrder',
-            null,
-            'view'
-        );
+        // One list-level row; the per-patient rows belong to show() and the writes.
+        $this->auditList($request, 'LabOrder', $orders->count());
 
         return response()->json([
             'data' => LabDeskOrderResource::collection($orders),

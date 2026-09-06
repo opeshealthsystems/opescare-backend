@@ -20,6 +20,7 @@ return [
     'appointment_not_found' => 'Rendez-vous introuvable.',
     'request_not_found'     => 'Demande de rendez-vous introuvable.',
     'provider_not_found'    => 'Compte clinicien introuvable.',
+    'facility_required'     => 'Cette session n’est rattachée à aucun établissement. Reconnectez-vous.',
 
     // ── Refus de transition ──────────────────────────────────────────────
     'not_check_in_eligible' => 'Seul un rendez-vous réservé ou confirmé peut être enregistré à l’arrivée.',

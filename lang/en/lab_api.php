@@ -26,7 +26,7 @@ return [
     'order_closed'      => 'This order is :status and cannot be worked further.',
     'no_results'        => 'Enter at least one result before releasing this order.',
     'already_decided'   => 'This request has already been :status.',
-    'no_facility'       => 'This session is not bound to a facility. Sign in again.',
+    'facility_required' => 'This session is not bound to a facility. Sign in again.',
 
     // The words dropped into :status above.
     'order_status'      => [

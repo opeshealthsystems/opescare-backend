@@ -41,7 +41,7 @@ class DeskController extends Controller
         $actor = DeskActor::fromRequest($request);
 
         if (! $actor) {
-            return $this->refuse('provider_not_found', 401);
+            return $this->refuse('facility_required', 422);
         }
 
         $today = Carbon::now(config('app.timezone'));
@@ -71,7 +71,7 @@ class DeskController extends Controller
         $actor = DeskActor::fromRequest($request);
 
         if (! $actor) {
-            return $this->refuse('provider_not_found', 401);
+            return $this->refuse('facility_required', 422);
         }
 
         $validated = $request->validate([
@@ -105,7 +105,7 @@ class DeskController extends Controller
         $actor = DeskActor::fromRequest($request);
 
         if (! $actor) {
-            return $this->refuse('provider_not_found', 401);
+            return $this->refuse('facility_required', 422);
         }
 
         return response()->json([

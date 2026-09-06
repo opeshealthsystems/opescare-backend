@@ -6,13 +6,16 @@ use App\Models\Appointment;
 use App\Models\Facility;
 use App\Models\LabOrder;
 use App\Models\Patient;
+use App\Models\PushDeviceToken;
 use App\Models\Role;
 use App\Models\User;
 use App\Modules\Messaging\Models\MessageThread;
 use App\Modules\Messaging\Models\MessageThreadParticipant;
 use App\Services\Portal\ProviderSessionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Request as ClientRequest;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
@@ -278,5 +281,103 @@ class DoctorStartThreadTest extends TestCase
     public function test_a_patient_session_cannot_open_a_clinician_thread(): void
     {
         $this->postJson('/api/mobile/doctor/messages/threads', $this->goodBody())->assertUnauthorized();
+    }
+
+    // ── the patient's notice ──────────────────────────────────────────────
+
+    public function test_the_patient_is_told_a_clinician_has_written_to_them(): void
+    {
+        config(['push_channels.expo.enabled' => true]);
+        Http::fake([
+            'exp.host/*' => Http::response(['data' => [['status' => 'ok', 'id' => 'ticket-0001']]], 200),
+            '*'          => Http::response([], 200),
+        ]);
+        PushDeviceToken::create([
+            'patient_id'         => $this->patient->id,
+            'device_fingerprint' => substr(md5('thread-test-device'), 0, 32),
+            'platform'           => 'android',
+            'push_token'         => 'ExponentPushToken[thread-test-device-0001]',
+            'is_active'          => true,
+            'registered_at'      => now(),
+            'revoked_at'         => null,
+        ]);
+
+        $threadId = $this->start('doctor', $this->goodBody())->assertCreated()->json('data.id');
+
+        // The bell: Laravel's `notifications` table, the feed the patient app
+        // reads, in the payload shape DemoPatientStorySeeder documents.
+        $bells = DB::table('notifications')
+            ->where('notifiable_type', 'patient')
+            ->where('notifiable_id', $this->patient->id)
+            ->get();
+        $this->assertCount(1, $bells);
+        $this->assertSame('message_received', $bells->first()->type);
+        $this->assertNull($bells->first()->read_at);
+
+        $bell = json_decode($bells->first()->data, true);
+        foreach (['type', 'title', 'message', 'severity', 'action_url', 'action_label'] as $key) {
+            $this->assertArrayHasKey($key, $bell);
+        }
+        $this->assertSame('message_received', $bell['type']);
+        $this->assertSame('normal', $bell['severity']);
+        // The thread's numeric id: what /messages/[id] and GET /mobile/messages/threads/{id} key on.
+        $this->assertSame('/messages/' . $threadId, $bell['action_url']);
+        $this->assertSame((string) $threadId, $bell['thread_id']);
+        $this->assertSame(__('doctor_messaging.patient_notice.new_thread_action'), $bell['action_label']);
+        $this->assertStringContainsString('Dr Ngozi Mbah', $bell['title']);
+        $this->assertStringContainsString('Bamenda Regional Hospital', $bell['message']);
+        // A lock screen is public: neither the subject nor the body travels.
+        $this->assertStringNotContainsString('glucose', $bell['title'] . $bell['message']);
+
+        // The push: one Expo message on the `message` type the app switches on.
+        $messages = [];
+        foreach (Http::recorded(fn (ClientRequest $r) => $r->url() === 'https://exp.host/--/api/v2/push/send') as [$request]) {
+            foreach ((array) $request->data() as $message) {
+                $messages[] = $message;
+            }
+        }
+        $this->assertCount(1, $messages, 'exactly one push was sent');
+        $push = $messages[0];
+        $this->assertSame('ExponentPushToken[thread-test-device-0001]', $push['to']);
+        $this->assertSame($bell['title'], $push['title']);
+        $this->assertSame($bell['message'], $push['body']);
+        $this->assertSame('message', $push['data']['type']);
+        $this->assertSame((string) $threadId, $push['data']['thread_id']);
+        $this->assertSame('/messages/' . $threadId, $push['data']['action_url']);
+        $this->assertStringNotContainsString('glucose', $push['title'] . $push['body']);
+    }
+
+    public function test_the_notice_is_in_the_patients_own_language(): void
+    {
+        DB::table('mobile_app_settings')->insert([
+            'id'                 => (string) Str::uuid(),
+            'patient_id'         => $this->patient->id,
+            'preferred_language' => 'fr',
+            'created_at'         => now(),
+            'updated_at'         => now(),
+        ]);
+
+        $this->start('doctor', $this->goodBody())->assertCreated();
+
+        $bell = json_decode(DB::table('notifications')->where('notifiable_id', $this->patient->id)->value('data'), true);
+        $this->assertSame(__('doctor_messaging.patient_notice.new_thread_title', ['provider' => 'Dr Ngozi Mbah'], 'fr'), $bell['title']);
+        $this->assertStringContainsString('Bamenda Regional Hospital', $bell['message']);
+        $this->assertNotSame(
+            __('doctor_messaging.patient_notice.new_thread_title', ['provider' => 'x'], 'fr'),
+            __('doctor_messaging.patient_notice.new_thread_title', ['provider' => 'x'], 'en')
+        );
+    }
+
+    public function test_a_refused_thread_rings_no_bell(): void
+    {
+        $stranger = Patient::factory()->create(['is_demo' => (bool) config('demo.enabled')]);
+
+        $this->start('doctor', $this->goodBody($stranger->id))->assertForbidden();
+
+        $treated = Patient::factory()->create(['is_demo' => (bool) config('demo.enabled')]);
+        LabOrder::factory()->create(['patient_id' => $treated->id, 'facility_id' => $this->facility->id, 'ordered_by' => $this->users['doctor']->id]);
+        $this->start('doctor', $this->goodBody($treated->id))->assertStatus(422);
+
+        $this->assertDatabaseCount('notifications', 0);
     }
 }

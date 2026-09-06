@@ -116,4 +116,25 @@ class FrontDeskWalkInTest extends FrontDeskTestCase
 
         $this->assertTrue((bool) Patient::withoutGlobalScopes()->where('health_id', $healthId)->value('is_demo'));
     }
+
+    public function test_the_duplicate_refusal_carries_nothing_but_the_code_and_the_sentence(): void
+    {
+        $response = $this->hit('receptionist', 'POST', '/api/mobile/desk/patients', $this->walkIn([
+            'first_name'    => 'Amara',
+            'last_name'     => 'Ndi',
+            'date_of_birth' => $this->patient->date_of_birth->toDateString(),
+            'sex'           => $this->patient->sex,
+            'phone'         => null,
+        ]))->assertStatus(409);
+
+        // Exactly these two keys, in this order: no match count, no Health ID,
+        // no name — the desk learns that a match exists, not who or how many.
+        $this->assertSame([
+            'error_code' => 'duplicate_identity',
+            'message'    => __('desk_api.duplicate_identity'),
+        ], $response->json());
+        $this->assertArrayNotHasKey('matches', $response->json());
+
+        $this->assertSame(1, Patient::withoutGlobalScopes()->count());
+    }
 }

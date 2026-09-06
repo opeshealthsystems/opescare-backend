@@ -35,7 +35,7 @@ class DeskPatientController extends Controller
         $actor = DeskActor::fromRequest($request);
 
         if (! $actor) {
-            return $this->refuse('provider_not_found', 401);
+            return $this->refuse('facility_required', 422);
         }
 
         $validated = $request->validate([

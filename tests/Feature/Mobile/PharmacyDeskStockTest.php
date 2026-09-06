@@ -164,4 +164,20 @@ class PharmacyDeskStockTest extends PharmacyDeskTestCase
         $this->assertSame(22, $this->paracetamolStock->fresh()->packs_available);
         $this->assertSame(1, StockMovement::count());
     }
+
+    public function test_a_token_without_a_facility_is_refused_with_the_one_shape(): void
+    {
+        \Illuminate\Support\Facades\DB::table('provider_access_tokens')
+            ->where('user_id', $this->users['pharmacist']->id)
+            ->update(['facility_id' => null]);
+
+        $response = $this->desk('pharmacist', 'GET', '/stock')
+            ->assertStatus(422)
+            ->assertJsonPath('error_code', 'facility_required')
+            ->assertJsonPath('message', __('pharmacy_api.errors.facility_required'));
+
+        $keys = array_keys($response->json());
+        sort($keys);
+        $this->assertSame(['error_code', 'message'], $keys);
+    }
 }

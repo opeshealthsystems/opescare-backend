@@ -38,14 +38,8 @@ class LabRequestController extends LabDeskBaseController
         $status   = $validated['status'] ?? 'submitted';
         $requests = $this->desk->requests($facilityId, $status);
 
-        $this->audit(
-            $request,
-            $requests->pluck('patient_id')->all(),
-            'lab_desk_requests',
-            'LabTestRequest',
-            null,
-            'view'
-        );
+        // One list-level row; the per-patient rows belong to approve()/decline().
+        $this->auditList($request, 'LabTestRequest', $requests->count());
 
         return response()->json([
             'data' => LabDeskRequestResource::collection($requests),

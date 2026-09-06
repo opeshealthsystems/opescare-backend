@@ -439,4 +439,84 @@ class LabDeskOrdersTest extends LabDeskTestCase
 
         $this->assertNotSame(__('lab_api.order_not_found', [], 'fr'), __('lab_api.order_not_found', [], 'en'));
     }
+
+    // ── access log ────────────────────────────────────────────────────────
+
+    public function test_the_worklist_is_logged_once_at_list_level_and_single_reads_per_patient(): void
+    {
+        $mine = $this->order();
+        foreach (range(1, 3) as $i) {
+            $other = \App\Models\Patient::factory()->create(['is_demo' => (bool) config('demo.enabled')]);
+            $this->order(['patient_id' => $other->id]);
+        }
+
+        $this->asLab('GET', '/api/mobile/lab/orders')->assertOk()->assertJsonPath('meta.count', 4);
+
+        // ONE row for the list — no patient, the facility, which list — not
+        // one per patient on it.
+        $this->assertSame(1, DB::table('access_logs')->count());
+        $this->assertDatabaseHas('access_logs', [
+            'purpose'       => 'lab_worklist',
+            'patient_id'    => null,
+            'actor_id'      => $this->users['labtech']->id,
+            'actor_type'    => 'provider',
+            'facility_id'   => $this->facility->id,
+            'resource_type' => 'LabOrder',
+            'resource_id'   => null,
+            'access_type'   => 'view',
+        ]);
+        $this->assertSame(0, DB::table('access_logs')->where('purpose', 'lab_desk_worklist')->count());
+
+        // A second refresh is a second row, not four more.
+        $this->asLab('GET', '/api/mobile/lab/orders?status=ordered')->assertOk();
+        $this->assertSame(2, DB::table('access_logs')->where('purpose', 'lab_worklist')->count());
+        $this->assertSame(0, DB::table('access_logs')->whereNotNull('patient_id')->count());
+
+        // One order opened: ONE patient-scoped row, for THAT patient.
+        $this->asLab('GET', '/api/mobile/lab/orders/' . $mine->id)->assertOk();
+        $this->assertSame(1, DB::table('access_logs')->whereNotNull('patient_id')->count());
+        $this->assertDatabaseHas('access_logs', [
+            'purpose'     => 'lab_desk_review',
+            'patient_id'  => $this->patient->id,
+            'facility_id' => $this->facility->id,
+            'resource_id' => $mine->id,
+            'access_type' => 'view',
+        ]);
+
+        // And every write keeps its patient-scoped row.
+        $this->asLab('POST', '/api/mobile/lab/orders/' . $mine->id . '/collect')->assertOk();
+        $this->assertDatabaseHas('access_logs', ['purpose' => 'lab_desk_sample_collection', 'patient_id' => $this->patient->id, 'resource_id' => $mine->id, 'access_type' => 'update']);
+
+        $this->asLab('POST', '/api/mobile/lab/orders/' . $mine->id . '/results', ['results' => [['parameter_name' => 'Hb', 'value' => '12']]])->assertCreated();
+        $this->assertDatabaseHas('access_logs', ['purpose' => 'lab_desk_result_entry', 'patient_id' => $this->patient->id, 'resource_id' => $mine->id, 'access_type' => 'create']);
+
+        $this->asLab('POST', '/api/mobile/lab/orders/' . $mine->id . '/release')->assertOk();
+        $this->assertDatabaseHas('access_logs', ['purpose' => 'lab_desk_release', 'patient_id' => $this->patient->id, 'resource_id' => $mine->id, 'access_type' => 'update']);
+
+        $this->assertSame(4, DB::table('access_logs')->whereNotNull('patient_id')->count());
+        $this->assertSame(2, DB::table('access_logs')->whereNull('patient_id')->count());
+    }
+
+    // ── a session without a facility ──────────────────────────────────────
+
+    public function test_a_token_without_a_facility_is_refused_with_the_one_shape(): void
+    {
+        $order = $this->order();
+        DB::table('provider_access_tokens')->where('user_id', $this->users['labtech']->id)->update(['facility_id' => null]);
+
+        foreach (['/api/mobile/lab/home', '/api/mobile/lab/orders', '/api/mobile/lab/orders/' . $order->id, '/api/mobile/lab/requests'] as $path) {
+            $response = $this->asLab('GET', $path)
+                ->assertStatus(422)
+                ->assertJsonPath('error_code', 'facility_required')
+                ->assertJsonPath('message', __('lab_api.facility_required'));
+            $this->assertSame(['error_code', 'message'], array_keys($response->json()), $path);
+        }
+
+        $this->asLab('POST', '/api/mobile/lab/orders/' . $order->id . '/collect')
+            ->assertStatus(422)
+            ->assertJsonPath('error_code', 'facility_required');
+
+        $this->assertSame('ordered', $order->fresh()->status);
+        $this->assertDatabaseCount('access_logs', 0);
+    }
 }

@@ -62,12 +62,17 @@ abstract class LabDeskBaseController extends Controller
         return (string) $request->attributes->get('provider_user_id');
     }
 
+    /**
+     * A provider token that names no facility. One refusal, one shape, on
+     * every desk (front desk, lab, pharmacy, clinician): 422
+     * `{error_code: facility_required, message}`.
+     */
     protected function noFacility(): JsonResponse
     {
         return response()->json([
-            'message'    => __('lab_api.no_facility'),
-            'error_code' => 'no_facility',
-        ], 409);
+            'error_code' => 'facility_required',
+            'message'    => __('lab_api.facility_required'),
+        ], 422);
     }
 
     protected function notFound(string $key, string $errorCode): JsonResponse
@@ -76,6 +81,50 @@ abstract class LabDeskBaseController extends Controller
             'message'    => __($key),
             'error_code' => $errorCode,
         ], 404);
+    }
+
+    /**
+     * ONE row for a worklist read. A list is not a chart: the bench sees a
+     * name, a test and a status per line, and a pull-to-refresh that wrote
+     * up to five hundred patient-scoped rows buried the trail it was meant to
+     * keep. So a list read is logged once, at list level — purpose
+     * `lab_worklist`, no patient, the facility on the row, the resource type
+     * saying which list — and every single-patient read or write below keeps
+     * its patient-scoped row through audit().
+     *
+     * Not persisted: the row count. `access_logs` has no details column; the
+     * count is logged at debug so a silent host can still be diagnosed.
+     */
+    protected function auditList(Request $request, string $resourceType, int $count): void
+    {
+        $facilityId = $this->facilityId($request);
+
+        try {
+            AccessLogService::log(
+                patientId: null,
+                actorId: $this->userId($request),
+                actorType: 'provider',
+                organizationId: null,
+                facilityId: $facilityId,
+                purpose: 'lab_worklist',
+                dataCategory: 'diagnostic_results',
+                resourceType: $resourceType,
+                resourceId: null,
+                accessType: 'view',
+            );
+
+            Log::debug('lab desk: worklist read', [
+                'facility_id'   => $facilityId,
+                'resource_type' => $resourceType,
+                'count'         => $count,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('lab desk: worklist access log failed', [
+                'facility_id'   => $facilityId,
+                'resource_type' => $resourceType,
+                'error'         => $e->getMessage(),
+            ]);
+        }
     }
 
     /**

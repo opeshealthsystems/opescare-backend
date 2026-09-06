@@ -26,7 +26,7 @@ return [
     'order_closed'      => 'Cette demande est :status et ne peut plus être traitée.',
     'no_results'        => 'Saisissez au moins un résultat avant de valider cette demande.',
     'already_decided'   => 'Cette demande a déjà été :status.',
-    'no_facility'       => "Cette session n'est rattachée à aucun établissement. Reconnectez-vous.",
+    'facility_required' => "Cette session n'est rattachée à aucun établissement. Reconnectez-vous.",
 
     // Les mots insérés dans :status ci-dessus.
     'order_status'      => [

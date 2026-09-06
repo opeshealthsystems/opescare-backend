@@ -25,6 +25,7 @@ return [
     'patient_not_found'        => 'No patient holds that Health ID. Check the ID exactly as printed on the card.',
     'appointment_not_found'    => 'Appointment not found.',
     'provider_not_found'       => 'Staff account not found.',
+    'facility_required'        => 'This session is not bound to a facility. Sign in again.',
     'provider_not_at_facility' => 'That clinician is not posted at this facility, so the appointment cannot be routed to them.',
 
     // ── Transition refusals ──────────────────────────────────────────────

@@ -4,19 +4,15 @@ namespace App\Http\Controllers\Api\Mobile;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
-use App\Models\CareTeamMember;
-use App\Models\ConsentGrant;
-use App\Models\Encounter;
-use App\Models\ImagingOrder;
-use App\Models\LabOrder;
 use App\Models\Patient;
-use App\Models\Prescription;
 use App\Models\User;
 use App\Modules\Governance\Services\AccessLogService;
 use App\Modules\Messaging\Models\Message;
 use App\Modules\Messaging\Models\MessageThread;
 use App\Modules\Messaging\Models\MessageThreadParticipant;
 use App\Modules\Messaging\Services\MessagingService;
+use App\Support\ClinicalRelationshipGate;
+use App\Support\PatientPush;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -262,12 +258,12 @@ class MobileDoctorMessagingController extends Controller
      *                        Health-ID form here — the caller already holds the
      *                        uuid from the chart or the results inbox.
      *
-     *   MAY I write to them? The chart's rule, copied verbatim
-     *                        (relationshipBasis(), below): one of the five
-     *                        care-relationship bases MobileDoctorChartController
-     *                        demands before it opens a record. None → 403, the
-     *                        same shape the chart refuses with. Holding an id is
-     *                        not authorisation.
+     *   MAY I write to them? The chart's rule, the chart's class
+     *                        (App\Support\ClinicalRelationshipGate): one of the
+     *                        five care-relationship bases the chart demands
+     *                        before it opens a record. None → 403, the same
+     *                        shape the chart refuses with. Holding an id is not
+     *                        authorisation.
      *
      *   WILL it reach me?    visibleThreads() resolves a patient thread's
      *                        patient AND facility from `context_type=
@@ -312,9 +308,9 @@ class MobileDoctorMessagingController extends Controller
             ], 404);
         }
 
-        $basis = $this->relationshipBasis($patient, $providerId, $facilityId);
+        $verdict = ClinicalRelationshipGate::evaluate($providerId, $facilityId, (string) $patient->id);
 
-        if ($basis === null) {
+        if (! $verdict->holds()) {
             // A refusal discloses nothing, but it is still recorded.
             $this->auditPatients($request, [$patient->id], 'denied', 'MessageThread', null);
 
@@ -331,7 +327,7 @@ class MobileDoctorMessagingController extends Controller
             return response()->json([
                 'error_code' => 'MESSAGE_CONTEXT_UNAVAILABLE',
                 'message'    => __('doctor_messaging.no_delivery_context'),
-                'basis'      => $basis,
+                'basis'      => $verdict->basis,
             ], 422);
         }
 
@@ -399,6 +395,8 @@ class MobileDoctorMessagingController extends Controller
 
         $this->auditPatients($request, [$patient->id], 'write', 'MessageThread', $thread->uuid);
 
+        $this->notifyPatientOfThread($patient, $thread, $providerId, $appointment->facility_id);
+
         $messages = [[
             'id'         => $message->id,
             'is_mine'    => true,
@@ -442,8 +440,8 @@ class MobileDoctorMessagingController extends Controller
     /**
      * The appointment a new patient thread hangs off, or null.
      *
-     * Not an authorisation check — relationshipBasis() is that, and it runs
-     * first. This is the delivery question: visibleThreads() lists a patient
+     * Not an authorisation check — ClinicalRelationshipGate is that, and it
+     * runs first. This is the delivery question: visibleThreads() lists a patient
      * thread only when its appointment context resolves to the TOKEN's
      * facility, so the context must be an appointment for this patient at this
      * facility. This clinician's own is preferred (the thread then names them
@@ -462,128 +460,6 @@ class MobileDoctorMessagingController extends Controller
             ->orderByRaw('CASE WHEN provider_id = ? THEN 0 ELSE 1 END', [$providerId])
             ->orderByDesc('scheduled_at')
             ->first();
-    }
-
-    // ══════════════════════════════════════════════════════════════════════
-    // The care-relationship gate — MobileDoctorChartController's rule, copied
-    // ══════════════════════════════════════════════════════════════════════
-
-    /**
-     * How far back an episode at the clinician's own facility still counts as
-     * a live care relationship. The chart's figure.
-     */
-    private const FACILITY_EPISODE_LOOKBACK_DAYS = 365;
-
-    /**
-     * The basis on which this clinician may write to this patient, or null.
-     *
-     * MobileDoctorChartController::relationshipBasis(), verbatim: the same five
-     * bases, the same order, the same vocabulary. One rule about what a care
-     * relationship IS, whether the clinician wants to read the record or open a
-     * conversation about it. That method is private and its file is not this
-     * one's to edit, so the rule is copied rather than called — the third copy
-     * on this surface (MobileMessagingController holds the patient-side one);
-     * a shared App\Support home is the right next step.
-     */
-    private function relationshipBasis(Patient $patient, ?string $clinicianId, ?string $facilityId): ?string
-    {
-        if (! $clinicianId) {
-            return null;
-        }
-
-        // 1. On this clinician's own schedule.
-        if (Appointment::where('patient_id', $patient->id)->where('provider_id', $clinicianId)->exists()) {
-            return 'appointment';
-        }
-
-        // 2. A current member of this patient's care team.
-        if (
-            CareTeamMember::where('patient_id', $patient->id)
-                ->where('provider_id', $clinicianId)
-                ->where('is_active', true)
-                ->whereNull('left_at')
-                ->exists()
-        ) {
-            return 'care_team';
-        }
-
-        // 3. This clinician personally did something clinical for this patient.
-        $ownAct = Encounter::where('patient_id', $patient->id)->where('attending_provider_id', $clinicianId)->exists()
-            || DB::table('visits')->where('patient_id', $patient->id)->where('provider_id', $clinicianId)->exists()
-            || Prescription::where('patient_id', $patient->id)->where('prescribed_by', $clinicianId)->exists()
-            || LabOrder::where('patient_id', $patient->id)->where('ordered_by', $clinicianId)->exists()
-            || ImagingOrder::where('patient_id', $patient->id)->where('ordered_by', $clinicianId)->exists();
-
-        if ($ownAct) {
-            return 'treating_clinician';
-        }
-
-        // 4. An episode of care at the clinician's OWN facility — the token's
-        //    facility, which no caller can name — that is open, still ahead,
-        //    or recent enough to still be care rather than history.
-        if ($facilityId && $this->hasFacilityEpisode($patient->id, $facilityId)) {
-            return 'facility_episode';
-        }
-
-        // 5. The patient has granted this facility access outright.
-        if ($facilityId && $this->hasActiveConsentGrant($patient->id, $facilityId)) {
-            return 'consent_grant';
-        }
-
-        return null;
-    }
-
-    /** Is there a live episode of care for this patient at this facility? The chart's rule, unchanged. */
-    private function hasFacilityEpisode(string $patientId, string $facilityId): bool
-    {
-        $since = Carbon::now()->subDays(self::FACILITY_EPISODE_LOOKBACK_DAYS);
-
-        $visit = DB::table('visits')
-            ->where('patient_id', $patientId)
-            ->where('facility_id', $facilityId)
-            ->where(fn ($q) => $q->whereNull('ended_at')->orWhere('started_at', '>=', $since))
-            ->exists();
-
-        if ($visit) {
-            return true;
-        }
-
-        $encounter = Encounter::where('patient_id', $patientId)
-            ->where('facility_id', $facilityId)
-            ->where(fn ($q) => $q->whereNull('ended_at')->orWhere('started_at', '>=', $since))
-            ->exists();
-
-        if ($encounter) {
-            return true;
-        }
-
-        $appointment = Appointment::where('patient_id', $patientId)
-            ->where('facility_id', $facilityId)
-            ->where('scheduled_at', '>=', $since)
-            ->exists();
-
-        if ($appointment) {
-            return true;
-        }
-
-        return Prescription::where('patient_id', $patientId)
-            ->where('facility_id', $facilityId)
-            ->where('prescribed_at', '>=', $since)
-            ->exists();
-    }
-
-    /** An active, unexpired consent grant for this patient scoped to this facility. */
-    private function hasActiveConsentGrant(string $patientId, ?string $facilityId): bool
-    {
-        if (! $facilityId) {
-            return false;
-        }
-
-        return ConsentGrant::where('patient_id', $patientId)
-            ->where('facility_id', $facilityId)
-            ->where('status', 'active')
-            ->where('expires_at', '>=', Carbon::now())
-            ->exists();
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -955,6 +831,79 @@ class MobileDoctorMessagingController extends Controller
             'error_code' => 'NOT_FOUND',
             'message'    => __('doctor_messaging.thread_not_found'),
         ], 404);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // The patient's notice
+    // ══════════════════════════════════════════════════════════════════════
+
+    /** The bell/push `type` the patient app switches on for a message. */
+    private const PATIENT_MESSAGE_TYPE = 'message_received';
+
+    /**
+     * Tell the patient a clinician has written to them — a bell row in the
+     * feed the app reads (Laravel's `notifications` table, the payload shape
+     * DemoPatientStorySeeder documents) plus a push, both in THEIR language.
+     *
+     * Names the clinician and the facility; never the subject or the body —
+     * a lock screen is a public surface and the subject is the clinician's
+     * free text. `action_url` is `/messages/{id}` with the thread's numeric
+     * id, which is what the patient app's `/messages/[id]` screen and
+     * `GET /mobile/messages/threads/{id}` both key on.
+     *
+     * Never fatal: the thread is written and the message is in it whether or
+     * not the bell rang.
+     */
+    private function notifyPatientOfThread(Patient $patient, MessageThread $thread, string $providerId, ?string $facilityId): void
+    {
+        try {
+            $locale = PatientPush::localeFor($patient);
+
+            $providerName = (string) (User::query()->whereKey($providerId)->value('name') ?? '');
+            $facilityName = $facilityId
+                ? (string) (DB::table('facilities')->where('id', $facilityId)->value('name') ?? '')
+                : '';
+
+            $replace = [
+                'provider' => $providerName !== '' ? $providerName : __('doctor_messaging.patient_notice.a_clinician', [], $locale),
+                'facility' => $facilityName !== '' ? $facilityName : __('doctor_messaging.patient_notice.your_facility', [], $locale),
+            ];
+
+            $title     = __('doctor_messaging.patient_notice.new_thread_title', $replace, $locale);
+            $body      = __('doctor_messaging.patient_notice.new_thread_body', $replace, $locale);
+            $threadId  = (string) $thread->id;
+            $actionUrl = '/messages/' . $threadId;
+
+            DB::table('notifications')->insert([
+                'id'              => (string) Str::uuid(),
+                'type'            => self::PATIENT_MESSAGE_TYPE,
+                'notifiable_type' => $patient->getMorphClass(),
+                'notifiable_id'   => $patient->getKey(),
+                'data'            => json_encode([
+                    'type'         => self::PATIENT_MESSAGE_TYPE,
+                    'title'        => $title,
+                    'message'      => $body,
+                    'severity'     => 'normal',
+                    'action_url'   => $actionUrl,
+                    'action_label' => __('doctor_messaging.patient_notice.new_thread_action', [], $locale),
+                    'thread_id'    => $threadId,
+                ], JSON_UNESCAPED_UNICODE),
+                'read_at'         => null,
+                'created_at'      => now(),
+                'updated_at'      => now(),
+            ]);
+
+            PatientPush::send($patient, 'message', $title, $body, [
+                'thread_id'  => $threadId,
+                'action_url' => $actionUrl,
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('Doctor messaging: patient notice not sent.', [
+                'thread_id'   => $thread->id,
+                'provider_id' => $providerId,
+                'error'       => $e->getMessage(),
+            ]);
+        }
     }
 
     // ══════════════════════════════════════════════════════════════════════

@@ -27,6 +27,17 @@ return [
     'no_delivery_context' => 'This patient has no appointment at your facility, so a conversation opened here would not reach your inbox. Book or record an appointment for them first.',
     'thread_not_created'  => 'The conversation could not be opened. Please try again.',
 
+    // The patient's bell + push when a clinician opens a conversation with
+    // them. Lands on a lock screen: names the clinician and the facility,
+    // never the subject (the clinician's free text) or the body.
+    'patient_notice'      => [
+        'new_thread_title'  => 'New message from :provider',
+        'new_thread_body'   => ':provider at :facility has sent you a message. Open Messages to read and reply.',
+        'new_thread_action' => 'Open the conversation',
+        'a_clinician'       => 'Your clinician',
+        'your_facility'     => 'your facility',
+    ],
+
     // ── Profile photo ────────────────────────────────────────────────────
     'photo_not_an_image' => 'That file is not an image. Upload a JPEG, PNG or WebP photo.',
     'photo_dimensions'   => 'That image is too large. The longest side may be up to :max pixels.',

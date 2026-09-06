@@ -20,6 +20,7 @@ return [
     'appointment_not_found' => 'Appointment not found.',
     'request_not_found'     => 'Appointment request not found.',
     'provider_not_found'    => 'Clinician account not found.',
+    'facility_required'     => 'This session is not bound to a facility. Sign in again.',
 
     // ── Transition refusals ──────────────────────────────────────────────
     'not_check_in_eligible' => 'Only a booked or confirmed appointment can be checked in.',

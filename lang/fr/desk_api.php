@@ -18,6 +18,7 @@ return [
     'patient_not_found'        => 'Aucun patient ne détient cet identifiant santé. Vérifiez l’identifiant exactement tel qu’il figure sur la carte.',
     'appointment_not_found'    => 'Rendez-vous introuvable.',
     'provider_not_found'       => 'Compte du personnel introuvable.',
+    'facility_required'        => 'Cette session n’est rattachée à aucun établissement. Reconnectez-vous.',
     'provider_not_at_facility' => 'Ce clinicien n’est pas affecté à cet établissement ; le rendez-vous ne peut pas lui être orienté.',
 
     // ── Refus de transition ──────────────────────────────────────────────

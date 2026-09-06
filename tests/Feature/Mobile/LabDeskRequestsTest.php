@@ -152,4 +152,39 @@ class LabDeskRequestsTest extends LabDeskTestCase
         $this->assertSame('submitted', LabTestRequest::find($request->id)->status);
         $this->assertSame(0, LabOrder::count());
     }
+
+    // ── access log ────────────────────────────────────────────────────────
+
+    public function test_the_request_list_is_logged_once_at_list_level_and_decisions_per_patient(): void
+    {
+        $mine = $this->request();
+        foreach (range(1, 2) as $i) {
+            $other = \App\Models\Patient::factory()->create(['is_demo' => (bool) config('demo.enabled')]);
+            $this->request(['patient_id' => $other->id]);
+        }
+
+        $this->asLab('GET', '/api/mobile/lab/requests')->assertOk()->assertJsonPath('meta.count', 3);
+
+        $this->assertSame(1, DB::table('access_logs')->count());
+        $this->assertDatabaseHas('access_logs', [
+            'purpose'       => 'lab_worklist',
+            'patient_id'    => null,
+            'actor_id'      => $this->users['labtech']->id,
+            'facility_id'   => $this->facility->id,
+            'resource_type' => 'LabTestRequest',
+            'resource_id'   => null,
+            'access_type'   => 'view',
+        ]);
+        $this->assertSame(0, DB::table('access_logs')->where('purpose', 'lab_desk_requests')->count());
+
+        // A decision is about one patient and is logged for that patient.
+        $this->asLab('POST', '/api/mobile/lab/requests/' . $mine->id . '/approve')->assertOk();
+        $this->assertSame(1, DB::table('access_logs')->whereNotNull('patient_id')->count());
+        $this->assertDatabaseHas('access_logs', [
+            'purpose'     => 'lab_desk_request_approved',
+            'patient_id'  => $this->patient->id,
+            'resource_id' => $mine->id,
+            'access_type' => 'update',
+        ]);
+    }
 }

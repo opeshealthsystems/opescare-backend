@@ -4,19 +4,13 @@ namespace App\Http\Controllers\Api\Mobile;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\LabOrderResource;
-use App\Models\Appointment;
-use App\Models\CareTeamMember;
-use App\Models\ConsentGrant;
-use App\Models\Encounter;
-use App\Models\ImagingOrder;
 use App\Models\LabOrder;
 use App\Models\Patient;
-use App\Models\Prescription;
 use App\Modules\Governance\Services\AccessLogService;
+use App\Support\ClinicalRelationshipGate;
 use App\Support\PatientPush;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -36,10 +30,11 @@ use Illuminate\Support\Str;
  *                               and billing get 403 {error_code: role_forbidden}
  *                               before this file runs.
  *
- *   a care relationship         relationshipBasis(), below — the chart's five
- *                               bases, copied verbatim. Holding a patient's id
- *                               is not authorisation to order a test against
- *                               their record, any more than it is to read it.
+ *   a care relationship         App\Support\ClinicalRelationshipGate — the
+ *                               chart's five bases, the one shared rule.
+ *                               Holding a patient's id is not authorisation to
+ *                               order a test against their record, any more
+ *                               than it is to read it.
  *
  * WHO ORDERS, WHERE. `ordered_by` is the clinician the bearer token names and
  * `facility_id` is the facility the token names — both read from
@@ -61,9 +56,6 @@ use Illuminate\Support\Str;
  */
 class MobileDoctorLabOrderController extends Controller
 {
-    /** The chart's figure for how long an episode at the own facility stays "care". */
-    private const FACILITY_EPISODE_LOOKBACK_DAYS = 365;
-
     /** The vocabulary `lab_orders.urgency` was created with. */
     private const URGENCIES = ['routine', 'urgent', 'stat'];
 
@@ -111,9 +103,9 @@ class MobileDoctorLabOrderController extends Controller
             return response()->json(['message' => __('doctor_results.patient_not_found')], 404);
         }
 
-        $basis = $this->relationshipBasis($record, $clinicianId, $facilityId);
+        $verdict = ClinicalRelationshipGate::evaluate($clinicianId, $facilityId, $record->id);
 
-        if ($basis === null) {
+        if (! $verdict->holds()) {
             $this->auditDenial($record, $clinicianId, $facilityId);
 
             return response()->json([
@@ -159,7 +151,7 @@ class MobileDoctorLabOrderController extends Controller
         // when); the access log adds the AUTHORITY it was placed on. Best
         // effort after the commit — a committed order is not un-placed because
         // the audit table was unavailable, but the failure is logged loudly.
-        $this->auditWrite($record, $order, $clinicianId, $facilityId, $basis);
+        $this->auditWrite($record, $order, $clinicianId, $facilityId, $verdict);
 
         $this->notifyPatient($record, $order, $facilityId);
 
@@ -167,7 +159,7 @@ class MobileDoctorLabOrderController extends Controller
     }
 
     // ══════════════════════════════════════════════════════════════════
-    // The care-relationship gate — MobileDoctorChartController's rule, copied
+    // Identity of the record — the chart's resolvePatient(), unchanged
     // ══════════════════════════════════════════════════════════════════
 
     /**
@@ -190,117 +182,12 @@ class MobileDoctorLabOrderController extends Controller
         return Patient::resolveHealthId($key);
     }
 
-    /**
-     * The basis on which this clinician may order against this record, or null.
-     *
-     * MobileDoctorChartController::relationshipBasis(), verbatim — same five
-     * bases, same order, same vocabulary, and the returned string goes into the
-     * audit row's purpose. That method is private and its file is not this
-     * one's to edit, so the rule is copied rather than called.
-     */
-    private function relationshipBasis(Patient $patient, string $clinicianId, ?string $facilityId): ?string
-    {
-        // 1. On this clinician's own schedule.
-        if (Appointment::where('patient_id', $patient->id)->where('provider_id', $clinicianId)->exists()) {
-            return 'appointment';
-        }
-
-        // 2. A current member of this patient's care team.
-        if (
-            CareTeamMember::where('patient_id', $patient->id)
-                ->where('provider_id', $clinicianId)
-                ->where('is_active', true)
-                ->whereNull('left_at')
-                ->exists()
-        ) {
-            return 'care_team';
-        }
-
-        // 3. This clinician personally did something clinical for this patient.
-        $ownAct = Encounter::where('patient_id', $patient->id)->where('attending_provider_id', $clinicianId)->exists()
-            || DB::table('visits')->where('patient_id', $patient->id)->where('provider_id', $clinicianId)->exists()
-            || Prescription::where('patient_id', $patient->id)->where('prescribed_by', $clinicianId)->exists()
-            || LabOrder::where('patient_id', $patient->id)->where('ordered_by', $clinicianId)->exists()
-            || ImagingOrder::where('patient_id', $patient->id)->where('ordered_by', $clinicianId)->exists();
-
-        if ($ownAct) {
-            return 'treating_clinician';
-        }
-
-        // 4. An episode of care at the clinician's OWN facility — the token's
-        //    facility, which no caller can name — that is open, still ahead,
-        //    or recent enough to still be care rather than history.
-        if ($facilityId && $this->hasFacilityEpisode($patient->id, $facilityId)) {
-            return 'facility_episode';
-        }
-
-        // 5. The patient has granted this facility access outright.
-        if ($facilityId && $this->hasActiveConsentGrant($patient->id, $facilityId)) {
-            return 'consent_grant';
-        }
-
-        return null;
-    }
-
-    /** Is there a live episode of care for this patient at this facility? The chart's rule, unchanged. */
-    private function hasFacilityEpisode(string $patientId, string $facilityId): bool
-    {
-        $since = Carbon::now()->subDays(self::FACILITY_EPISODE_LOOKBACK_DAYS);
-
-        $visit = DB::table('visits')
-            ->where('patient_id', $patientId)
-            ->where('facility_id', $facilityId)
-            ->where(fn ($q) => $q->whereNull('ended_at')->orWhere('started_at', '>=', $since))
-            ->exists();
-
-        if ($visit) {
-            return true;
-        }
-
-        $encounter = Encounter::where('patient_id', $patientId)
-            ->where('facility_id', $facilityId)
-            ->where(fn ($q) => $q->whereNull('ended_at')->orWhere('started_at', '>=', $since))
-            ->exists();
-
-        if ($encounter) {
-            return true;
-        }
-
-        $appointment = Appointment::where('patient_id', $patientId)
-            ->where('facility_id', $facilityId)
-            ->where('scheduled_at', '>=', $since)
-            ->exists();
-
-        if ($appointment) {
-            return true;
-        }
-
-        return Prescription::where('patient_id', $patientId)
-            ->where('facility_id', $facilityId)
-            ->where('prescribed_at', '>=', $since)
-            ->exists();
-    }
-
-    /** An active, unexpired consent grant for this patient scoped to this facility. */
-    private function hasActiveConsentGrant(string $patientId, ?string $facilityId): bool
-    {
-        if (! $facilityId) {
-            return false;
-        }
-
-        return ConsentGrant::where('patient_id', $patientId)
-            ->where('facility_id', $facilityId)
-            ->where('status', 'active')
-            ->where('expires_at', '>=', Carbon::now())
-            ->exists();
-    }
-
     // ══════════════════════════════════════════════════════════════════
     // Audit + the patient's notice
     // ══════════════════════════════════════════════════════════════════
 
     /** Record the write, with the authority it was placed on. Never fatal. */
-    private function auditWrite(Patient $patient, LabOrder $order, string $clinicianId, string $facilityId, string $basis): void
+    private function auditWrite(Patient $patient, LabOrder $order, string $clinicianId, string $facilityId, ClinicalRelationshipGate $verdict): void
     {
         try {
             AccessLogService::log(
@@ -309,7 +196,7 @@ class MobileDoctorLabOrderController extends Controller
                 actorType: 'provider',
                 organizationId: null,
                 facilityId: $facilityId,
-                purpose: 'treatment:' . $basis,
+                purpose: $verdict->purpose(),
                 dataCategory: 'orders_lab',
                 resourceType: 'LabOrder',
                 resourceId: $order->id,
@@ -334,7 +221,7 @@ class MobileDoctorLabOrderController extends Controller
                 actorType: 'provider',
                 organizationId: null,
                 facilityId: $facilityId,
-                purpose: 'treatment:no_relationship',
+                purpose: ClinicalRelationshipGate::NO_RELATIONSHIP_PURPOSE,
                 dataCategory: 'orders_lab',
                 resourceType: 'LabOrder',
                 resourceId: null,

@@ -5,9 +5,7 @@ namespace App\Http\Controllers\Api\Mobile;
 use App\Http\Controllers\Controller;
 use App\Models\AllergyRecord;
 use App\Models\Appointment;
-use App\Models\CareTeamMember;
 use App\Models\ClinicalNote;
-use App\Models\ConsentGrant;
 use App\Models\Diagnosis;
 use App\Models\Encounter;
 use App\Models\ImagingOrder;
@@ -21,6 +19,7 @@ use App\Models\TriageVitalSign;
 use App\Models\User;
 use App\Models\VitalSign;
 use App\Modules\Governance\Services\AccessLogService;
+use App\Support\ClinicalRelationshipGate;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -47,6 +46,11 @@ use Illuminate\Support\Str;
  * THE ACCESS RULE — WHY A CLINICIAN MAY OPEN *THIS* CHART
  * ─────────────────────────────────────────────────────────────────────────
  *
+ * The rule itself lives in App\Support\ClinicalRelationshipGate — one class,
+ * shared with the messaging and lab-order surfaces, so a clinician who may
+ * read a chart may write to its patient on exactly the same terms. What
+ * follows describes that rule as this chart applies it.
+ *
  * Holding a patient's id is NOT authorisation, and neither is holding a valid
  * provider token. A chart read is a disclosure of someone else's record, so it
  * has to be justified by a clinical relationship that already exists in the
@@ -65,7 +69,7 @@ use Illuminate\Support\Str;
  *                               clinician's OWN facility (the token's
  *                               facility, never a named one) that is either
  *                               still open, scheduled in the future, or began
- *                               within FACILITY_EPISODE_LOOKBACK_DAYS.
+ *                               within ClinicalRelationshipGate::FACILITY_EPISODE_LOOKBACK_DAYS.
  *   5. `consent_grant`        — the patient has granted this facility an
  *                               active, unexpired ConsentGrant.
  *
@@ -106,13 +110,6 @@ use Illuminate\Support\Str;
 class MobileDoctorChartController extends Controller
 {
     /**
-     * How far back an episode at the clinician's own facility still counts as
-     * a live care relationship. Older, closed episodes need one of the other
-     * four bases — most naturally a new appointment, which is basis 1.
-     */
-    private const FACILITY_EPISODE_LOOKBACK_DAYS = 365;
-
-    /**
      * Hard ceiling on rows returned by a scan-bounded section. Reaching it is
      * the ONLY thing that sets `truncated` — see scanResult().
      */
@@ -143,7 +140,7 @@ class MobileDoctorChartController extends Controller
         $facilityId = $this->facilityId($request);
 
         return $this->chart($request, $id, 'patient_identity', 'Patient', function (Patient $patient) use ($facilityId) {
-            return $this->formatPatient($patient, $this->hasActiveConsentGrant($patient->id, $facilityId));
+            return $this->formatPatient($patient, ClinicalRelationshipGate::hasActiveConsentGrant($patient->id, $facilityId));
         });
     }
 
@@ -618,9 +615,9 @@ class MobileDoctorChartController extends Controller
             return response()->json(['message' => __('doctor_chart.patient_not_found')], 404);
         }
 
-        $basis = $this->relationshipBasis($patient, $clinicianId, $facilityId);
+        $verdict = ClinicalRelationshipGate::evaluate($clinicianId, $facilityId, $patient->id);
 
-        if ($basis === null) {
+        if (! $verdict->holds()) {
             $this->auditDenial($patient, $clinicianId, $facilityId, $dataCategory, $resourceType);
 
             return response()->json([
@@ -630,7 +627,7 @@ class MobileDoctorChartController extends Controller
             ], 403);
         }
 
-        if (! $this->auditRead($patient, $clinicianId, $facilityId, $basis, $dataCategory, $resourceType)) {
+        if (! $this->auditRead($patient, $clinicianId, $facilityId, $verdict, $dataCategory, $resourceType)) {
             // The trail is not optional. No trail, no disclosure.
             return response()->json(['message' => __('doctor_chart.audit_unavailable')], 503);
         }
@@ -679,120 +676,6 @@ class MobileDoctorChartController extends Controller
         return Patient::resolveHealthId($key);
     }
 
-    /**
-     * The basis on which this clinician may read this chart, or null.
-     *
-     * Returns the FIRST basis that holds, cheapest and most specific first.
-     * The returned string goes into the audit row's purpose, so the log says
-     * on what authority the record was opened, not merely that it was.
-     */
-    private function relationshipBasis(Patient $patient, ?string $clinicianId, ?string $facilityId): ?string
-    {
-        if (! $clinicianId) {
-            return null;
-        }
-
-        // 1. On this clinician's own schedule.
-        if (Appointment::where('patient_id', $patient->id)->where('provider_id', $clinicianId)->exists()) {
-            return 'appointment';
-        }
-
-        // 2. A current member of this patient's care team.
-        if (
-            CareTeamMember::where('patient_id', $patient->id)
-                ->where('provider_id', $clinicianId)
-                ->where('is_active', true)
-                ->whereNull('left_at')
-                ->exists()
-        ) {
-            return 'care_team';
-        }
-
-        // 3. This clinician personally did something clinical for this patient.
-        $ownAct = Encounter::where('patient_id', $patient->id)->where('attending_provider_id', $clinicianId)->exists()
-            || DB::table('visits')->where('patient_id', $patient->id)->where('provider_id', $clinicianId)->exists()
-            || Prescription::where('patient_id', $patient->id)->where('prescribed_by', $clinicianId)->exists()
-            || LabOrder::where('patient_id', $patient->id)->where('ordered_by', $clinicianId)->exists()
-            || ImagingOrder::where('patient_id', $patient->id)->where('ordered_by', $clinicianId)->exists();
-
-        if ($ownAct) {
-            return 'treating_clinician';
-        }
-
-        // 4. An episode of care at the clinician's OWN facility — the token's
-        //    facility, which no caller can name — that is open, still ahead,
-        //    or recent enough to still be care rather than history.
-        if ($facilityId && $this->hasFacilityEpisode($patient->id, $facilityId)) {
-            return 'facility_episode';
-        }
-
-        // 5. The patient has granted this facility access outright.
-        if ($facilityId && $this->hasActiveConsentGrant($patient->id, $facilityId)) {
-            return 'consent_grant';
-        }
-
-        return null;
-    }
-
-    /**
-     * Is there a live episode of care for this patient at this facility?
-     *
-     * "Live" is: still open, scheduled in the future, or begun within
-     * FACILITY_EPISODE_LOOKBACK_DAYS. A ten-year-old closed visit is history,
-     * and history is not a reason to open a chart today.
-     */
-    private function hasFacilityEpisode(string $patientId, string $facilityId): bool
-    {
-        $since = Carbon::now()->subDays(self::FACILITY_EPISODE_LOOKBACK_DAYS);
-
-        $visit = DB::table('visits')
-            ->where('patient_id', $patientId)
-            ->where('facility_id', $facilityId)
-            ->where(fn ($q) => $q->whereNull('ended_at')->orWhere('started_at', '>=', $since))
-            ->exists();
-
-        if ($visit) {
-            return true;
-        }
-
-        $encounter = Encounter::where('patient_id', $patientId)
-            ->where('facility_id', $facilityId)
-            ->where(fn ($q) => $q->whereNull('ended_at')->orWhere('started_at', '>=', $since))
-            ->exists();
-
-        if ($encounter) {
-            return true;
-        }
-
-        $appointment = Appointment::where('patient_id', $patientId)
-            ->where('facility_id', $facilityId)
-            ->where('scheduled_at', '>=', $since)
-            ->exists();
-
-        if ($appointment) {
-            return true;
-        }
-
-        return Prescription::where('patient_id', $patientId)
-            ->where('facility_id', $facilityId)
-            ->where('prescribed_at', '>=', $since)
-            ->exists();
-    }
-
-    /** An active, unexpired consent grant for this patient scoped to this facility. */
-    private function hasActiveConsentGrant(string $patientId, ?string $facilityId): bool
-    {
-        if (! $facilityId) {
-            return false;
-        }
-
-        return ConsentGrant::where('patient_id', $patientId)
-            ->where('facility_id', $facilityId)
-            ->where('status', 'active')
-            ->where('expires_at', '>=', Carbon::now())
-            ->exists();
-    }
-
     // ══════════════════════════════════════════════════════════════════
     // Audit
     // ══════════════════════════════════════════════════════════════════
@@ -808,7 +691,7 @@ class MobileDoctorChartController extends Controller
         Patient $patient,
         ?string $clinicianId,
         ?string $facilityId,
-        string $basis,
+        ClinicalRelationshipGate $verdict,
         string $dataCategory,
         string $resourceType
     ): bool {
@@ -823,7 +706,7 @@ class MobileDoctorChartController extends Controller
                 actorType: 'provider',
                 organizationId: null,
                 facilityId: $facilityId,
-                purpose: 'treatment:' . $basis,
+                purpose: $verdict->purpose(),
                 dataCategory: $dataCategory,
                 resourceType: $resourceType,
                 resourceId: null,
@@ -865,7 +748,7 @@ class MobileDoctorChartController extends Controller
                 actorType: 'provider',
                 organizationId: null,
                 facilityId: $facilityId,
-                purpose: 'treatment:no_relationship',
+                purpose: ClinicalRelationshipGate::NO_RELATIONSHIP_PURPOSE,
                 dataCategory: $dataCategory,
                 resourceType: $resourceType,
                 resourceId: null,

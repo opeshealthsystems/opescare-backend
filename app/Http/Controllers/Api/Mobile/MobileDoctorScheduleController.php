@@ -176,8 +176,12 @@ class MobileDoctorScheduleController extends Controller
         $facilityId = $this->facilityId($request);
         $userId     = $this->providerId($request);
 
-        if (! $facilityId || ! $userId) {
+        if (! $userId) {
             return $this->refuse('provider_not_found', 401);
+        }
+
+        if (! $facilityId) {
+            return $this->facilityRequired();
         }
 
         $user = User::with('role')->find($userId);
@@ -613,7 +617,8 @@ class MobileDoctorScheduleController extends Controller
         $actor = DeskActor::fromRequest($request, 'mobile_doctor');
 
         if (! $actor) {
-            return $this->refuse('provider_not_found', 401);
+            // The middleware guaranteed the user; what is missing is the facility.
+            return $this->facilityRequired();
         }
 
         $patient = $this->resolveFollowUpPatient($id);
@@ -722,9 +727,32 @@ class MobileDoctorScheduleController extends Controller
             ->findOrFail($appointment->id);
     }
 
+    /**
+     * The token's facility by name. Read without the demo-isolation scope, as
+     * FrontDeskService::facility() does: the facility a clinician is signed
+     * in to is real whichever partition the deployment is showing, and a
+     * real facility must not read as nameless while demo mode is on.
+     */
     private function facilityName(?string $facilityId): ?string
     {
-        return $facilityId ? Facility::whereKey($facilityId)->value('name') : null;
+        return $facilityId
+            ? Facility::withoutGlobalScope('isolate_demo')->whereKey($facilityId)->value('name')
+            : null;
+    }
+
+    /**
+     * A provider token that names no facility. One refusal, one shape, on
+     * every desk (front desk, lab, pharmacy, clinician): 422
+     * `{error_code: facility_required, message}`. Deliberately NOT through
+     * refuse() — the code is the same lowercase token the other desks answer
+     * with, so a phone handles it once.
+     */
+    private function facilityRequired(): JsonResponse
+    {
+        return response()->json([
+            'error_code' => 'facility_required',
+            'message'    => __('doctor_schedule.facility_required'),
+        ], 422);
     }
 
     /**

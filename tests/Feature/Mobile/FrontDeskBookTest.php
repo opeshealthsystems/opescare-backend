@@ -194,4 +194,36 @@ class FrontDeskBookTest extends FrontDeskTestCase
 
         $this->assertSame(0, Appointment::count());
     }
+
+    // ── a session without a facility ──────────────────────────────────────
+
+    public function test_a_token_without_a_facility_is_refused_with_the_one_shape(): void
+    {
+        $appointment = $this->appointment();
+        \Illuminate\Support\Facades\DB::table('provider_access_tokens')
+            ->where('user_id', $this->users['receptionist']->id)
+            ->update(['facility_id' => null]);
+
+        $calls = [
+            ['GET', '/api/mobile/desk/home', []],
+            ['GET', '/api/mobile/desk/appointments', []],
+            ['GET', '/api/mobile/desk/providers', []],
+            ['POST', '/api/mobile/desk/patients', []],
+            ['POST', '/api/mobile/desk/appointments', [
+                'health_id' => self::HEALTH_ID, 'scheduled_at' => $this->tomorrow(9)->toIso8601String(), 'appointment_type' => 'consultation',
+            ]],
+        ];
+
+        foreach ($calls as [$method, $path, $body]) {
+            $response = $this->hit('receptionist', $method, $path, $body)
+                ->assertStatus(422)
+                ->assertJsonPath('error_code', 'facility_required')
+                ->assertJsonPath('message', __('desk_api.facility_required'));
+            $this->assertSame(['error_code', 'message'], array_keys($response->json()), "{$method} {$path}");
+        }
+
+        $this->assertSame('scheduled', $appointment->fresh()->status);
+        $this->assertSame(1, Appointment::count());
+        $this->assertSame(1, \App\Models\Patient::withoutGlobalScopes()->count(), 'no walk-in was registered');
+    }
 }
