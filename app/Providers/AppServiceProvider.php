@@ -195,6 +195,10 @@ class AppServiceProvider extends ServiceProvider
         Route::middleware('api')
             ->group(base_path('routes/mobile_labs.php'));
 
+        // The patient's Health Passport: their record as thirty pages.
+        Route::middleware('api')
+            ->group(base_path('routes/mobile_health_passport.php'));
+
         // Mobile LAB DESK routes (the laboratory's side of the orders above) —
         // loaded here rather than in routes/api.php so parallel work on
         // separate features cannot collide in one file.
