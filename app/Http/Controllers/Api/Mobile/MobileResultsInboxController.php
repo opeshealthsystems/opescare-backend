@@ -9,6 +9,7 @@ use App\Models\LabOrder;
 use App\Models\LabResult;
 use App\Models\LabResultInterpretation;
 use App\Models\Patient;
+use App\Models\ReferenceRange;
 use App\Models\RadiologyReport;
 use App\Models\User;
 use App\Modules\Governance\Services\AccessLogService;
@@ -16,6 +17,7 @@ use App\Modules\Messaging\Models\MessageThread;
 use App\Modules\Messaging\Models\MessageThreadParticipant;
 use App\Modules\Notifications\Models\NotificationEvent;
 use App\Support\PatientPush;
+use App\Support\ResultFlagResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -565,11 +567,13 @@ class MobileResultsInboxController extends Controller
 
         $patients = $this->patients($orders->pluck('patient_id')->filter()->unique()->all());
 
-        $rows = $orders->map(function (LabOrder $order) use ($analytes, $alerted, $patients) {
-            $rowAnalytes = $analytes->get($order->id, collect());
+        $ranges = $this->publishedRanges($analytes->flatten());
 
-            $severity = $this->labSeverity($rowAnalytes, $alerted);
+        $rows = $orders->map(function (LabOrder $order) use ($analytes, $alerted, $patients, $ranges) {
+            $rowAnalytes = $analytes->get($order->id, collect());
             $patient  = $patients[$order->patient_id] ?? null;
+
+            $severity = $this->labSeverity($rowAnalytes, $alerted, $ranges, $patient);
 
             return [
                 'id'                 => 'lab-' . $order->id,
@@ -691,11 +695,19 @@ class MobileResultsInboxController extends Controller
      * The WORST flag on the order wins. An order with one HH and nine normals
      * is a critical order.
      *
-     * @param Collection<int,LabResult> $analytes
-     * @param Collection<string,int>    $alerted   lab_result_id => position
+     * Every analyte is classified by App\Support\ResultFlagResolver - the same
+     * class the patient's own screen uses - so a value the laboratory left
+     * unflagged but which sits outside a published critical bound reads as
+     * critical HERE TOO. It used to read as "info: the laboratory recorded no
+     * flags" while the patient was being shown a red banner for the same row.
+     *
+     * @param Collection<int,LabResult>       $analytes
+     * @param Collection<string,int>          $alerted   lab_result_id => position
+     * @param Collection<int,ReferenceRange>  $ranges    published ranges, pre-loaded
      */
-    private function labSeverity(Collection $analytes, Collection $alerted): string
+    private function labSeverity(Collection $analytes, Collection $alerted, Collection $ranges = null, ?object $patient = null): string
     {
+        $ranges ??= collect();
         $sawAbnormal = false;
         $sawNormal   = false;
 
@@ -705,35 +717,69 @@ class MobileResultsInboxController extends Controller
                 return 'critical';
             }
 
-            $flag = $this->normaliseFlag($analyte->flag);
+            $published  = ResultFlagResolver::matchPublished($analyte, $ranges, $patient->sex ?? null, $patient->date_of_birth ?? null);
+            $resolution = ResultFlagResolver::forResult($analyte, $published);
+            $flag       = $resolution['flag'];
 
-            // No flag is NOT a normal flag. Silence is recorded as silence.
-            if ($flag === null) {
-                continue;
-            }
-
-            if (in_array($flag, self::CRITICAL_FLAGS, true) || $flag === 'CRITICAL' || $flag === 'PANIC') {
+            if ($flag === 'critical') {
                 return 'critical';
             }
 
-            if (in_array($flag, self::ABNORMAL_FLAGS, true)) {
-                // Keep scanning — a later analyte may still be critical.
-                $sawAbnormal = true;
+            // No flag and nothing to compare against is NOT a normal flag.
+            // Silence is recorded as silence.
+            if ($flag === 'unflagged') {
+                continue;
+            }
+
+            if ($flag === 'normal') {
+                $sawNormal = true;
 
                 continue;
             }
 
-            if (in_array($flag, self::NORMAL_FLAGS, true)) {
-                $sawNormal = true;
-            }
+            // high | low | abnormal - keep scanning, a later analyte may be critical.
+            $sawAbnormal = true;
         }
 
         if ($sawAbnormal) {
             return 'warning';
         }
 
-        // "The laboratory said normal" — only when it actually said so.
+        // "The laboratory said normal" - only when it actually said so.
         return $sawNormal ? 'success' : 'info';
+    }
+
+    /**
+     * The published ranges for every analyte on these orders, in one query.
+     *
+     * Loaded once per inbox build rather than per analyte: an inbox is a list,
+     * and a list must not become a query per row.
+     *
+     * @param  Collection<int,LabResult>  $analytes
+     * @return Collection<int,ReferenceRange>
+     */
+    private function publishedRanges(Collection $analytes): Collection
+    {
+        $names = $analytes->map(fn ($r) => strtolower(trim((string) $r->parameter_name)))->filter()->unique()->values();
+        $loincs = $analytes->map(fn ($r) => trim((string) $r->loinc_code))->filter()->unique()->values();
+
+        if ($names->isEmpty() && $loincs->isEmpty()) {
+            return collect();
+        }
+
+        return ReferenceRange::query()
+            ->where('is_active', true)
+            ->where(function ($query) use ($names, $loincs) {
+                if ($names->isNotEmpty()) {
+                    $query->orWhereIn(DB::raw('lower(test_name)'), $names->all());
+                    $query->orWhereIn(DB::raw('lower(test_code)'), $names->all());
+                }
+
+                if ($loincs->isNotEmpty()) {
+                    $query->orWhereIn('loinc_code', $loincs->all());
+                }
+            })
+            ->get();
     }
 
     /** Is this the lab's own abnormal flag? Never a comparison against a range. */

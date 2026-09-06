@@ -195,6 +195,92 @@ final class ResultFlagResolver
         );
     }
 
+    /**
+     * Which published range applies to this analyte, for this person.
+     *
+     * The scoring mirrors the patient screen's rule exactly (LOINC beats a
+     * name match; a range written for another sex or age band is not
+     * applicable at all), and lives here so the clinician's inbox and the
+     * patient's screen cannot drift apart again — a range that raises a value
+     * to critical on one screen must raise it on the other.
+     *
+     * @param  \Illuminate\Support\Collection<int, ReferenceRange>  $ranges
+     */
+    public static function matchPublished(
+        LabResult $result,
+        $ranges,
+        ?string $sex = null,
+        $dob = null
+    ): ?ReferenceRange {
+        if ($ranges === null || $ranges->isEmpty()) {
+            return null;
+        }
+
+        $loinc   = trim((string) $result->loinc_code) ?: null;
+        $analyte = strtolower(trim((string) $result->parameter_name)) ?: null;
+        $sexNorm = $sex !== null ? strtolower(trim($sex)) : null;
+        $ageBand = $dob !== null ? self::ageBand($dob) : null;
+
+        $best      = null;
+        $bestScore = -1;
+
+        foreach ($ranges as $range) {
+            $score = 0;
+
+            if ($loinc !== null && $range->loinc_code === $loinc) {
+                $score += 100;
+            } elseif ($analyte !== null && (
+                strtolower((string) $range->test_name) === $analyte
+                || strtolower((string) $range->test_code) === $analyte
+            )) {
+                $score += 50;
+            } else {
+                continue; // Not this analyte at all.
+            }
+
+            $rangeSex = strtolower(trim((string) $range->sex));
+            if ($rangeSex !== '' && $rangeSex !== 'all') {
+                if ($sexNorm === null || $rangeSex !== $sexNorm) {
+                    continue; // Written for a different sex - not applicable.
+                }
+                $score += 10;
+            }
+
+            $rangeAge = strtolower(trim((string) $range->age_group));
+            if ($rangeAge !== '' && $rangeAge !== 'all') {
+                if ($ageBand === null || $rangeAge !== $ageBand) {
+                    continue; // Written for a different age band - not applicable.
+                }
+                $score += 5;
+            }
+
+            if ($score > $bestScore) {
+                $best      = $range;
+                $bestScore = $score;
+            }
+        }
+
+        return $best;
+    }
+
+    /** The age bands published ranges are written against. */
+    public static function ageBand($dob): string
+    {
+        $dob    = $dob instanceof \Illuminate\Support\Carbon ? $dob : \Illuminate\Support\Carbon::parse($dob);
+        $days   = (int) abs(now()->diffInDays($dob));
+        $months = (int) abs(now()->diffInMonths($dob));
+        $years  = (int) abs(now()->diffInYears($dob));
+
+        return match (true) {
+            $days <= 28   => 'neonate',
+            $months <= 12 => 'infant',
+            $years <= 12  => 'child',
+            $years <= 18  => 'adolescent',
+            $years <= 64  => 'adult',
+            default       => 'geriatric',
+        };
+    }
+
     // ── Vocabulary ───────────────────────────────────────────────────────
 
     /**
