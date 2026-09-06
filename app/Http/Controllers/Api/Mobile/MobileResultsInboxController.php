@@ -1652,7 +1652,11 @@ class MobileResultsInboxController extends Controller
         // this resolves demo patients only, and a name reading null is that
         // isolation working. The scope is deliberately not bypassed.
         return Patient::whereIn('id', $ids)
-            ->get(['id', 'health_id', 'first_name', 'last_name'])
+            // sex and date_of_birth are loaded because published reference
+            // ranges are written per sex and per age band: without them a range
+            // for 'adult' cannot be matched, and a panic value would quietly
+            // read as 'no flags recorded' to the clinician again.
+            ->get(['id', 'health_id', 'first_name', 'last_name', 'sex', 'date_of_birth'])
             ->keyBy('id')
             ->all();
     }

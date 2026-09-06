@@ -60,7 +60,11 @@ class CriticalValueAgreementTest extends TestCase
             'test_code'     => 'K',
             'test_name'     => 'Serum Potassium',
             'loinc_code'    => '2823-3',
-            'age_group'     => 'all',
+            // Written for the adult band, exactly as the platform's own
+            // reference data is: a range matched only when age_group is 'all'
+            // would have let the live bug through, because the inbox was not
+            // loading the patient's date of birth at all.
+            'age_group'     => 'adult',
             'sex'           => 'all',
             'unit'          => 'mmol/L',
             'normal_low'    => 3.5,
