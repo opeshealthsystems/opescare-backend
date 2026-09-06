@@ -42,7 +42,7 @@
             </p>
             <div style="margin-top:1.5rem;display:flex;justify-content:center;gap:1.5rem;flex-wrap:wrap;font-size:0.875rem;color:var(--color-text-muted);">
                 <span><strong>{{ __('public.privacy_page.effective_date') }}</strong> 1 June 2026</span>
-                <span><strong>{{ __('public.privacy_page.last_updated') }}</strong> 7 June 2026</span>
+                <span><strong>{{ __('public.privacy_page.last_updated') }}</strong> 7 September 2026</span>
                 <span><strong>{{ __('public.privacy_page.version') }}</strong> 2.0</span>
             </div>
         </div>
@@ -148,10 +148,18 @@
                 <li>QR code generation and verification timestamps</li>
                 <li>Authentication events (login, logout, password changes, 2FA)</li>
                 <li>IP address, device type, browser agent (retained for security audit purposes only)</li>
+                <li>Push notification tokens, where you allow notifications, so alerts can reach your device</li>
             </ul>
 
-            <h3>3.4 Data We Do Not Collect</h3>
-            <p>We do not collect financial payment card data, biometric raw data for identification (beyond what is necessary for identity verification), social media profiles, or location tracking data beyond what you explicitly provide as part of your address.</p>
+            <h3>3.4 Location, Photograph and Payment Data (Mobile App)</h3>
+            <ul>
+                <li><strong>Your device's location</strong>, only when you ask the app to find something near you &mdash; a pharmacy holding a medicine, or a facility with a blood unit. The coordinates are used to answer that search and to order the results by distance. Location is never collected in the background, and the app never follows your movements.</li>
+                <li><strong>A photograph of you</strong>, if you choose to add one to your Health ID card. It is held on private storage, never in a public folder, and is served only through a link that expires. You can remove it at any time and the file is deleted with it.</li>
+                <li><strong>A mobile money number</strong>, when you pay through MTN MoMo or Orange Money. We do not keep it. The number is passed to the payment provider to take the payment and then dropped; what remains on our side is a masked form (for example +2376*****01) so you can recognise which wallet you used, and a one-way cryptographic fingerprint used only to match up support queries. We never hold card details.</li>
+            </ul>
+
+            <h3>3.5 Data We Do Not Collect</h3>
+            <p>We do not collect payment card details, raw biometric data for identification (beyond what is necessary for identity verification), social media profiles, advertising identifiers, or your contacts. We do not track your location in the background, we do not build a profile of your movements, and we do not sell or share any of this with advertisers.</p>
 
             {{-- 4. Purposes --}}
             <h2 id="purposes">4. Purposes of Processing</h2>
@@ -351,7 +359,7 @@
 
             {{-- Footer note --}}
             <div style="margin-top:4rem;padding:2rem;background:var(--f-ground, var(--f-ground));border:1px solid #E2E8F0;border-radius:1rem;font-size:0.875rem;color:var(--color-text-muted);">
-                <p style="margin:0 0 0.5rem;"><strong>Effective date:</strong> 1 June 2026 &nbsp;|&nbsp; <strong>Version:</strong> 2.0 &nbsp;|&nbsp; <strong>Last updated:</strong> 7 June 2026</p>
+                <p style="margin:0 0 0.5rem;"><strong>Effective date:</strong> 1 June 2026 &nbsp;|&nbsp; <strong>Version:</strong> 2.1 &nbsp;|&nbsp; <strong>Last updated:</strong> 7 September 2026</p>
                 <p style="margin:0;">{{ __('public.privacy_page.governing_law') }} Republic of Cameroon &nbsp;|&nbsp; {{ __('public.privacy_page.footer_note') }} &nbsp;|&nbsp; For legal correspondence: <a href="mailto:legal@opeshealthsystems.com">legal@opeshealthsystems.com</a></p>
             </div>
 
