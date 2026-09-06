@@ -17,6 +17,7 @@ use App\Modules\Messaging\Models\MessageThreadParticipant;
 use App\Services\FrontDesk\DeskActor;
 use App\Services\FrontDesk\FrontDeskRefusal;
 use App\Services\FrontDesk\FrontDeskService;
+use App\Support\ClinicalRelationshipGate;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -625,6 +626,17 @@ class MobileDoctorScheduleController extends Controller
 
         if (! $patient) {
             return $this->refuse('patient_not_found', 404);
+        }
+
+        // Booking a follow-up also mints a relationship (the appointment is
+        // ClinicalRelationshipGate's first basis), so it cannot be the way a
+        // clinician acquires standing with a patient they have none with.
+        if (! ClinicalRelationshipGate::evaluate($actor->userId, $actor->facilityId, $patient->id)->holds()) {
+            return response()->json([
+                'error_code'      => 'NO_CLINICAL_RELATIONSHIP',
+                'message'         => __('doctor_schedule.no_clinical_relationship'),
+                'required_action' => 'request_consent',
+            ], 403);
         }
 
         try {

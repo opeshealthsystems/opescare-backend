@@ -3,6 +3,8 @@
 namespace Tests\Feature\Mobile;
 
 use App\Models\Appointment;
+use App\Models\ConsentGrant;
+use App\Models\Patient;
 use App\Models\ProviderAvailability;
 use Illuminate\Support\Str;
 
@@ -12,9 +14,48 @@ use Illuminate\Support\Str;
  */
 class DoctorFollowUpTest extends FrontDeskTestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Booking a follow-up is a clinical act on a record, so it needs the
+        // same standing everything else clinical needs. The ordinary way a
+        // walk-in patient gives it: they granted this facility access.
+        ConsentGrant::create([
+            'patient_id'        => $this->patient->id,
+            'facility_id'       => $this->facility->id,
+            'authorizing_actor' => 'patient',
+            'scope'             => ['patient_identity', 'appointments'],
+            'status'            => 'active',
+            'expires_at'        => now()->addDay(),
+        ]);
+    }
+
     private function path(string $patient): string
     {
         return "/api/mobile/doctor/patients/{$patient}/follow-up";
+    }
+
+    /**
+     * The gate that stops a follow-up being the back door into a chart.
+     *
+     * Booking one MINTS a relationship (an appointment is the gate's first
+     * basis), so a clinician who has none with this patient cannot book their
+     * way into one. The refusal names the way forward and says nothing about
+     * whether the record exists.
+     */
+    public function test_a_clinician_with_no_standing_cannot_book_and_is_told_how_to_ask(): void
+    {
+        $stranger = Patient::factory()->create(['is_demo' => (bool) config('demo.enabled')]);
+
+        $this->hit('doctor', 'POST', $this->path($stranger->id), [
+            'scheduled_at' => $this->tomorrow(10)->toIso8601String(),
+        ])
+            ->assertStatus(403)
+            ->assertJsonPath('error_code', 'NO_CLINICAL_RELATIONSHIP')
+            ->assertJsonPath('required_action', 'request_consent');
+
+        $this->assertDatabaseMissing('appointments', ['patient_id' => $stranger->id]);
     }
 
     public function test_a_doctor_books_a_follow_up_with_themselves(): void

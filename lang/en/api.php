@@ -402,6 +402,8 @@ return [
     'prescription_issued'            => 'Prescription issued.',
     'prescription_issue_failed'      => 'The prescription could not be issued. Please try again.',
     'prescription_unknown_medicine'  => 'One of the medicines is not in the catalogue.',
+    'prescription_no_relationship'   => 'You can prescribe for this patient once they have given you access to their record. Ask for access from their Health ID.',
+    'prescription_no_facility'       => 'Your session is not attached to a facility, so no prescription can be issued.',
     'prescription_voided'            => 'Prescription voided.',
     'prescription_void_failed'       => 'The prescription could not be voided. Please try again.',
     'prescription_not_voidable'      => 'This prescription can no longer be voided.',

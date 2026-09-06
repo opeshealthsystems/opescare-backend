@@ -54,6 +54,7 @@ return [
 
     // ── Réservation d’un suivi (POST /doctor/patients/{id}/follow-up) ────
     'patient_not_found'      => 'Patient introuvable.',
+    'no_clinical_relationship' => 'Vous pourrez programmer un suivi dès que ce patient vous aura donné accès à son dossier.',
     'follow_up_failed'       => 'Le suivi n’a pas pu être réservé. Veuillez réessayer.',
     'facility_not_available' => 'L’établissement est fermé à cette heure. Choisissez un horaire dans ses heures d’ouverture.',
     'provider_not_available' => 'Vous n’êtes pas disponible à cette heure selon vos horaires affichés. Choisissez un autre horaire.',

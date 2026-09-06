@@ -5,6 +5,7 @@ return [
     'issued'          => 'Ordonnance émise.',
     'voided'          => 'Ordonnance annulée.',
     'issue_failed'    => 'L’ordonnance n’a pas pu être émise. Vérifiez les informations et réessayez.',
+    'no_relationship' => 'Ce patient ne vous a pas donné accès à son dossier. Demandez l’accès depuis son Identifiant Santé avant de prescrire.',
     'void_failed'     => 'Cette ordonnance n’a pas pu être annulée.',
     'needs_one_item'  => 'Ajoutez au moins un médicament à l’ordonnance.',
 

@@ -389,6 +389,8 @@ return [
     'prescription_issued'            => 'Ordonnance émise.',
     'prescription_issue_failed'      => "L'ordonnance n'a pas pu être émise. Veuillez réessayer.",
     'prescription_unknown_medicine'  => "L'un des médicaments ne figure pas au catalogue.",
+    'prescription_no_relationship'   => 'Vous pourrez prescrire pour ce patient dès qu’il vous aura donné accès à son dossier. Demandez l’accès depuis son Identifiant Santé.',
+    'prescription_no_facility'       => 'Votre session n’est rattachée à aucun établissement : aucune ordonnance ne peut être émise.',
     'prescription_voided'            => 'Ordonnance annulée.',
     'prescription_void_failed'       => "L'ordonnance n'a pas pu être annulée. Veuillez réessayer.",
     'prescription_not_voidable'      => "Cette ordonnance ne peut plus être annulée.",

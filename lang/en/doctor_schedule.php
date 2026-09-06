@@ -54,6 +54,7 @@ return [
 
     // ── Follow-up booking (POST /doctor/patients/{id}/follow-up) ─────────
     'patient_not_found'      => 'Patient not found.',
+    'no_clinical_relationship' => 'You can book a follow-up once this patient has given you access to their record.',
     'follow_up_failed'       => 'The follow-up could not be booked. Please try again.',
     'facility_not_available' => 'The facility is closed at that time. Choose a time within its opening hours.',
     'provider_not_available' => 'You are not available at that time according to your posted hours. Choose another time.',

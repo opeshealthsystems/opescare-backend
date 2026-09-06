@@ -5,6 +5,7 @@ return [
     'issued'          => 'Prescription issued.',
     'voided'          => 'Prescription voided.',
     'issue_failed'    => 'The prescription could not be issued. Please check the details and try again.',
+    'no_relationship' => 'This patient has not given you access to their record. Ask for access from their Health ID before prescribing.',
     'void_failed'     => 'This prescription could not be voided.',
     'needs_one_item'  => 'Add at least one medicine to the prescription.',
 

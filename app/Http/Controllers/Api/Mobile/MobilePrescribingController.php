@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Api\Mobile;
 use App\Http\Controllers\Controller;
 use App\Models\Patient;
 use App\Models\Prescription;
+use App\Modules\Governance\Services\AccessLogService;
 use App\Services\Clinical\PrescriptionService;
+use App\Support\ClinicalRelationshipGate;
 use App\Support\ProviderPatientSummary;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
@@ -88,6 +91,30 @@ class MobilePrescribingController extends Controller
 
         $facilityId  = $this->facilityId($request);
         $prescriberId = $this->prescriberId($request);
+
+        if (! $facilityId) {
+            return response()->json(['message' => __('api.prescription_no_facility')], 422);
+        }
+
+        // A prescription is a clinical act on someone's record - and it also
+        // MINTS a care relationship: PrescriptionService stamps prescribed_by,
+        // which ClinicalRelationshipGate reads as `treating_clinician`. Writing
+        // one for a patient this clinician has no standing with would therefore
+        // manufacture its own authority to open the whole chart afterwards. So
+        // the standing is established first, by the same gate the chart and
+        // laboratory orders already use, and a refusal names the way forward
+        // (ask the patient for access) rather than the record's existence.
+        $verdict = ClinicalRelationshipGate::evaluate($prescriberId, $facilityId, $validated['patient_id']);
+
+        if (! $verdict->holds()) {
+            $this->auditPrescribingDenial($validated['patient_id'], $prescriberId, $facilityId);
+
+            return response()->json([
+                'message'         => __('api.prescription_no_relationship'),
+                'error_code'      => 'NO_CLINICAL_RELATIONSHIP',
+                'required_action' => 'request_consent',
+            ], 403);
+        }
 
         try {
             $prescription = $prescriptions->issue([
@@ -202,6 +229,35 @@ class MobilePrescribingController extends Controller
      * from the token. Platform rule: facility_id comes only from the request
      * attributes, never from a header, body, query string or session.
      */
+    /**
+     * A refused prescribing attempt is written to the patient's own access log
+     * with `accessType: denied`, so a record shows both who read it and who was
+     * turned away at its door.
+     */
+    private function auditPrescribingDenial(string $patientId, ?string $clinicianId, ?string $facilityId): void
+    {
+        try {
+            AccessLogService::log(
+                patientId: $patientId,
+                actorId: (string) $clinicianId,
+                actorType: 'provider',
+                organizationId: null,
+                facilityId: $facilityId,
+                purpose: ClinicalRelationshipGate::NO_RELATIONSHIP_PURPOSE,
+                dataCategory: 'prescriptions',
+                resourceType: 'Prescription',
+                resourceId: null,
+                accessType: 'denied',
+            );
+        } catch (\Throwable $e) {
+            Log::warning('prescribing: denial was not access-logged', [
+                'patient_id'   => $patientId,
+                'clinician_id' => $clinicianId,
+                'error'        => $e->getMessage(),
+            ]);
+        }
+    }
+
     private function facilityId(Request $request): ?string
     {
         return $request->attributes->get('provider_facility_id');

@@ -8,6 +8,7 @@ use App\Models\Medicine;
 use App\Models\Patient;
 use App\Models\Prescription;
 use App\Services\Clinical\PrescriptionService;
+use App\Support\ClinicalRelationshipGate;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -103,6 +104,13 @@ class PrescriberController extends Controller
 
         if (empty($items)) {
             return back()->withInput()->with('error', __('prescriber.needs_one_item'));
+        }
+
+        // Same rule as the app's prescriber (MobilePrescribingController):
+        // a prescription mints a `treating_clinician` relationship, so standing
+        // with the patient is established before one can be written.
+        if (! ClinicalRelationshipGate::evaluate((string) auth()->id(), $this->facilityId(), $validated['patient_id'])->holds()) {
+            return back()->withInput()->with('error', __('prescriber.no_relationship'));
         }
 
         try {
