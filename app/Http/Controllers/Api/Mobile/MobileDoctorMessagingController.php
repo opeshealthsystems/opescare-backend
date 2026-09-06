@@ -4,6 +4,14 @@ namespace App\Http\Controllers\Api\Mobile;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use App\Models\CareTeamMember;
+use App\Models\ConsentGrant;
+use App\Models\Encounter;
+use App\Models\ImagingOrder;
+use App\Models\LabOrder;
+use App\Models\Patient;
+use App\Models\Prescription;
+use App\Models\User;
 use App\Modules\Governance\Services\AccessLogService;
 use App\Modules\Messaging\Models\Message;
 use App\Modules\Messaging\Models\MessageThread;
@@ -13,6 +21,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -235,6 +244,346 @@ class MobileDoctorMessagingController extends Controller
         $this->auditPatients($request, [$row['patient_id']], 'read', 'MessageThread', $row['thread']->uuid);
 
         return response()->json(['data' => $payload]);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // POST /api/mobile/doctor/messages/threads
+    // ══════════════════════════════════════════════════════════════════════
+
+    /**
+     * Open a conversation WITH a patient, and say the first thing.
+     *
+     * Body: { patient_id: uuid, subject ≤120, body ≤4000 }.
+     *
+     * Three questions, answered in order and never conflated:
+     *
+     *   WHO is this?         Exact `patients.id`, following a merge; scoped by
+     *                        IsDemoRecord and deliberately not bypassed. No
+     *                        Health-ID form here — the caller already holds the
+     *                        uuid from the chart or the results inbox.
+     *
+     *   MAY I write to them? The chart's rule, copied verbatim
+     *                        (relationshipBasis(), below): one of the five
+     *                        care-relationship bases MobileDoctorChartController
+     *                        demands before it opens a record. None → 403, the
+     *                        same shape the chart refuses with. Holding an id is
+     *                        not authorisation.
+     *
+     *   WILL it reach me?    visibleThreads() resolves a patient thread's
+     *                        patient AND facility from `context_type=
+     *                        'appointment'`, and drops a `patient_provider`
+     *                        thread that does not resolve one at the token's
+     *                        facility. So the thread hangs off an appointment
+     *                        for this patient AT THIS FACILITY — this
+     *                        clinician's own when there is one, else the
+     *                        facility's. A relationship with no such appointment
+     *                        is refused (422) rather than written where nobody
+     *                        would ever list it: the patient would believe they
+     *                        had been written to. Same posture as
+     *                        MobileMessagingController::startClinicianThread().
+     *
+     * The patient's identity in the messaging tables is their `patients.id`
+     * (that is what MobileMessagingController keys every read on), so that is
+     * the recipient row. Their linked `users` row is added alongside, as the
+     * patient side does, so the staff web inbox can resolve the thread too.
+     *
+     * Rate-limited at the route (throttle:30,1): opening a thread is one
+     * message, and shares the reply budget.
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'patient_id' => ['required', 'uuid'],
+            'subject'    => ['required', 'string', 'max:120'],
+            'body'       => ['required', 'string', 'max:4000'],
+        ]);
+
+        $providerId = $this->providerId($request);
+        $facilityId = $this->facilityId($request);
+
+        $patient = Patient::resolveId($validated['patient_id']);
+
+        if (! $patient) {
+            // Same answer for "no such patient" and "a patient this demo
+            // deployment isolates away". Nothing here confirms existence.
+            return response()->json([
+                'error_code' => 'NOT_FOUND',
+                'message'    => __('doctor_messaging.patient_not_found'),
+            ], 404);
+        }
+
+        $basis = $this->relationshipBasis($patient, $providerId, $facilityId);
+
+        if ($basis === null) {
+            // A refusal discloses nothing, but it is still recorded.
+            $this->auditPatients($request, [$patient->id], 'denied', 'MessageThread', null);
+
+            return response()->json([
+                'error_code'      => 'NO_CLINICAL_RELATIONSHIP',
+                'message'         => __('doctor_messaging.no_relationship'),
+                'required_action' => 'request_consent',
+            ], 403);
+        }
+
+        $appointment = $this->deliveryContext((string) $patient->id, $providerId, $facilityId);
+
+        if (! $appointment) {
+            return response()->json([
+                'error_code' => 'MESSAGE_CONTEXT_UNAVAILABLE',
+                'message'    => __('doctor_messaging.no_delivery_context'),
+                'basis'      => $basis,
+            ], 422);
+        }
+
+        $subject = trim($validated['subject']);
+        $body    = $validated['body'];
+
+        try {
+            [$thread, $message] = DB::transaction(function () use ($providerId, $patient, $appointment, $subject, $body) {
+                // 'provider' is the role the messaging module already records
+                // for the clinician on every patient-opened thread
+                // (MobileMessagingController: recipient_role 'provider'). The
+                // relationship check above is this surface's gate; the thread
+                // carries no bigint patient_id/facility_id — both are derived
+                // from the appointment context on read, as on the patient side.
+                $thread = $this->messaging->createThread($providerId, 'provider', [
+                    'thread_type'    => 'patient_provider',
+                    'title'          => $subject,
+                    'context_type'   => 'appointment',
+                    'context_id'     => (string) $appointment->id,
+                    'recipient_id'   => (string) $patient->id,
+                    'recipient_role' => 'patient',
+                ]);
+
+                // The patient's linked account, so the staff web inbox — which
+                // walks participants → users.patient_id — can see the thread.
+                $linkedUserId = User::query()->where('patient_id', $patient->id)->value('id');
+
+                if ($linkedUserId && (string) $linkedUserId !== (string) $patient->id) {
+                    MessageThreadParticipant::create([
+                        'thread_id'      => $thread->id,
+                        'user_id'        => (string) $linkedUserId,
+                        'role_in_thread' => 'patient',
+                        'status'         => 'active',
+                    ]);
+                }
+
+                // The patient's own writer: the body is KMS-encrypted here and
+                // nowhere else.
+                $message = $this->messaging->sendMessage($thread->uuid, $providerId, $body);
+
+                return [$thread, $message];
+            });
+        } catch (\Throwable $e) {
+            Log::error('Doctor messaging: thread not created.', [
+                'provider_id' => $providerId,
+                'patient_id'  => $patient->id,
+                'error'       => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'error_code' => 'MESSAGE_NOT_SENT',
+                'message'    => __('doctor_messaging.thread_not_created'),
+            ], 422);
+        }
+
+        // Resolve it through the SAME two gates every read uses — there is no
+        // second, looser path to a conversation, not even the one just opened.
+        $row = $this->findVisibleThread($request, (string) $thread->id);
+
+        if ($row) {
+            // Writing the first message means having read the thread.
+            MessageThreadParticipant::whereKey($row['participant']->id)
+                ->update(['last_read_at' => now()]);
+        }
+
+        $this->auditPatients($request, [$patient->id], 'write', 'MessageThread', $thread->uuid);
+
+        $messages = [[
+            'id'         => $message->id,
+            'is_mine'    => true,
+            'body'       => $body,
+            'status'     => $message->status,
+            'created_at' => $message->created_at?->toISOString(),
+        ]];
+
+        if (! $row) {
+            // The context was chosen so this cannot happen; if it ever does,
+            // the thread exists and the answer must still describe it.
+            Log::warning('Doctor messaging: new thread did not resolve through visibleThreads().', [
+                'thread_id'   => $thread->id,
+                'provider_id' => $providerId,
+            ]);
+
+            return response()->json([
+                'data' => $this->presentThread([
+                    'thread'               => $thread,
+                    'kind'                 => 'patient',
+                    'patient_id'           => $patient->id,
+                    'patient_name'         => trim($patient->first_name . ' ' . $patient->last_name),
+                    'patient_health_id'    => $patient->health_id,
+                    'facility_id'          => $appointment->facility_id,
+                    'facility_name'        => null,
+                    'provider_id'          => $appointment->provider_id,
+                    'provider_name'        => null,
+                    'unread_count'         => 0,
+                    'last_message_at'      => $message->created_at?->toISOString(),
+                    'last_message_preview' => Str::limit($body, self::PREVIEW_LENGTH),
+                    'archived'             => false,
+                ]) + ['messages' => $messages],
+            ], 201);
+        }
+
+        return response()->json([
+            'data' => $this->presentThread($row) + ['messages' => $messages],
+        ], 201);
+    }
+
+    /**
+     * The appointment a new patient thread hangs off, or null.
+     *
+     * Not an authorisation check — relationshipBasis() is that, and it runs
+     * first. This is the delivery question: visibleThreads() lists a patient
+     * thread only when its appointment context resolves to the TOKEN's
+     * facility, so the context must be an appointment for this patient at this
+     * facility. This clinician's own is preferred (the thread then names them
+     * as its provider); failing that, any of the facility's, so a front-desk
+     * booking with no provider yet still gives the conversation a home.
+     */
+    private function deliveryContext(string $patientId, string $providerId, ?string $facilityId): ?Appointment
+    {
+        if ($facilityId === null) {
+            return null;
+        }
+
+        return Appointment::query()
+            ->where('patient_id', $patientId)
+            ->where('facility_id', $facilityId)
+            ->orderByRaw('CASE WHEN provider_id = ? THEN 0 ELSE 1 END', [$providerId])
+            ->orderByDesc('scheduled_at')
+            ->first();
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // The care-relationship gate — MobileDoctorChartController's rule, copied
+    // ══════════════════════════════════════════════════════════════════════
+
+    /**
+     * How far back an episode at the clinician's own facility still counts as
+     * a live care relationship. The chart's figure.
+     */
+    private const FACILITY_EPISODE_LOOKBACK_DAYS = 365;
+
+    /**
+     * The basis on which this clinician may write to this patient, or null.
+     *
+     * MobileDoctorChartController::relationshipBasis(), verbatim: the same five
+     * bases, the same order, the same vocabulary. One rule about what a care
+     * relationship IS, whether the clinician wants to read the record or open a
+     * conversation about it. That method is private and its file is not this
+     * one's to edit, so the rule is copied rather than called — the third copy
+     * on this surface (MobileMessagingController holds the patient-side one);
+     * a shared App\Support home is the right next step.
+     */
+    private function relationshipBasis(Patient $patient, ?string $clinicianId, ?string $facilityId): ?string
+    {
+        if (! $clinicianId) {
+            return null;
+        }
+
+        // 1. On this clinician's own schedule.
+        if (Appointment::where('patient_id', $patient->id)->where('provider_id', $clinicianId)->exists()) {
+            return 'appointment';
+        }
+
+        // 2. A current member of this patient's care team.
+        if (
+            CareTeamMember::where('patient_id', $patient->id)
+                ->where('provider_id', $clinicianId)
+                ->where('is_active', true)
+                ->whereNull('left_at')
+                ->exists()
+        ) {
+            return 'care_team';
+        }
+
+        // 3. This clinician personally did something clinical for this patient.
+        $ownAct = Encounter::where('patient_id', $patient->id)->where('attending_provider_id', $clinicianId)->exists()
+            || DB::table('visits')->where('patient_id', $patient->id)->where('provider_id', $clinicianId)->exists()
+            || Prescription::where('patient_id', $patient->id)->where('prescribed_by', $clinicianId)->exists()
+            || LabOrder::where('patient_id', $patient->id)->where('ordered_by', $clinicianId)->exists()
+            || ImagingOrder::where('patient_id', $patient->id)->where('ordered_by', $clinicianId)->exists();
+
+        if ($ownAct) {
+            return 'treating_clinician';
+        }
+
+        // 4. An episode of care at the clinician's OWN facility — the token's
+        //    facility, which no caller can name — that is open, still ahead,
+        //    or recent enough to still be care rather than history.
+        if ($facilityId && $this->hasFacilityEpisode($patient->id, $facilityId)) {
+            return 'facility_episode';
+        }
+
+        // 5. The patient has granted this facility access outright.
+        if ($facilityId && $this->hasActiveConsentGrant($patient->id, $facilityId)) {
+            return 'consent_grant';
+        }
+
+        return null;
+    }
+
+    /** Is there a live episode of care for this patient at this facility? The chart's rule, unchanged. */
+    private function hasFacilityEpisode(string $patientId, string $facilityId): bool
+    {
+        $since = Carbon::now()->subDays(self::FACILITY_EPISODE_LOOKBACK_DAYS);
+
+        $visit = DB::table('visits')
+            ->where('patient_id', $patientId)
+            ->where('facility_id', $facilityId)
+            ->where(fn ($q) => $q->whereNull('ended_at')->orWhere('started_at', '>=', $since))
+            ->exists();
+
+        if ($visit) {
+            return true;
+        }
+
+        $encounter = Encounter::where('patient_id', $patientId)
+            ->where('facility_id', $facilityId)
+            ->where(fn ($q) => $q->whereNull('ended_at')->orWhere('started_at', '>=', $since))
+            ->exists();
+
+        if ($encounter) {
+            return true;
+        }
+
+        $appointment = Appointment::where('patient_id', $patientId)
+            ->where('facility_id', $facilityId)
+            ->where('scheduled_at', '>=', $since)
+            ->exists();
+
+        if ($appointment) {
+            return true;
+        }
+
+        return Prescription::where('patient_id', $patientId)
+            ->where('facility_id', $facilityId)
+            ->where('prescribed_at', '>=', $since)
+            ->exists();
+    }
+
+    /** An active, unexpired consent grant for this patient scoped to this facility. */
+    private function hasActiveConsentGrant(string $patientId, ?string $facilityId): bool
+    {
+        if (! $facilityId) {
+            return false;
+        }
+
+        return ConsentGrant::where('patient_id', $patientId)
+            ->where('facility_id', $facilityId)
+            ->where('status', 'active')
+            ->where('expires_at', '>=', Carbon::now())
+            ->exists();
     }
 
     // ══════════════════════════════════════════════════════════════════════

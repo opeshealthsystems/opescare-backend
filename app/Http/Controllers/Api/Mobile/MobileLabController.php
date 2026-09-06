@@ -6,13 +6,17 @@ use App\Http\Controllers\Api\Mobile\Concerns\PresentsLabResults;
 use App\Http\Controllers\Controller;
 use App\Models\LabOrder;
 use App\Models\LabResult;
+use App\Models\LabResultInterpretation;
 use App\Models\OfficialDocument;
 use App\Models\Patient;
 use App\Models\User;
+use App\Modules\Notifications\Models\NotificationEvent;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
@@ -345,7 +349,7 @@ class MobileLabController extends Controller
         $sex    = $patient?->sex;
         $dob    = $this->patientDateOfBirth($patient);
 
-        return $orders
+        $rows = $orders
             ->map(fn (LabOrder $order) => $this->presentOrderDetail(
                 $order,
                 $results->get($order->id, collect()),
@@ -356,6 +360,153 @@ class MobileLabController extends Controller
             ))
             ->values()
             ->all();
+
+        return $this->attachClinicianReview($rows);
+    }
+
+    // ── The clinician's review ───────────────────────────────────────────────
+
+    /**
+     * Two ADDITIVE keys on every order row — nothing else on the row changes:
+     *
+     *   `interpretations`  the clinician's notes written FOR the patient, newest
+     *                      first, each with who wrote it and when. Only rows the
+     *                      clinician chose to share are read, and the private
+     *                      `clinician_comment` column is never selected here —
+     *                      not filtered out afterwards, never loaded at all.
+     *   `reviewed_at`      when a clinician last acknowledged this result in the
+     *                      results inbox (the `notification_events` ledger
+     *                      MobileResultsInboxController writes), by anyone, or
+     *                      null. "Reviewed" is the fact of the acknowledgement;
+     *                      it says nothing about what the review concluded.
+     *
+     * The pre-test indication (`clinical_notes`) stays where it was: it is why
+     * the test was ordered, not what the clinician made of the result.
+     *
+     * Two bounded queries however many orders there are, so the list is as
+     * cheap to decorate as the detail.
+     *
+     * @param  array<int, array<string, mixed>>  $rows
+     * @return array<int, array<string, mixed>>
+     */
+    private function attachClinicianReview(array $rows): array
+    {
+        $orderIds = array_values(array_filter(array_map(
+            fn (array $row) => isset($row['id']) ? (string) $row['id'] : null,
+            $rows
+        )));
+
+        if ($orderIds === []) {
+            return $rows;
+        }
+
+        // Shared notes only. The column list is explicit so the private comment
+        // cannot reach this surface by accident.
+        $shared = LabResultInterpretation::query()
+            ->sharedWithPatient()
+            ->whereIn('lab_order_id', $orderIds)
+            ->orderByDesc('shared_at')
+            ->orderByDesc('created_at')
+            ->get(['id', 'lab_order_id', 'author_user_id', 'patient_note', 'shared_at', 'created_at'])
+            ->groupBy('lab_order_id');
+
+        $authors = $this->authors(
+            $shared->flatten()->pluck('author_user_id')->filter()->unique()->values()->all()
+        );
+
+        // The ledger is keyed on the inbox's composite row id, not the bare
+        // order id — ask it in its own vocabulary.
+        $rowIds = array_map(
+            fn (string $id) => MobileResultsInboxController::labRowId($id),
+            $orderIds
+        );
+
+        $reviewed = NotificationEvent::query()
+            ->where('event_type', MobileResultsInboxController::ACK_EVENT)
+            ->where('related_resource_type', MobileResultsInboxController::LAB_RESOURCE_TYPE)
+            ->whereIn('related_resource_id', $rowIds)
+            ->whereNotNull('acknowledged_at')
+            ->groupBy('related_resource_id')
+            ->selectRaw('related_resource_id, MAX(acknowledged_at) AS reviewed_at')
+            ->pluck('reviewed_at', 'related_resource_id');
+
+        foreach ($rows as &$row) {
+            $orderId = (string) $row['id'];
+
+            $row['interpretations'] = ($shared->get($orderId) ?? collect())
+                ->map(function (LabResultInterpretation $note) use ($authors) {
+                    $author = $authors[$note->author_user_id] ?? null;
+
+                    return [
+                        'patient_note'    => $note->patient_note,
+                        'author_name'     => $author['name'] ?? null,
+                        'author_role'     => $author['role_label'] ?? null,
+                        'author_role_key' => $author['role_key'] ?? null,
+                        'at'              => $this->isoOrNull($note->shared_at ?? $note->created_at),
+                    ];
+                })
+                ->values()
+                ->all();
+
+            $row['reviewed_at'] = $this->isoOrNull(
+                $reviewed[MobileResultsInboxController::labRowId($orderId)] ?? null
+            );
+        }
+        unset($row);
+
+        return $rows;
+    }
+
+    /**
+     * Who wrote each note: name plus role, the role rendered through the
+     * platform's role catalogue (lang/portal.php `role_name.*`) with the slug
+     * as the fallback, so the patient reads "Doctor", never "doctor".
+     *
+     * @param  array<int, string>  $ids
+     * @return array<string, array{name: ?string, role_key: ?string, role_label: ?string}>
+     */
+    private function authors(array $ids): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+
+        return User::query()
+            ->with('role:id,name')
+            ->whereIn('id', $ids)
+            ->get(['id', 'name', 'role_id'])
+            ->mapWithKeys(function (User $user) {
+                $slug = $user->role?->name;
+                $key  = $slug !== null ? 'portal.role_name.' . $slug : null;
+
+                return [(string) $user->id => [
+                    'name'       => $this->blankToNull((string) $user->name),
+                    'role_key'   => $slug,
+                    'role_label' => $key !== null && Lang::has($key) ? __($key) : $slug,
+                ]];
+            })
+            ->all();
+    }
+
+    /**
+     * Any timestamp shape → ISO-8601, or null. `notification_events` declares
+     * no date casts, so a MAX() over it arrives as a bare SQL string.
+     */
+    private function isoOrNull(mixed $value): ?string
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return Carbon::instance($value)->toIso8601String();
+        }
+
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        try {
+            return Carbon::parse((string) $value)->toIso8601String();
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     /** @return array<string, mixed> */

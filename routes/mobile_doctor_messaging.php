@@ -51,6 +51,13 @@ Route::prefix('api/mobile/doctor')->middleware('auth.provider')->group(function 
         // register the same path and, loading later, silently won it. Result
         // counts live at `results-inbox/counts` in that file.
         Route::get('messages/unread-count', [MobileDoctorMessagingController::class, 'unreadCount']);
+        // Open a conversation WITH a patient — { patient_id, subject, body }.
+        // The patient must be in a care relationship with this clinician (the
+        // chart's rule) and have an appointment at the token's facility for the
+        // thread to hang off. Same send budget as a reply: one thread is one
+        // message.
+        Route::post('messages/threads', [MobileDoctorMessagingController::class, 'store'])
+            ->middleware('throttle:30,1');
         Route::get('messages/threads/{id}', [MobileDoctorMessagingController::class, 'show'])
             ->whereNumber('id');
         Route::post('messages/threads/{id}/messages', [MobileDoctorMessagingController::class, 'sendMessage'])

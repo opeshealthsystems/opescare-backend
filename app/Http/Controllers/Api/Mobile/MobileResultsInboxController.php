@@ -7,11 +7,15 @@ use App\Models\CriticalValueAlert;
 use App\Models\ImagingOrder;
 use App\Models\LabOrder;
 use App\Models\LabResult;
+use App\Models\LabResultInterpretation;
 use App\Models\Patient;
 use App\Models\RadiologyReport;
 use App\Models\User;
 use App\Modules\Governance\Services\AccessLogService;
+use App\Modules\Messaging\Models\MessageThread;
+use App\Modules\Messaging\Models\MessageThreadParticipant;
 use App\Modules\Notifications\Models\NotificationEvent;
+use App\Support\PatientPush;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -87,11 +91,42 @@ use Illuminate\Support\Str;
  * than sitting silently signed-off, and acknowledging it writes a SECOND,
  * separate ledger row. Re-tapping unchanged content matches the existing row
  * and changes nothing.
+ *
+ * ── ACKNOWLEDGEMENT IS A CLINICAL ACT WITH A NOTE AND A NEXT STEP ─────────
+ *
+ * The acknowledge body is optional and carries what the clinician SAID about
+ * the result: a plain-language `patient_note` the patient may read, a private
+ * `comment` they may not, and a `next_action` (prescribe / follow-up / message
+ * / repeat the test). All of it goes into the ledger row's payload — the
+ * immutable statement — and, for a laboratory result, into ONE
+ * `lab_result_interpretations` row, the patient-facing projection. The
+ * idempotency rule is unchanged: a second acknowledgement of the same content
+ * returns the first and writes nothing, whatever body it carries. A NEW
+ * acknowledgement also tells the patient (bell + push) that their result has
+ * been reviewed — it never tells them what the clinician's private comment was.
  */
 class MobileResultsInboxController extends Controller
 {
-    /** The ledger event type. Distinct, so nothing else in the bell feed picks these up. */
-    private const ACK_EVENT = 'doctor_result_acknowledged';
+    /**
+     * The ledger event type. Distinct, so nothing else in the bell feed picks
+     * these up. Public because the patient's own result screen reads the same
+     * ledger to say WHEN a clinician reviewed the result (MobileLabController).
+     */
+    public const ACK_EVENT = 'doctor_result_acknowledged';
+
+    /**
+     * `related_resource_type` / the row-id prefix the ledger stores for a lab
+     * order. The ledger is keyed on the inbox's composite id (`lab-<uuid>`),
+     * not the bare order id — see labRowId().
+     */
+    public const LAB_RESOURCE_TYPE = 'LabOrder';
+    public const LAB_ROW_PREFIX    = 'lab-';
+
+    /** The next steps an acknowledgement may name. Same list the model carries. */
+    private const NEXT_ACTIONS = LabResultInterpretation::NEXT_ACTIONS;
+
+    /** The bell/push `type` the patient app switches on for a reviewed result. */
+    private const PATIENT_REVIEWED_TYPE = 'lab_result_reviewed';
 
     /** The lab's own critical vocabulary — the same constant CriticalValueService uses. */
     private const CRITICAL_FLAGS = ['HH', 'LL'];
@@ -206,14 +241,33 @@ class MobileResultsInboxController extends Controller
      *
      * POST /api/mobile/doctor/results-inbox/{id}/acknowledge
      *
+     * Optional body — every key may be omitted, and an empty body is the plain
+     * acknowledgement this endpoint has always recorded:
+     *
+     *     comment             ≤1000  the clinician's PRIVATE comment
+     *     patient_note        ≤1000  plain language, shown to the patient when shared
+     *     share_with_patient  bool   default true when patient_note is given
+     *     next_action         none|prescribe|follow_up|message|repeat_test
+     *
      * A second call answers 200 with the ORIGINAL acknowledgement — same
-     * signature, same timestamp, same name — so a client retrying after a
-     * dropped response cannot make a landed acknowledgement look failed, and
-     * cannot un-acknowledge anything by tapping twice.
+     * signature, same timestamp, same name, same note — so a client retrying
+     * after a dropped response cannot make a landed acknowledgement look
+     * failed, and cannot un-acknowledge (or re-word) anything by tapping twice.
+     * A different body on a second call is NOT a correction: the first
+     * statement stands, and the response says so by returning it.
      */
     public function acknowledge(Request $request, string $id): JsonResponse
     {
         $this->applyLocale($request);
+
+        $validated = $request->validate([
+            'comment'            => ['nullable', 'string', 'max:1000'],
+            'patient_note'       => ['nullable', 'string', 'max:1000'],
+            'share_with_patient' => ['nullable', 'boolean'],
+            'next_action'        => ['nullable', 'string', 'in:' . implode(',', self::NEXT_ACTIONS)],
+        ]);
+
+        $statement = $this->statementFrom($validated);
 
         $row = $this->findRow($request, $id);
 
@@ -224,7 +278,7 @@ class MobileResultsInboxController extends Controller
         $userId = $this->providerUserId($request);
 
         try {
-            $event = DB::transaction(function () use ($row, $userId) {
+            [$event, $isNew, $interpretation] = DB::transaction(function () use ($row, $userId, $statement) {
                 // Lock the SOURCE row for the length of the transaction, so two
                 // simultaneous taps on the same result serialise here rather
                 // than both inserting a ledger row.
@@ -233,10 +287,12 @@ class MobileResultsInboxController extends Controller
                 $existing = $this->acknowledgementFor($userId, $row['_resource_type'], $row['id'], $row['_signature']);
 
                 if ($existing !== null) {
-                    return $existing;
+                    // Idempotent: the FIRST statement stands. The interpretation
+                    // returned is whatever that acknowledgement wrote, if anything.
+                    return [$existing, false, $this->latestInterpretationFor($row)];
                 }
 
-                return NotificationEvent::create([
+                $event = NotificationEvent::create([
                     'uuid'                     => (string) Str::uuid(),
                     'event_type'               => self::ACK_EVENT,
                     'communication_type'       => 'in_app',
@@ -246,16 +302,21 @@ class MobileResultsInboxController extends Controller
                     'related_resource_type'    => $row['_resource_type'],
                     'related_resource_id'      => $row['id'],
                     // The clinical statement itself: WHAT was acknowledged, as
-                    // it read at the moment it was acknowledged.
+                    // it read at the moment it was acknowledged — and what the
+                    // clinician said about it. Immutable from here on.
                     'payload_json'             => json_encode([
-                        'signature'    => $row['_signature'],
-                        'title'        => $row['title'],
-                        'severity'     => $row['severity'],
-                        'is_critical'  => $row['is_critical'],
-                        'patient_id'   => $row['_patient_uuid'],
-                        'facility_id'  => $row['_facility_id'],
-                        'reported_at'  => $row['reported_at'],
-                        'source_id'    => $row['_source_id'],
+                        'signature'          => $row['_signature'],
+                        'title'              => $row['title'],
+                        'severity'           => $row['severity'],
+                        'is_critical'        => $row['is_critical'],
+                        'patient_id'         => $row['_patient_uuid'],
+                        'facility_id'        => $row['_facility_id'],
+                        'reported_at'        => $row['reported_at'],
+                        'source_id'          => $row['_source_id'],
+                        'clinician_comment'  => $statement['comment'],
+                        'patient_note'       => $statement['patient_note'],
+                        'share_with_patient' => $statement['share'],
+                        'next_action'        => $statement['next_action'],
                     ]),
                     'priority'                 => $row['is_critical'] ? 'critical' : 'normal',
                     'status'                   => 'acknowledged',
@@ -264,6 +325,10 @@ class MobileResultsInboxController extends Controller
                     'acknowledged_by'          => $userId,
                     'acknowledged_at'          => now(),
                 ]);
+
+                $interpretation = $this->writeInterpretation($row, $event, $userId, $statement);
+
+                return [$event, true, $interpretation];
             });
         } catch (\Throwable $e) {
             Log::error('doctor results inbox: acknowledgement failed', [
@@ -284,9 +349,17 @@ class MobileResultsInboxController extends Controller
         );
 
         $row = $this->applyAcknowledgement($row, $event);
+        $row['interpretation'] = $this->interpretationShape($row, $interpretation);
+
+        // The patient learns their result was REVIEWED — once, on the new
+        // acknowledgement, never on the idempotent replay. After the commit,
+        // and never fatal: the acknowledgement is already recorded.
+        if ($isNew) {
+            $this->notifyPatientOfReview($row, $interpretation);
+        }
 
         return response()->json([
-            'data' => $this->publicRow($row) + ['result' => $this->resultContext($row)],
+            'data' => $this->acknowledgedPayload($request, $row),
         ], 200);
     }
 
@@ -448,6 +521,7 @@ class MobileResultsInboxController extends Controller
         $rows = $labRows->concat($radRows);
 
         $rows = $this->attachAcknowledgements($rows, $userId);
+        $rows = $this->attachInterpretations($rows);
 
         return ['rows' => $this->sortRows($rows), 'truncated' => $labTruncated || $radTruncated];
     }
@@ -884,8 +958,389 @@ class MobileResultsInboxController extends Controller
         // whether it was acknowledged, and read_at mirrors that rather than
         // inventing a second, weaker signal.
         $row['read_at']              = $row['acknowledged_at'];
+        // Kept (internal, never serialised) so the statement the clinician
+        // made — note, comment, next step — can be read back off the ledger.
+        $row['_ack_event']           = $event;
 
         return $row;
+    }
+
+    // ──────────────────────────────────────────────────────────────────
+    // Interpretations — what the clinician said when they acknowledged
+    // ──────────────────────────────────────────────────────────────────
+
+    /**
+     * Normalise the optional acknowledge body into one statement.
+     *
+     * Blank strings are "nothing said", not an empty note. `share_with_patient`
+     * defaults to true when a patient note was written — a note addressed to
+     * the patient is meant to reach them unless the clinician says otherwise —
+     * and is false when there is nothing to share.
+     *
+     * @param  array<string,mixed> $validated
+     * @return array{comment: ?string, patient_note: ?string, share: bool, next_action: ?string}
+     */
+    private function statementFrom(array $validated): array
+    {
+        $comment = trim((string) ($validated['comment'] ?? ''));
+        $note    = trim((string) ($validated['patient_note'] ?? ''));
+
+        $comment = $comment === '' ? null : $comment;
+        $note    = $note === '' ? null : $note;
+
+        $share = array_key_exists('share_with_patient', $validated) && $validated['share_with_patient'] !== null
+            ? filter_var($validated['share_with_patient'], FILTER_VALIDATE_BOOLEAN)
+            : $note !== null;
+
+        // Nothing to share means nothing is shared, whatever the flag said.
+        if ($note === null) {
+            $share = false;
+        }
+
+        $nextAction = $validated['next_action'] ?? null;
+
+        return [
+            'comment'      => $comment,
+            'patient_note' => $note,
+            'share'        => $share,
+            'next_action'  => is_string($nextAction) && $nextAction !== '' ? $nextAction : null,
+        ];
+    }
+
+    /**
+     * The patient-facing projection of a NEW acknowledgement — one row, written
+     * inside the same transaction as the ledger row, only when the clinician
+     * actually said something and only for a laboratory result (the table is
+     * keyed on `lab_orders`; a radiology statement lives in the ledger payload
+     * alone). Called once per new ledger row, so the idempotency rule upstream
+     * is what keeps this to one row per acknowledgement.
+     *
+     * @param array<string,mixed> $row
+     * @param array{comment: ?string, patient_note: ?string, share: bool, next_action: ?string} $statement
+     */
+    private function writeInterpretation(
+        array $row,
+        NotificationEvent $event,
+        string $userId,
+        array $statement
+    ): ?LabResultInterpretation {
+        if ($row['_kind'] !== 'lab' || ! Str::isUuid((string) $row['_source_id'])) {
+            return null;
+        }
+
+        if ($statement['comment'] === null && $statement['patient_note'] === null) {
+            return null;
+        }
+
+        /** @var LabOrder $order */
+        $order = $row['_order'];
+
+        return LabResultInterpretation::create([
+            'lab_order_id'             => $order->id,
+            'patient_id'               => $order->patient_id,
+            'facility_id'              => $order->facility_id,
+            'author_user_id'           => $userId,
+            'patient_note'             => $statement['patient_note'],
+            'clinician_comment'        => $statement['comment'],
+            'next_action'              => $statement['next_action'],
+            'acknowledgement_event_id' => $event->uuid,
+            'shared_at'                => $statement['share'] ? now() : null,
+            // Follows the order (which follows the patient), so a demo note can
+            // never attach to a real result or the reverse.
+            'is_demo'                  => (bool) ($order->is_demo ?? false),
+        ]);
+    }
+
+    /**
+     * The newest interpretation on file for a lab row, or null. Radiology rows
+     * have no table row — see writeInterpretation().
+     *
+     * @param array<string,mixed> $row
+     */
+    private function latestInterpretationFor(array $row): ?LabResultInterpretation
+    {
+        if ($row['_kind'] !== 'lab') {
+            return null;
+        }
+
+        return LabResultInterpretation::query()
+            ->where('lab_order_id', $row['_source_id'])
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->first();
+    }
+
+    /**
+     * Stamp each row with the latest statement made about it, if any.
+     *
+     * Lab rows read the `lab_result_interpretations` table (newest row per
+     * order — a correction is a new row). Radiology rows read the statement
+     * back off the matched ledger payload, since that is the only place a
+     * radiology statement is written.
+     *
+     * @param  Collection<int,array<string,mixed>> $rows
+     * @return Collection<int,array<string,mixed>>
+     */
+    private function attachInterpretations(Collection $rows): Collection
+    {
+        if ($rows->isEmpty()) {
+            return $rows;
+        }
+
+        $labOrderIds = $rows
+            ->filter(fn (array $row) => $row['_kind'] === 'lab')
+            ->pluck('_source_id')
+            ->filter()
+            ->values()
+            ->all();
+
+        $latest = $labOrderIds === []
+            ? collect()
+            : LabResultInterpretation::query()
+                ->whereIn('lab_order_id', $labOrderIds)
+                ->orderByDesc('created_at')
+                ->orderByDesc('id')
+                ->get()
+                // First per order = newest, thanks to the ordering above.
+                ->unique('lab_order_id')
+                ->keyBy('lab_order_id');
+
+        return $rows->map(function (array $row) use ($latest) {
+            $row['interpretation'] = $this->interpretationShape(
+                $row,
+                $row['_kind'] === 'lab' ? $latest->get($row['_source_id']) : null
+            );
+
+            return $row;
+        });
+    }
+
+    /**
+     * The wire shape of a statement, or null when nothing was said.
+     *
+     * `shared` is whether the PATIENT can read `patient_note`. The private
+     * comment is returned here because this is the clinician's own surface —
+     * it never appears on the patient's (MobileLabController).
+     *
+     * @param  array<string,mixed> $row
+     * @return array{patient_note: ?string, clinician_comment: ?string, next_action: ?string, shared: bool, at: ?string}|null
+     */
+    private function interpretationShape(array $row, ?LabResultInterpretation $interpretation): ?array
+    {
+        if ($interpretation !== null) {
+            return [
+                'patient_note'      => $interpretation->patient_note,
+                'clinician_comment' => $interpretation->clinician_comment,
+                'next_action'       => $interpretation->next_action,
+                'shared'            => $interpretation->isShared(),
+                'at'                => $this->iso($interpretation->created_at),
+            ];
+        }
+
+        // No table row: a radiology statement, or a lab acknowledgement that
+        // named a next step but wrote no note. Both live in the ledger payload.
+        $event = $row['_ack_event'] ?? null;
+
+        if (! $event instanceof NotificationEvent) {
+            return null;
+        }
+
+        $payload = $this->payload($event);
+
+        $note       = $payload['patient_note'] ?? null;
+        $comment    = $payload['clinician_comment'] ?? null;
+        $nextAction = $payload['next_action'] ?? null;
+
+        if ($note === null && $comment === null && $nextAction === null) {
+            return null;
+        }
+
+        return [
+            'patient_note'      => $note,
+            'clinician_comment' => $comment,
+            'next_action'       => $nextAction,
+            'shared'            => (bool) ($payload['share_with_patient'] ?? false) && $note !== null,
+            'at'                => $this->iso($event->acknowledged_at),
+        ];
+    }
+
+    /**
+     * The acknowledge response: the row, the underlying report, the statement,
+     * and where each next step leads.
+     *
+     * @param  array<string,mixed> $row
+     * @return array<string,mixed>
+     */
+    private function acknowledgedPayload(Request $request, array $row): array
+    {
+        $public = $this->publicRow($row);
+
+        $public['result']            = $this->resultContext($row);
+        $public['next_action_links'] = $this->nextActionLinks($request, $row);
+
+        return $public;
+    }
+
+    /**
+     * Where the clinician's chosen next step goes. Every link is offered, not
+     * just the one they picked — the step can be taken later from the done
+     * state. Ids are the patient's uuid (what the doctor endpoints that take a
+     * body want) with the Health ID alongside (what the chart URL and the
+     * prescriber desk take).
+     *
+     * @param  array<string,mixed> $row
+     * @return array<string,mixed>
+     */
+    private function nextActionLinks(Request $request, array $row): array
+    {
+        $patientId = $row['_patient_uuid'];
+        $healthId  = $row['patient_health_id'];
+
+        $order = $row['_kind'] === 'lab' ? $row['_order'] : null;
+
+        return [
+            'prescribe'   => $healthId !== null
+                ? '/clinician/prescribe?health_id=' . rawurlencode((string) $healthId)
+                : null,
+            'follow_up'   => [
+                'patient_id' => $patientId,
+                'health_id'  => $healthId,
+            ],
+            'message'     => [
+                'patient_id' => $patientId,
+                'health_id'  => $healthId,
+                // An open conversation between this clinician and this patient,
+                // if there is one — so "Message patient" continues it rather
+                // than opening a second thread about the same person.
+                'thread_id'  => $patientId !== null
+                    ? $this->openThreadWith((string) $this->providerUserId($request), (string) $patientId)
+                    : null,
+            ],
+            'repeat_test' => [
+                'patient_id' => $patientId,
+                'health_id'  => $healthId,
+                'test_code'  => $order?->test_code,
+                'test_name'  => $order?->test_name ?? $row['title'],
+            ],
+        ];
+    }
+
+    /**
+     * The id of an OPEN thread this clinician and this patient are both on, or
+     * null. Participation on both sides is the whole test: the patient's
+     * identity in the messaging tables is their `patients.id` (see
+     * MobileMessagingController), and a thread under legal hold or closed is
+     * not one to continue.
+     */
+    private function openThreadWith(string $userId, string $patientId): ?string
+    {
+        if ($userId === '' || $patientId === '') {
+            return null;
+        }
+
+        $mine = MessageThreadParticipant::query()
+            ->where('user_id', $userId)
+            ->whereIn('status', ['active', 'archived'])
+            ->pluck('thread_id');
+
+        if ($mine->isEmpty()) {
+            return null;
+        }
+
+        $shared = MessageThreadParticipant::query()
+            ->whereIn('thread_id', $mine->all())
+            ->where('user_id', $patientId)
+            ->where('status', 'active')
+            ->pluck('thread_id');
+
+        if ($shared->isEmpty()) {
+            return null;
+        }
+
+        $id = MessageThread::query()
+            ->whereIn('id', $shared->all())
+            ->where('status', '!=', 'closed')
+            ->where('legal_hold', false)
+            ->orderByDesc('updated_at')
+            ->value('id');
+
+        return $id === null ? null : (string) $id;
+    }
+
+    /**
+     * Tell the patient their result has been reviewed — bell row plus push.
+     *
+     * Lab results only: that is the screen the patient app has (`/labs/{id}`);
+     * a radiology review would point at nothing. The message names the test
+     * and the fact of a review, and whether a note was left for them. It never
+     * carries a value, a flag or the clinician's private comment — the bell
+     * row is not a clinical record and the push lands on a lock screen.
+     *
+     * Never fatal. The acknowledgement is already committed; a notification
+     * failure is logged and swallowed.
+     *
+     * @param array<string,mixed> $row
+     */
+    private function notifyPatientOfReview(array $row, ?LabResultInterpretation $interpretation): void
+    {
+        if ($row['_kind'] !== 'lab' || $row['_patient_uuid'] === null) {
+            return;
+        }
+
+        try {
+            // Scoped by IsDemoRecord on purpose: a patient this deployment
+            // isolates away is not one it may notify.
+            $patient = Patient::query()->find($row['_patient_uuid']);
+
+            if ($patient === null) {
+                return;
+            }
+
+            /** @var LabOrder $order */
+            $order = $row['_order'];
+
+            $locale = class_exists(PatientPush::class) ? PatientPush::localeFor($patient) : App::getLocale();
+            $shared = $interpretation !== null && $interpretation->isShared() && $interpretation->patient_note !== null;
+
+            $title = __('doctor_results.patient_notice.reviewed_title', ['test' => $order->test_name], $locale);
+            $body  = $shared
+                ? __('doctor_results.patient_notice.reviewed_body_note', [], $locale)
+                : __('doctor_results.patient_notice.reviewed_body', [], $locale);
+            $actionUrl = '/labs/' . $order->id;
+
+            DB::table('notifications')->insert([
+                'id'              => (string) Str::uuid(),
+                'type'            => self::PATIENT_REVIEWED_TYPE,
+                'notifiable_type' => $patient->getMorphClass(),
+                'notifiable_id'   => $patient->getKey(),
+                'data'            => json_encode([
+                    'type'         => self::PATIENT_REVIEWED_TYPE,
+                    'title'        => $title,
+                    'message'      => $body,
+                    'severity'     => 'normal',
+                    'action_url'   => $actionUrl,
+                    'action_label' => __('doctor_results.patient_notice.reviewed_action', [], $locale),
+                    'lab_order_id' => (string) $order->id,
+                    'has_note'     => $shared,
+                ], JSON_UNESCAPED_UNICODE),
+                'read_at'         => null,
+                'created_at'      => now(),
+                'updated_at'      => now(),
+            ]);
+
+            if (class_exists(PatientPush::class)) {
+                PatientPush::send($patient, 'lab_result', $title, $body, [
+                    'lab_order_id' => (string) $order->id,
+                    'action_url'   => $actionUrl,
+                    'has_note'     => $shared ? '1' : '0',
+                ]);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('doctor results inbox: patient review notice not sent', [
+                'result_id' => $row['id'],
+                'error'     => $e->getMessage(),
+            ]);
+        }
     }
 
     /**
@@ -1121,7 +1576,20 @@ class MobileResultsInboxController extends Controller
             'acknowledged_by_name' => $row['acknowledged_by_name'],
             'action_route'         => $row['action_route'],
             'action_id'            => $row['action_id'],
+            // What the clinician said when they acknowledged — null until an
+            // acknowledgement carried a note, a comment or a next step.
+            'interpretation'       => $row['interpretation'] ?? null,
         ];
+    }
+
+    /**
+     * The ledger's `related_resource_id` for a lab order — the inbox's own
+     * composite id, which is what every acknowledgement row is keyed on.
+     * Public so the patient's result screen can ask the ledger the same way.
+     */
+    public static function labRowId(string $labOrderId): string
+    {
+        return self::LAB_ROW_PREFIX . $labOrderId;
     }
 
     /**

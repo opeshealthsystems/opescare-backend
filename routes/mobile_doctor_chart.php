@@ -70,5 +70,14 @@ Route::prefix('api/mobile')->middleware(['auth.provider', 'capability:clinical_c
             Route::get('prescriptions', [MobileDoctorChartController::class, 'prescriptions']);
             Route::get('diagnoses', [MobileDoctorChartController::class, 'diagnoses']);
             Route::get('orders', [MobileDoctorChartController::class, 'orders']);
+
+            // The one write on this surface, and in its OWN controller so the
+            // chart above stays read-only: a laboratory order for THIS patient,
+            // placed by the token's clinician at the token's facility
+            // { test_name, test_code?, urgency: routine|urgent|stat,
+            //   clinical_indication }. Same capability gate, same
+            // care-relationship rule as the sections above.
+            Route::post('lab-orders', [\App\Http\Controllers\Api\Mobile\MobileDoctorLabOrderController::class, 'store'])
+                ->middleware('throttle:30,1');
         });
 });
