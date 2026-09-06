@@ -45,7 +45,7 @@ class MailHealthCheck extends Command
         $this->line('Sending as: <info>' . ($from ?: '(not configured)') . '</info>');
 
         if ($from === '' || ! str_contains($from, '@')) {
-            $this->fail('mail.from.address is not a usable address.');
+            $this->blocking('mail.from.address is not a usable address.');
 
             return $this->report();
         }
@@ -84,7 +84,7 @@ class MailHealthCheck extends Command
         );
 
         if ($null !== []) {
-            $this->fail(
+            $this->blocking(
                 "{$domain} publishes a NULL MX (RFC 7505), which tells every receiving server that it "
                 . 'accepts no mail. They reject messages FROM it with 550 5.7.27, so nothing this platform '
                 . 'sends can be delivered. Remove that record, or send from a domain that accepts mail.'
@@ -93,7 +93,7 @@ class MailHealthCheck extends Command
             return;
         }
 
-        $this->pass('No null MX on ' . $domain . '.');
+        $this->ok('No null MX on ' . $domain . '.');
     }
 
     private function checkSpf(string $domain): void
@@ -101,12 +101,12 @@ class MailHealthCheck extends Command
         $spf = $this->txt($domain, 'v=spf1');
 
         if ($spf === null) {
-            $this->warn_('No SPF record on ' . $domain . '. Most receivers will treat the mail as suspicious.');
+            $this->caution('No SPF record on ' . $domain . '. Most receivers will treat the mail as suspicious.');
 
             return;
         }
 
-        $this->pass('SPF present: ' . $spf);
+        $this->ok('SPF present: ' . $spf);
     }
 
     /**
@@ -118,13 +118,13 @@ class MailHealthCheck extends Command
     {
         foreach (['default', 'mail', 'dkim', 's1', 'k1', 'google', 'selector1'] as $selector) {
             if ($this->txt($selector . '._domainkey.' . $domain, 'v=DKIM1') !== null) {
-                $this->pass('DKIM found on selector "' . $selector . '".');
+                $this->ok('DKIM found on selector "' . $selector . '".');
 
                 return;
             }
         }
 
-        $this->warn_(
+        $this->caution(
             'No DKIM record found on the usual selectors. Gmail and Outlook now require authenticated mail '
             . 'from bulk senders, so unsigned mail is increasingly filtered.'
         );
@@ -135,19 +135,19 @@ class MailHealthCheck extends Command
         $dmarc = $this->txt('_dmarc.' . $domain, 'v=DMARC1');
 
         if ($dmarc === null) {
-            $this->warn_('No DMARC record on ' . $domain . '.');
+            $this->caution('No DMARC record on ' . $domain . '.');
 
             return;
         }
 
-        $this->pass('DMARC present: ' . $dmarc);
+        $this->ok('DMARC present: ' . $dmarc);
     }
 
     /** Is the configured SMTP host actually accepting connections? */
     private function checkTransport(): void
     {
         if (config('mail.default') !== 'smtp') {
-            $this->pass('Mailer is "' . config('mail.default') . '"; no SMTP host to reach.');
+            $this->ok('Mailer is "' . config('mail.default') . '"; no SMTP host to reach.');
 
             return;
         }
@@ -158,13 +158,13 @@ class MailHealthCheck extends Command
         $socket = @fsockopen($host, $port, $code, $message, 5);
 
         if ($socket === false) {
-            $this->fail("Cannot reach the SMTP host {$host}:{$port} — {$message}");
+            $this->blocking("Cannot reach the SMTP host {$host}:{$port} — {$message}");
 
             return;
         }
 
         fclose($socket);
-        $this->pass("SMTP host {$host}:{$port} is accepting connections.");
+        $this->ok("SMTP host {$host}:{$port} is accepting connections.");
     }
 
     /**
@@ -184,7 +184,7 @@ class MailHealthCheck extends Command
             $this->line('    A local MTA accepts a message before it tries to deliver it, so this is NOT');
             $this->line('    proof of delivery. Check the mail log, and check the inbox.');
         } catch (\Throwable $e) {
-            $this->fail('The mailer refused the probe outright: ' . $e->getMessage());
+            $this->blocking('The mailer refused the probe outright: ' . $e->getMessage());
         }
     }
 
@@ -203,18 +203,18 @@ class MailHealthCheck extends Command
         return null;
     }
 
-    private function pass(string $message): void
+    private function ok(string $message): void
     {
         $this->line('  <info>OK</info>   ' . $message);
     }
 
-    private function warn_(string $message): void
+    private function caution(string $message): void
     {
         $this->warnings[] = $message;
         $this->line('  <comment>WARN</comment> ' . $message);
     }
 
-    private function fail(string $message): void
+    private function blocking(string $message): void
     {
         $this->failures[] = $message;
         $this->line('  <fg=red>FAIL</> ' . $message);
