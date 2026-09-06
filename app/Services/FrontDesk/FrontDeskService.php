@@ -2,6 +2,7 @@
 
 namespace App\Services\FrontDesk;
 
+use App\Http\Resources\Desk\DeskWaitingResource;
 use App\Models\Appointment;
 use App\Models\AppointmentSlot;
 use App\Models\AppointmentStatusHistory;
@@ -66,6 +67,19 @@ use Throwable;
  * row. Check-in opens a Visit through VisitManagementService exactly as the
  * web desk's AppointmentService::checkIn() does. Cancellation is delegated to
  * AppointmentService::cancel(), the same method the web desk calls.
+ *
+ * ── Channels ──────────────────────────────────────────────────────────────
+ * The same service runs the phone desk (DeskActor channel `mobile_desk`),
+ * the web desk (`portal`, built by DeskActor::fromPortal from the session's
+ * active facility that RequireFacilityContext resolved) and the clinician's
+ * own check-in (`mobile_doctor`, MobileDoctorScheduleController). The rows
+ * written are identical; only the recorded reason names the channel.
+ *
+ * ── The waiting room ──────────────────────────────────────────────────────
+ * waitingFor() is the ordered list of who is in the building: today's
+ * checked-in rows in order of arrival (`checked_in_at`), each with its
+ * position. The desk reads it for the whole facility; the clinician's home
+ * (`doctor/home`, `waiting[]`) reads it narrowed to their own column.
  */
 class FrontDeskService
 {
@@ -308,6 +322,64 @@ class FrontDeskService
     }
 
     // ──────────────────────────────────────────────────────────────────
+    // The waiting room
+    // ──────────────────────────────────────────────────────────────────
+
+    /**
+     * Who is in the building right now, in order of arrival.
+     *
+     * Today's rows in CHECKED_IN_STATUSES (checked_in / arrived /
+     * in_progress) at this facility, ordered by `checked_in_at` (a row that
+     * was checked in without a stamp sorts by its booked time, after every
+     * stamped arrival), each stamped with `queue_position` (1-based) and
+     * `waited_minutes` (since check-in, else since the booked time). Narrowed
+     * to one clinician's column when `$providerId` is given — the position is
+     * then their position IN THAT COLUMN, which is what the clinician needs.
+     *
+     * @return Collection<int,Appointment>
+     */
+    public function waitingRows(string $facilityId, ?string $providerId = null, ?CarbonInterface $day = null): Collection
+    {
+        $tz  = config('app.timezone');
+        $now = Carbon::now($tz);
+        $day = $day ?? $now;
+
+        $query = $this->onDay($facilityId, $day)
+            ->whereIn('status', self::CHECKED_IN_STATUSES)
+            ->with(self::WITH)
+            ->orderByRaw('checked_in_at ASC NULLS LAST')
+            ->orderBy('scheduled_at')
+            ->orderBy('created_at');
+
+        if ($providerId !== null && $providerId !== '') {
+            $query->where('provider_id', $providerId);
+        }
+
+        $rows = $this->withDeskRoles($query->get(), $facilityId);
+
+        $position = 0;
+        foreach ($rows as $row) {
+            $since = $row->checked_in_at ?? $row->scheduled_at;
+            $row->setAttribute('queue_position', ++$position);
+            $row->setAttribute('waited_minutes', $since ? max(0, (int) $since->diffInMinutes($now, false)) : null);
+        }
+
+        return $rows;
+    }
+
+    /**
+     * The waiting room as a wire-ready list (DeskWaitingResource rows) — the
+     * handshake for `doctor/home` (`waiting[]`, provider = the clinician) and
+     * for the web desk. Same order and positions as waitingRows().
+     *
+     * @return list<array<string,mixed>>
+     */
+    public function waitingFor(string $facilityId, ?string $providerId = null): array
+    {
+        return DeskWaitingResource::collection($this->waitingRows($facilityId, $providerId))->resolve();
+    }
+
+    // ──────────────────────────────────────────────────────────────────
     // Booking
     // ──────────────────────────────────────────────────────────────────
 
@@ -404,8 +476,8 @@ class FrontDeskService
                     'appointment_slot_id' => null,
                 ]);
 
-                $this->audit($actor, $locked, 'reschedule', __('desk_api.reason_rescheduled'), $before);
-                $this->history($locked->id, $locked->status, $locked->status, $actor, __('desk_api.reason_rescheduled'));
+                $this->audit($actor, $locked, 'reschedule', $this->reason($actor, 'rescheduled'), $before);
+                $this->history($locked->id, $locked->status, $locked->status, $actor, $this->reason($actor, 'rescheduled'));
 
                 return $locked->refresh();
             });
@@ -437,8 +509,8 @@ class FrontDeskService
 
                 $locked->update(['provider_id' => $providerId]);
 
-                $this->audit($actor, $locked, 'route', __('desk_api.reason_routed'), $before);
-                $this->history($locked->id, $locked->status, $locked->status, $actor, __('desk_api.reason_routed'), [
+                $this->audit($actor, $locked, 'route', $this->reason($actor, 'routed'), $before);
+                $this->history($locked->id, $locked->status, $locked->status, $actor, $this->reason($actor, 'routed'), [
                     'provider_id' => $providerId,
                 ]);
 
@@ -469,7 +541,7 @@ class FrontDeskService
             throw new FrontDeskRefusal('not_confirm_eligible', 422);
         }
 
-        return $this->transition($actor, $appointment, 'confirmed', 'confirm', __('desk_api.reason_confirmed'), [], 'confirm_failed');
+        return $this->transition($actor, $appointment, 'confirmed', 'confirm', $this->reason($actor, 'confirmed'), [], 'confirm_failed');
     }
 
     /**
@@ -479,6 +551,16 @@ class FrontDeskService
      * wider status vocabulary this database actually contains: the service
      * accepts only scheduled|confirmed and would refuse every patient booking,
      * which is written `booked`.
+     *
+     * Callable from ANY channel — the desk app, the web desk and the
+     * clinician's own check-in (MobileDoctorScheduleController::checkIn):
+     *
+     *     $actor       = DeskActor::fromRequest($request, 'mobile_doctor');   // token attributes
+     *     $appointment = $desk->find($actor->facilityId, $id);                // inside the facility bound
+     *     $checkedIn   = $desk->checkIn($actor, $appointment);                // visit_id + checked_in_at set
+     *
+     * The caller resolves the row (a clinician additionally checks it is on
+     * their own column) and catches FrontDeskRefusal (`key`, `status`).
      *
      * @throws FrontDeskRefusal already_checked_in | not_check_in_eligible | check_in_failed
      */
@@ -522,8 +604,8 @@ class FrontDeskService
                     'checked_in_at' => now(),
                 ]);
 
-                $this->audit($actor, $locked, 'check_in', __('desk_api.reason_checked_in'), $before);
-                $this->history($locked->id, $from, 'checked_in', $actor, __('desk_api.reason_checked_in'), ['visit_id' => $visit->id]);
+                $this->audit($actor, $locked, 'check_in', $this->reason($actor, 'checked_in'), $before);
+                $this->history($locked->id, $from, 'checked_in', $actor, $this->reason($actor, 'checked_in'), ['visit_id' => $visit->id]);
 
                 return $locked->refresh();
             });
@@ -547,7 +629,7 @@ class FrontDeskService
             throw new FrontDeskRefusal('not_no_show_eligible', 422);
         }
 
-        return $this->transition($actor, $appointment, 'no_show', 'no_show', __('desk_api.reason_no_show'), [
+        return $this->transition($actor, $appointment, 'no_show', 'no_show', $this->reason($actor, 'no_show'), [
             'no_show_at' => now(),
         ], 'no_show_failed');
     }
@@ -856,6 +938,23 @@ class FrontDeskService
         } catch (Throwable $e) {
             throw new FrontDeskRefusal($failureKey, 422);
         }
+    }
+
+    /**
+     * The recorded reason for a transition, worded for the channel that made
+     * it: the phone desk (`reason_{event}`), the web desk
+     * (`reason_{event}_portal`) or a clinician acting on their own list
+     * (`reason_{event}_clinician`). Every key exists in lang/{en,fr}/desk_api.php.
+     */
+    public function reason(DeskActor $actor, string $event): string
+    {
+        $suffix = match ($actor->channel) {
+            'mobile_desk' => '',
+            'portal'      => '_portal',
+            default       => '_clinician',
+        };
+
+        return __("desk_api.reason_{$event}{$suffix}");
     }
 
     /**

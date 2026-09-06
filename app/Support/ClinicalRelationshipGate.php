@@ -8,7 +8,10 @@ use App\Models\ConsentGrant;
 use App\Models\Encounter;
 use App\Models\ImagingOrder;
 use App\Models\LabOrder;
+use App\Models\MedicineReservation;
+use App\Models\PharmacyRoute;
 use App\Models\Prescription;
+use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -51,8 +54,24 @@ use Illuminate\Support\Facades\DB;
  *   5. `consent_grant`       — the patient has granted this facility an
  *                              active, unexpired ConsentGrant.
  *
- * Nothing else holds. There is deliberately no "emergency" or "break-glass"
- * basis here; that is a different act with its own trail.
+ * Nothing else holds by default. There is deliberately no "emergency" or
+ * "break-glass" basis here; that is a different act with its own trail.
+ *
+ * ONE OPT-IN BASIS, for messaging only:
+ *
+ *   6. `dispensing`          — the token's facility is the DISPENSING facility
+ *                              of one of this patient's open prescriptions
+ *                              (routed to / claimed by that counter and not yet
+ *                              dispensed), or holds an open medicine
+ *                              reservation of theirs at one of its listings —
+ *                              AND the clinician holds the `dispense`
+ *                              capability there. A pharmacist filling a
+ *                              script may write to the patient about it; they
+ *                              may not open the chart on that strength, so
+ *                              this basis is never applied unless a caller
+ *                              asks for it by name:
+ *
+ *     ClinicalRelationshipGate::evaluate($c, $f, $p, [ClinicalRelationshipGate::DISPENSING]);
  *
  * INPUTS ARE THE TOKEN'S. `$clinicianId` and `$facilityId` are what
  * AuthenticateMobileProvider stamped on the request from the bearer token —
@@ -68,8 +87,10 @@ final class ClinicalRelationshipGate
     public const TREATING_CLINICIAN = 'treating_clinician';
     public const FACILITY_EPISODE   = 'facility_episode';
     public const CONSENT_GRANT      = 'consent_grant';
+    /** Opt-in (see the class docblock): the pharmacy counter filling the patient's script. */
+    public const DISPENSING         = 'dispensing';
 
-    /** Every basis, in the order it is checked. */
+    /** Every basis applied by default, in the order it is checked. */
     public const BASES = [
         self::APPOINTMENT,
         self::CARE_TEAM,
@@ -77,6 +98,18 @@ final class ClinicalRelationshipGate
         self::FACILITY_EPISODE,
         self::CONSENT_GRANT,
     ];
+
+    /** Bases a caller may add by name. Anything else passed to evaluate() is ignored. */
+    public const OPT_IN_BASES = [self::DISPENSING];
+
+    /** `prescriptions.status` values a counter can still act on. */
+    private const OPEN_RX_STATUSES = ['active', 'partially_dispensed'];
+
+    /** `prescriptions.pharmacy_routing_status` values from which the counter still has work to do. */
+    private const OPEN_ROUTING_STATUSES = ['pending', 'sent', 'confirmed', 'ready'];
+
+    /** `medicine_reservations.status` values that are still a live hold (MedicineReservationStatus::isOpen). */
+    private const OPEN_RESERVATION_STATUSES = ['pending', 'confirmed', 'ready_for_pickup'];
 
     /**
      * How far back an episode at the clinician's own facility still counts as
@@ -103,8 +136,11 @@ final class ClinicalRelationshipGate
      * Returns the FIRST basis that holds. The verdict's `basis` goes into the
      * audit row's purpose, so the log says on what authority the record was
      * opened, not merely that it was.
+     *
+     * @param  list<string>  $alsoAllow  opt-in bases (OPT_IN_BASES) this caller
+     *                                   accepts on top of the five defaults
      */
-    public static function evaluate(?string $clinicianId, ?string $facilityId, string $patientId): self
+    public static function evaluate(?string $clinicianId, ?string $facilityId, string $patientId, array $alsoAllow = []): self
     {
         if (! $clinicianId) {
             return self::none();
@@ -147,6 +183,15 @@ final class ClinicalRelationshipGate
         // 5. The patient has granted this facility access outright.
         if ($facilityId && self::hasActiveConsentGrant($patientId, $facilityId)) {
             return new self(self::CONSENT_GRANT);
+        }
+
+        // 6. (opt-in) The token's facility is filling the patient's script.
+        if (
+            $facilityId
+            && in_array(self::DISPENSING, $alsoAllow, true)
+            && self::hasDispensingRelationship($patientId, $facilityId, $clinicianId)
+        ) {
+            return new self(self::DISPENSING);
         }
 
         return self::none();
@@ -234,6 +279,73 @@ final class ClinicalRelationshipGate
             ->where('facility_id', $facilityId)
             ->where('status', 'active')
             ->where('expires_at', '>=', Carbon::now())
+            ->exists();
+    }
+
+    /**
+     * Is this facility the counter filling one of the patient's open scripts,
+     * or holding one of their open medicine reservations — and does the
+     * clinician hold `dispense` there?
+     *
+     * "Open" is a prescription still dispensable (active / partially
+     * dispensed) whose routing has not ended (pending / sent / confirmed /
+     * ready — PharmacyDeskService's open routing states) and whose
+     * `pharmacy_route_id` names one of this facility's active dispensing
+     * routes; or a medicine reservation still live (pending / accepted /
+     * ready) at one of the directory listings linked to this facility. A
+     * dispensed, rejected or voided script is history, and history is not a
+     * reason to write to the patient today.
+     *
+     * The role check is what makes this "a pharmacist at the dispensing
+     * facility" rather than "anyone at it": StaffCapabilities resolves the
+     * role held at THIS facility (the posting), falling back to the global
+     * role, and asks whether it carries `dispense`. Pass a null clinician to
+     * ask the facility-level question alone.
+     */
+    public static function hasDispensingRelationship(string $patientId, string $facilityId, ?string $clinicianId = null): bool
+    {
+        if ($clinicianId !== null) {
+            $user = User::query()->find($clinicianId);
+
+            if (! $user || ! StaffCapabilities::canAt($user, $facilityId, 'dispense')) {
+                return false;
+            }
+        }
+
+        $routeIds = PharmacyRoute::query()
+            ->where('facility_id', $facilityId)
+            ->where('is_active', true)
+            ->pluck('id')
+            ->map(fn ($id) => (string) $id)
+            ->all();
+
+        if ($routeIds !== []) {
+            $routed = Prescription::query()
+                ->where('patient_id', $patientId)
+                ->whereIn('pharmacy_route_id', $routeIds)
+                ->whereIn('status', self::OPEN_RX_STATUSES)
+                ->whereIn('pharmacy_routing_status', self::OPEN_ROUTING_STATUSES)
+                ->exists();
+
+            if ($routed) {
+                return true;
+            }
+        }
+
+        $listingIds = DB::table('care_facilities')
+            ->where('facility_id', $facilityId)
+            ->pluck('id')
+            ->map(fn ($id) => (string) $id)
+            ->all();
+
+        if ($listingIds === []) {
+            return false;
+        }
+
+        return MedicineReservation::query()
+            ->where('patient_id', $patientId)
+            ->whereIn('care_facility_id', $listingIds)
+            ->whereIn('status', self::OPEN_RESERVATION_STATUSES)
             ->exists();
     }
 }
