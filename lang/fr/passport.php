@@ -185,7 +185,6 @@ return [
             'title'    => 'Consentement et partage',
             'subtitle' => 'Qui vous avez autorise a consulter votre dossier',
         ],
-        'verification_history' => 'Historique des vérifications',
         'verification' => [
             'title'    => 'Centre de verification',
             'subtitle' => 'Prouvez que ce dossier est le votre et a jour',
@@ -260,6 +259,7 @@ return [
         'providers' => 'Votre equipe soignante',
         'insurance' => 'Couverture',
         'consent' => 'Autorisations actives',
+        'verification_history' => 'Historique des vérifications',
         'verification' => 'Comment verifier',
         'vitals' => 'Dernieres mesures',
         'care_plans' => 'Plans',

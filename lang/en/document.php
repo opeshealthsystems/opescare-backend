@@ -80,4 +80,16 @@ return [
     'available_title' => 'Documents you can download',
     'available_hint' => 'Each is generated when you download it, from your record as it stands now. Nothing is stored.',
 
+    'cert_title' => 'Certificate',
+    'cert_subtitle' => 'As issued and registered',
+    'document_id' => 'Document ID',
+    'cert_valid_until' => 'Valid until',
+    'cert_no_expiry' => 'No expiry',
+    'cert_printed' => 'Printed',
+    'cert_particulars' => 'Particulars',
+    'cert_state_active' => 'Valid',
+    'cert_state_expired' => 'Expired',
+    'cert_state_revoked' => 'Revoked',
+    'cert_verify' => 'Verification code :code — check it at the OpesCare verification page.',
+
 ];

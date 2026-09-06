@@ -80,4 +80,16 @@ return [
     'available_title' => 'Documents que vous pouvez télécharger',
     'available_hint' => 'Chacun est généré au moment du téléchargement, à partir de votre dossier tel qu’il est. Rien n’est archivé.',
 
+    'cert_title' => 'Certificat',
+    'cert_subtitle' => 'Tel que délivré et enregistré',
+    'document_id' => 'Numéro de document',
+    'cert_valid_until' => 'Valable jusqu’au',
+    'cert_no_expiry' => 'Sans date d’expiration',
+    'cert_printed' => 'Imprimé le',
+    'cert_particulars' => 'Détails',
+    'cert_state_active' => 'Valide',
+    'cert_state_expired' => 'Expiré',
+    'cert_state_revoked' => 'Révoqué',
+    'cert_verify' => 'Code de vérification :code — à vérifier sur la page de vérification OpesCare.',
+
 ];

@@ -48,6 +48,8 @@ class PatientDocumentService
     public const PRESCRIPTION       = 'prescription';
     public const IMMUNISATION       = 'immunisation_record';
     public const DISCHARGE_SUMMARY  = 'discharge_summary';
+    /** A certificate is the document itself, not a print of a clinical record. */
+    public const CERTIFICATE        = 'certificate';
 
     /** Document type → the Blade that draws it on the secure sheet. */
     private const VIEWS = [
@@ -55,6 +57,7 @@ class PatientDocumentService
         self::PRESCRIPTION      => 'documents.prescription',
         self::IMMUNISATION      => 'documents.immunisation-record',
         self::DISCHARGE_SUMMARY => 'documents.discharge-summary',
+        self::CERTIFICATE       => 'documents.certificate',
     ];
 
     public function __construct(private readonly DocumentVerificationService $verifications)
@@ -259,7 +262,10 @@ class PatientDocumentService
                 => [self::DISCHARGE_SUMMARY, (string) $admission],
             in_array($type, ['vaccination_card', 'immunisation_record', 'immunization_record'], true)
                 => [self::IMMUNISATION, null],
-            default => null,
+            // Everything else that was formally issued is printed from
+            // its own row — a certificate is the document, not a view
+            // of a record kept somewhere else.
+            default => [self::CERTIFICATE, (string) $document->id],
         };
     }
 
@@ -279,7 +285,7 @@ class PatientDocumentService
         ) {
             $renderable = $this->renderableFor($document);
 
-            if ($renderable !== null && $renderable[1] !== null) {
+            if ($renderable !== null && $renderable[0] !== self::CERTIFICATE && $renderable[1] !== null) {
                 $covered[$renderable[0] . ':' . $renderable[1]] = true;
             }
         }
@@ -303,8 +309,35 @@ class PatientDocumentService
             self::PRESCRIPTION      => ['prescription' => $this->prescription($patient, $recordId)],
             self::DISCHARGE_SUMMARY => ['admission' => $this->admission($patient, $recordId)],
             self::IMMUNISATION      => ['doses' => $this->doses($patient)],
+            self::CERTIFICATE       => $this->certificate($patient, $recordId),
             default                 => [],
         };
+    }
+
+    /**
+     * One issued certificate, with the name of the facility that issued it.
+     *
+     * A revoked certificate still renders — and says so on its face. Refusing
+     * to print it would leave the holder unable to see what was withdrawn, and
+     * the sheet is honest about its state either way.
+     */
+    private function certificate(Patient $patient, ?string $id): array
+    {
+        $document = OfficialDocument::where('patient_id', $patient->id)
+            ->where('id', $id)
+            ->first();
+
+        abort_if($document === null, 404, 'No such certificate.');
+
+        // The issuing facility may be a real (non-demo) row, so the demo
+        // isolation scope is lifted — a certificate issued by nobody is worse
+        // than one that names its hospital.
+        $facilityName = $document->facility_id
+            ? (\App\Models\Facility::withoutGlobalScope('isolate_demo')->whereKey($document->facility_id)->value('name')
+                ?? \App\Models\CareFacility::withoutGlobalScopes()->whereKey($document->facility_id)->value('facility_name'))
+            : null;
+
+        return ['document' => $document, 'facilityName' => $facilityName];
     }
 
     private function labOrder(Patient $patient, ?string $id): LabOrder

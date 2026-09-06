@@ -185,7 +185,6 @@ return [
             'title'    => 'Consent & Sharing',
             'subtitle' => 'Who you have allowed to see your record',
         ],
-        'verification_history' => 'Verification history',
         'verification' => [
             'title'    => 'Verification Centre',
             'subtitle' => 'Prove this record is yours and current',
@@ -260,6 +259,7 @@ return [
         'providers' => 'Your care team',
         'insurance' => 'Cover',
         'consent' => 'Active permissions',
+        'verification_history' => 'Verification history',
         'verification' => 'How to verify',
         'vitals' => 'Latest measurements',
         'care_plans' => 'Plans',
