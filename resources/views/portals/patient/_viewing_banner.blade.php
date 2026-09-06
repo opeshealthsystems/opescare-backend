@@ -5,8 +5,9 @@
     dependent's record open (request attributes set by GuardianAccessMiddleware).
     Renders nothing otherwise, so every view can include it unconditionally.
 
-    Optional: ['viewingNote' => '…'] adds a second line — used by pages whose
-    content is always the guardian's OWN (messages, notifications).
+    Optional: ['viewingNote' => '…'] adds a second line — a page-specific
+    reminder of whose data is on screen (the inbox pages use it to say these
+    are the dependent's conversations / notifications, not the guardian's own).
 --}}
 @php
     $vbPatient = request()->attributes->get('viewing_patient');

@@ -11,10 +11,15 @@
 @endsection
 
 @section('patient_banner')
-    @include('portals.patient._viewing_banner', ['viewingNote' => __('family.banner_own_inbox', ['name' => request()->attributes->get('viewing_patient')?->first_name])])
+    @include('portals.patient._viewing_banner', ['viewingNote' => __('family.inbox_messages_note', ['name' => request()->attributes->get('viewing_patient')?->first_name])])
 @endsection
 
 @section('content')
+@php
+    $readOnly    = $readOnly ?? false;
+    $viewing     = $viewing ?? null;
+    $viewingName = $viewing ? trim(($viewing->first_name ?? '') . ' ' . ($viewing->last_name ?? '')) : '';
+@endphp
 
 <div class="pf">
 
@@ -23,11 +28,25 @@
             <h1>{{ __('messaging.inbox_title') }}</h1>
             <p class="pf-sub">{{ __('messaging.inbox_subtitle') }}</p>
         </div>
-        <a href="{{ route('portals.patient.messages.compose') }}" class="f-btn f-btn--primary">
-            {{ __('messaging.compose_btn') }}
-            @include('partials.finder.icon', ['name' => 'send', 'size' => 16])
-        </a>
+        @if($readOnly)
+            <button type="button" class="f-btn f-btn--primary" disabled aria-disabled="true" data-section="compose-disabled">
+                {{ __('messaging.compose_btn') }}
+                @include('partials.finder.icon', ['name' => 'send', 'size' => 16])
+            </button>
+        @else
+            <a href="{{ route('portals.patient.messages.compose') }}" class="f-btn f-btn--primary">
+                {{ __('messaging.compose_btn') }}
+                @include('partials.finder.icon', ['name' => 'send', 'size' => 16])
+            </a>
+        @endif
     </div>
+
+    @if($readOnly)
+    <div class="pf-alert" data-section="read-only-note">
+        <i data-lucide="lock" aria-hidden="true" style="width:18px;height:18px;flex:none;margin-top:2px;"></i>
+        <p>{{ __('family.inbox_read_only_compose', ['name' => $viewingName]) }}</p>
+    </div>
+    @endif
 
     @if($threads->isEmpty())
     <div class="f-card" style="text-align:center;padding:40px 20px;">
@@ -36,9 +55,11 @@
         </div>
         <h2 style="font-size:1.125rem;font-weight:750;margin:0 0 6px;">{{ __('messaging.empty_title') }}</h2>
         <p class="f-muted" style="margin:0 0 18px;">{{ __('messaging.empty_body') }}</p>
+        @unless($readOnly)
         <a href="{{ route('portals.patient.messages.compose') }}" class="f-btn f-btn--primary" style="min-height:48px;">
             {{ __('messaging.compose_btn') }}
         </a>
+        @endunless
     </div>
     @else
     <div class="pf-rows">

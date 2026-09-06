@@ -15,10 +15,19 @@ return [
     'banner_read_only'        => 'Accès en lecture seule',
     'banner_full'             => 'Accès complet',
     'banner_switch_back'      => 'Revenir à mon dossier',
-    'banner_own_inbox'        => 'Les messages et les notifications appartiennent toujours à votre propre compte — ce ne sont pas ceux de :name.',
     'switch_no_longer_active' => 'L’accès tuteur n’est plus actif pour cette personne à charge.',
     'read_only_refused'       => 'Votre accès au dossier de :name est en lecture seule ; cette action n’est donc pas disponible. Le titulaire du compte peut accorder un accès complet.',
     'read_only_qr_note'       => 'Un code QR identifie :name auprès d’un établissement. Seul un tuteur disposant d’un accès complet peut en générer un.',
+
+    // ── Messages et notifications en consultant une personne à charge ──
+    'inbox_messages_note'        => 'Vous lisez les conversations de :name avec son équipe soignante — pas votre propre messagerie.',
+    'inbox_notifications_note'   => 'Vous lisez les notifications de :name — pas les vôtres.',
+    'inbox_read_only_compose'    => 'Votre accès au dossier de :name est en lecture seule : vous pouvez lire ces conversations, mais ni répondre ni en ouvrir une nouvelle. Le titulaire du compte peut accorder un accès complet.',
+    'inbox_read_only_mark_read'  => 'Votre accès au dossier de :name est en lecture seule : vous pouvez lire ces notifications, mais pas les marquer comme lues.',
+    'inbox_on_behalf'            => 'Vous écrivez à l’équipe soignante de :name en son nom. Le message est enregistré comme envoyé par vous, et l’action est consignée dans le dossier de :name.',
+    'inbox_guardian_label'       => ':name (tuteur)',
+    'inbox_prefs_note'           => 'Les préférences de notification sont propres à chaque compte. Celles-ci sont celles de :name ; elles ne peuvent pas être modifiées pendant que vous consultez son dossier.',
+    'inbox_prefs_refused'        => 'Les préférences de notification sont personnelles — celles de :name ne peuvent pas être modifiées depuis votre compte.',
 
     // ── Tableau de bord tuteur ─────────────────────────────────────────
     'dash_title'              => 'Mes personnes à charge',

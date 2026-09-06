@@ -19,10 +19,19 @@ return [
     'banner_read_only'        => 'Read-only access',
     'banner_full'             => 'Full access',
     'banner_switch_back'      => 'Switch back to my record',
-    'banner_own_inbox'        => 'Messages and notifications always belong to your own account — they are not :name’s.',
     'switch_no_longer_active' => 'Guardian access is no longer active for this dependent.',
     'read_only_refused'       => 'Your access to :name’s record is read-only, so this action is not available. Full access can be granted by the account holder.',
     'read_only_qr_note'       => 'A QR code identifies :name to a facility. Only a guardian with full access can generate one.',
+
+    // ── Messages & notifications while viewing a dependent ─────────────
+    'inbox_messages_note'        => 'You are reading :name’s conversations with their care team — not your own inbox.',
+    'inbox_notifications_note'   => 'You are reading :name’s notifications — not your own.',
+    'inbox_read_only_compose'    => 'Your access to :name’s record is read-only: you can read these conversations but not reply or start a new one. Full access can be granted by the account holder.',
+    'inbox_read_only_mark_read'  => 'Your access to :name’s record is read-only: you can read these notifications but not mark them as read.',
+    'inbox_on_behalf'            => 'You are writing to :name’s care team on their behalf. The message is recorded as sent by you, and the action is logged on :name’s record.',
+    'inbox_guardian_label'       => ':name (guardian)',
+    'inbox_prefs_note'           => 'Notification preferences are personal to each account. These are :name’s; they cannot be changed while you are viewing their record.',
+    'inbox_prefs_refused'        => 'Notification preferences are personal — :name’s cannot be changed from your account.',
 
     // ── Guardian dashboard ─────────────────────────────────────────────
     'dash_title'              => 'My dependents',

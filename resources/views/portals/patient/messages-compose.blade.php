@@ -11,10 +11,16 @@
 @endsection
 
 @section('patient_banner')
-    @include('portals.patient._viewing_banner', ['viewingNote' => __('family.banner_own_inbox', ['name' => request()->attributes->get('viewing_patient')?->first_name])])
+    @include('portals.patient._viewing_banner', ['viewingNote' => __('family.inbox_messages_note', ['name' => request()->attributes->get('viewing_patient')?->first_name])])
 @endsection
 
 @section('content')
+@php
+    $readOnly    = $readOnly ?? false;
+    $viewing     = $viewing ?? null;
+    $viewingName = $viewing ? trim(($viewing->first_name ?? '') . ' ' . ($viewing->last_name ?? '')) : '';
+    $locked      = $readOnly || !$hasTeam;
+@endphp
 
 <div class="pf pf--form">
 
@@ -29,6 +35,19 @@
         </a>
     </div>
 
+    @if($readOnly)
+    {{-- Read-only guardian: the composer is shown but cannot be used — the reason is right above it. --}}
+    <div class="pf-alert" data-section="read-only-note">
+        <i data-lucide="lock" aria-hidden="true" style="width:18px;height:18px;flex:none;margin-top:2px;"></i>
+        <p id="compose-disabled-reason">{{ __('family.inbox_read_only_compose', ['name' => $viewingName]) }}</p>
+    </div>
+    @elseif($viewing)
+    <div class="pf-alert" data-section="on-behalf-note">
+        @include('partials.finder.icon', ['name' => 'users', 'size' => 18])
+        <p>{{ __('family.inbox_on_behalf', ['name' => $viewingName]) }}</p>
+    </div>
+    @endif
+
     @unless($hasTeam)
     <div class="pf-alert">
         @include('partials.finder.icon', ['name' => 'info', 'size' => 18])
@@ -36,19 +55,19 @@
     </div>
     @endunless
 
-    <form method="POST" action="{{ route('portals.patient.messages.store') }}" class="f-card">
+    <form method="POST" action="{{ route('portals.patient.messages.store') }}" class="f-card" @if($readOnly) data-section="composer-disabled" aria-describedby="compose-disabled-reason" @endif>
         @csrf
 
         <div class="f-field">
             <label class="f-label" for="title">{{ __('messaging.compose_subject') }}</label>
             <input type="text" id="title" name="title" class="f-input" maxlength="150"
-                   value="{{ old('title') }}" required>
+                   value="{{ old('title') }}" required @disabled($readOnly)>
             @error('title')<p class="f-error">{{ $message }}</p>@enderror
         </div>
 
         <div class="f-field">
             <label class="f-label" for="context_type">{{ __('messaging.compose_about') }}</label>
-            <select id="context_type" name="context_type" class="f-input" onchange="pfFilterCtx(this.value)">
+            <select id="context_type" name="context_type" class="f-input" onchange="pfFilterCtx(this.value)" @disabled($readOnly)>
                 <option value="">{{ __('messaging.compose_about_none') }}</option>
                 <option value="appointment">{{ __('messaging.ctx_appt') }}</option>
                 <option value="lab_result">{{ __('messaging.ctx_lab') }}</option>
@@ -61,7 +80,7 @@
 
         <div class="f-field" id="ctx-item-wrap" style="display:none;">
             <label class="f-label" for="context_id">{{ __('messaging.compose_select_item') }}</label>
-            <select id="context_id" name="context_id" class="f-input">
+            <select id="context_id" name="context_id" class="f-input" @disabled($readOnly)>
                 <option value="">—</option>
                 @foreach($catalog as $type => $items)
                     @foreach($items as $item)
@@ -74,11 +93,11 @@
         <div class="f-field">
             <label class="f-label" for="body">{{ __('messaging.compose_message') }}</label>
             <textarea id="body" name="body" class="f-input" rows="5" maxlength="5000"
-                      placeholder="{{ __('messaging.reply_placeholder') }}" required>{{ old('body') }}</textarea>
+                      placeholder="{{ __('messaging.reply_placeholder') }}" required @disabled($readOnly)>{{ old('body') }}</textarea>
             @error('body')<p class="f-error">{{ $message }}</p>@enderror
         </div>
 
-        <button type="submit" class="f-btn f-btn--primary f-btn--block" style="min-height:48px;" {{ $hasTeam ? '' : 'disabled' }}>
+        <button type="submit" class="f-btn f-btn--primary f-btn--block" style="min-height:48px;" @disabled($locked) @if($locked) aria-disabled="true" @endif>
             {{ __('messaging.compose_send') }}
             @include('partials.finder.icon', ['name' => 'send', 'size' => 16])
         </button>

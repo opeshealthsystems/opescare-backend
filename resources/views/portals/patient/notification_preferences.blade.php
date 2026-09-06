@@ -11,10 +11,15 @@
 @endsection
 
 @section('patient_banner')
-    @include('portals.patient._viewing_banner', ['viewingNote' => __('family.banner_own_inbox', ['name' => request()->attributes->get('viewing_patient')?->first_name])])
+    @include('portals.patient._viewing_banner', ['viewingNote' => __('family.inbox_notifications_note', ['name' => request()->attributes->get('viewing_patient')?->first_name])])
 @endsection
 
 @section('content')
+@php
+    $readOnly    = $readOnly ?? false;
+    $viewing     = $viewing ?? null;
+    $viewingName = $viewing ? trim(($viewing->first_name ?? '') . ' ' . ($viewing->last_name ?? '')) : '';
+@endphp
 
 <div class="pf pf--form">
 
@@ -29,7 +34,15 @@
         </a>
     </div>
 
-    <form method="POST" action="{{ route('portals.patient.notifications.preferences.update') }}">
+    @if($readOnly)
+    {{-- Preferences belong to a person: a dependent's are shown, never edited, from a guardian's session. --}}
+    <div class="pf-alert" data-section="prefs-read-only-note">
+        <i data-lucide="lock" aria-hidden="true" style="width:18px;height:18px;flex:none;margin-top:2px;"></i>
+        <p id="prefs-disabled-reason">{{ __('family.inbox_prefs_note', ['name' => $viewingName]) }}</p>
+    </div>
+    @endif
+
+    <form method="POST" action="{{ route('portals.patient.notifications.preferences.update') }}" @if($readOnly) data-section="prefs-disabled" aria-describedby="prefs-disabled-reason" @endif>
         @csrf
 
         <div class="f-card" style="margin-bottom:12px;">
@@ -53,7 +66,7 @@
                             <td style="text-align:center;">
                                 <input type="checkbox" name="prefs[{{ $cat }}][{{ $ch }}]" value="1"
                                        aria-label="{{ __('notifications.cat_' . $cat) }} — {{ __('notifications.channel_' . $ch) }}"
-                                       @checked($prefs[$cat][$ch] ?? false)>
+                                       @checked($prefs[$cat][$ch] ?? false) @disabled($readOnly)>
                             </td>
                             @endforeach
                         </tr>
@@ -69,17 +82,19 @@
                     @include('partials.finder.icon', ['name' => 'globe', 'size' => 15])
                     {{ __('notifications.language') }}
                 </label>
-                <select id="language" name="language" class="f-input" style="max-width:280px;">
+                <select id="language" name="language" class="f-input" style="max-width:280px;" @disabled($readOnly)>
                     <option value="en" @selected($language === 'en')>English</option>
                     <option value="fr" @selected($language === 'fr')>Français</option>
                 </select>
             </div>
         </div>
 
+        @unless($readOnly)
         <button type="submit" class="f-btn f-btn--primary" style="min-height:48px;">
             @include('partials.finder.icon', ['name' => 'check', 'size' => 16])
             {{ __('notifications.prefs_save') }}
         </button>
+        @endunless
     </form>
 </div>
 

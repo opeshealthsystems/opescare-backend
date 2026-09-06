@@ -11,10 +11,15 @@
 @endsection
 
 @section('patient_banner')
-    @include('portals.patient._viewing_banner', ['viewingNote' => __('family.banner_own_inbox', ['name' => request()->attributes->get('viewing_patient')?->first_name])])
+    @include('portals.patient._viewing_banner', ['viewingNote' => __('family.inbox_notifications_note', ['name' => request()->attributes->get('viewing_patient')?->first_name])])
 @endsection
 
 @section('content')
+@php
+    $readOnly    = $readOnly ?? false;
+    $viewing     = $viewing ?? null;
+    $viewingName = $viewing ? trim(($viewing->first_name ?? '') . ' ' . ($viewing->last_name ?? '')) : '';
+@endphp
 
 <div class="pf">
 
@@ -31,16 +36,30 @@
                 {{ __('notifications.preferences') }}
             </a>
             @if($unread > 0)
-            <form method="POST" action="{{ route('portals.patient.notifications.read') }}">
-                @csrf
-                <button type="submit" class="f-btn f-btn--primary">
+                @if($readOnly)
+                <button type="button" class="f-btn f-btn--primary" disabled aria-disabled="true" aria-describedby="mark-read-disabled-reason" data-section="mark-read-disabled">
                     @include('partials.finder.icon', ['name' => 'check', 'size' => 16])
                     {{ __('notifications.mark_all_read') }}
                 </button>
-            </form>
+                @else
+                <form method="POST" action="{{ route('portals.patient.notifications.read') }}">
+                    @csrf
+                    <button type="submit" class="f-btn f-btn--primary">
+                        @include('partials.finder.icon', ['name' => 'check', 'size' => 16])
+                        {{ __('notifications.mark_all_read') }}
+                    </button>
+                </form>
+                @endif
             @endif
         </div>
     </div>
+
+    @if($readOnly)
+    <div class="pf-alert" data-section="read-only-note">
+        <i data-lucide="lock" aria-hidden="true" style="width:18px;height:18px;flex:none;margin-top:2px;"></i>
+        <p id="mark-read-disabled-reason">{{ __('family.inbox_read_only_mark_read', ['name' => $viewingName]) }}</p>
+    </div>
+    @endif
 
     @if($events->isEmpty())
     <div class="f-card" style="text-align:center;padding:40px 20px;">
