@@ -97,7 +97,7 @@ class DemoPharmacyDeskSeeder extends Seeder
             return;
         }
 
-        $stock = $this->ensureStock($listing);
+        $stock = $this->ensureStock($listing, (bool) $facility->is_demo);
 
         if ($stock->isEmpty()) {
             $this->command?->warn('  skip reservations: no catalogue medicine to stock');
@@ -129,7 +129,7 @@ class DemoPharmacyDeskSeeder extends Seeder
             $this->command?->warn('  skip delivery reservation: ' . self::GUARDIAN_EMAIL . ' has no demo patient record (run DemoFamilySeeder first)');
         }
 
-        $this->markLow($stock->last());
+        $this->markLow($stock->last(), (bool) $facility->is_demo);
     }
 
     // ── Who and where ─────────────────────────────────────────────────────
@@ -231,7 +231,7 @@ class DemoPharmacyDeskSeeder extends Seeder
      *
      * @return \Illuminate\Support\Collection<int, MedicinePharmacyStock>
      */
-    private function ensureStock(CareFacility $listing): \Illuminate\Support\Collection
+    private function ensureStock(CareFacility $listing, bool $demoFacility): \Illuminate\Support\Collection
     {
         $existing = MedicinePharmacyStock::query()
             ->where('care_facility_id', $listing->id)
@@ -260,6 +260,10 @@ class DemoPharmacyDeskSeeder extends Seeder
                 'medicine_id'      => $medicine->id,
                 'care_facility_id' => $listing->id,
             ]);
+
+            if ($row->exists && ! $this->mayRewrite($row, $demoFacility)) {
+                continue; // a reported line belongs to the pharmacy, not the demo
+            }
 
             $row->fill([
                 'stock_status'        => PharmacyStockStatus::InStock->value,
@@ -354,9 +358,25 @@ class DemoPharmacyDeskSeeder extends Seeder
 
     // ── Stock ─────────────────────────────────────────────────────────────
 
-    private function markLow(?MedicinePharmacyStock $stock): void
+    /**
+     * A stock line may be rewritten by the demo only when it is synthetic
+     * (seeded) or belongs to a demo facility. A line a real pharmacy reported
+     * through the portal or a feed is theirs: the seeder may reserve against
+     * it, never restate its quantity or freshness.
+     */
+    private function mayRewrite(MedicinePharmacyStock $row, bool $demoFacility): bool
+    {
+        return $demoFacility || in_array($row->source_system, MedicinePharmacyStock::SYNTHETIC_SOURCE_SYSTEMS, true);
+    }
+
+    private function markLow(?MedicinePharmacyStock $stock, bool $demoFacility): void
     {
         if (! $stock) {
+            return;
+        }
+
+        if (! $this->mayRewrite($stock, $demoFacility)) {
+            $this->command?->warn('  stock: skipped marking low - the line was reported by the pharmacy, not seeded');
             return;
         }
 

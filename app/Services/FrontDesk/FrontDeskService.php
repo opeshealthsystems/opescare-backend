@@ -658,7 +658,7 @@ class FrontDeskService
                 return;
             }
 
-            $when = $appointment->scheduled_at?->copy()->timezone(config('app.timezone'));
+            $when = $appointment->scheduled_at?->copy()->timezone(config('app.clinic_timezone', 'Africa/Douala'));
 
             $replace = [
                 'facility' => $appointment->facility?->name

@@ -85,6 +85,11 @@ class PushChannelsTest extends TestCase
             'appointment'       => ['appointments', 'opescare_appointment.wav'],
             'message'           => ['messages',     'opescare_message.wav'],
             'emergency_access'  => ['emergency',    'opescare_alert.wav'],
+            // Counter events and laboratory request decisions reuse the message /
+            // result sounds; the app routes them by type.
+            'prescription'      => ['messages',     'opescare_message.wav'],
+            'reservation'       => ['messages',     'opescare_message.wav'],
+            'lab_request'       => ['results',      'opescare_result.wav'],
         ];
 
         foreach ($expected as $type => [$channel, $sound]) {

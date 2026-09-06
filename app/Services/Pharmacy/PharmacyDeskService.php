@@ -828,9 +828,12 @@ class PharmacyDeskService
         ]));
 
         if ($hasPush) {
+            // Typed so the app lands on the reservation or prescription screen
+            // (the sound is the message chime either way).
+            $pushType = isset($data['reservation_id']) ? 'reservation' : 'prescription';
             rescue(fn () => PatientPush::send(
                 $patient,
-                'message',
+                $pushType,
                 $title,
                 $message,
                 array_merge($data, ['action_url' => $actionUrl]),

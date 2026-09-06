@@ -67,6 +67,11 @@ return [
         'appointment'       => 'appointments',
         'message'           => 'messages',
         'emergency_access'  => 'emergency',
+        // Pharmacy counter events and laboratory request decisions: same sounds as
+        // a message / a result, but the app routes them to the right screen.
+        'prescription'      => 'messages',
+        'reservation'       => 'messages',
+        'lab_request'       => 'results',
     ],
 
 ];

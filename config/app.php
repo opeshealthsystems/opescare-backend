@@ -91,6 +91,10 @@ return [
     // National deployment (Cameroon): WAT = UTC+1. Use Carbon::setTimezone() in Blade views.
     'timezone' => 'UTC',
 
+    // The zone people read clinic times in (notifications, printed slips).
+    // Storage stays UTC; Cameroon-first, overridable per deployment.
+    'clinic_timezone' => env('CLINIC_TIMEZONE', 'Africa/Douala'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration

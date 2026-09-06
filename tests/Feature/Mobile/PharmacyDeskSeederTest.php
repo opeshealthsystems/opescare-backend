@@ -41,6 +41,10 @@ class PharmacyDeskSeederTest extends PharmacyDeskTestCase
             'is_active' => true, 'assigned_at' => now(),
         ]);
 
+        // The demo counter lives at a demo facility, so its listing's lines are
+        // the demo's to restate (a real pharmacy's reported lines never are).
+        $this->facility->forceFill(['is_demo' => true])->save();
+
         // The two demo patients, with the reviewer holding two open scripts.
         // is_demo is deliberately not mass-assignable on Patient — forceFill it.
         $this->reviewer = Patient::create([

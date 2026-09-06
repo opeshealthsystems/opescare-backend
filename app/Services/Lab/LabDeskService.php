@@ -280,7 +280,10 @@ class LabDeskService
                 $code  = filled($row['loinc_code'] ?? null) ? strtoupper(trim((string) $row['loinc_code'])) : null;
                 $range = $byName->get(mb_strtolower($name)) ?? ($code !== null ? $byCode->get($code) : null);
 
-                LabResult::create([
+                // No model events here: the family listener would tell every
+                // guardian "a new result is available" per analyte typed. They
+                // hear once, on release (notifyReleased).
+                LabResult::withoutEvents(fn () => LabResult::create([
                     'lab_order_id'    => $locked->id,
                     'patient_id'      => $locked->patient_id,
                     'parameter_name'  => $name,
@@ -294,7 +297,7 @@ class LabDeskService
                     'loinc_code'      => $code ?? ($range['loinc_code'] ?? null),
                     'loinc_display'   => null,
                     'is_demo'         => (bool) $locked->is_demo,
-                ]);
+                ]));
             }
 
             if (! $locked->isReleased()) {
@@ -699,6 +702,10 @@ class LabDeskService
         // disclosure to the bench, so the demo partition is not consulted here.
         $patient = $this->patientForNotification($order->patient_id);
 
+        // Guardians of a dependent hear about the release exactly once.
+        rescue(fn () => (new \App\Listeners\NotifyGuardiansOfPatientEvent())
+            ->handleLabResult((object) ['patient_id' => $order->patient_id]), null, false);
+
         if ($patient !== null) {
             $locale = $this->patientLocale($patient->id);
             $title  = __('lab_api.notify.result_ready_title', ['test' => $order->test_name], $locale);
@@ -791,7 +798,7 @@ class LabDeskService
             ])
         );
 
-        $this->pushPatient($patient, $type, $title, $body, array_filter([
+        $this->pushPatient($patient, 'lab_request', $title, $body, array_filter([
             'lab_test_request_id' => $request->id,
             'lab_order_id'        => $request->lab_order_id,
             'action_url'          => '/labs',

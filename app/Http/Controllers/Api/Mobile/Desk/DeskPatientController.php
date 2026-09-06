@@ -53,7 +53,6 @@ class DeskPatientController extends Controller
             return response()->json([
                 'error_code' => 'duplicate_identity',
                 'message'    => __('desk_api.duplicate_identity'),
-                'matches'    => $e->matches->count(),
             ], 409);
         } catch (FrontDeskRefusal $e) {
             return $this->refuse($e->key, $e->status);
