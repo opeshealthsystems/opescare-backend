@@ -39,6 +39,10 @@ class MedicineReservationService
     /**
      * @param  string|null  $prescriptionId  already verified to belong to this
      *                                       patient by the caller.
+     * @param  array{fulfilment_mode?: ?string, delivery_address?: ?string, delivery_phone?: ?string}  $fulfilment
+     *         How the patient wants it: 'pickup' (the default) at the counter,
+     *         or 'delivery' to the given address. Anything but 'delivery' is
+     *         read as pickup, and a pickup never keeps an address.
      */
     public function reserve(
         string $patientId,
@@ -48,8 +52,16 @@ class MedicineReservationService
         ?string $packSize = null,
         ?string $patientNote = null,
         ?string $prescriptionId = null,
+        array $fulfilment = [],
     ): MedicineReservation {
         $quantity = max(1, min($quantity, self::MAX_QUANTITY));
+
+        $isDelivery = ($fulfilment['fulfilment_mode'] ?? null) === MedicineReservation::FULFILMENT_DELIVERY;
+        $fulfilment = [
+            'fulfilment_mode'  => $isDelivery ? MedicineReservation::FULFILMENT_DELIVERY : MedicineReservation::FULFILMENT_PICKUP,
+            'delivery_address' => $isDelivery ? ($fulfilment['delivery_address'] ?? null) : null,
+            'delivery_phone'   => $isDelivery ? ($fulfilment['delivery_phone'] ?? null) : null,
+        ];
 
         // A prescription-only medicine cannot be held without one attached —
         // the pharmacy has nothing to dispense against otherwise.
@@ -67,7 +79,7 @@ class MedicineReservationService
         }
 
         $reservation = DB::transaction(function () use (
-            $patientId, $medicine, $pharmacy, $stock, $quantity, $packSize, $patientNote, $prescriptionId
+            $patientId, $medicine, $pharmacy, $stock, $quantity, $packSize, $patientNote, $prescriptionId, $fulfilment
         ) {
             $openForPatient = MedicineReservation::query()
                 ->where('patient_id', $patientId)
@@ -103,6 +115,9 @@ class MedicineReservationService
                 'total_price'      => $unitPrice === null ? null : round($unitPrice * $quantity, 2),
                 'currency'         => $stock->currency ?: ($medicine->currency ?: 'XAF'),
                 'status'           => MedicineReservationStatus::Pending->value,
+                'fulfilment_mode'  => $fulfilment['fulfilment_mode'],
+                'delivery_address' => $fulfilment['delivery_address'],
+                'delivery_phone'   => $fulfilment['delivery_phone'],
                 'patient_note'     => $patientNote,
                 'expires_at'       => now()->addHours(self::HOLD_HOURS),
             ]);

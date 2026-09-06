@@ -205,7 +205,11 @@ class MobilePharmacyController extends Controller
 
     /**
      * POST /api/mobile/pharmacy/reservations
-     * Body: { medicine_id, care_facility_id, quantity, pack_size?, note? }
+     * Body: { medicine_id, care_facility_id, quantity, pack_size?, note?,
+     *         fulfilment_mode?: 'pickup'|'delivery', delivery_address?, delivery_phone? }
+     *
+     * The three fulfilment fields are optional and default to a counter
+     * pickup; a delivery needs an address the pharmacy can send to.
      */
     public function reserve(Request $request): JsonResponse
     {
@@ -216,6 +220,9 @@ class MobilePharmacyController extends Controller
             'pack_size'        => 'nullable|string|max:60',
             'note'             => 'nullable|string|max:500',
             'prescription_id'  => 'nullable|uuid',
+            'fulfilment_mode'  => ['nullable', 'string', Rule::in(MedicineReservation::FULFILMENT_MODES)],
+            'delivery_address' => 'nullable|string|max:500|required_if:fulfilment_mode,' . MedicineReservation::FULFILMENT_DELIVERY,
+            'delivery_phone'   => 'nullable|string|max:30',
         ]);
 
         $patientId = (string) $request->attributes->get('patient_id');
@@ -266,6 +273,11 @@ class MobilePharmacyController extends Controller
                 packSize:       $validated['pack_size'] ?? null,
                 patientNote:    $validated['note'] ?? null,
                 prescriptionId: $prescriptionId,
+                fulfilment:     [
+                    'fulfilment_mode'  => $validated['fulfilment_mode'] ?? null,
+                    'delivery_address' => $validated['delivery_address'] ?? null,
+                    'delivery_phone'   => $validated['delivery_phone'] ?? null,
+                ],
             );
         } catch (RuntimeException $e) {
             return $this->reservationError($e->getMessage());
@@ -403,6 +415,15 @@ class MobilePharmacyController extends Controller
             'pharmacy_note' => $reservation->pharmacy_note,
             'expires_at'   => $reservation->expires_at?->toIso8601String(),
             'created_at'   => $reservation->created_at?->toIso8601String(),
+            // Fulfilment (additive): how the patient asked to receive it and,
+            // for deliveries, where the parcel stands. Pickup rows carry nulls.
+            'fulfilment_mode' => $reservation->fulfilment_mode ?? 'pickup',
+            'delivery_status' => $reservation->delivery_status,
+            'delivery_address' => $reservation->delivery_address,
+            'accepted_at'  => $reservation->accepted_at?->toIso8601String(),
+            'ready_at'     => $reservation->ready_at?->toIso8601String(),
+            'dispatched_at' => $reservation->dispatched_at?->toIso8601String(),
+            'delivered_at' => $reservation->delivered_at?->toIso8601String(),
             'medicine'     => $reservation->medicine === null ? null : [
                 'id'           => $reservation->medicine->id,
                 'name'         => $reservation->medicine->name,

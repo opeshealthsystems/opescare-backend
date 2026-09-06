@@ -37,11 +37,19 @@ class MedicinePharmacyStock extends Model
      */
     public const SYNTHETIC_SOURCE_SYSTEMS = ['demo_seed', 'seed'];
 
+    /**
+     * The "low" threshold a line falls back to when the pharmacy has not set
+     * its own `reorder_level`. Ten packs: enough for a day at a busy counter,
+     * few enough that the warning is worth acting on.
+     */
+    public const DEFAULT_REORDER_LEVEL = 10;
+
     protected $fillable = [
         'medicine_id',
         'care_facility_id',
         'stock_status',
         'packs_available',
+        'reorder_level',
         'pack_size',
         'unit_price',
         'currency',
@@ -54,6 +62,7 @@ class MedicinePharmacyStock extends Model
     protected $casts = [
         'stock_status'        => PharmacyStockStatus::class,
         'packs_available'     => 'integer',
+        'reorder_level'       => 'integer',
         'unit_price'          => 'float',
         'reservation_enabled' => 'boolean',
         'last_stocked_at'     => 'datetime',
@@ -124,5 +133,42 @@ class MedicinePharmacyStock extends Model
     public function isReservable(): bool
     {
         return $this->reservation_enabled && $this->stock_status->isReservable();
+    }
+
+    /** The threshold this line is judged against — its own, else the platform default. */
+    public function effectiveReorderLevel(): int
+    {
+        return $this->reorder_level ?? self::DEFAULT_REORDER_LEVEL;
+    }
+
+    /**
+     * The status a pack count implies, against this line's threshold. This is
+     * what the desk writes after an adjustment, so the count and the badge a
+     * patient sees can never contradict each other.
+     */
+    public function statusForQuantity(int $quantity): PharmacyStockStatus
+    {
+        if ($quantity <= 0) {
+            return PharmacyStockStatus::OutOfStock;
+        }
+
+        return $quantity <= $this->effectiveReorderLevel()
+            ? PharmacyStockStatus::LowStock
+            : PharmacyStockStatus::InStock;
+    }
+
+    /** Needs the pharmacist's attention: low or gone. */
+    public function isLow(): bool
+    {
+        return in_array($this->stock_status, [PharmacyStockStatus::LowStock, PharmacyStockStatus::OutOfStock], true);
+    }
+
+    /** Query-side twin of isLow(), so the home counter and the `?low=1` list agree. */
+    public function scopeLow(Builder $query): Builder
+    {
+        return $query->whereIn($this->getTable() . '.stock_status', [
+            PharmacyStockStatus::LowStock->value,
+            PharmacyStockStatus::OutOfStock->value,
+        ]);
     }
 }
