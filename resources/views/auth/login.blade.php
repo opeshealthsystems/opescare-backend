@@ -92,7 +92,7 @@
         @if(is_file($apkPath))
         <div class="f-auth-app">
             <a class="f-auth-app__btn" href="{{ url('/downloads/opescare-finder.apk') }}"
-               download="OpesCare-Finder.apk" rel="nofollow">
+               download="OpesCare.apk" rel="nofollow">
                 @include('partials.finder.icon', ['name' => 'download', 'size' => 18])
                 <span>{{ __('onboarding.login.download_app') }}</span>
             </a>
