@@ -131,6 +131,9 @@ class HealthPassportBuilder
             'display_name'     => $this->displayName($patient),
             'last_updated_at'  => optional($patient->updated_at)->toIso8601String(),
             'total_pages'      => self::TOTAL_PAGES,
+            // A demo account holds real rows in a demo partition, so the
+            // passport is truthful about the record AND about the account.
+            'is_demo'          => (bool) $patient->is_demo,
             'pages'            => array_map(fn (array $p) => [
                 'id'       => $p['id'],
                 'number'   => $p['number'],
