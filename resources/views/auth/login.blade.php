@@ -84,6 +84,24 @@
             </div>
         </div>
 
+        {{-- The Android build, offered only when this host actually holds it.
+             `download` names the saved file; the server also sends the Android
+             package type and a Content-Disposition, because an APK is a ZIP
+             underneath and a browser left to guess saves it as one. --}}
+        @php($apkPath = public_path('downloads/opescare-finder.apk'))
+        @if(is_file($apkPath))
+        <div class="f-auth-app">
+            <a class="f-auth-app__btn" href="{{ url('/downloads/opescare-finder.apk') }}"
+               download="OpesCare-Finder.apk" rel="nofollow">
+                @include('partials.finder.icon', ['name' => 'download', 'size' => 18])
+                <span>{{ __('onboarding.login.download_app') }}</span>
+            </a>
+            <p class="f-auth-app__meta">
+                {{ __('onboarding.login.download_app_meta', ['size' => number_format(filesize($apkPath) / 1048576, 0)]) }}
+            </p>
+        </div>
+        @endif
+
         <div class="f-auth-alt">
             <p>{{ __('onboarding.login.no_account') }}
                 <a href="{{ route('register') }}">{{ __('onboarding.login.create_account') }}</a>

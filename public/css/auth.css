@@ -1525,3 +1525,36 @@ body.auth-body {
         animation: none;
     }
 }
+
+/* ── The Android build, offered on the login page ────────────────────────
+   Deliberately quieter than the sign-in button: someone who arrived to sign
+   in should not have to step around an advert for the app to do it. */
+.f-auth-app {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--f-line);
+    text-align: center;
+}
+.f-auth-app__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 10px 18px;
+    border: 1px solid var(--f-line);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--f-ink);
+    font-weight: 650;
+    text-decoration: none;
+}
+.f-auth-app__btn:hover,
+.f-auth-app__btn:focus-visible {
+    border-color: var(--f-brand);
+    color: var(--f-brand);
+}
+.f-auth-app__meta {
+    margin: 8px 0 0;
+    font-size: 12px;
+    color: var(--f-muted);
+}

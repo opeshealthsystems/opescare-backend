@@ -57,6 +57,8 @@ return [
         'forgot' => 'Mot de passe oublié ?',
         'submit_signin' => 'Se connecter de manière sécurisée',
         'submit_otp' => 'Se connecter avec un code OTP',
+        'download_app' => 'Télécharger l’application Android',
+        'download_app_meta' => 'Android uniquement · :size Mo · installation hors Play Store',
         'no_account' => 'Nouveau sur OpesCare ?',
         'create_account' => 'Créer votre Identifiant Santé',
         'security_note' => 'Pour votre sécurité, ne partagez jamais vos identifiants OpesCare, vos codes OTP ou vos liens d\'accès temporaires avec quiconque.',
