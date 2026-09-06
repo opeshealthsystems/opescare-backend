@@ -129,6 +129,10 @@ class HealthPassportBuilder
             'status'           => $this->credentialStatus($patient),
             'health_id'        => $patient->health_id,
             'display_name'     => $this->displayName($patient),
+            // The approved design repeats the holder on every page, so a
+            // clinician reading page 19 still knows whose record it is.
+            'date_of_birth'    => $patient->date_of_birth ? Carbon::parse($patient->date_of_birth)->toDateString() : null,
+            'sex'              => $patient->sex ? (string) $patient->sex : null,
             'last_updated_at'  => optional($patient->updated_at)->toIso8601String(),
             'total_pages'      => self::TOTAL_PAGES,
             // A demo account holds real rows in a demo partition, so the
