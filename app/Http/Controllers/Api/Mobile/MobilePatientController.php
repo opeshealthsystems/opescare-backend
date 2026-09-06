@@ -71,25 +71,9 @@ class MobilePatientController extends Controller
             return response()->json(['message' => __('api.patient_not_found')], 404);
         }
 
-        $qrPayload = base64_encode(json_encode([
-            'hid' => $patient->health_id,
-            'fn'  => $patient->first_name,
-            'ln'  => substr($patient->last_name, 0, 1),
-            'dob' => $patient->date_of_birth?->toDateString(),
-            'sex' => $patient->sex,
-            'ts'  => now()->toIso8601String(),
-        ]));
-
-        return response()->json([
-            'health_id'    => $patient->health_id,
-            'display_name' => $patient->first_name . ' ' . $patient->last_name,
-            'sex'          => $patient->sex,
-            'dob'          => $patient->date_of_birth?->toDateString(),
-            'blood_type'   => $patient->blood_group,
-            'photo_url'    => \App\Support\PatientPhoto::urlFor($patient),
-            'qr_payload'   => $qrPayload,
-            'status'       => $patient->identity_status ?? 'active',
-        ]);
+        // One shape for the patient's own card and a dependent's card
+        // (family member detail) — see HealthIdCardPayload.
+        return response()->json(\App\Support\HealthIdCardPayload::for($patient));
     }
 
     /**

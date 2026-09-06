@@ -648,6 +648,8 @@ return [
         'role_patient_provisional' => 'Patiente — identité provisoire',
         'role_child_boy'      => 'Garçon — enfant, identité vérifiée',
         'role_child_girl'     => 'Fille — enfant, identité vérifiée',
+        'role_guardian_parent' => 'Tuteur — parent des deux enfants',
+        'role_grandmother'    => 'Personne âgée — lecture seule pour son fils',
         'role_guardian'       => 'Tuteur',
         'role_doctor'         => 'Médecin',
         'role_multi_doctor'   => 'Médecin multi-établissements',

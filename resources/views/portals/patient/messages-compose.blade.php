@@ -10,6 +10,10 @@
     @include('portals.patient._finder_head')
 @endsection
 
+@section('patient_banner')
+    @include('portals.patient._viewing_banner', ['viewingNote' => __('family.banner_own_inbox', ['name' => request()->attributes->get('viewing_patient')?->first_name])])
+@endsection
+
 @section('content')
 
 <div class="pf pf--form">

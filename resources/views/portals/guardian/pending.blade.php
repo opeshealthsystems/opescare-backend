@@ -3,11 +3,13 @@
 @section('title', __('onboarding.guardian.pending_title'))
 
 {{--
-    Where a caregiver waits.
+    Where a caregiver waits — and, now, leaves.
 
-    Guardian access is granted by a facility after it verifies the
-    relationship, so there is genuinely nothing in a portal for them yet. This
-    says so plainly rather than dropping them into an empty patient dashboard.
+    A facility may still verify the relationship, but the guardian does not
+    have to wait for that to start: registering a child (who has no Health
+    ID yet) or inviting an adult (who accepts from their own account) creates
+    the family link that opens the portal. RequireCompleteGuardianProfile
+    lets a guardian with a submitted profile reach those two pages.
 --}}
 
 @section('content')
@@ -25,6 +27,19 @@
                 <span>{{ session('success') }}</span>
             </div>
         @endif
+
+        <p class="auth-fineprint" style="margin-top:1.25rem;font-weight:600;">{{ __('family.pending_next_steps') }}</p>
+
+        <div style="display:grid;gap:.6rem;margin:.5rem 0 1rem;" data-section="guardian-next-steps">
+            <a href="{{ route('portals.patient.family.add') }}" class="auth-btn auth-btn-primary" style="display:inline-flex;align-items:center;justify-content:center;gap:.5rem;text-decoration:none;">
+                <i data-lucide="baby" style="width:1.05rem;height:1.05rem;"></i>
+                {{ __('family.dash_add_child') }}
+            </a>
+            <a href="{{ route('portals.patient.family.invite') }}" class="auth-btn auth-btn-secondary" style="display:inline-flex;align-items:center;justify-content:center;gap:.5rem;text-decoration:none;">
+                <i data-lucide="send" style="width:1.05rem;height:1.05rem;"></i>
+                {{ __('family.dash_invite_adult') }}
+            </a>
+        </div>
 
         <p class="auth-fineprint">{{ __('onboarding.guardian.pending_next') }}</p>
 

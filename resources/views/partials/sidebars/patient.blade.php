@@ -27,6 +27,8 @@
     </a>
 </div>
 
+@include('partials.sidebars._patient_records')
+
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_account', [], $l) ?: 'Account' }}</div>
     <a href="{{ route('portals.patient.settings') }}" class="sidebar-link {{ request()->routeIs('portals.patient.settings') ? 'active' : '' }}">

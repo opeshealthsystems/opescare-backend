@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\MedicalId;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\GuardianAccessMiddleware;
 use App\Models\AllergyRecord;
 use App\Models\Appointment;
 use App\Models\ConsentGrant;
@@ -72,25 +73,96 @@ class PatientPortalController extends Controller
 
     /**
      * Aborts 403 if the guardian is in read_only mode and attempting a write action.
+     *
+     * Only `full` writes; `read_only` and any legacy value are read-only
+     * (GuardianAccessMiddleware::isReadOnly).
      */
     private function assertWriteAllowed(): void
     {
-        $link = request()->attributes->get('guardian_link');
-        if ($link && $link->access_level === 'read_only') {
-            abort(403, 'Read-only guardian access does not permit this action.');
+        if ($this->isReadOnlyGuardian()) {
+            abort(403, __('family.read_only_refused', ['name' => $this->viewingName()]));
         }
+    }
+
+    /** True while a guardian views a dependent through a link that does not grant writes. */
+    private function isReadOnlyGuardian(): bool
+    {
+        return GuardianAccessMiddleware::isReadOnly(request()->attributes->get('guardian_link'));
+    }
+
+    /**
+     * The polite refusal for actions a read-only guardian may not take on a
+     * page they may otherwise use (mint or revoke a QR, print the card):
+     * back to where they were with a flash, never a 403 page and never a 500.
+     */
+    private function refuseReadOnly()
+    {
+        return back()->with('error', __('family.read_only_refused', ['name' => $this->viewingName()]));
+    }
+
+    private function viewingName(): string
+    {
+        $p = request()->attributes->get('viewing_patient');
+        return $p ? trim(($p->first_name ?? '') . ' ' . ($p->last_name ?? '')) : '';
+    }
+
+    /**
+     * The dashboard and the temporary-QR endpoint are declared outside the
+     * `guardian.context` route group (routes/web.php), so they apply the same
+     * session → attributes rule themselves. Returns false when the session
+     * pointed at a link that is no longer usable (the session is cleared).
+     */
+    private function bindGuardianContext(Request $request): bool
+    {
+        return GuardianAccessMiddleware::bind($request);
+    }
+
+    /**
+     * A guardian-role account (or any user who manages dependents) with no
+     * patient record of their own has nothing to show on the patient
+     * dashboard — their landing page is the dependents dashboard.
+     */
+    private function isGuardianWithoutOwnRecord(): bool
+    {
+        $user = Auth::user();
+        if (!$user || $user->patient_id) {
+            return false;
+        }
+        if (($user->role?->name) === 'guardian') {
+            return true;
+        }
+        return \App\Models\FamilyLink::where('guardian_user_id', $user->id)
+            ->whereIn('status', ['active', 'pending_invite'])
+            ->exists();
     }
 
     /**
      * Dashboard / My Health ID
+     *
+     * Honours a guardian switch: while session('guardian_viewing_patient_id')
+     * points at an active link, the card, the QR, the allergies, the
+     * conditions and the appointments are the DEPENDENT's. A read-only
+     * guardian sees the card but no QR is minted for them.
      */
     public function index(Request $request)
     {
-        $patient = $this->resolvePatient();
+        if (!$this->bindGuardianContext($request)) {
+            return redirect()->route('portals.patient')
+                ->with('error', __('family.switch_no_longer_active'));
+        }
+
+        $patient      = $this->resolveViewingPatient();
+        $guardianLink = $request->attributes->get('guardian_link');
+        $isViewing    = $guardianLink !== null;
+        $canWrite     = !$this->isReadOnlyGuardian();
+
+        if (!$patient && $this->isGuardianWithoutOwnRecord()) {
+            return redirect()->route('portals.guardian.dashboard');
+        }
 
         $qrToken         = null;
         $staticQrDataUri = null;
-        if ($patient) {
+        if ($patient && $canWrite) {
             $qrService = new QrTokenService();
             $tokenData = $qrService->generateToken($patient->id);
             $qrToken   = $tokenData['raw_token'];
@@ -101,10 +173,13 @@ class PatientPortalController extends Controller
             } catch (\Throwable $e) {
                 \Illuminate\Support\Facades\Log::error('QR generation failed', ['error' => $e->getMessage()]);
             }
+        }
 
-            // Audit: patient loaded their own health record dashboard
+        if ($patient) {
+            // Audit: the record's dashboard was loaded — by the patient, or by
+            // a guardian on their behalf (actor = the signed-in guardian).
             $this->ctx->auditPatientAccess(
-                actionType:   'patient_dashboard_view',
+                actionType:   $isViewing ? 'guardian_dashboard_view' : 'patient_dashboard_view',
                 resourceType: 'Patient',
                 resourceId:   $patient->id,
                 patientId:    $patient->id,
@@ -133,9 +208,11 @@ class PatientPortalController extends Controller
                 ->get(['id', 'display_name', 'code', 'status'])
             : collect();
 
-        // Activation / onboarding checklist — drives setup completion.
+        // Activation / onboarding checklist — drives setup completion. It is
+        // about the signed-in user's OWN account, so it is not shown while a
+        // guardian views a dependent.
         $onboarding = [];
-        if ($patient) {
+        if ($patient && !$isViewing) {
             $user       = Auth::user();
             $famCount   = $user
                 ? \App\Models\FamilyLink::where('guardian_user_id', $user->id)
@@ -166,19 +243,33 @@ class PatientPortalController extends Controller
         return view('portals.patient.index', compact(
             'patient', 'qrToken', 'staticQrDataUri',
             'criticalAllergies', 'activeAllergies', 'activeConditions', 'onboarding',
-            'upcomingAppointments'
+            'upcomingAppointments', 'guardianLink', 'isViewing', 'canWrite'
         ));
     }
 
     /**
      * Generate Temporary Access QR
+     *
+     * Minted for the record currently open — the dependent's while a guardian
+     * with full access views them. A read-only guardian gets a 403 JSON
+     * message the page shows in place of the QR.
      */
     public function generateTemporaryQr(Request $request)
     {
-        $patient = $this->resolvePatient();
+        if (!$this->bindGuardianContext($request)) {
+            return response()->json(['message' => __('family.switch_no_longer_active')], 403);
+        }
+
+        $patient = $this->resolveViewingPatient();
 
         if (!$patient) {
             abort(404);
+        }
+
+        if ($this->isReadOnlyGuardian()) {
+            return response()->json([
+                'message' => __('family.read_only_refused', ['name' => $this->viewingName()]),
+            ], 403);
         }
 
         $qrService = new QrTokenService();
@@ -206,7 +297,10 @@ class PatientPortalController extends Controller
             'expires_in' => 3600,
             'expires_at' => now()->addHour()->toIso8601String(),
             'status'     => 'active',
-            'token_id'   => $tokenData['model']->id,
+            // The token's key is its uuid (HealthIdQrToken::$primaryKey); ->id
+            // is the unfetched bigint and was always null here, so the revoke
+            // link the page built from it could never find the row.
+            'token_id'   => $tokenData['model']->getKey(),
         ]);
     }
 
@@ -221,8 +315,19 @@ class PatientPortalController extends Controller
      */
     public function downloadHealthIdCard(Request $request)
     {
-        $patient = $this->resolvePatient();
+        if (!$this->bindGuardianContext($request)) {
+            return redirect()->route('portals.patient')
+                ->with('error', __('family.switch_no_longer_active'));
+        }
+
+        $patient = $this->resolveViewingPatient();
         abort_if(!$patient, 404);
+
+        // The card carries a QR minted for the holder — a write on their
+        // record, so a read-only guardian is refused (with a flash, not a 500).
+        if ($this->isReadOnlyGuardian()) {
+            return $this->refuseReadOnly();
+        }
 
         // Generate a permanent card QR (no TTL) for printing — distinct from
         // temporary consent QRs so they can be revoked independently.
@@ -244,12 +349,21 @@ class PatientPortalController extends Controller
             patientId:    $patient->id,
         );
 
+        // `true` merges with the package defaults; without it the chroot falls
+        // back to vendor/dompdf and the seal image under public/ is refused.
         $pdf = Pdf::loadView('portals.patient.health-id-card-pdf', [
             'patient'    => $patient,
             'qrDataUri'  => $qrDataUri,
-            'issuedAt'   => now()->format('d M Y'),
+            'issuedAt'   => now(),
             'issuedYear' => now()->year,
-        ])->setPaper([0, 0, 255.12, 153.07]); // 90mm × 54mm in points (CR80 card size)
+        ])
+            ->setPaper([0, 0, 255.12, 153.07]) // 90mm × 54mm in points (CR80 card size)
+            ->setOptions([
+                'defaultFont'             => 'DejaVu Sans',
+                'isHtml5ParserEnabled'    => true,
+                'isFontSubsettingEnabled' => true,
+                'dpi'                     => 96,
+            ], true);
 
         $filename = 'OpesCare-HealthID-' . str_replace('-', '', $patient->health_id) . '.pdf';
 
@@ -265,11 +379,16 @@ class PatientPortalController extends Controller
      */
     public function revokeQrToken(Request $request, string $tokenId)
     {
-        $this->assertWriteAllowed();
-        $patient = $this->resolvePatient();
+        if ($this->isReadOnlyGuardian()) {
+            return $this->refuseReadOnly();
+        }
+        $patient = $this->resolveViewingPatient();
         abort_if(!$patient, 403);
 
-        $qrRecord = \App\Models\HealthIdQrToken::where('id', $tokenId)
+        // Accept the uuid the JSON hands out (and a numeric id for old links);
+        // a uuid string against the bigint column would be a Postgres type error.
+        $qrRecord = \App\Models\HealthIdQrToken::query()
+            ->when(ctype_digit($tokenId), fn ($q) => $q->where('id', (int) $tokenId), fn ($q) => $q->where('uuid', $tokenId))
             ->where('patient_id', $patient->id)
             ->where('status', 'active')
             ->first();
@@ -283,7 +402,8 @@ class PatientPortalController extends Controller
         $this->ctx->auditPatientAccess(
             actionType:   'patient_qr_token_revoked',
             resourceType: 'HealthIdQrToken',
-            resourceId:   $qrRecord->id,
+            // audit_events.resource_id is a uuid column; the token's key is its uuid (->id is the bigint).
+            resourceId:   (string) $qrRecord->getKey(),
             patientId:    $patient->id,
         );
 
@@ -295,8 +415,10 @@ class PatientPortalController extends Controller
      */
     public function revokeAllQrTokens(Request $request)
     {
-        $this->assertWriteAllowed();
-        $patient = $this->resolvePatient();
+        if ($this->isReadOnlyGuardian()) {
+            return $this->refuseReadOnly();
+        }
+        $patient = $this->resolveViewingPatient();
         abort_if(!$patient, 403);
 
         $qrService = new QrTokenService();
@@ -329,8 +451,10 @@ class PatientPortalController extends Controller
      */
     public function reportLostCard(Request $request)
     {
-        $this->assertWriteAllowed();
-        $patient = $this->resolvePatient();
+        if ($this->isReadOnlyGuardian()) {
+            return $this->refuseReadOnly();
+        }
+        $patient = $this->resolveViewingPatient();
         abort_if(!$patient, 403);
 
         $request->validate([

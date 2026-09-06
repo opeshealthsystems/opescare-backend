@@ -649,6 +649,8 @@ return [
         'role_patient_provisional' => 'Female patient — provisional ID',
         'role_child_boy'      => 'Boy — child, verified ID',
         'role_child_girl'     => 'Girl — child, verified ID',
+        'role_guardian_parent' => 'Guardian — parent of the two children',
+        'role_grandmother'    => 'Older person — read-only to her son',
         'role_guardian'       => 'Guardian',
         'role_doctor'         => 'Doctor',
         'role_multi_doctor'   => 'Multi-Facility Doctor',

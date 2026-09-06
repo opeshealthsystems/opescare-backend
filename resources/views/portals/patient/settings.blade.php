@@ -13,7 +13,7 @@
 @endsection
 
 @section('patient_banner')
-    @include('partials.guardian-context-banner')
+    @include('portals.patient._viewing_banner')
 @endsection
 
 @section('content')

@@ -1,28 +1,40 @@
 @extends('layouts.portal')
 
-@section('title', __('public.portal.add_dependent_title', [], app()->getLocale()) ?: 'Add Dependent')
+@section('title', __('family.dash_add_child') . ' — OpesCare')
 @section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()) ?: 'My Portal')
 @section('breadcrumb_home_url', route('portals.patient'))
-@section('breadcrumb_section', __('public.portal.add_dependent_breadcrumb', [], app()->getLocale()) ?: 'Add Dependent')
+@section('breadcrumb_section', __('family.dash_add_child'))
 
 @section('head')
     @include('portals.patient._finder_head')
 @endsection
 
-@php $l = app()->getLocale(); @endphp
+@php
+    $l             = app()->getLocale();
+    $relationships = $relationships ?? \App\Http\Controllers\MedicalId\FamilyController::RELATIONSHIPS;
+    $majorityAge   = $majorityAge ?? 18;
+    $maxDob        = now()->subDay()->toDateString();
+    $minDob        = now()->subYears($majorityAge)->addDay()->toDateString();
+@endphp
 
 @section('content')
 <div class="pf pf--form">
 
     <div class="pf-head">
         <div>
-            <h1>{{ __('public.portal.panel_register_dependent', [], $l) ?: 'Register a Dependent' }}</h1>
+            <h1>{{ __('family.dash_add_child') }}</h1>
             <p class="pf-sub">{{ __('public.portal.add_dependent_info', [], $l) ?: 'This creates a new patient record for your dependent. No login account is created — you manage their records.' }}</p>
         </div>
         <a href="{{ route('portals.patient.family') }}" class="f-btn">
             @include('partials.finder.icon', ['name' => 'chevron-left', 'size' => 18])
             {{ __('public.portal.family_breadcrumb', [], $l) ?: 'My Family' }}
         </a>
+    </div>
+
+    <div class="pf-alert" data-section="child-only-note">
+        @include('partials.finder.icon', ['name' => 'info', 'size' => 18])
+        <p class="f-small">{{ __('family.age_child_note', ['age' => $majorityAge]) }}
+            <a href="{{ route('portals.patient.family.invite') }}">{{ __('family.dash_invite_adult') }}</a></p>
     </div>
 
     @if($errors->any())
@@ -44,7 +56,7 @@
         </div>
         <div class="f-field">
             <label class="f-label" for="date_of_birth">{{ __('public.portal.field_dob', [], $l) ?: 'Date of Birth' }}</label>
-            <input type="date" id="date_of_birth" name="date_of_birth" value="{{ old('date_of_birth') }}" required class="f-input">
+            <input type="date" id="date_of_birth" name="date_of_birth" value="{{ old('date_of_birth') }}" required class="f-input" min="{{ $minDob }}" max="{{ $maxDob }}">
         </div>
         <div class="f-field">
             <label class="f-label" for="sex">{{ __('public.portal.field_sex', [], $l) ?: 'Sex' }}</label>
@@ -58,17 +70,20 @@
             <label class="f-label" for="relationship">{{ __('public.portal.field_relationship', [], $l) ?: 'Your Relationship' }}</label>
             <select id="relationship" name="relationship" required class="f-input">
                 <option value="">{{ __('public.portal.opt_select', [], $l) ?: '— select —' }}</option>
-                @foreach(['parent','grandparent','spouse','sibling','caregiver','legal_guardian','other'] as $r)
-                <option value="{{ $r }}" {{ old('relationship') === $r ? 'selected' : '' }}>@enum($r)</option>
+                @foreach($relationships as $r)
+                <option value="{{ $r }}" {{ old('relationship', 'parent') === $r ? 'selected' : '' }}>{{ __('family.relationship.' . $r) }}</option>
                 @endforeach
             </select>
+            <p class="f-hint">{{ __('family.relationship_hint') }}</p>
         </div>
         <div class="f-field">
             <label class="f-label" for="access_level">{{ __('public.portal.field_access_level', [], $l) ?: 'Access Level' }}</label>
             <select id="access_level" name="access_level" required class="f-input">
-                <option value="full" {{ old('access_level','full') === 'full' ? 'selected' : '' }}>{{ __('public.portal.opt_full_access', [], $l) ?: 'Full Access' }}</option>
-                <option value="read_only" {{ old('access_level') === 'read_only' ? 'selected' : '' }}>{{ __('public.portal.opt_read_only', [], $l) ?: 'Read Only' }}</option>
+                <option value="full" {{ old('access_level', 'full') === 'full' ? 'selected' : '' }}>{{ __('family.access.full') }}</option>
+                <option value="read_only" {{ old('access_level') === 'read_only' ? 'selected' : '' }}>{{ __('family.access.read_only') }}</option>
             </select>
+            <p class="f-hint">{{ __('family.access_full_explained') }}</p>
+            <p class="f-hint">{{ __('family.access_read_only_explained') }}</p>
         </div>
         <div class="pf-actions" style="margin-top:8px;">
             <button type="submit" class="f-btn f-btn--primary" style="min-height:48px;">{{ __('public.portal.btn_register_dependent', [], $l) ?: 'Register Dependent' }}</button>

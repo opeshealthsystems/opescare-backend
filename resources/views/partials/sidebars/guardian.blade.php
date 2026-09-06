@@ -17,11 +17,13 @@
         <i data-lucide="calendar-check-2"></i>
         <span>{{ __('public.portal.nav_appointments', [], $l) ?: 'Appointments' }}</span>
     </a>
-    <a href="{{ route('portals.patient') }}" class="sidebar-link">
-        <i data-lucide="git-branch"></i>
+    <a href="{{ route('portals.guardian.dashboard') }}" class="sidebar-link {{ request()->routeIs('portals.guardian.dashboard') ? 'active' : '' }}">
+        <i data-lucide="baby"></i>
         <span>{{ __('public.portal.nav_dependents', [], $l) ?: 'Dependents' }}</span>
     </a>
 </div>
+
+@include('partials.sidebars._patient_records')
 
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_resources', [], $l) ?: 'Resources' }}</div>

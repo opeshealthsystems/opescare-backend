@@ -197,6 +197,16 @@
                         <span>Demo Girl</span>
                         <small>{{ __('public.demo.role_child_girl') }}</small>
                     </button>
+                    <button type="button" class="demo-login-btn demo-btn-patient" data-demo-role="guardian" data-demo-email="demo.guardian@opescare.test">
+                        <i data-lucide="users"></i>
+                        <span>Demo Guardian</span>
+                        <small>{{ __('public.demo.role_guardian_parent') }}</small>
+                    </button>
+                    <button type="button" class="demo-login-btn demo-btn-patient" data-demo-role="patient" data-demo-email="demo.grandmother@opescare.test">
+                        <i data-lucide="user"></i>
+                        <span>Demo Grandmother</span>
+                        <small>{{ __('public.demo.role_grandmother') }}</small>
+                    </button>
                 </div>
             </div>
 

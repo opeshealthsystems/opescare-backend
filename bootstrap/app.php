@@ -79,6 +79,18 @@ return Application::configure(basePath: dirname(__DIR__))
         // file, route group or controller a frozen module can be reached through.
         $middleware->append(\App\Http\Middleware\EnforceFeatureFlag::class);
 
+        // Mobile patient authentication is a two-step group: the bearer token
+        // resolves the caller (patient_id, patient_user_id), then the act-as
+        // context may swap patient_id to a dependent the caller holds an
+        // ACTIVE FamilyLink to (X-OpesCare-Dependent header) — or refuse the
+        // header with 403 dependent_forbidden. Declared as a group under the
+        // historical alias name so every `->middleware('auth.mobile')` in the
+        // route files, and every test asserting on it, keeps working unchanged.
+        $middleware->group('auth.mobile', [
+            \App\Http\Middleware\AuthenticateMobilePatient::class,
+            \App\Http\Middleware\ActAsDependent::class,
+        ]);
+
         $middleware->alias([
             'auth.bearer'      => \App\Http\Middleware\VerifyBearerToken::class,
             'sdk.token'        => \App\Http\Middleware\VerifySdkToken::class,
@@ -88,7 +100,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'platform.admin'   => \App\Http\Middleware\RequirePlatformAdmin::class,
             'facility.context' => \App\Http\Middleware\RequireFacilityContext::class,
             'consent.grant'    => \App\Http\Middleware\RequireConsentGrant::class,
-            'auth.mobile'      => \App\Http\Middleware\AuthenticateMobilePatient::class,
+            // 'auth.mobile' is a GROUP (declared above), not an alias: the
+            // patient bearer check is followed by the act-as-dependent context
+            // on every mobile route, so a guardian's X-OpesCare-Dependent header
+            // is honoured — or refused — uniformly, with no per-route wiring.
             'auth.provider'    => \App\Http\Middleware\AuthenticateMobileProvider::class,
             'guardian.context' => \App\Http\Middleware\GuardianAccessMiddleware::class,
             // Role → capability gate for professional surfaces (config/staff_capabilities.php).

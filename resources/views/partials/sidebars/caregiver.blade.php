@@ -23,6 +23,8 @@
     </a>
 </div>
 
+@include('partials.sidebars._patient_records')
+
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_resources', [], $l) ?: 'Resources' }}</div>
     <a href="{{ route('public.care-map') }}" class="sidebar-link">

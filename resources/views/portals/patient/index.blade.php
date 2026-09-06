@@ -9,7 +9,16 @@
     @include('portals.patient._finder_head')
 @endsection
 
-@php $l = app()->getLocale(); @endphp
+@section('patient_banner')
+    @include('portals.patient._viewing_banner')
+@endsection
+
+@php
+    $l         = app()->getLocale();
+    $isViewing = $isViewing ?? false;
+    $canWrite  = $canWrite ?? true;
+    $viewName  = $patient ? trim(($patient->first_name ?? '') . ' ' . ($patient->last_name ?? '')) : '';
+@endphp
 
 @section('content')
 
@@ -21,18 +30,32 @@
     <div class="pf-head">
         <div>
             <h1>
-                @if($patient->first_name)
+                @if($isViewing)
+                    {{ __('family.record_of', ['name' => $viewName]) }}
+                @elseif($patient->first_name)
                     {{ __('finder_patient.greeting', ['name' => $patient->first_name]) }}
                 @else
                     {{ __('finder_patient.greeting_generic') }}
                 @endif
             </h1>
-            <p class="pf-sub">{{ __('finder_patient.greeting_sub') }}</p>
+            <p class="pf-sub">
+                @if($isViewing)
+                    {{ $canWrite ? __('family.access_full_explained') : __('family.access_read_only_explained') }}
+                @else
+                    {{ __('finder_patient.greeting_sub') }}
+                @endif
+            </p>
         </div>
+        @if($isViewing)
+        <a href="{{ route('portals.guardian.dashboard') }}" class="f-btn">
+            @include('partials.finder.icon', ['name' => 'users', 'size' => 18])
+            {{ __('family.nav_dependents') }}
+        </a>
+        @endif
     </div>
 
     {{-- Health ID card --}}
-    <div class="pf-hid pf-section">
+    <div class="pf-hid pf-section" data-section="health-id-card">
         <div class="pf-hid__row">
             <div style="min-width:0;flex:1;">
                 <span class="pf-hid__label">
@@ -40,6 +63,9 @@
                     {{ __('public.medical_id.health_id', [], $l) ?: 'OpesCare Health ID' }}
                 </span>
                 <div class="pf-hid__value">{{ $patient->health_id }}</div>
+                @if($isViewing)
+                <div style="font-weight:700;margin:-8px 0 12px;">{{ $viewName }}</div>
+                @endif
                 <div class="pf-hid__meta">
                     <div>
                         <div class="pf-hid__meta-label">{{ __('public.portal.status', [], $l) ?: 'Status' }}</div>
@@ -56,19 +82,38 @@
                         <div class="pf-hid__meta-value">{{ $patient->created_at?->format('M Y') ?? '—' }}</div>
                     </div>
                 </div>
+                @if($canWrite)
+                <a href="{{ route('portals.patient.health-id-card') }}" class="f-btn" style="margin-top:14px;background:#fff;color:var(--f-brand-ink);border-color:#fff;" data-action="print-card">
+                    <i data-lucide="printer" aria-hidden="true" style="width:16px;height:16px;"></i>
+                    {{ __('family.card_print') }}
+                </a>
+                @endif
             </div>
             <div class="pf-hid__qr">
                 @if($staticQrDataUri)
                     <img src="{{ $staticQrDataUri }}" alt="{{ __('public.medical_id.health_id_qr_alt', [], $l) ?: 'Health ID QR Code' }}">
+                    <span>{{ __('public.medical_id.scan_qr', [], $l) ?: 'Scan QR' }}</span>
+                @elseif(!$canWrite)
+                    <div style="width:88px;height:88px;display:flex;align-items:center;justify-content:center;" title="{{ __('family.read_only_qr_note', ['name' => $viewName]) }}">
+                        <i data-lucide="lock" aria-hidden="true" style="width:36px;height:36px;"></i>
+                    </div>
+                    <span>{{ __('family.banner_read_only') }}</span>
                 @else
                     <div style="width:88px;height:88px;display:flex;align-items:center;justify-content:center;">
                         @include('partials.finder.icon', ['name' => 'qr-code', 'size' => 40])
                     </div>
+                    <span>{{ __('public.medical_id.scan_qr', [], $l) ?: 'Scan QR' }}</span>
                 @endif
-                <span>{{ __('public.medical_id.scan_qr', [], $l) ?: 'Scan QR' }}</span>
             </div>
         </div>
     </div>
+
+    @if($isViewing && !$canWrite)
+    <div class="pf-alert" data-section="read-only-note">
+        @include('partials.finder.icon', ['name' => 'info', 'size' => 18])
+        <p class="f-small">{{ __('family.read_only_qr_note', ['name' => $viewName]) }}</p>
+    </div>
+    @endif
 
     {{-- Onboarding checklist --}}
     @isset($onboarding)
@@ -107,10 +152,10 @@
         @endif
     @endisset
 
-    {{-- Quick actions --}}
+    {{-- Quick actions — every record page has its link here --}}
     <div class="pf-section">
         <h2 class="pf-card-head" style="margin-bottom:10px;">{{ __('finder_patient.quick_actions') }}</h2>
-        <div class="pf-qa">
+        <div class="pf-qa" data-section="quick-actions">
             <a href="{{ route('portals.patient.appointments') }}" class="f-card pf-qa__item">
                 <span class="pf-qa__icon">@include('partials.finder.icon', ['name' => 'calendar', 'size' => 20])</span>
                 {{ __('public.portal.nav_appointments', [], $l) ?: 'Appointments' }}
@@ -118,6 +163,34 @@
             <a href="{{ route('portals.patient.prescriptions') }}" class="f-card pf-qa__item">
                 <span class="pf-qa__icon">@include('partials.finder.icon', ['name' => 'pill', 'size' => 20])</span>
                 {{ __('public.portal.nav_prescriptions', [], $l) ?: 'Prescriptions' }}
+            </a>
+            <a href="{{ route('portals.patient.immunizations') }}" class="f-card pf-qa__item">
+                <span class="pf-qa__icon"><i data-lucide="syringe" aria-hidden="true" style="width:20px;height:20px;"></i></span>
+                {{ __('family.nav_immunizations') }}
+            </a>
+            <a href="{{ route('portals.patient.timeline') }}" class="f-card pf-qa__item">
+                <span class="pf-qa__icon"><i data-lucide="activity" aria-hidden="true" style="width:20px;height:20px;"></i></span>
+                {{ __('family.nav_timeline') }}
+            </a>
+            <a href="{{ route('portals.patient.documents') }}" class="f-card pf-qa__item">
+                <span class="pf-qa__icon"><i data-lucide="file-text" aria-hidden="true" style="width:20px;height:20px;"></i></span>
+                {{ __('family.nav_documents') }}
+            </a>
+            <a href="{{ route('portals.patient.allergies') }}" class="f-card pf-qa__item">
+                <span class="pf-qa__icon">@include('partials.finder.icon', ['name' => 'alert-triangle', 'size' => 20])</span>
+                {{ __('family.nav_allergies') }}
+            </a>
+            <a href="{{ route('portals.patient.clinical') }}" class="f-card pf-qa__item">
+                <span class="pf-qa__icon">@include('partials.finder.icon', ['name' => 'stethoscope', 'size' => 20])</span>
+                {{ __('family.nav_clinical') }}
+            </a>
+            <a href="{{ route('portals.patient.care-plans') }}" class="f-card pf-qa__item">
+                <span class="pf-qa__icon"><i data-lucide="clipboard-list" aria-hidden="true" style="width:20px;height:20px;"></i></span>
+                {{ __('family.nav_care_plans') }}
+            </a>
+            <a href="{{ route('portals.patient.access-logs') }}" class="f-card pf-qa__item">
+                <span class="pf-qa__icon"><i data-lucide="history" aria-hidden="true" style="width:20px;height:20px;"></i></span>
+                {{ __('family.nav_access_logs') }}
             </a>
             <a href="{{ route('portals.patient.profile') }}" class="f-card pf-qa__item">
                 <span class="pf-qa__icon">@include('partials.finder.icon', ['name' => 'shield-check', 'size' => 20])</span>
@@ -130,6 +203,10 @@
             <a href="{{ route('portals.patient.family') }}" class="f-card pf-qa__item">
                 <span class="pf-qa__icon">@include('partials.finder.icon', ['name' => 'users', 'size' => 20])</span>
                 {{ __('public.portal.nav_family', [], $l) ?: 'Family' }}
+            </a>
+            <a href="{{ route('portals.guardian.dashboard') }}" class="f-card pf-qa__item">
+                <span class="pf-qa__icon"><i data-lucide="baby" aria-hidden="true" style="width:20px;height:20px;"></i></span>
+                {{ __('family.nav_dependents') }}
             </a>
         </div>
     </div>
@@ -186,10 +263,12 @@
         <div class="f-card" style="text-align:center;padding:28px 20px;">
             <p style="font-weight:700;margin:0 0 4px;">{{ __('finder_patient.no_upcoming_title') }}</p>
             <p class="f-muted f-small" style="margin:0 0 14px;">{{ __('finder_patient.no_upcoming_body') }}</p>
+            @if($canWrite)
             <a href="{{ route('portals.patient.appointments.book') }}" class="f-btn f-btn--primary" style="min-height:48px;">
                 @include('partials.finder.icon', ['name' => 'calendar', 'size' => 18])
                 {{ __('public.appt_book_btn') }}
             </a>
+            @endif
         </div>
         @endif
     </div>
@@ -204,7 +283,7 @@
             <div>
                 <div class="pf-tile__label">{{ __('public.portal.blood_group', [], $l) ?: 'Blood Group' }}</div>
                 <div class="pf-tile__value">{{ $patient->blood_group ?? '—' }}</div>
-                @if(!$patient->blood_group)
+                @if(!$patient->blood_group && $canWrite)
                     <a href="{{ route('portals.patient.profile') }}" class="f-small">{{ __('public.portal.lnk_add_in_profile', [], $l) ?: 'Add in profile →' }}</a>
                 @endif
             </div>
@@ -240,7 +319,7 @@
     <div class="pf-cols pf-section">
 
         {{-- Temporary access QR --}}
-        <div class="f-card" style="text-align:center;">
+        <div class="f-card" style="text-align:center;" data-section="temporary-qr">
             <h2 class="pf-card-head" style="justify-content:center;">
                 @include('partials.finder.icon', ['name' => 'qr-code', 'size' => 18])
                 {{ __('public.medical_id.temporary_access_qr', [], $l) ?: 'Temporary Access QR' }}
@@ -249,11 +328,20 @@
                 {{ __('public.portal.temp_qr_desc', [], $l) ?: 'Generate a secure, time-limited QR code to share with a new healthcare provider. Expires in 1 hour.' }}
             </p>
 
+            @if($canWrite)
             <button id="generate-temp-qr" class="f-btn f-btn--primary" style="min-height:48px;"
                     data-label-generating="{{ __('public.portal.generating', [], $l) ?: 'Generating…' }}"
                     data-label-regenerate="{{ __('public.portal.regenerate_qr', [], $l) ?: 'Regenerate QR' }}">
                 {{ __('public.portal.generate_qr', [], $l) ?: 'Generate Temporary QR' }}
             </button>
+            @else
+            <div class="pf-alert pf-alert--warn" style="text-align:left;margin:0;">
+                <i data-lucide="lock" aria-hidden="true" style="width:18px;height:18px;flex:none;"></i>
+                <p class="f-small">{{ __('family.read_only_qr_note', ['name' => $viewName]) }}</p>
+            </div>
+            @endif
+
+            <p id="temp-qr-error" class="f-small" role="alert" style="display:none;color:var(--f-danger);margin:12px 0 0;"></p>
 
             <div id="temp-qr-container" style="display:none;flex-direction:column;align-items:center;margin-top:16px;" aria-live="polite">
                 <div style="padding:10px;border-radius:var(--f-r);border:1px solid var(--f-line);background:var(--f-surface);">
@@ -271,7 +359,8 @@
 
             <div class="pf-alert" style="text-align:left;margin:16px 0 0;">
                 @include('partials.finder.icon', ['name' => 'info', 'size' => 18])
-                <p class="f-small">{{ __('public.portal.qr_audit_notice', [], $l) ?: 'Each QR scan is audited. You can view access history in your Access Logs.' }}</p>
+                <p class="f-small">{{ __('public.portal.qr_audit_notice', [], $l) ?: 'Each QR scan is audited. You can view access history in your Access Logs.' }}
+                    <a href="{{ route('portals.patient.access-logs') }}">{{ __('family.nav_access_logs') }}</a></p>
             </div>
         </div>
 
@@ -304,10 +393,16 @@
         </div>
         <h2 style="font-size:1.125rem;font-weight:750;margin:0 0 6px;">{{ __('public.portal.no_profile_title', [], app()->getLocale()) ?: 'No Patient Profile Found' }}</h2>
         <p class="f-muted" style="margin:0 0 18px;">{{ __('public.portal.no_profile_desc', [], app()->getLocale()) ?: 'Your patient profile could not be loaded. Please contact support if this problem persists.' }}</p>
-        <a href="{{ route('public.help') }}" class="f-btn f-btn--primary">
-            @include('partials.finder.icon', ['name' => 'info', 'size' => 18])
-            {{ __('public.portal.nav_help', [], app()->getLocale()) ?: 'Get Help' }}
-        </a>
+        <div class="pf-actions" style="justify-content:center;">
+            <a href="{{ route('portals.guardian.dashboard') }}" class="f-btn">
+                @include('partials.finder.icon', ['name' => 'users', 'size' => 18])
+                {{ __('family.nav_dependents') }}
+            </a>
+            <a href="{{ route('public.help') }}" class="f-btn f-btn--primary">
+                @include('partials.finder.icon', ['name' => 'info', 'size' => 18])
+                {{ __('public.portal.nav_help', [], app()->getLocale()) ?: 'Get Help' }}
+            </a>
+        </div>
     </div>
 </div>
 @endif
@@ -319,6 +414,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     var countdownInterval = null;
     var btnGen = document.getElementById('generate-temp-qr');
+    var errEl  = document.getElementById('temp-qr-error');
 
     if (btnGen) {
         var lblGenerating   = btnGen.getAttribute('data-label-generating');
@@ -328,13 +424,20 @@ document.addEventListener('DOMContentLoaded', function () {
         btnGen.addEventListener('click', async function () {
             btnGen.disabled = true;
             btnGen.textContent = lblGenerating;
+            if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
 
             try {
                 var response = await fetch("{{ route('portals.patient.qr') }}", {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
                 });
-                if (!response.ok) throw new Error('QR generation failed (' + response.status + ')');
+                if (!response.ok) {
+                    // A refusal carries its reason (read-only guardian, expired switch): show it, never a silent failure.
+                    var body = null;
+                    try { body = await response.json(); } catch (ignore) {}
+                    if (errEl) { errEl.textContent = (body && body.message) ? body.message : ('QR generation failed (' + response.status + ')'); errEl.style.display = 'block'; }
+                    return;
+                }
                 var data = await response.json();
                 if (data.qr_image) {
                     var img         = document.getElementById('temp-qr-img');

@@ -13,8 +13,8 @@
 
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_my_health', [], $l) ?: 'My Health' }}</div>
-    <a href="{{ route('portals.patient.family') }}" class="sidebar-link">
-        <i data-lucide="git-branch"></i>
+    <a href="{{ route('portals.guardian.dashboard') }}" class="sidebar-link {{ request()->routeIs('portals.guardian.dashboard') ? 'active' : '' }}">
+        <i data-lucide="baby"></i>
         <span>{{ __('public.portal.nav_dependents', [], $l) ?: 'Manage Dependents' }}</span>
     </a>
     <a href="{{ route('portals.patient.appointments') }}" class="sidebar-link">
@@ -23,3 +23,4 @@
     </a>
 </div>
 
+@include('partials.sidebars._patient_records')

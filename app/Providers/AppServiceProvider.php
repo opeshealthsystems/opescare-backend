@@ -83,6 +83,11 @@ class AppServiceProvider extends ServiceProvider
         Route::middleware('web')
             ->group(base_path('routes/marketing.php'));
 
+        // Family / dependents web routes (guardian dashboard, incoming
+        // invitations, dependent-aware record pages) — same rationale.
+        Route::middleware('web')
+            ->group(base_path('routes/web_family.php'));
+
         // Mobile patient Messaging + Telemedicine routes — loaded here to avoid
         // touching the sealed routes/api.php file (same pattern as clinical.php).
         Route::middleware('api')
@@ -200,6 +205,12 @@ class AppServiceProvider extends ServiceProvider
         // routes/api.php so parallel work on separate features cannot collide.
         Route::middleware('api')
             ->group(base_path('routes/mobile_messaging_recipients.php'));
+
+        // Mobile family / dependents routes (member detail, incoming
+        // invitations) — loaded here rather than in routes/api.php so parallel
+        // work on separate features cannot collide.
+        Route::middleware('api')
+            ->group(base_path('routes/mobile_family.php'));
 
         /*
          * Second-factor and one-time codes.

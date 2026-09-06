@@ -1,28 +1,38 @@
 @extends('layouts.portal')
 
-@section('title', __('public.portal.invite_title', [], app()->getLocale()) ?: 'Invite Member')
+@section('title', __('family.dash_invite_adult') . ' — OpesCare')
 @section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()) ?: 'My Portal')
 @section('breadcrumb_home_url', route('portals.patient'))
-@section('breadcrumb_section', __('public.portal.invite_breadcrumb', [], app()->getLocale()) ?: 'Invite Member')
+@section('breadcrumb_section', __('family.dash_invite_adult'))
 
 @section('head')
     @include('portals.patient._finder_head')
 @endsection
 
-@php $l = app()->getLocale(); @endphp
+@php
+    $l             = app()->getLocale();
+    $relationships = $relationships ?? \App\Http\Controllers\MedicalId\FamilyController::RELATIONSHIPS;
+    $majorityAge   = $majorityAge ?? 18;
+@endphp
 
 @section('content')
 <div class="pf pf--form">
 
     <div class="pf-head">
         <div>
-            <h1>{{ __('public.portal.panel_invite_patient', [], $l) ?: 'Invite an Existing Patient' }}</h1>
-            <p class="pf-sub">{{ __('public.portal.invite_info', [], $l) ?: 'Enter the Health ID or email of a patient who already has an OpesCare record. They will receive an invite link to approve the connection.' }}</p>
+            <h1>{{ __('family.dash_invite_adult') }}</h1>
+            <p class="pf-sub">{{ __('family.invite_how_it_works') }}</p>
         </div>
         <a href="{{ route('portals.patient.family') }}" class="f-btn">
             @include('partials.finder.icon', ['name' => 'chevron-left', 'size' => 18])
             {{ __('public.portal.family_breadcrumb', [], $l) ?: 'My Family' }}
         </a>
+    </div>
+
+    <div class="pf-alert" data-section="invite-note">
+        @include('partials.finder.icon', ['name' => 'info', 'size' => 18])
+        <p class="f-small">{{ __('family.invite_needs_account') }}
+            <a href="{{ route('portals.patient.family.add') }}">{{ __('family.dash_add_child') }}</a></p>
     </div>
 
     @if($errors->any())
@@ -35,25 +45,29 @@
     <form method="POST" action="{{ route('portals.patient.family.invite.send') }}" class="f-card">
         @csrf
         <div class="f-field">
-            <label class="f-label" for="health_id_or_email">{{ __('public.portal.field_health_id_email', [], $l) ?: 'Health ID or Email' }}</label>
+            <label class="f-label" for="health_id_or_email">{{ __('family.invite_contact_label') }}</label>
             <input type="text" id="health_id_or_email" name="health_id_or_email" value="{{ old('health_id_or_email') }}" required class="f-input"
-                   placeholder="CM-HID-XXXX-XXXX-XXXX or email@example.com">
+                   autocomplete="off" spellcheck="false" placeholder="{{ __('family.invite_contact_placeholder') }}">
+            <p class="f-hint">{{ __('family.invite_contact_hint') }}</p>
         </div>
         <div class="f-field">
-            <label class="f-label" for="relationship">{{ __('public.portal.field_relationship', [], $l) ?: 'Relationship' }}</label>
+            <label class="f-label" for="relationship">{{ __('public.portal.field_relationship', [], $l) ?: 'Your Relationship' }}</label>
             <select id="relationship" name="relationship" required class="f-input">
                 <option value="">{{ __('public.portal.opt_select', [], $l) ?: '— select —' }}</option>
-                @foreach(['parent','grandparent','spouse','sibling','caregiver','legal_guardian','other'] as $r)
-                <option value="{{ $r }}" {{ old('relationship') === $r ? 'selected' : '' }}>@enum($r)</option>
+                @foreach($relationships as $r)
+                <option value="{{ $r }}" {{ old('relationship') === $r ? 'selected' : '' }}>{{ __('family.relationship.' . $r) }}</option>
                 @endforeach
             </select>
+            <p class="f-hint">{{ __('family.relationship_hint') }}</p>
         </div>
         <div class="f-field">
             <label class="f-label" for="access_level">{{ __('public.portal.field_access_level', [], $l) ?: 'Access Level' }}</label>
             <select id="access_level" name="access_level" required class="f-input">
-                <option value="read_only" {{ old('access_level','read_only') === 'read_only' ? 'selected' : '' }}>{{ __('public.portal.opt_read_only', [], $l) ?: 'Read Only' }}</option>
-                <option value="full" {{ old('access_level') === 'full' ? 'selected' : '' }}>{{ __('public.portal.opt_full_access', [], $l) ?: 'Full Access' }}</option>
+                <option value="read_only" {{ old('access_level', 'read_only') === 'read_only' ? 'selected' : '' }}>{{ __('family.access.read_only') }}</option>
+                <option value="full" {{ old('access_level') === 'full' ? 'selected' : '' }}>{{ __('family.access.full') }}</option>
             </select>
+            <p class="f-hint">{{ __('family.access_read_only_explained') }}</p>
+            <p class="f-hint">{{ __('family.access_full_explained') }}</p>
         </div>
         <div class="pf-actions" style="margin-top:8px;">
             <button type="submit" class="f-btn f-btn--primary" style="min-height:48px;">

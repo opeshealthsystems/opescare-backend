@@ -78,6 +78,10 @@ class DemoChildrenSeeder extends Seeder
 
     public function run(): void
     {
+        // The resolver memoises facility ids per process; in one test run the
+        // database is rebuilt between tests, so a stale id would violate the FK.
+        DemoFacilityResolver::flush();
+
         $role       = Role::where('name', 'patient')->first();
         $facilityId = DemoFacilityResolver::primaryHospital();
 
