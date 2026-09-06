@@ -94,9 +94,13 @@ class LabResult extends Model
         'resulted_at',
         'loinc_code',
         'loinc_display',
+        // Demo provenance markers (add_demo_flags_to_lab_tables).
+        'is_demo',
+        'demo_seed_key',
     ];
 
     protected $casts = [
+        'is_demo'     => 'boolean',
         'resulted_at' => 'datetime',
     ];
 
@@ -188,6 +192,36 @@ class LabResult extends Model
     public function labOrder(): BelongsTo
     {
         return $this->belongsTo(LabOrder::class);
+    }
+
+    /** The laboratory member who entered or verified this analyte. */
+    public function verifiedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'verified_by');
+    }
+
+    /**
+     * The flag in the lab desk's vocabulary — H | L | N | C — or null when the
+     * laboratory recorded none. Every critical spelling this platform knows
+     * (HH, LL, CRITICAL, PANIC…) reads as C; an unknown code is returned as
+     * recorded rather than hidden, because it could be a critical one from a
+     * dictionary this codebase has not met.
+     */
+    public function deskFlag(): ?string
+    {
+        $flag = strtoupper(trim((string) $this->flag));
+
+        if ($flag === '') {
+            return null;
+        }
+
+        return match ($flag) {
+            'HH', 'LL', 'AA', 'C', 'CRIT', 'CRITICAL', 'PANIC' => 'C',
+            'H', 'HIGH'                                       => 'H',
+            'L', 'LOW'                                        => 'L',
+            'N', 'NORM', 'NORMAL', 'WNL'                      => 'N',
+            default                                           => $flag,
+        };
     }
 
     public function patient(): BelongsTo

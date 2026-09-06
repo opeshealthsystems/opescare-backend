@@ -157,6 +157,12 @@ class LabTestRequest extends Model
         return $this->belongsTo(LabOrder::class, 'lab_order_id');
     }
 
+    /** The professional who approved or declined it. */
+    public function reviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
     public function isDecided(): bool
     {
         return in_array($this->status, self::TERMINAL_STATUSES, true);

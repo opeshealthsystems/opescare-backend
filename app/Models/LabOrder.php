@@ -105,13 +105,66 @@ class LabOrder extends Model
         'ordered_at',
         'collected_at',
         'resulted_at',
+        // Who released the panel (lab desk). Added 2026-09-06.
+        'verified_by',
+        // Demo provenance markers (add_demo_flags_to_lab_tables).
+        'is_demo',
+        'demo_seed_key',
     ];
 
     protected $casts = [
         'ordered_at'   => 'datetime',
         'collected_at' => 'datetime',
         'resulted_at'  => 'datetime',
+        'is_demo'      => 'boolean',
     ];
+
+    // ── Lab desk vocabulary ──────────────────────────────────────────────────
+    //
+    // Statuses are free text in the database. The lab desk (LabDeskService)
+    // folds every spelling into four working states — ordered → collected →
+    // in_progress → resulted — the same way PresentsLabResults folds them for
+    // the patient, so a rename can never leave an order invisible on the bench.
+
+    /** Ordered, no sample yet. 'pending' is the column's own default. */
+    public const AWAITING_COLLECTION_STATUSES = ['ordered', 'pending', 'requested'];
+
+    /** Sample in the laboratory, nothing entered yet. */
+    public const COLLECTED_STATUSES = ['collected', 'received'];
+
+    /** Results being entered, not yet released. */
+    public const IN_PROGRESS_STATUSES = ['in_progress', 'processing', 'in_lab', 'partial'];
+
+    /** Everything the bench still has to act on. */
+    public const OPEN_STATUSES = [
+        ...self::AWAITING_COLLECTION_STATUSES,
+        ...self::COLLECTED_STATUSES,
+        ...self::IN_PROGRESS_STATUSES,
+    ];
+
+    /** The desk's four working states plus `cancelled` for a dead end. */
+    public function deskStatus(): string
+    {
+        $status = self::normaliseStatus($this->status);
+
+        return match (true) {
+            in_array($status, self::RELEASED_STATUSES, true)    => 'resulted',
+            in_array($status, self::TERMINAL_STATUSES, true)    => 'cancelled',
+            in_array($status, self::IN_PROGRESS_STATUSES, true) => 'in_progress',
+            in_array($status, self::COLLECTED_STATUSES, true)   => 'collected',
+            default                                             => 'ordered',
+        };
+    }
+
+    /** Local urgency → routine | urgent | stat (the app's three). */
+    public function deskUrgency(): string
+    {
+        return match (strtolower(trim((string) $this->urgency))) {
+            'stat', 'immediate', 'emergency' => 'stat',
+            'urgent', 'priority'             => 'urgent',
+            default                          => 'routine',
+        };
+    }
 
     protected static function booted(): void
     {
@@ -193,6 +246,18 @@ class LabOrder extends Model
     public function results(): HasMany
     {
         return $this->hasMany(LabResult::class, 'lab_order_id');
+    }
+
+    /** The clinician who placed the order. */
+    public function orderedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'ordered_by');
+    }
+
+    /** The laboratory member who released the panel. */
+    public function verifiedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'verified_by');
     }
 
     public function isResulted(): bool
