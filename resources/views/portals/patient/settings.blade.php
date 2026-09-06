@@ -46,6 +46,7 @@
                 'push_prescriptions'    => ['icon' => 'pill',         'label' => __('public.pat_settings_prescriptions', [], $l)],
                 'push_billing'          => ['icon' => 'info',         'label' => __('public.pat_settings_billing', [], $l)],
                 'push_consent_requests' => ['icon' => 'shield-check', 'label' => __('public.pat_settings_consent', [], $l)],
+                'push_messages' => ['icon' => 'message-circle', 'label' => __('public.pat_settings_messages', [], $l)],
             ];
         @endphp
 

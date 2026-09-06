@@ -78,3 +78,15 @@ Schedule::command('opescare:send-appointment-reminders')->everyFiveMinutes()->wi
 // OpesCare: Provider credential expiry notifications
 // Runs daily at 07:30; alerts administrators of credentials expiring within 30 days.
 Schedule::command('opescare:notify-expiring-credentials')->dailyAt('07:30');
+
+// OpesCare: patient push receipts.
+//
+// Expo answers a send with a TICKET ("queued"); whether the handset was
+// reached is only known from the RECEIPT, published a few minutes later and
+// kept for about a day. This pass reads the receipts for every pending
+// push_deliveries row, marks it ok/error, and retires the device token when
+// Expo says DeviceNotRegistered — the only way an uninstalled app stops being
+// pushed to forever. Every 15 minutes: fast enough that a dead token is
+// retired within the hour, slow enough that receipts have had time to appear.
+// Silent when EXPO_PUSH_ENABLED=false. See docs/push-delivery-backend.md.
+Schedule::command('push:check-receipts')->everyFifteenMinutes()->withoutOverlapping();

@@ -229,6 +229,8 @@ Route::prefix('mobile')->group(function () {
         Route::get('/settings', [\App\Http\Controllers\Api\Mobile\MobileSettingsController::class, 'show']);
         Route::patch('/settings', [\App\Http\Controllers\Api\Mobile\MobileSettingsController::class, 'update']);
         Route::post('/push-tokens', [\App\Http\Controllers\Api\Mobile\MobileSettingsController::class, 'registerPushToken']);
+        // Sign-out: revoke this handset's (body device_fingerprint) or every one of the account's tokens.
+        Route::delete('/push-tokens', [\App\Http\Controllers\Api\Mobile\MobileSettingsController::class, 'revokeAllPushTokens']);
         Route::delete('/push-tokens/{id}', [\App\Http\Controllers\Api\Mobile\MobileSettingsController::class, 'revokePushToken']);
 
         // Family management (guardians & dependents)

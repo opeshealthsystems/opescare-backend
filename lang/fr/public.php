@@ -6323,6 +6323,7 @@ return [
     'pat_settings_prescriptions'=> 'Mises à jour des ordonnances',
     'pat_settings_billing'      => 'Facturation et abonnement',
     'pat_settings_consent'      => 'Demandes de consentement',
+    'pat_settings_messages' => 'Messages de votre équipe de soins',
     'pat_settings_theme'        => 'Thème de l\'application',
     'pat_settings_theme_light'  => 'Clair',
     'pat_settings_theme_dark'   => 'Sombre',

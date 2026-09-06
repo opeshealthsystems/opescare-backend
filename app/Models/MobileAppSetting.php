@@ -16,6 +16,7 @@ class MobileAppSetting extends Model
         'push_prescriptions',
         'push_billing',
         'push_consent_requests',
+        'push_messages',
         'preferred_language',
         'preferred_theme',
         'biometric_login_enabled',
@@ -28,6 +29,7 @@ class MobileAppSetting extends Model
         'push_prescriptions'   => 'boolean',
         'push_billing'         => 'boolean',
         'push_consent_requests'=> 'boolean',
+        'push_messages'        => 'boolean',
         'biometric_login_enabled' => 'boolean',
         'extra_preferences'    => 'array',
     ];

@@ -6300,6 +6300,7 @@ return [
     'pat_settings_prescriptions'=> 'Prescription updates',
     'pat_settings_billing'      => 'Billing & subscription',
     'pat_settings_consent'      => 'Consent requests',
+    'pat_settings_messages' => 'Messages from your care team',
     'pat_settings_theme'        => 'App theme',
     'pat_settings_theme_light'  => 'Light',
     'pat_settings_theme_dark'   => 'Dark',

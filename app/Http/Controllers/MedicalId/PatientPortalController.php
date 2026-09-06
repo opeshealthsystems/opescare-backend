@@ -1133,12 +1133,13 @@ class PatientPortalController extends Controller
             'push_prescriptions'    => 'sometimes|boolean',
             'push_billing'          => 'sometimes|boolean',
             'push_consent_requests' => 'sometimes|boolean',
+            'push_messages'         => 'sometimes|boolean',
             'preferred_theme'       => 'sometimes|in:light,dark,system',
         ]);
 
         // Unchecked checkboxes are absent from the request — coerce to false.
         $data = [];
-        foreach (['push_appointments', 'push_lab_results', 'push_prescriptions', 'push_billing', 'push_consent_requests'] as $field) {
+        foreach (['push_appointments', 'push_lab_results', 'push_prescriptions', 'push_billing', 'push_consent_requests', 'push_messages'] as $field) {
             $data[$field] = $request->boolean($field);
         }
         if (array_key_exists('preferred_theme', $validated)) {

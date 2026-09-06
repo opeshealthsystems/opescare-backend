@@ -47,4 +47,15 @@ return [
         'body'  => ':facility a ouvert votre dossier de santé en accès d\'urgence. Touchez pour voir les détails.',
     ],
 
+    // Envoyé par `php artisan opescare:push-test` — vérifie toute la chaîne.
+    'test' => [
+        'title' => 'Notification de test OpesCare',
+        'body'  => 'La réception des notifications fonctionne sur ce téléphone. Envoyée le :when.',
+    ],
+
+    // Affiché à côté des interrupteurs de notification : ce qu'un interrupteur ne peut pas couper.
+    'preferences' => [
+        'always_delivered' => 'Les demandes d\'accès, les invitations familiales et les alertes d\'accès d\'urgence arrivent toujours sur votre téléphone : quelqu\'un attend votre décision, ou votre dossier a été ouvert en urgence.',
+    ],
+
 ];

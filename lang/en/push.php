@@ -47,4 +47,15 @@ return [
         'body'  => ':facility opened your health record under emergency access. Tap to see the details.',
     ],
 
+    // Sent by `php artisan opescare:push-test` — proves the chain end to end.
+    'test' => [
+        'title' => 'OpesCare test notification',
+        'body'  => 'Push delivery is working on this phone. Sent :when.',
+    ],
+
+    // Shown beside the notification switches: what a switch cannot silence.
+    'preferences' => [
+        'always_delivered' => 'Access requests, family invitations and emergency-access alerts always reach your phone: someone is waiting for your decision, or your record was opened in an emergency.',
+    ],
+
 ];
