@@ -53,6 +53,10 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::prefix('api/mobile')->middleware(['auth.provider', 'capability:clinical_chart'])->group(function () {
+    // The orderable-test catalogue for the "Order a lab test" sheet: one entry
+    // per published test (name, code, specimen), no facility, no patient.
+    Route::get('doctor/lab-catalogue', [\App\Http\Controllers\Api\Mobile\MobileDoctorLabOrderController::class, 'catalogue']);
+
     Route::prefix('doctor/patients/{patient}')
         ->where(['patient' => '(?!lookup$)[A-Za-z0-9\-]{1,64}'])
         ->group(function () {

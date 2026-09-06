@@ -167,6 +167,54 @@ class MobileDoctorLabOrderController extends Controller
      * unchanged: equality on a whole identifier, following a merge, scoped by
      * IsDemoRecord and deliberately not bypassed.
      */
+    /**
+     * GET /api/mobile/doctor/lab-catalogue?q=
+     *
+     * The tests laboratories have published, one entry per code, for the
+     * clinician picking what to order. Same source and shape as the patient's
+     * request catalogue (MobileLabRequestController::catalogue) so both sides
+     * name a test the same way; `category` stays null (the table records none).
+     */
+    public function catalogue(Request $request): JsonResponse
+    {
+        $term = trim((string) $request->query('q', ''));
+
+        $query = DB::table('lab_test_availability')
+            ->whereNotIn(DB::raw('lower(availability_status)'), ['unavailable', 'discontinued', 'withdrawn']);
+
+        if (mb_strlen($term) >= 2) {
+            $like = '%' . str_replace(['%', '_'], ['\%', '\_'], $term) . '%';
+            $query->where(function ($sub) use ($like) {
+                $sub->where('test_name', 'ilike', $like)
+                    ->orWhere('local_test_code', 'ilike', $like)
+                    ->orWhere('loinc_code', 'ilike', $like);
+            });
+        }
+
+        $rows = $query->orderBy('test_name')->limit(160)
+            ->get(['test_name', 'local_test_code', 'loinc_code', 'specimen_type']);
+
+        $catalogue = [];
+        foreach ($rows as $row) {
+            $code = trim((string) ($row->local_test_code ?: ($row->loinc_code ?: Str::upper(Str::slug((string) $row->test_name, '_')))));
+            if ($code === '' || isset($catalogue[$code])) {
+                continue;
+            }
+            $catalogue[$code] = [
+                'code'       => $code,
+                'name'       => (string) $row->test_name,
+                'loinc_code' => $row->loinc_code ? (string) $row->loinc_code : null,
+                'category'   => null,
+                'specimen'   => $row->specimen_type ? (string) $row->specimen_type : null,
+            ];
+            if (count($catalogue) >= 40) {
+                break;
+            }
+        }
+
+        return response()->json(['data' => array_values($catalogue)]);
+    }
+
     private function resolvePatient(string $id): ?Patient
     {
         $key = trim($id);
