@@ -92,9 +92,8 @@ class HealthPassportTest extends FamilyTestCase
             ->assertOk()->json('data');
 
         $this->assertNotEmpty($page['sections']);
-        $item = $page['sections'][0]['items'][0];
-        $this->assertSame('Penicillin', $item['label']);
-        $this->assertSame('danger', $item['tone'], 'a severe allergy is shown as a danger');
+        $this->assertContains('Penicillin', $this->shown($page));
+        $this->assertSame('danger', $this->toneOf($page, 'Penicillin'), 'a severe allergy is shown as a danger');
     }
 
     public function test_immunisations_come_from_the_record_with_their_dates(): void
@@ -112,7 +111,7 @@ class HealthPassportTest extends FamilyTestCase
         $page = $this->asPatient()->getJson('/api/mobile/health-passport/pages/immunization')
             ->assertOk()->json('data');
 
-        $this->assertSame('Measles-Rubella', $page['sections'][0]['items'][0]['label']);
+        $this->assertContains('Measles-Rubella', $this->shown($page));
     }
 
     /**
@@ -134,8 +133,7 @@ class HealthPassportTest extends FamilyTestCase
         $page = $this->asPatient()->getJson('/api/mobile/health-passport/pages/patient-identity')
             ->assertOk()->json('data');
 
-        $values = collect($page['sections'])->flatMap(fn ($s) => array_column($s['items'], 'value'))->all();
-        $this->assertContains($this->patient->health_id, $values);
+        $this->assertContains($this->patient->health_id, $this->shown($page));
     }
 
     public function test_an_unknown_page_is_refused_without_saying_anything_about_the_record(): void
@@ -170,7 +168,7 @@ class HealthPassportTest extends FamilyTestCase
             ->getJson('/api/mobile/health-passport/pages/allergies-alerts')
             ->assertOk()->json('data');
 
-        $this->assertSame('Sulfa drugs', $page['sections'][0]['items'][0]['label']);
+        $this->assertContains('Sulfa drugs', $this->shown($page));
 
         // And the guardian's OWN passport is a different record.
         $own = $this->as($guardian['headers'])
@@ -205,4 +203,73 @@ class HealthPassportTest extends FamilyTestCase
 
         $this->assertStringNotContainsString('Latex', json_encode($page));
     }
+
+    /**
+     * Every value a page shows the reader, whatever block it is drawn in.
+     *
+     * Pages are moving from label/value lists to the approved design's tables,
+     * stat tiles and bulleted cards. What the passport promises is that a
+     * recorded fact reaches the reader — not that it sits in `items[0]` — so
+     * the assertions below read the page the way a person does.
+     *
+     * @return list<string>
+     */
+    private function shown(array $page): array
+    {
+        $out = [];
+
+        foreach ($page['sections'] as $section) {
+            foreach ($section['items'] ?? [] as $item) {
+                $out[] = (string) $item['label'];
+                $out[] = (string) $item['value'];
+            }
+            foreach ($section['rows'] ?? [] as $row) {
+                foreach ($row as $cell) {
+                    $out[] = (string) $cell['v'];
+                }
+            }
+            foreach ($section['stats'] ?? [] as $stat) {
+                $out[] = (string) $stat['label'];
+                $out[] = (string) $stat['value'];
+            }
+            foreach ($section['lines'] ?? [] as $line) {
+                $out[] = (string) $line;
+            }
+            if (isset($section['body'])) {
+                $out[] = (string) $section['body'];
+            }
+        }
+
+        return $out;
+    }
+
+    /** The tone the page attached to a value, from whichever block carries it. */
+    private function toneOf(array $page, string $value): ?string
+    {
+        foreach ($page['sections'] as $section) {
+            foreach ($section['items'] ?? [] as $item) {
+                if ($item['label'] === $value || $item['value'] === $value) {
+                    return $item['tone'] ?? null;
+                }
+            }
+            foreach ($section['rows'] ?? [] as $row) {
+                $carries = false;
+                foreach ($row as $cell) {
+                    if ($cell['v'] === $value) {
+                        $carries = true;
+                    }
+                }
+                if ($carries) {
+                    foreach ($row as $cell) {
+                        if (isset($cell['pill'])) {
+                            return $cell['pill'];
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
 }
