@@ -2,6 +2,7 @@
 
 namespace App\Modules\Notifications\Services;
 
+use App\Support\PushChannels;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -49,6 +50,21 @@ class PushNotificationService
         array  $data = [],
         array  $options = []
     ): bool {
+        // Sound and Android channel follow data.type through the same map the
+        // patient app uses (config/push_channels.php). A type the map does not
+        // know — every existing caller today — keeps exactly the old shape:
+        // 'default' sound, no channel_id. The caller's $options still win.
+        $channel = PushChannels::channelFor(isset($data['type']) ? (string) $data['type'] : null);
+        $sound   = PushChannels::soundFor($channel);
+
+        $androidNotification = [
+            'sound'        => $sound,
+            'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+        ];
+        if ($channel !== PushChannels::DEFAULT_CHANNEL) {
+            $androidNotification['channel_id'] = $channel;
+        }
+
         $message = array_merge([
             'token'        => $deviceToken,
             'notification' => [
@@ -57,15 +73,12 @@ class PushNotificationService
             ],
             'android' => [
                 'priority'     => 'high',
-                'notification' => [
-                    'sound'        => 'default',
-                    'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
-                ],
+                'notification' => $androidNotification,
             ],
             'apns' => [
                 'payload' => [
                     'aps' => [
-                        'sound'             => 'default',
+                        'sound'             => $sound,
                         'content-available' => 1,
                     ],
                 ],

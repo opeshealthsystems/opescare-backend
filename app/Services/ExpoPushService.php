@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\PushDeviceToken;
+use App\Support\PushChannels;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -87,6 +88,21 @@ class ExpoPushService
     }
 
     /**
+     * Whether this host is allowed to push at all.
+     *
+     * Expo's API needs no credential on this host (see the class docblock), so
+     * "configured" cannot mean "a secret is present". It is the one switch in
+     * config/push_channels.php — `push_channels.expo.enabled`, from
+     * EXPO_PUSH_ENABLED, on by default — that lets an operator or a test
+     * silence every patient push in one place. App\Support\PatientPush checks
+     * it before touching the database.
+     */
+    public function isConfigured(): bool
+    {
+        return (bool) config('push_channels.expo.enabled', true);
+    }
+
+    /**
      * Push to every active device this patient has registered.
      *
      * Rows whose `push_token` is not an Expo token are counted as
@@ -97,6 +113,8 @@ class ExpoPushService
      * the same row).
      *
      * @param  array<string, scalar>  $data  Routing only. No clinical content.
+     * @param  string|null  $sound  Bundled sound filename; defaults to the
+     *                              channel's sound from config/push_channels.php.
      */
     public function sendToPatient(
         string $patientId,
@@ -105,6 +123,7 @@ class ExpoPushService
         array $data = [],
         string $channelId = 'default',
         string $priority = 'high',
+        ?string $sound = null,
     ): ExpoPushResult {
         $rows = PushDeviceToken::query()
             ->where('patient_id', $patientId)
@@ -139,7 +158,7 @@ class ExpoPushService
             return new ExpoPushResult(skippedNoToken: $skipped);
         }
 
-        $result = $this->sendToTokens(array_values(array_unique($tokens)), $title, $body, $data, $channelId, $priority);
+        $result = $this->sendToTokens(array_values(array_unique($tokens)), $title, $body, $data, $channelId, $priority, $sound);
 
         return $result->merge(new ExpoPushResult(skippedNoToken: $skipped));
     }
@@ -151,8 +170,21 @@ class ExpoPushService
      * built, so a caller cannot get a fingerprint onto the wire by going round
      * `sendToPatient()`.
      *
+     * The wire shape, fixed by the app's channel setup (T3) and by
+     * config/push_channels.php:
+     *
+     *     {to, title, body, sound: '<file>.wav'|'default', priority, channelId, data: {type, …}}
+     *
+     * `channelId` picks the Android channel (whose sound the OS plays);
+     * `sound` is the file iOS plays. Left null, `$sound` is the channel's own
+     * sound, so a caller on channel 'consent' gets the hospital chime on both
+     * platforms without naming it; a caller passing nothing at all keeps the
+     * pre-existing 'default' / 'default' behaviour.
+     *
      * @param  list<string>  $tokens
-     * @param  array<string, scalar>  $data
+     * @param  array<string, scalar>  $data  Should carry `type` (see PushChannels).
+     * @param  string|null  $sound  Bundled sound filename; defaults to the
+     *                              channel's sound from config/push_channels.php.
      */
     public function sendToTokens(
         array $tokens,
@@ -161,6 +193,7 @@ class ExpoPushService
         array $data = [],
         string $channelId = 'default',
         string $priority = 'high',
+        ?string $sound = null,
     ): ExpoPushResult {
         $deliverable = array_values(array_filter($tokens, [self::class, 'isExpoPushToken']));
         $skipped     = count($tokens) - count($deliverable);
@@ -168,6 +201,8 @@ class ExpoPushService
         if ($deliverable === []) {
             return new ExpoPushResult(skippedNoToken: $skipped);
         }
+
+        $sound = ($sound === null || $sound === '') ? PushChannels::soundFor($channelId) : $sound;
 
         $result = new ExpoPushResult(skippedNoToken: $skipped);
 
@@ -177,7 +212,7 @@ class ExpoPushService
                     'to'        => $token,
                     'title'     => $title,
                     'body'      => $body,
-                    'sound'     => 'default',
+                    'sound'     => $sound,
                     'priority'  => $priority,
                     'channelId' => $channelId,
                     // FCM/APNs values must be strings.
@@ -331,17 +366,14 @@ class ExpoPushService
      * returns null once that cache exists — which would silently drop the
      * header exactly on the host that needs it.
      *
-     * NOTE FOR THE OWNER: `config/services.php` has no `expo` entry yet, so
-     * this resolves to null and the request goes out unauthenticated, which is
-     * correct for a default project. If push security is ever turned on, add
-     *
-     *     'expo' => ['access_token' => env('EXPO_ACCESS_TOKEN')],
-     *
-     * to `config/services.php`. That file is not touched here.
+     * The token lives in `config/push_channels.php` (`push_channels.expo
+     * .access_token`, from EXPO_ACCESS_TOKEN); a `services.expo.access_token`
+     * entry is honoured too if one is ever added. Both null — the default
+     * project — means the request goes out unauthenticated, which is correct.
      */
     private function request(): \Illuminate\Http\Client\PendingRequest
     {
-        $accessToken = config('services.expo.access_token');
+        $accessToken = config('push_channels.expo.access_token') ?: config('services.expo.access_token');
 
         $client = Http::timeout(15)
             ->retry(2, 250, throw: false)

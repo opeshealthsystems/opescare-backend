@@ -133,6 +133,7 @@ Route::prefix('mobile')->group(function () {
 
         // Patient Consent loop approvals
         Route::get('/consent-requests', [\App\Http\Controllers\Api\Mobile\MobileGovernanceController::class, 'listConsentRequests']);
+        Route::get('/consent-requests/pending-count', [\App\Http\Controllers\Api\Mobile\MobileGovernanceController::class, 'pendingConsentCount']);
         Route::post('/consent-requests/{id}/approve', [\App\Http\Controllers\Api\Mobile\MobileGovernanceController::class, 'approveConsent']);
         Route::post('/consent-requests/{id}/deny', [\App\Http\Controllers\Api\Mobile\MobileGovernanceController::class, 'denyConsent']);
         Route::post('/consents/{id}/revoke', [\App\Http\Controllers\Api\Mobile\MobileGovernanceController::class, 'revokeConsent']);

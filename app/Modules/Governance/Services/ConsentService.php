@@ -12,6 +12,7 @@ use App\Models\Patient;
 use App\Models\User;
 use App\Modules\Notifications\Services\NotificationService;
 use App\Notifications\ConsentAccessRequestedNotification;
+use App\Support\PatientPush;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
@@ -496,14 +497,23 @@ class ConsentService
      * when a patient has no user account (which is what the seeded governance
      * tests exercise).
      *
-     * Both are best-effort. A notification failure must never undo a consent
-     * request that is already committed — the patient's inbox
+     * 3. The phone itself — one Expo push on the `consent` channel, so the
+     *    handset plays the hospital chime and the app can raise its
+     *    Approve/Deny prompt at once instead of waiting for the next poll of
+     *    GET /mobile/consent-requests?status=pending. Copy is resolved in the
+     *    PATIENT's language (App\Support\PatientPush::localeFor), and carries
+     *    the facility name and the ask — never anything from the record.
+     *
+     * All three are best-effort. A notification failure must never undo a
+     * consent request that is already committed — the patient's inbox
      * (GET /mobile/consent-requests) still shows it either way.
      */
     private function notifyPatientOfRequest(ConsentRequest $request): void
     {
         $facilityName = Facility::where('id', $request->requesting_facility_id)->value('name')
             ?? __('consent_requests.unknown_facility');
+
+        $patient = null;
 
         try {
             $patient = Patient::find($request->patient_id);
@@ -520,6 +530,33 @@ class ConsentService
             ));
         } catch (\Throwable $e) {
             Log::warning('Consent request raised, but the patient notification could not be written.', [
+                'consent_request_id' => $request->id,
+                'error'              => $e->getMessage(),
+            ]);
+        }
+
+        try {
+            $patient ??= Patient::find($request->patient_id);
+
+            if ($patient) {
+                $locale = PatientPush::localeFor($patient);
+
+                // PatientPush never throws and is a no-op when Expo push is
+                // switched off; the try/catch guards the lookups around it.
+                PatientPush::send(
+                    $patient,
+                    'consent_request',
+                    __('push.consent_request.title', [], $locale),
+                    __('push.consent_request.body', ['facility' => $facilityName], $locale),
+                    [
+                        'consent_request_id' => $request->id,
+                        'facility_name'      => $facilityName,
+                        'action_url'         => '/consent-requests',
+                    ],
+                );
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Consent request raised, but the patient push could not be sent.', [
                 'consent_request_id' => $request->id,
                 'error'              => $e->getMessage(),
             ]);

@@ -40,6 +40,17 @@ class MobileGovernanceController extends Controller
 
     // ── Consent ───────────────────────────────────────────────────────────────
 
+    /**
+     * The patient's consent inbox.
+     *
+     * `?status=pending` is what the app polls (every 20 s while the consent
+     * prompt is armed, and at once on a `consent_request` push): the OPEN
+     * requests — both spellings of open, see ConsentService::OPEN_STATUSES —
+     * whose ask has not lapsed. A pending row past its `expires_at` is not
+     * shown even before the sweeper has stamped it `expired`: the patient
+     * must never be offered a decision the facility can no longer act on.
+     * Any other known status filters exactly; no filter returns everything.
+     */
     public function listConsentRequests(Request $request)
     {
         $patientId = $request->attributes->get('patient_id');
@@ -47,12 +58,59 @@ class MobileGovernanceController extends Controller
             return response()->json(['error' => 'IDENTITY_UNRESOLVABLE', 'message' => __('api.identity_unresolvable_patient')], 401);
         }
 
-        $requests = ConsentRequest::where('patient_id', $patientId)
-            ->with(['requestingFacility:id,name,type', 'grant'])
-            ->latest()
-            ->get();
+        $validated = $request->validate([
+            'status' => ['sometimes', 'nullable', 'string', 'in:pending,approved,denied,expired,withdrawn'],
+        ]);
 
-        return response()->json(ConsentRequestResource::collection($requests), 200);
+        $query = ConsentRequest::where('patient_id', $patientId)
+            ->with([
+                'requestingFacility:id,name,type',
+                'requestingUser:id,name,role_id',
+                'requestingUser.role:id,name',
+                'grant',
+            ])
+            ->latest();
+
+        $status = $validated['status'] ?? null;
+
+        if ($status === 'pending') {
+            $this->scopePending($query);
+        } elseif (is_string($status) && $status !== '') {
+            $query->where('status', $status);
+        }
+
+        return response()->json(ConsentRequestResource::collection($query->get()), 200);
+    }
+
+    /**
+     * How many decisions are waiting — one COUNT, cheap enough to poll.
+     *
+     * Same predicate as `?status=pending` above, so the badge and the list
+     * can never disagree.
+     */
+    public function pendingConsentCount(Request $request)
+    {
+        $patientId = $request->attributes->get('patient_id');
+        if (!$patientId) {
+            return response()->json(['error' => 'IDENTITY_UNRESOLVABLE', 'message' => __('api.identity_unresolvable_patient')], 401);
+        }
+
+        $pending = $this->scopePending(ConsentRequest::where('patient_id', $patientId))->count();
+
+        return response()->json(['data' => ['pending' => $pending]], 200);
+    }
+
+    /**
+     * Open AND not lapsed. The single definition of "pending" for the
+     * patient's inbox — used by the list filter and the badge count.
+     */
+    private function scopePending(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    {
+        return $query
+            ->whereIn('status', ConsentService::OPEN_STATUSES)
+            ->where(function ($q) {
+                $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            });
     }
 
     public function approveConsent(Request $request, $id)

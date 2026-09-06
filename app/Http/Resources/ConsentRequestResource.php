@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Support\PatientVocabulary;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 /**
@@ -43,9 +44,40 @@ class ConsentRequestResource extends ApiResource
             'requesting_facility_type' => $this->whenLoaded('requestingFacility', fn () => $this->requestingFacility?->type),
             'requesting_user_id'       => $this->requesting_user_id,
             'purpose'                  => $this->purpose,
-            'requested_scope'          => $this->requested_scope,
-            'duration_minutes'         => $this->duration_minutes,
+            'requested_scope'          => array_values((array) $this->requested_scope),
+            'duration_minutes'         => $this->duration_minutes === null ? null : (int) $this->duration_minutes,
             'status'                   => $this->status,
+
+            // ── What the Approve/Deny prompt needs in one object ──
+            //
+            // The flat *_id / *_name keys above stay as they are (the Privacy
+            // screen reads them); these nested ones are what the push-driven
+            // prompt renders: who is asking, in what capacity, why, and until
+            // when the ask stands. `expires_at` is the REQUEST's lapse, not
+            // the grant's lifetime (that is duration_minutes, which starts on
+            // approval). Both keys are always present — null when the relation
+            // was not loaded or the row has no value — so the app never has to
+            // probe for their existence.
+            'justification'            => $this->justification,
+            'expires_at'               => $this->expires_at ? Carbon::parse($this->expires_at)->toISOString() : null,
+            'decided_at'               => $this->decided_at ? Carbon::parse($this->decided_at)->toISOString() : null,
+            'requesting_facility'      => $this->whenLoaded(
+                'requestingFacility',
+                fn () => $this->requestingFacility ? [
+                    'id'   => $this->requestingFacility->id,
+                    'name' => $this->requestingFacility->name,
+                    'type' => $this->requestingFacility->type,
+                ] : null,
+                null,
+            ),
+            'requesting_user'          => $this->whenLoaded(
+                'requestingUser',
+                fn () => $this->requestingUser ? [
+                    'name' => $this->requestingUser->name,
+                    'role' => $this->requestingUser->roleAtFacility((string) $this->requesting_facility_id)?->name,
+                ] : null,
+                null,
+            ),
 
             // ── The words the clinician chose, in the patient's language ──
             //

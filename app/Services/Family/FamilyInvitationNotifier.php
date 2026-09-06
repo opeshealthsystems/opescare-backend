@@ -5,6 +5,7 @@ namespace App\Services\Family;
 use App\Models\FamilyLink;
 use App\Models\Patient;
 use App\Models\User;
+use App\Support\PatientPush;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -50,6 +51,23 @@ final class FamilyInvitationNotifier
             'action_url'     => '/family',
             'action_label'   => __('family_api.notification_invite_action'),
         ]);
+
+        // And the phone: the same "may this person open my record?" decision a
+        // facility's consent request is, so it rides the `consent` channel and
+        // its chime. PatientPush never throws and is a no-op when push is off.
+        $locale = PatientPush::localeFor($dependent);
+
+        PatientPush::send(
+            $dependent,
+            self::TYPE_INVITED,
+            __('push.family_invitation.title', [], $locale),
+            __('push.family_invitation.body', ['guardian' => $guardianName], $locale),
+            [
+                'family_link_id' => $link->id,
+                'guardian_name'  => $guardianName,
+                'action_url'     => '/family',
+            ],
+        );
     }
 
     /** Tell the guardian (their user account) how the dependent answered. */
