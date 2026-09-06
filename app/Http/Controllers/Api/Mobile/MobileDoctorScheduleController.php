@@ -9,15 +9,20 @@ use App\Models\AppointmentStatusHistory;
 use App\Models\AuditEvent;
 use App\Models\CriticalValueAlert;
 use App\Models\Facility;
+use App\Models\Patient;
 use App\Models\User;
 use App\Modules\Appointments\Services\AppointmentService;
 use App\Modules\Messaging\Models\Message;
 use App\Modules\Messaging\Models\MessageThreadParticipant;
+use App\Services\FrontDesk\DeskActor;
+use App\Services\FrontDesk\FrontDeskRefusal;
+use App\Services\FrontDesk\FrontDeskService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * Mobile Provider API — the clinician's day: today, the diary, one appointment
@@ -577,6 +582,84 @@ class MobileDoctorScheduleController extends Controller
         $this->recordStatusHistory($appointment->id, $from, 'cancelled', $this->providerId($request), $reason);
 
         return response()->json(['data' => $this->formatAppointment($this->reload($appointment))], 200);
+    }
+
+    // ──────────────────────────────────────────────────────────────────
+    // Follow-up
+    // ──────────────────────────────────────────────────────────────────
+
+    /**
+     * POST /api/mobile/doctor/patients/{id}/follow-up — `{ scheduled_at, reason? }`.
+     *
+     * The clinician books the patient's next visit with THEMSELVES:
+     * appointment_type `follow_up`, provider = this clinician, facility = the
+     * token's facility, booked_by staff/this clinician. {id} is the patient's
+     * id or exact Health ID (no partial match, merges followed). The row is
+     * written by the same booking primitive the front desk uses
+     * (FrontDeskService::bookAppointment → AppointmentService::book), so a
+     * follow-up and a desk booking are indistinguishable on the register, and
+     * the patient is told — bell and, where the deployment sends them, a push.
+     *
+     * Route gate: `capability:clinical_chart`. Answers 201 with the same
+     * `StaffAppointment` shape show() returns.
+     */
+    public function followUp(Request $request, string $id, FrontDeskService $desk): JsonResponse
+    {
+        $validated = $request->validate([
+            'scheduled_at' => ['required', 'date', 'after:now'],
+            'reason'       => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $actor = DeskActor::fromRequest($request, 'mobile_doctor');
+
+        if (! $actor) {
+            return $this->refuse('provider_not_found', 401);
+        }
+
+        $patient = $this->resolveFollowUpPatient($id);
+
+        if (! $patient) {
+            return $this->refuse('patient_not_found', 404);
+        }
+
+        try {
+            $appointment = $desk->bookAppointment(
+                actor: $actor,
+                patient: $patient,
+                when: Carbon::parse($validated['scheduled_at'], config('app.timezone')),
+                appointmentType: 'follow_up',
+                providerId: $actor->userId,
+                reason: $validated['reason'] ?? null,
+                historyReason: __('doctor_schedule.reason_follow_up'),
+            );
+        } catch (FrontDeskRefusal $e) {
+            // The refusal keys the booking primitive throws all exist in
+            // lang/{en,fr}/doctor_schedule.php; anything else is a plain failure.
+            $key = in_array($e->key, ['facility_not_available', 'provider_not_available'], true) ? $e->key : 'follow_up_failed';
+
+            return $this->refuse($key, $e->status);
+        }
+
+        $appointment = $this->reload($appointment);
+        $desk->notifyPatient($appointment, 'follow_up', push: true);
+
+        return response()->json(['data' => $this->formatAppointment($appointment)], 201);
+    }
+
+    /**
+     * The patient a follow-up is for: an exact patient id or an exact Health
+     * ID (case-folded whole, never partial). Both follow a merge, so a stale
+     * chart link still books onto the surviving record.
+     */
+    private function resolveFollowUpPatient(string $id): ?Patient
+    {
+        $key = trim($id);
+
+        if ($key === '' || strlen($key) > 64) {
+            return null;
+        }
+
+        return Str::isUuid($key) ? Patient::resolveId($key) : Patient::resolveHealthId($key);
     }
 
     // ──────────────────────────────────────────────────────────────────

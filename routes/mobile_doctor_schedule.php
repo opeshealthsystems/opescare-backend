@@ -77,4 +77,16 @@ Route::prefix('api/mobile')->middleware('auth.provider')->group(function () {
         Route::post('doctor/appointments/{id}/cancel', [MobileDoctorScheduleController::class, 'cancel'])
             ->whereUuid('id');
     });
+
+    // ── Follow-up ────────────────────────────────────────────────────────
+    // A clinician books the patient's next visit with THEMSELVES, at the
+    // facility their token names: `clinical_chart` (clinicians only — the
+    // front desk books through /api/mobile/desk/appointments instead). {id}
+    // is the patient's id or exact Health ID; the `(?!lookup$|scan$)` guard
+    // keeps the literal /doctor/patients/lookup and /scan paths in
+    // routes/api.php from being swallowed, as routes/mobile_doctor_chart.php does.
+    Route::middleware('capability:clinical_chart')->group(function () {
+        Route::post('doctor/patients/{id}/follow-up', [MobileDoctorScheduleController::class, 'followUp'])
+            ->where('id', '(?!lookup$|scan$)[A-Za-z0-9\-]{1,64}');
+    });
 });

@@ -51,4 +51,11 @@ return [
     'reason_rescheduled' => 'Rendez-vous déplacé par le clinicien depuis l’application mobile.',
     'reason_status'      => 'Statut modifié par le clinicien depuis l’application mobile.',
 
+    // ── Réservation d’un suivi (POST /doctor/patients/{id}/follow-up) ────
+    'patient_not_found'      => 'Patient introuvable.',
+    'follow_up_failed'       => 'Le suivi n’a pas pu être réservé. Veuillez réessayer.',
+    'facility_not_available' => 'L’établissement est fermé à cette heure. Choisissez un horaire dans ses heures d’ouverture.',
+    'provider_not_available' => 'Vous n’êtes pas disponible à cette heure selon vos horaires affichés. Choisissez un autre horaire.',
+    'reason_follow_up'       => 'Suivi réservé par le clinicien depuis l’application mobile.',
+
 ];
