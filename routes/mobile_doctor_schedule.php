@@ -36,35 +36,45 @@ Route::prefix('api/mobile')->middleware('auth.provider')->group(function () {
     Route::get('doctor/me', [MobileDoctorScheduleController::class, 'me']);
     Route::get('doctor/home', [MobileDoctorScheduleController::class, 'home']);
 
-    // ── Appointment requests ─────────────────────────────────────────────
-    // Registered BEFORE the /doctor/appointments/{id} routes: 'appointment-requests'
-    // is a distinct segment, but keeping the literal paths first makes the
-    // ordering safe against any future wildcard on the appointments prefix.
-    Route::get('doctor/appointment-requests', [MobileDoctorScheduleController::class, 'requests']);
-    Route::post('doctor/appointment-requests/{id}/accept', [MobileDoctorScheduleController::class, 'accept'])
-        ->whereUuid('id');
-    Route::post('doctor/appointment-requests/{id}/decline', [MobileDoctorScheduleController::class, 'decline'])
-        ->whereUuid('id');
+    // ── Role gate ────────────────────────────────────────────────────────
+    // Everything below is for roles that hold `schedule` — clinicians and
+    // the front desk (config/staff_capabilities.php). Pharmacy, lab and
+    // billing staff get 403 {error_code: role_forbidden}. doctor/me and
+    // doctor/home above stay open to every professional: they are where
+    // the app lands, and home is self-scoped anyway. The gate is nested
+    // inside the auth.provider group so it runs after the attribute it
+    // reads (provider_user_id) has been set.
+    Route::middleware('capability:schedule')->group(function () {
+        // ── Appointment requests ─────────────────────────────────────────────
+        // Registered BEFORE the /doctor/appointments/{id} routes: 'appointment-requests'
+        // is a distinct segment, but keeping the literal paths first makes the
+        // ordering safe against any future wildcard on the appointments prefix.
+        Route::get('doctor/appointment-requests', [MobileDoctorScheduleController::class, 'requests']);
+        Route::post('doctor/appointment-requests/{id}/accept', [MobileDoctorScheduleController::class, 'accept'])
+            ->whereUuid('id');
+        Route::post('doctor/appointment-requests/{id}/decline', [MobileDoctorScheduleController::class, 'decline'])
+            ->whereUuid('id');
 
-    // ── The diary ────────────────────────────────────────────────────────
-    // 'schedule' is the name the client contract's endpoint table uses for the
-    // same list; both are served so neither spelling 404s.
-    Route::get('doctor/schedule', [MobileDoctorScheduleController::class, 'index']);
-    Route::get('doctor/appointments', [MobileDoctorScheduleController::class, 'index']);
+        // ── The diary ────────────────────────────────────────────────────────
+        // 'schedule' is the name the client contract's endpoint table uses for the
+        // same list; both are served so neither spelling 404s.
+        Route::get('doctor/schedule', [MobileDoctorScheduleController::class, 'index']);
+        Route::get('doctor/appointments', [MobileDoctorScheduleController::class, 'index']);
 
-    // appointments.id is a uuid column. Without whereUuid a malformed id reaches
-    // Postgres and raises 22P02, which surfaces as a 500; the router answering
-    // 404 is the honest result.
-    Route::get('doctor/appointments/{id}', [MobileDoctorScheduleController::class, 'show'])
-        ->whereUuid('id');
-    Route::put('doctor/appointments/{id}', [MobileDoctorScheduleController::class, 'reschedule'])
-        ->whereUuid('id');
-    Route::patch('doctor/appointments/{id}/status', [MobileDoctorScheduleController::class, 'setStatus'])
-        ->whereUuid('id');
-    Route::post('doctor/appointments/{id}/check-in', [MobileDoctorScheduleController::class, 'checkIn'])
-        ->whereUuid('id');
-    Route::post('doctor/appointments/{id}/no-show', [MobileDoctorScheduleController::class, 'noShow'])
-        ->whereUuid('id');
-    Route::post('doctor/appointments/{id}/cancel', [MobileDoctorScheduleController::class, 'cancel'])
-        ->whereUuid('id');
+        // appointments.id is a uuid column. Without whereUuid a malformed id reaches
+        // Postgres and raises 22P02, which surfaces as a 500; the router answering
+        // 404 is the honest result.
+        Route::get('doctor/appointments/{id}', [MobileDoctorScheduleController::class, 'show'])
+            ->whereUuid('id');
+        Route::put('doctor/appointments/{id}', [MobileDoctorScheduleController::class, 'reschedule'])
+            ->whereUuid('id');
+        Route::patch('doctor/appointments/{id}/status', [MobileDoctorScheduleController::class, 'setStatus'])
+            ->whereUuid('id');
+        Route::post('doctor/appointments/{id}/check-in', [MobileDoctorScheduleController::class, 'checkIn'])
+            ->whereUuid('id');
+        Route::post('doctor/appointments/{id}/no-show', [MobileDoctorScheduleController::class, 'noShow'])
+            ->whereUuid('id');
+        Route::post('doctor/appointments/{id}/cancel', [MobileDoctorScheduleController::class, 'cancel'])
+            ->whereUuid('id');
+    });
 });

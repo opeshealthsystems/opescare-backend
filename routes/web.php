@@ -269,8 +269,17 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'platform.adm
         ->middleware('throttle:portal.qr')
         ->name('portals.patient.qr');
 
+    // /facility itself is deliberately NOT behind a capability: it is the
+    // landing page for every facility role, including billing and data-quality
+    // roles that hold no mapped web surface yet. The Health-ID lookup on it is
+    // gated in the view (@capability('identify_patient')).
     Route::get('/facility', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'index'])->name('portals.staff');
-    Route::get('/facility/appointments', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointments'])->name('portals.staff.appointments');
+    // The appointment book: front desk runs it, clinicians see their schedule.
+    // `capability:` runs AFTER portal.access + facility.context in this stack,
+    // so it judges the role at the facility the session has just resolved.
+    Route::get('/facility/appointments', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointments'])
+        ->middleware('capability:front_desk,schedule')
+        ->name('portals.staff.appointments');
 
     Route::middleware(['guardian.context'])->group(function () {
         Route::get('/patient/appointments', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'appointments'])->name('portals.patient.appointments');
@@ -305,37 +314,52 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'platform.adm
     });
 
     // --- Inventory Portal (blood only — the facility side of the Blood Finder) ---
-    Route::get('/facility/inventory/blood', [\App\Http\Controllers\MedicalId\InventoryPortalController::class, 'blood'])->name('portals.staff.inventory.blood');
-    Route::post('/facility/inventory/blood', [\App\Http\Controllers\MedicalId\InventoryPortalController::class, 'bloodUpsert'])->name('portals.staff.inventory.blood.upsert');
-    Route::post('/facility/inventory/blood/{id}/adjust', [\App\Http\Controllers\MedicalId\InventoryPortalController::class, 'bloodAdjust'])->name('portals.staff.inventory.blood.adjust');
-    Route::post('/facility/inventory/blood/{id}/flag', [\App\Http\Controllers\MedicalId\InventoryPortalController::class, 'bloodFlag'])->name('portals.staff.inventory.blood.flag');
+    // blood_inventory: clinicians, front desk and the lab — not the pharmacy.
+    Route::middleware('capability:blood_inventory')->group(function () {
+        Route::get('/facility/inventory/blood', [\App\Http\Controllers\MedicalId\InventoryPortalController::class, 'blood'])->name('portals.staff.inventory.blood');
+        Route::post('/facility/inventory/blood', [\App\Http\Controllers\MedicalId\InventoryPortalController::class, 'bloodUpsert'])->name('portals.staff.inventory.blood.upsert');
+        Route::post('/facility/inventory/blood/{id}/adjust', [\App\Http\Controllers\MedicalId\InventoryPortalController::class, 'bloodAdjust'])->name('portals.staff.inventory.blood.adjust');
+        Route::post('/facility/inventory/blood/{id}/flag', [\App\Http\Controllers\MedicalId\InventoryPortalController::class, 'bloodFlag'])->name('portals.staff.inventory.blood.flag');
+    });
 
     // ── Staff: Appointment actions ──────────────────────────────
-    Route::get('/facility/appointments/create', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointmentsCreate'])->name('portals.staff.appointments.create');
-    Route::post('/facility/appointments', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointmentsStore'])->name('portals.staff.appointments.store');
-    Route::post('/facility/appointments/{id}/confirm', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointmentsConfirm'])->name('portals.staff.appointments.confirm');
-    Route::post('/facility/appointments/{id}/cancel', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointmentsCancel'])->name('portals.staff.appointments.cancel');
-    Route::post('/facility/appointments/{id}/check-in', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointmentsCheckIn'])->name('portals.staff.appointments.check-in');
-    Route::post('/facility/appointments/{id}/no-show', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointmentsNoShow'])->name('portals.staff.appointments.no-show');
+    // Same gate as the book itself (front_desk OR schedule): the desk confirms,
+    // checks in and books; a clinician confirms the bookings on their own list
+    // (CareJourneyTest pins a doctor doing exactly that). Pharmacy and lab roles
+    // hold neither and are refused with 403 before the controller runs.
+    Route::middleware('capability:front_desk,schedule')->group(function () {
+        Route::get('/facility/appointments/create', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointmentsCreate'])->name('portals.staff.appointments.create');
+        Route::post('/facility/appointments', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointmentsStore'])->name('portals.staff.appointments.store');
+        Route::post('/facility/appointments/{id}/confirm', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointmentsConfirm'])->name('portals.staff.appointments.confirm');
+        Route::post('/facility/appointments/{id}/cancel', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointmentsCancel'])->name('portals.staff.appointments.cancel');
+        Route::post('/facility/appointments/{id}/check-in', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointmentsCheckIn'])->name('portals.staff.appointments.check-in');
+        Route::post('/facility/appointments/{id}/no-show', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointmentsNoShow'])->name('portals.staff.appointments.no-show');
+    });
 
     // ── Staff: patient message inbox ─────────────────────────────
-    Route::get('/facility/messages',                 [\App\Http\Controllers\MedicalId\StaffMessagingController::class, 'index'])->name('portals.staff.messages');
-    Route::get('/facility/messages/{thread}',        [\App\Http\Controllers\MedicalId\StaffMessagingController::class, 'show'])->name('portals.staff.messages.show');
-    Route::post('/facility/messages/{thread}/reply', [\App\Http\Controllers\MedicalId\StaffMessagingController::class, 'send'])->name('portals.staff.messages.send');
+    Route::middleware('capability:messaging')->group(function () {
+        Route::get('/facility/messages',                 [\App\Http\Controllers\MedicalId\StaffMessagingController::class, 'index'])->name('portals.staff.messages');
+        Route::get('/facility/messages/{thread}',        [\App\Http\Controllers\MedicalId\StaffMessagingController::class, 'show'])->name('portals.staff.messages.show');
+        Route::post('/facility/messages/{thread}/reply', [\App\Http\Controllers\MedicalId\StaffMessagingController::class, 'send'])->name('portals.staff.messages.send');
+    });
 
     // ── Facility admin: my team (invite / reissue / revoke) ───────
     // Prefix is facility, NOT admin: everything under
     // admin/* is platform-tier only (RequirePlatformAdmin).
-    Route::get('/facility/team',                            [\App\Http\Controllers\MedicalId\FacilityStaffController::class, 'index'])->name('portals.facility.team');
-    Route::post('/facility/team/invites',                   [\App\Http\Controllers\MedicalId\FacilityStaffController::class, 'store'])->name('portals.facility.team.invite');
-    Route::post('/facility/team/invites/{id}/reissue',      [\App\Http\Controllers\MedicalId\FacilityStaffController::class, 'reissue'])->name('portals.facility.team.invite.reissue');
-    Route::post('/facility/team/invites/{id}/revoke',       [\App\Http\Controllers\MedicalId\FacilityStaffController::class, 'revoke'])->name('portals.facility.team.invite.revoke');
+    // portal.access already redirects non-admin roles off /facility/team;
+    // capability:facility_team is defence in depth from the one map.
+    Route::middleware('capability:facility_team')->group(function () {
+        Route::get('/facility/team',                            [\App\Http\Controllers\MedicalId\FacilityStaffController::class, 'index'])->name('portals.facility.team');
+        Route::post('/facility/team/invites',                   [\App\Http\Controllers\MedicalId\FacilityStaffController::class, 'store'])->name('portals.facility.team.invite');
+        Route::post('/facility/team/invites/{id}/reissue',      [\App\Http\Controllers\MedicalId\FacilityStaffController::class, 'reissue'])->name('portals.facility.team.invite.reissue');
+        Route::post('/facility/team/invites/{id}/revoke',       [\App\Http\Controllers\MedicalId\FacilityStaffController::class, 'revoke'])->name('portals.facility.team.invite.revoke');
 
-    // Join requests: the other direction — a clinician asked to be added, the
-    // facility decides. The role is chosen HERE, by the approver, never by the
-    // requester; the facility comes from the session, never from the body.
-    Route::post('/facility/team/join-requests/{id}/approve', [\App\Http\Controllers\MedicalId\FacilityStaffController::class, 'approveJoinRequest'])->name('portals.facility.team.join.approve');
-    Route::post('/facility/team/join-requests/{id}/decline', [\App\Http\Controllers\MedicalId\FacilityStaffController::class, 'declineJoinRequest'])->name('portals.facility.team.join.decline');
+        // Join requests: the other direction — a clinician asked to be added, the
+        // facility decides. The role is chosen HERE, by the approver, never by the
+        // requester; the facility comes from the session, never from the body.
+        Route::post('/facility/team/join-requests/{id}/approve', [\App\Http\Controllers\MedicalId\FacilityStaffController::class, 'approveJoinRequest'])->name('portals.facility.team.join.approve');
+        Route::post('/facility/team/join-requests/{id}/decline', [\App\Http\Controllers\MedicalId\FacilityStaffController::class, 'declineJoinRequest'])->name('portals.facility.team.join.decline');
+    });
 
 
     // ── Family Management ──────────────────────────────────────────────────────
@@ -530,25 +554,46 @@ Route::middleware(['web', 'auth', 'platform.admin'])->group(function () {
 | with the inventory-ops module; the public stock reporting page below is
 | what the patient Medicine Finder reads.
 */
+// Every route below carries a `capability:` gate from config/staff_capabilities.php
+// on top of portal.access. portal.access alone put /facility/prescriptions in the
+// `facility` bucket — 39 roles, so a receptionist or a lab tech could open the
+// prescriber desk and WRITE a script. The capability is the role-level answer.
 Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access'])->group(function () {
-    Route::get('/pharmacy',                              [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'dashboard'])->name('portals.pharmacy.dashboard');
+    // The pharmacy dashboard shows the dispense queue AND stock alerts; a role
+    // holding either half may open it (the view hides the half it lacks).
+    Route::get('/pharmacy',                              [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'dashboard'])
+        ->middleware('capability:dispense,pharmacy_stock')
+        ->name('portals.pharmacy.dashboard');
+
     // ── Prescriber desk — writing prescriptions (the clinical half of the
     // module; dispensing is the pharmacy routes below). Facility-scoped.
-    Route::get('/facility/prescriptions',            [\App\Http\Controllers\MedicalId\PrescriberController::class, 'index'])->name('portals.prescriber.index');
-    Route::get('/facility/prescriptions/new',        [\App\Http\Controllers\MedicalId\PrescriberController::class, 'create'])->name('portals.prescriber.create');
-    Route::post('/facility/prescriptions',           [\App\Http\Controllers\MedicalId\PrescriberController::class, 'store'])->name('portals.prescriber.store');
-    Route::get('/facility/prescriptions/{id}',       [\App\Http\Controllers\MedicalId\PrescriberController::class, 'show'])->name('portals.prescriber.show');
-    Route::get('/facility/prescriptions/{id}/print', [\App\Http\Controllers\MedicalId\PrescriptionPrintController::class, 'show'])->name('portals.prescriber.print');
-    Route::post('/facility/prescriptions/{id}/void', [\App\Http\Controllers\MedicalId\PrescriberController::class, 'void'])->name('portals.prescriber.void');
+    // prescribe: doctors and medical supervisors only — not nurses, not the
+    // front desk, not the pharmacy, not the lab.
+    Route::middleware('capability:prescribe')->group(function () {
+        Route::get('/facility/prescriptions',            [\App\Http\Controllers\MedicalId\PrescriberController::class, 'index'])->name('portals.prescriber.index');
+        Route::get('/facility/prescriptions/new',        [\App\Http\Controllers\MedicalId\PrescriberController::class, 'create'])->name('portals.prescriber.create');
+        Route::post('/facility/prescriptions',           [\App\Http\Controllers\MedicalId\PrescriberController::class, 'store'])->name('portals.prescriber.store');
+        Route::get('/facility/prescriptions/{id}',       [\App\Http\Controllers\MedicalId\PrescriberController::class, 'show'])->name('portals.prescriber.show');
+        Route::get('/facility/prescriptions/{id}/print', [\App\Http\Controllers\MedicalId\PrescriptionPrintController::class, 'show'])->name('portals.prescriber.print');
+        Route::post('/facility/prescriptions/{id}/void', [\App\Http\Controllers\MedicalId\PrescriberController::class, 'void'])->name('portals.prescriber.void');
+    });
 
-    Route::get('/pharmacy/prescriptions',               [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'prescriptions'])->name('portals.pharmacy.prescriptions');
-    Route::get('/pharmacy/prescriptions/lookup', [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'prescriptionLookup'])->name('portals.pharmacy.prescriptions.lookup');
-    Route::post('/pharmacy/prescriptions/{id}/dispense',[\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'dispense'])->name('portals.pharmacy.dispense');
-    // Public medicine availability — the medicine_pharmacy_stocks rows the
-    // patient Medicine Finder reads.
-    Route::get('/pharmacy/stock',                       [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'stock'])->name('portals.pharmacy.stock');
-    Route::post('/pharmacy/stock',                      [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'reportStock'])->name('portals.pharmacy.stock.report');
-    Route::get('/pharmacy/controlled',                  [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'controlled'])->name('portals.pharmacy.controlled');
+    // ── Pharmacy counter — dispensing against prescriptions (dispense).
+    Route::middleware('capability:dispense')->group(function () {
+        Route::get('/pharmacy/prescriptions',               [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'prescriptions'])->name('portals.pharmacy.prescriptions');
+        Route::get('/pharmacy/prescriptions/lookup', [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'prescriptionLookup'])->name('portals.pharmacy.prescriptions.lookup');
+        Route::post('/pharmacy/prescriptions/{id}/dispense',[\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'dispense'])->name('portals.pharmacy.dispense');
+    });
+
+    // ── Stock — public medicine availability (the medicine_pharmacy_stocks
+    // rows the patient Medicine Finder reads) and the controlled register.
+    // pharmacy_stock: the pharmacy roles plus medicine_stock, who may report
+    // stock but never dispense.
+    Route::middleware('capability:pharmacy_stock')->group(function () {
+        Route::get('/pharmacy/stock',                       [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'stock'])->name('portals.pharmacy.stock');
+        Route::post('/pharmacy/stock',                      [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'reportStock'])->name('portals.pharmacy.stock.report');
+        Route::get('/pharmacy/controlled',                  [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'controlled'])->name('portals.pharmacy.controlled');
+    });
 });
 
 /*

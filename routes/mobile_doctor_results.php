@@ -20,10 +20,16 @@ use Illuminate\Support\Facades\Route;
 | Auth is auth.provider (AuthenticateMobileProvider) — the clinician's user id
 | and facility_id always come from the bearer token via $request->attributes,
 | never from the request body, query string or a header.
+|
+| Role gate: `capability:clinical_chart,lab_results` (any-of, from
+| config/staff_capabilities.php) — clinicians who order, and the lab that
+| results. Front desk, pharmacy and billing get 403 {error_code:
+| role_forbidden}. Listed AFTER auth.provider because it reads the
+| provider_user_id attribute that middleware sets.
 |--------------------------------------------------------------------------
 */
 
-Route::prefix('api/mobile/doctor')->middleware('auth.provider')->group(function () {
+Route::prefix('api/mobile/doctor')->middleware(['auth.provider', 'capability:clinical_chart,lab_results'])->group(function () {
 
     // Static segments FIRST: `counts` would otherwise be swallowed by the
     // `{id}` route below and answered as a missing result.
@@ -44,18 +50,13 @@ Route::prefix('api/mobile/doctor')->middleware('auth.provider')->group(function 
     // row carries, or the inbox's `lab-<uuid>` form.
     Route::get('orders/{id}/results', [MobileResultsInboxController::class, 'orderResults']);
 
-    /*
-     * The results half of the clinician's unread badge.
-     *
-     * CONTENTION NOTE: the messaging slice also claims this path
-     * (doctorQueries.ts `unreadCounts`). Laravel keeps the FIRST matching
-     * route, so whichever file registers first wins silently. If the messaging
-     * agent lands a handler here, delete this one line — the same payload is
-     * served at `results-inbox/counts` above, which nothing else claims — and
-     * ask them to merge these keys into their response:
-     *   unacknowledged_results, critical_unacknowledged, critical_total
-     * Criticals must stay a SEPARATE figure; folding them into a single
-     * "unread" total is the exact collapse this screen exists to prevent.
-     */
-    Route::get('messages/unread-count', [MobileResultsInboxController::class, 'unreadCount']);
+    // `messages/unread-count` is deliberately NOT registered here. It used to
+    // be, and because this file loads AFTER routes/mobile_doctor_messaging.php
+    // (AppServiceProvider::boot) Laravel kept this handler for the URI, so the
+    // app's messaging badge silently received result counts. The app parses
+    // that path as the MESSAGING payload ({ unread_threads, unread_messages },
+    // doctorQueries.ts `unreadCounts`), which the messaging file serves. The
+    // result figures live at `results-inbox/counts` above (doctorQueries.ts
+    // `resultCounts`) and nothing else claims that path. Criticals stay a
+    // SEPARATE figure there; never fold them into a single "unread" total.
 });

@@ -385,6 +385,7 @@ return [
     'provider_invalid_credentials'   => 'Adresse e-mail ou mot de passe invalide.',
     'provider_no_facility'           => "Votre compte n'est rattaché à aucun établissement. Demandez à votre administrateur d'établissement de vous ajouter à son personnel avant de prescrire.",
     'provider_logged_out'            => 'Déconnecté.',
+    'provider_role_not_clinical'     => 'Votre rôle ne comprend pas l’application soignant. Votre compte est actif, mais aucune de ses fonctions n’est disponible sur le téléphone.',
     'prescription_issued'            => 'Ordonnance émise.',
     'prescription_issue_failed'      => "L'ordonnance n'a pas pu être émise. Veuillez réessayer.",
     'prescription_unknown_medicine'  => "L'un des médicaments ne figure pas au catalogue.",

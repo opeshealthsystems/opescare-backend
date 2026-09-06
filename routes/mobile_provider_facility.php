@@ -53,6 +53,9 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
+// Deliberately NO `capability:` gate (config/staff_capabilities.php): every
+// professional holds postings and may list them or move between them,
+// whatever their role is allowed to do once there.
 Route::prefix('api/mobile')->middleware('auth.provider')->group(function () {
 
     // The clinician's own postings — never the facility directory.

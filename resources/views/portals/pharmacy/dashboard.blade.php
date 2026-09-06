@@ -14,15 +14,21 @@
     <h2>{{ __('public.pharmacy_portal.page_heading', [], app()->getLocale()) ?: 'Pharmacy dashboard' }}</h2>
     <p class="page-subtitle">{{ __('public.pharmacy_portal.page_subtitle', [], app()->getLocale()) ?: "Today's prescription queue, stock alerts, and dispensing activity." }}</p>
     <div class="page-head__spacer"></div>
+    {{-- Everything that leads to the counter is `dispense` (config/staff_capabilities.php):
+         medicine_stock opens this dashboard for the stock alerts and must not be
+         offered a queue its role cannot open (the routes 403 it). --}}
+    @capability('dispense')
     <a href="{{ route('portals.pharmacy.prescriptions') }}" class="btn btn-primary btn-sm">
         <i data-lucide="clipboard-list"></i> {{ __('public.pharmacy_portal.btn_view_queue', [], app()->getLocale()) ?: 'View full queue' }}
     </a>
+    @endcapability
 </div>
 
 @if(session('success'))<div class="alert alert-success mb-6"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
 
 {{-- Stat cards --}}
 <div class="stat-grid mb-6">
+    @capability('dispense')
     <a href="{{ route('portals.pharmacy.prescriptions') }}" class="stat-card stat-card--warning">
         <div class="stat-card__label">{{ __('public.pharmacy_portal.stat_pending_rx', [], app()->getLocale()) ?: 'Pending Rx' }}</div>
         <div class="stat-card__value">{{ $stats['pending_rx'] ?? 0 }}</div>
@@ -31,6 +37,7 @@
         <div class="stat-card__label">{{ __('public.pharmacy_portal.stat_dispensed_today', [], app()->getLocale()) ?: 'Dispensed today' }}</div>
         <div class="stat-card__value">{{ $stats['dispensed_today'] ?? 0 }}</div>
     </a>
+    @endcapability
     @feature('inventory_ops')
         @endfeature
     @feature('inventory_ops')
@@ -43,7 +50,8 @@
 
 <div class="field-grid">
 
-    {{-- Pending Prescriptions (dispense queue) --}}
+    {{-- Pending Prescriptions (dispense queue) — dispense roles only --}}
+    @capability('dispense')
     <div class="panel">
         <div class="panel-header">
             <h3 class="panel-title"><i data-lucide="clipboard-list"></i> {{ __('public.pharmacy_portal.panel_pending_rx', [], app()->getLocale()) ?: 'Pending prescriptions' }}</h3>
@@ -84,6 +92,8 @@
             </table>
         </div>
     </div>
+
+    @endcapability
 
     {{-- Stock Alerts (low-stock) --}}
     <div class="panel">

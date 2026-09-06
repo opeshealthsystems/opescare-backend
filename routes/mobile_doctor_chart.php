@@ -26,6 +26,12 @@ use Illuminate\Support\Facades\Route;
 | clinician's user id and facility id come from that token via
 | $request->attributes and are never read from the request.
 |
+| Role gate: `capability:clinical_chart` (config/staff_capabilities.php) —
+| doctors, nurses, trainees and medical supervisors. Front desk, pharmacy,
+| lab and billing staff get 403 {error_code: role_forbidden} before the
+| controller's relationship check even runs. It is listed AFTER auth.provider
+| because it reads the provider_user_id attribute that middleware sets.
+|
 | GET only. The chart is a read surface; prescribing lives on
 | MobilePrescribingController and clinical documentation is not on the phone
 | at all.
@@ -46,7 +52,7 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-Route::prefix('api/mobile')->middleware('auth.provider')->group(function () {
+Route::prefix('api/mobile')->middleware(['auth.provider', 'capability:clinical_chart'])->group(function () {
     Route::prefix('doctor/patients/{patient}')
         ->where(['patient' => '(?!lookup$)[A-Za-z0-9\-]{1,64}'])
         ->group(function () {

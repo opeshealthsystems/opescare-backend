@@ -21,6 +21,21 @@ use Illuminate\Support\Str;
  *
  * Created members are demo accounts like every other seeded login: is_demo,
  * password "demo1234", active, attached to the primary hospital.
+ *
+ * ── Role names are the canonical `roles.name` values (RolesSeeder) ─────────
+ *
+ * The lab tech used to list `lab_technician` first — a role seeded nowhere —
+ * so ensure() fell through to the second choice, `nurse`, and wrote a NURSE
+ * onto both users.role_id and the facility_role_assignments row. Because
+ * EnsurePortalAccess and the capability gate both judge the facility-scoped
+ * role, demo.labtech signed in as a nurse: nurse sidebar, nurse capabilities,
+ * no lab surfaces. The specialist had the same shape of problem (`doctor`
+ * instead of `specialist`, so the badge read "Doctor").
+ *
+ * ensure() therefore also REALIGNS an existing demo member whose stored role
+ * is no longer one of `roles` — both rows, because fixing users.role_id alone
+ * leaves the assignment row (the one the portal gate actually reads) on the
+ * wrong role. Only is_demo accounts are ever touched.
  */
 final class DemoCareTeam
 {
@@ -32,7 +47,7 @@ final class DemoCareTeam
 
     public const SPECIALIST = [
         'id' => '00000000-0000-0000-0000-200000000011', 'name' => 'Dr. Ibrahim Sow',
-        'email' => 'demo.specialist@opescare.test', 'roles' => ['doctor'],
+        'email' => 'demo.specialist@opescare.test', 'roles' => ['specialist', 'doctor'],
         'job_title' => 'Cardiologist', 'department' => 'Cardiology',
     ];
 
@@ -44,7 +59,7 @@ final class DemoCareTeam
 
     public const LAB_TECH = [
         'id' => '00000000-0000-0000-0000-200000000013', 'name' => 'Lab Tech Boubacar Keïta',
-        'email' => 'demo.labtech@opescare.test', 'roles' => ['lab_technician', 'nurse'],
+        'email' => 'demo.labtech@opescare.test', 'roles' => ['labtech', 'lab_scientist'],
         'job_title' => 'Laboratory Technician', 'department' => 'Laboratory',
     ];
 
@@ -89,27 +104,34 @@ final class DemoCareTeam
     }
 
     /**
-     * Create the members that are missing. Never touches an existing account.
+     * Create the members that are missing; realign the role of an existing
+     * DEMO member whose stored role is no longer one of the member's roles.
+     * Never changes a real person's account (is_demo = false is left alone).
      */
     public static function ensure(?Command $command = null): void
     {
         $facilityId = DemoFacilityResolver::primaryHospital();
 
         foreach ([self::DOCTOR, self::SPECIALIST, self::NURSE, self::LAB_TECH] as $member) {
-            if (self::id($member)) {
-                continue;
-            }
-
+            // `roles` is a preference list: the FIRST name this estate has
+            // seeded is the member's role; the rest are fallbacks for an estate
+            // that lacks it (specialist → doctor), never alternatives.
             $roleId = null;
             foreach ($member['roles'] as $roleName) {
                 $roleId = DB::table('roles')->where('name', $roleName)->value('id');
                 if ($roleId) {
+                    $roleId = (string) $roleId;
                     break;
                 }
             }
 
             if (! $roleId) {
                 $command?->warn("  DemoCareTeam: no role for {$member['name']} (" . implode('/', $member['roles']) . ') — skipped.');
+                continue;
+            }
+
+            if ($existingId = self::id($member)) {
+                self::realign($existingId, $member, $roleId, $facilityId, $command);
                 continue;
             }
 
@@ -140,10 +162,70 @@ final class DemoCareTeam
                 );
             }
 
-            self::writeStaffProfile($id, $member);
+            self::writeStaffProfile($id, $member, $facilityId);
 
             self::$cache[$member['email']] = $id;
             $command?->info("  DemoCareTeam: created {$member['name']} <{$member['email']}>");
+        }
+    }
+
+    /**
+     * An existing member whose role drifted (the lab tech seeded as a nurse,
+     * the specialist seeded as a plain doctor): put users.role_id AND the
+     * active assignment at the primary hospital on the member's role. Both
+     * rows, or the portal gate — which reads the assignment — keeps seeing the
+     * old role.
+     */
+    private static function realign(string $userId, array $member, string $roleId, ?string $facilityId, ?Command $command): void
+    {
+        $user = DB::table('users')->where('id', $userId)->first(['id', 'role_id', 'is_demo']);
+
+        if (! $user || ! $user->is_demo) {
+            return; // a real person's account — never ours to rewrite
+        }
+
+        $changed = [];
+
+        if ((string) $user->role_id !== $roleId) {
+            DB::table('users')->where('id', $userId)->update(['role_id' => $roleId, 'updated_at' => now()]);
+            $changed[] = 'users.role_id';
+        }
+
+        if ($facilityId && Schema::hasTable('facility_role_assignments')) {
+            $active = FacilityRoleAssignment::query()
+                ->where('user_id', $userId)
+                ->where('facility_id', $facilityId)
+                ->active()
+                ->get();
+
+            $hasCorrect = $active->contains(fn ($a) => (string) $a->role_id === $roleId);
+            $wrong      = $active->reject(fn ($a) => (string) $a->role_id === $roleId);
+
+            if (! $hasCorrect) {
+                // (user, facility, role) is unique — a fresh row rather than an
+                // UPDATE that could collide with a dormant correct one.
+                FacilityRoleAssignment::updateOrCreate(
+                    ['user_id' => $userId, 'facility_id' => $facilityId, 'role_id' => $roleId],
+                    ['is_active' => true, 'expires_at' => null, 'assigned_at' => now()]
+                );
+                $changed[] = 'facility_role_assignments (added)';
+            }
+
+            if ($wrong->isNotEmpty()) {
+                FacilityRoleAssignment::query()
+                    ->whereIn('id', $wrong->pluck('id')->all())
+                    ->update(['is_active' => false]);
+                $changed[] = 'facility_role_assignments (' . $wrong->count() . ' retired)';
+            }
+        }
+
+        // The profile row used to fail silently (staff_profiles.facility_id and
+        // staff_category are NOT NULL and were never supplied), so an existing
+        // demo member may have none — write it now; updateOrInsert is idempotent.
+        self::writeStaffProfile($userId, $member, $facilityId);
+
+        if ($changed !== []) {
+            $command?->info("  DemoCareTeam: realigned {$member['name']} <{$member['email']}> → {$member['roles'][0]} (" . implode(', ', $changed) . ')');
         }
     }
 
@@ -152,7 +234,7 @@ final class DemoCareTeam
      * seeder ("Dr. Ibrahim Sow (Cardiologist)"); write only the columns this
      * estate's table actually has.
      */
-    private static function writeStaffProfile(string $userId, array $member): void
+    private static function writeStaffProfile(string $userId, array $member, ?string $facilityId): void
     {
         if (! Schema::hasTable('staff_profiles')) {
             return;
@@ -166,12 +248,16 @@ final class DemoCareTeam
 
         $columns = Schema::getColumnListing('staff_profiles');
         $row = array_intersect_key([
-            'first_name' => $first,
-            'last_name'  => $last,
-            'job_title'  => $member['job_title'],
-            'department' => $member['department'],
-            'created_at' => now(),
-            'updated_at' => now(),
+            // Both NOT NULL on this estate (create_staff_hr_tables); every care
+            // team member is clinical staff posted at the primary hospital.
+            'facility_id'    => $facilityId,
+            'staff_category' => 'clinical',
+            'first_name'     => $first,
+            'last_name'      => $last,
+            'job_title'      => $member['job_title'],
+            'department'     => $member['department'],
+            'created_at'     => now(),
+            'updated_at'     => now(),
         ], array_flip($columns));
 
         if (in_array('id', $columns, true) && ! DB::table('staff_profiles')->where('user_id', $userId)->exists()) {
@@ -179,7 +265,16 @@ final class DemoCareTeam
         }
 
         try {
-            DB::table('staff_profiles')->updateOrInsert(['user_id' => $userId], $row);
+            // Inside DB::transaction on purpose: when the caller already holds a
+            // transaction (the test suite's RefreshDatabase, a wrapping seeder)
+            // this becomes a SAVEPOINT, so a failed insert is rolled back to it
+            // and the outer transaction stays usable. Without it Postgres marks
+            // the whole transaction aborted and every later statement fails
+            // with 25P02 — the catch below would "swallow" the error and poison
+            // everything after it.
+            DB::transaction(function () use ($userId, $row) {
+                DB::table('staff_profiles')->updateOrInsert(['user_id' => $userId], $row);
+            });
         } catch (\Throwable $e) {
             // A profile is a nicety (the specialist's title on the referral);
             // the story must not fail because an estate's profile table wants

@@ -1,4 +1,11 @@
 @php $l = app()->getLocale(); @endphp
+{{-- Rendered for lab_manager and lab_validator. Every capability-mapped link
+     self-gates with the same @capability as its route.
+
+     No lab-results or sample-collection link, on purpose: those capabilities
+     have NO web page yet — results live only on the clinician API
+     (routes/mobile_labs.php, routes/mobile_doctor_results.php). Add the link
+     here when the page ships, never before. --}}
 <div class="sidebar-role-badge">
     <i data-lucide="flask-conical"></i>
     {{ __('portal.lab_manager_role', [], $l) ?: 'Lab Manager' }}
@@ -13,14 +20,23 @@
 
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_lab', [], $l) ?: 'Laboratory' }}</div>
-            {{-- Blood Bank is NOT behind @feature('inventory_ops'). It is carved out of
+    {{-- Blood Bank is NOT behind @feature('inventory_ops'). It is carved out of
          that freeze because it is the only reachable writer of the public Blood
          Finder's data — see the 'inventory_ops' block in bootstrap/app.php.
          A screen with no way in is a feature that does not exist. --}}
+    @capability('blood_inventory')
     <a href="{{ route('portals.staff.inventory.blood') }}" class="sidebar-link {{ request()->routeIs('portals.staff.inventory.blood*') ? 'active' : '' }}">
         <i data-lucide="droplets"></i>
         <span>{{ __('public.portal.nav_inventory_blood', [], $l) ?: 'Blood Bank' }}</span>
     </a>
+    @endcapability
+    @capability('messaging')
+    <a href="{{ route('portals.staff.messages') }}" class="sidebar-link {{ request()->routeIs('portals.staff.messages*') ? 'active' : '' }}">
+        <i data-lucide="messages-square"></i>
+        <span>{{ __('messaging.nav', [], $l) ?: 'Messages' }}</span>
+    </a>
+    @endcapability
+    {{-- The listing is claim-based (FacilityListingController), not capability-gated. --}}
     <a href="{{ route('portals.listing.edit') }}" class="sidebar-link {{ request()->routeIs('portals.listing.*') ? 'active' : '' }}">
         <i data-lucide="map-pin"></i>
         <span>{{ __('caremap_claim.nav_my_listing', [], $l) }}</span>

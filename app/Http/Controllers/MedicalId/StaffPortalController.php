@@ -77,16 +77,18 @@ class StaffPortalController extends Controller
 
     public function appointments(Request $request)
     {
-        $query = Appointment::query()->orderByDesc('scheduled_at');
-
-        if ($request->filled('facility_id')) {
-            $query->where('facility_id', $request->facility_id);
-        } else {
-            $this->ctx->scopeToFacility($query);
-        }
+        // Always this session's facility. A `facility_id` query parameter used
+        // to be honoured here, which let any staff user read another
+        // facility's appointment book by editing the URL — the cross-facility
+        // read this codebase treats as a categorical prohibition.
+        $query = $this->ctx->scopeToFacility(Appointment::query()->orderByDesc('scheduled_at'));
 
         if ($request->filled('patient_id')) {
-            $query->where('patient_id', 'like', '%'.$request->patient_id.'%');
+            // Exact Health ID (or exact patient id) only. The previous
+            // `LIKE %…%` was a patient enumeration search, which no OpesCare
+            // surface may offer; a partial value now matches nothing.
+            $patientId = $this->resolvePatientId((string) $request->patient_id);
+            $query->where('patient_id', $patientId ?? '00000000-0000-0000-0000-000000000000');
         }
         if ($request->filled('provider_id')) {
             $query->where('provider_id', $request->provider_id);
@@ -105,10 +107,33 @@ class StaffPortalController extends Controller
 
     public function appointmentsCreate(Request $request)
     {
-        $facilities = Facility::orderBy('name')->limit(20)->get();
-        $patients   = Patient::whereNotNull('health_id')->orderBy('created_at', 'desc')->limit(20)->get();
+        // No patient list: the form takes the patient's exact Health ID. The
+        // dropdown of the twenty most recent patients in the country was a
+        // patient enumeration, and it was not even scoped to this facility.
+        $patients = collect();
 
-        return view('portals.staff.appointments_create', compact('facilities', 'patients'));
+        return view('portals.staff.appointments_create', compact('patients'));
+    }
+
+    /**
+     * The patient a staff member typed: an exact Health ID (case and spacing
+     * forgiven) or an exact patient id. Never a partial match.
+     */
+    private function resolvePatientId(string $entered): ?string
+    {
+        $entered = trim($entered);
+
+        if ($entered === '') {
+            return null;
+        }
+
+        if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $entered)) {
+            return Patient::whereKey($entered)->value('id');
+        }
+
+        $healthId = strtoupper(preg_replace('/\s+/', '', $entered));
+
+        return Patient::where('health_id', $healthId)->value('id');
     }
 
     public function appointmentsStore(Request $request, AppointmentService $svc)
@@ -131,6 +156,12 @@ class StaffPortalController extends Controller
          */
         $facilityId = $this->ctx->facilityId();
 
+        // Exact Health ID or patient id — the same rule as the filter above.
+        $patientId = $this->resolvePatientId((string) $request->patient_id);
+        if ($patientId === null) {
+            return redirect()->back()->withInput()->withErrors(['patient_id' => __('api.patient_not_found')]);
+        }
+
         abort_unless(
             $facilityId !== null && $facilityId !== '',
             409,
@@ -140,7 +171,7 @@ class StaffPortalController extends Controller
 
         try {
             $appointment = Appointment::create([
-                'patient_id'            => $request->patient_id,
+                'patient_id'            => $patientId,
                 'facility_id'           => $facilityId,
                 'appointment_type'      => $request->appointment_type,
                 'status'                => 'scheduled',

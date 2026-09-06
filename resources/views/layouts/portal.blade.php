@@ -30,7 +30,18 @@
     <div class="sidebar-overlay" id="sidebar-overlay" aria-hidden="true"></div>
 
     @php
-        $sidebarRole        = auth()->user()?->role;
+        /*
+         * The role that picks the sidebar (and names the badge) is the one held
+         * at the ACTIVE facility — the same resolution EnsurePortalAccess and the
+         * capability gate use (session active_facility_id → primary facility →
+         * global role). It used to be the global `users.role_id`, so a clinician
+         * posted as a nurse at this hospital and a doctor elsewhere was gated as
+         * a nurse but shown the doctor's chrome. Gate and chrome now agree.
+         */
+        $sidebarUser        = auth()->user();
+        $sidebarRole        = $sidebarUser
+            ? \App\Support\StaffCapabilities::roleModelFor($sidebarUser, \App\Support\StaffCapabilities::contextFacilityId($sidebarUser))
+            : null;
         $sidebarProfileKey  = $sidebarRole?->dashboard_profile_key ?? 'patient';
 
         /*

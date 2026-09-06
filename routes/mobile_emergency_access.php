@@ -59,7 +59,12 @@ $uuid = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]
 Route::prefix('api/mobile')->group(function () use ($uuid) {
 
     // ── Clinician: break the glass, hold the grant, read under it ─────────
-    Route::middleware('auth.provider')->prefix('doctor/emergency-access')->group(function () use ($uuid) {
+    // Role gate: `capability:emergency_access` (config/staff_capabilities.php) —
+    // doctors, nurses and medical supervisors only. Trainees, front desk, lab,
+    // pharmacy and billing get 403 {error_code: role_forbidden} before the
+    // service's own caps are consulted. Listed AFTER auth.provider because it
+    // reads the provider_user_id attribute that middleware sets.
+    Route::middleware(['auth.provider', 'capability:emergency_access'])->prefix('doctor/emergency-access')->group(function () use ($uuid) {
         // Break the glass. Body: { patient, reason, acknowledged }.
         Route::post('/', [MobileEmergencyAccessController::class, 'open'])
             ->middleware('throttle:6,1');

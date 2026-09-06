@@ -15,9 +15,17 @@ use Symfony\Component\HttpFoundation\Response;
  * capabilities (see config/staff_capabilities.php).
  *
  * Works on both surfaces:
- *   • web portal routes — the signed-in user (after `auth`);
+ *   • web portal routes — the signed-in user (after `auth`), judged by the
+ *     role they hold at the ACTIVE facility (`session('active_facility_id')`,
+ *     set by RequireFacilityContext / the facility selector, then the primary
+ *     facility) — the same resolution EnsurePortalAccess applies, so the two
+ *     gates agree on which posting is being judged;
  *   • clinician API routes — the provider the bearer token names (after
- *     `auth.provider`, which sets `provider_user_id`).
+ *     `auth.provider`, which sets `provider_user_id` and, when the token is
+ *     bound to a posting, `provider_facility_id`).
+ *
+ * Either way the global `users.role_id` is only the fallback for a user with
+ * no assignment at that facility.
  *
  * A refusal is a 403 that names the reason (`error_code: role_forbidden` on
  * JSON) — never a 404, since the professional is already authenticated and
@@ -29,7 +37,7 @@ class RequireStaffCapability
     {
         $user = $this->actor($request);
 
-        if (! $user || ! StaffCapabilities::can($user, ...$capabilities)) {
+        if (! $user || ! StaffCapabilities::canAt($user, $this->facilityId($request, $user), ...$capabilities)) {
             if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json([
                     'message'    => __('api.capability_forbidden'),
@@ -55,5 +63,21 @@ class RequireStaffCapability
         $user = Auth::user();
 
         return $user instanceof User ? $user : null;
+    }
+
+    /**
+     * The facility whose role is judged. Only ever read from what middleware
+     * set — the token's `provider_facility_id` attribute on the API, the
+     * session on the web — never from headers, query or body.
+     */
+    private function facilityId(Request $request, User $user): ?string
+    {
+        if ($request->attributes->get('provider_user_id')) {
+            $fromToken = $request->attributes->get('provider_facility_id');
+
+            return $fromToken ? (string) $fromToken : null;
+        }
+
+        return StaffCapabilities::contextFacilityId($user);
     }
 }

@@ -68,8 +68,21 @@ class SidebarLinksAreReachableTest extends TestCase
     public static function rolesUnderTest(): array
     {
         // A spread across the tiers that actually differ: facility admin vs
-        // platform admin, a developer-tier role, and ordinary clinical staff.
-        return ['facility_admin', 'hospital_admin', 'doctor', 'nurse', 'pharmacist', 'labtech', 'receptionist'];
+        // platform admin, a developer-tier role, and ordinary clinical staff —
+        // plus every role whose sidebar the capability audit touched: the roles
+        // that share a partial with a better-entitled one (cashier renders the
+        // receptionist sidebar, medicine_stock the pharmacy one) are exactly
+        // where a link the user cannot open creeps back in.
+        //
+        // medical_supervisor is deliberately absent: EnsurePortalAccess does not
+        // list it in any portal bucket, so it is bounced to /login today and has
+        // no landing page to audit (see StaffRoleMatrixTest for the note).
+        return [
+            'facility_admin', 'hospital_admin',
+            'doctor', 'nurse', 'pharmacist', 'labtech', 'receptionist',
+            'midwife', 'records_officer', 'pharmacy_manager', 'medicine_stock',
+            'lab_manager', 'sample_collection', 'student_doctor', 'cashier',
+        ];
     }
 
     public function test_no_sidebar_offers_a_link_the_user_cannot_open(): void

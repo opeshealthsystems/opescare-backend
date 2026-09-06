@@ -86,15 +86,29 @@ Route::prefix('mobile')->group(function () {
         Route::post('/auth/provider/logout', [\App\Http\Controllers\Api\Mobile\MobileProviderAuthController::class, 'logout']);
         Route::get('/auth/provider/me', [\App\Http\Controllers\Api\Mobile\MobileProviderAuthController::class, 'me']);
 
-        // Prescribing from the app — the native half of the prescriber's desk.
+        // Everything below the two session routes is role-gated with
+        // `capability:` (config/staff_capabilities.php). auth.provider runs
+        // first and stamps provider_user_id; the gate reads the role from there
+        // and answers 403 {error_code: role_forbidden} — never a 404.
+
+        // Identify a patient — every professional at the facility may.
         // Patient lookup is an exact Health ID match only (no enumeration).
-        Route::get('/doctor/patients/lookup', [\App\Http\Controllers\Api\Mobile\MobilePrescribingController::class, 'lookupPatient']);
+        Route::get('/doctor/patients/lookup', [\App\Http\Controllers\Api\Mobile\MobilePrescribingController::class, 'lookupPatient'])
+            ->middleware('capability:identify_patient');
         // The camera path to the same patient: the app posts what it decoded from
         // the patient's Health ID QR. Throttled like a scanner, not like a search.
-        Route::post('/doctor/patients/scan', [\App\Http\Controllers\Api\Mobile\MobileProviderScanController::class, 'scan'])->middleware('throttle:30,1');
-        Route::get('/doctor/prescriptions', [\App\Http\Controllers\Api\Mobile\MobilePrescribingController::class, 'index']);
-        Route::post('/doctor/prescriptions', [\App\Http\Controllers\Api\Mobile\MobilePrescribingController::class, 'store']);
-        Route::post('/doctor/prescriptions/{id}/void', [\App\Http\Controllers\Api\Mobile\MobilePrescribingController::class, 'void']);
+        Route::post('/doctor/patients/scan', [\App\Http\Controllers\Api\Mobile\MobileProviderScanController::class, 'scan'])
+            ->middleware(['throttle:30,1', 'capability:identify_patient']);
+
+        // Prescribing from the app — the native half of the prescriber's desk.
+        // The list is for prescribers and the pharmacy counter (dispense);
+        // writing or voiding a script is for prescribers only.
+        Route::get('/doctor/prescriptions', [\App\Http\Controllers\Api\Mobile\MobilePrescribingController::class, 'index'])
+            ->middleware('capability:prescribe,dispense');
+        Route::post('/doctor/prescriptions', [\App\Http\Controllers\Api\Mobile\MobilePrescribingController::class, 'store'])
+            ->middleware('capability:prescribe');
+        Route::post('/doctor/prescriptions/{id}/void', [\App\Http\Controllers\Api\Mobile\MobilePrescribingController::class, 'void'])
+            ->middleware('capability:prescribe');
     });
 
     // Protected mobile endpoints — require valid patient Bearer token

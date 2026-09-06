@@ -8,6 +8,7 @@ use App\Models\StaffProfile;
 use App\Models\User;
 use App\Services\Portal\FacilityMembershipService;
 use App\Services\Portal\ProviderSessionService;
+use App\Support\StaffCapabilities;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -38,6 +39,13 @@ use Illuminate\Support\Facades\Auth;
  *     401 and the SAME message as a wrong password. Saying "your credentials
  *     are correct but you are not a clinician" confirms the account exists,
  *     which is exactly what an attacker enumerating emails is looking for.
+ *
+ *  3. A professional whose role holds NO capability at all (insurance, NGO,
+ *     API-partner and other non-clinical staff — config/staff_capabilities.php)
+ *     is refused a session with a 403 that says so. Unlike rule 2 this is not
+ *     an enumeration risk: it is only reachable with the right password, and
+ *     every `capability:` route would refuse the token anyway, so the honest
+ *     answer is to say it once, at the door, instead of minting a dead session.
  *
  * Token minting, rotation and the `provider` payload all live in
  * ProviderSessionService so that login and the facility switch produce
@@ -81,6 +89,17 @@ class MobileProviderAuthController extends Controller
         // Do not add a distinguishing message here.
         if (! $user || ! $user->isProfessional()) {
             return response()->json(['message' => __('api.provider_invalid_credentials')], 401);
+        }
+
+        // Rule 3 (class docblock): a role with no capability at all has nothing
+        // on this surface — refuse the session rather than mint one that every
+        // clinician route will turn away. Same shape as the middleware refusal
+        // so the app can recognise it.
+        if (StaffCapabilities::forRole($user->role?->name) === []) {
+            return response()->json([
+                'message'    => __('api.provider_role_not_clinical'),
+                'error_code' => 'role_forbidden',
+            ], 403);
         }
 
         $facilityId = $this->resolveFacilityId($user);

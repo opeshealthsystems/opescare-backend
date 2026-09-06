@@ -30,10 +30,13 @@
         <p class="page-subtitle">{{ __('public.staff_portal.appointments_subtitle', [], app()->getLocale()) ?: 'View and manage scheduled patient appointments.' }}</p>
     </div>
     <div>
+        {{-- Mirrors the gate on portals.staff.appointments.create (routes/web.php). --}}
+        @capability('front_desk', 'schedule')
         <a href="{{ route('portals.staff.appointments.create') }}" class="btn btn-primary fs-tap">
             <i data-lucide="calendar-plus"></i>
             {{ __('public.staff_portal.btn_book_appointment', [], app()->getLocale()) ?: 'Book Appointment' }}
         </a>
+        @endcapability
     </div>
 </div>
 
@@ -62,13 +65,8 @@
             value="{{ request('patient_id') }}"
         >
     </div>
-    <input
-        type="text"
-        name="facility_id"
-        class="form-control"
-        placeholder="{{ __('public.staff_portal.filter_facility', [], app()->getLocale()) ?: 'Facility ID…' }}"
-        value="{{ request('facility_id') }}"
-    >
+    {{-- No facility filter: the facility a desk acts for is the session's
+         active facility (RequireFacilityContext), never a typed id. --}}
     <input
         type="text"
         name="provider_id"

@@ -10,7 +10,13 @@
     controller validates the reason). Colors are semantic: good = confirm,
     muted = no-show, danger = cancel.
 --}}
-@php $lApp = app()->getLocale(); @endphp
+@php
+    $lApp = app()->getLocale();
+    // The action buttons post to routes behind capability:front_desk,schedule
+    // (routes/web.php); a role without either sees the row read-only instead of
+    // a button that 403s.
+    $canAct = \App\Support\StaffCapabilities::can(auth()->user(), 'front_desk', 'schedule');
+@endphp
 <div class="panel mb-6">
     <div class="panel-body panel-body--flush">
         <div class="table-wrapper">
@@ -43,9 +49,9 @@
                             ?? ($appointment->patient_id ? '#'.$appointment->patient_id : '—');
                         $phone   = $appointment->patient?->phone_number;
                         $dial    = $phone ? preg_replace('/[^0-9+]/', '', $phone) : null;
-                        $canConfirm = $status === 'scheduled';
-                        $canNoShow  = in_array($status, ['scheduled', 'confirmed'], true);
-                        $canCancel  = in_array($status, ['scheduled', 'confirmed'], true);
+                        $canConfirm = $canAct && $status === 'scheduled';
+                        $canNoShow  = $canAct && in_array($status, ['scheduled', 'confirmed'], true);
+                        $canCancel  = $canAct && in_array($status, ['scheduled', 'confirmed'], true);
                     @endphp
                     <tr>
                         <td data-label="{{ __('public.staff_portal.col_datetime', [], $lApp) ?: 'Date / Time' }}">

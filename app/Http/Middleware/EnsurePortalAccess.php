@@ -56,7 +56,7 @@ class EnsurePortalAccess
             // Nursing
             'nurse', 'triage_nurse', 'ward_nurse', 'midwife', 'nurse_supervisor',
             // Training
-            'student_doctor', 'student_nurse', 'intern',
+            'student_doctor', 'student_nurse', 'intern', 'medical_supervisor',
             // Front desk & operations
             'receptionist', 'front_desk', 'appointment_coordinator', 'queue_manager', 'records_officer',
             // Lab

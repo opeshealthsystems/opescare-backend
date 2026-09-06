@@ -398,6 +398,7 @@ return [
     'provider_invalid_credentials'   => 'Invalid email or password.',
     'provider_no_facility'           => 'Your account is not attached to a facility. Ask your facility administrator to add you to their staff list before prescribing.',
     'provider_logged_out'            => 'Signed out.',
+    'provider_role_not_clinical'     => 'Your role does not include the clinician app. Your account is active, but none of its duties are available on the phone.',
     'prescription_issued'            => 'Prescription issued.',
     'prescription_issue_failed'      => 'The prescription could not be issued. Please try again.',
     'prescription_unknown_medicine'  => 'One of the medicines is not in the catalogue.',

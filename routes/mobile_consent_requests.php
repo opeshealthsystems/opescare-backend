@@ -48,7 +48,11 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-Route::prefix('api/mobile')->middleware('auth.provider')->group(function () {
+// Role gate: `capability:request_access` (config/staff_capabilities.php) —
+// clinicians and the pharmacy may ask a patient for access in the facility's
+// name; front desk, lab and billing get 403 {error_code: role_forbidden}.
+// Listed AFTER auth.provider because it reads the provider_user_id attribute.
+Route::prefix('api/mobile')->middleware(['auth.provider', 'capability:request_access'])->group(function () {
     Route::prefix('doctor/consent-requests')->group(function () {
         // The vocabulary the app renders (purposes, scopes, limits), so the
         // phone does not hard code a list that can drift from the validator.

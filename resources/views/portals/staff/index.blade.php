@@ -42,7 +42,12 @@
 
 <div class="grid-main-side mt-6">
 
-    {{-- Patient Verification Form --}}
+    {{-- Patient Verification Form — `identify_patient` (config/staff_capabilities.php).
+         /facility is the landing page for every facility role, including the
+         billing and data-quality roles that do NOT hold identify_patient; they
+         land here and are simply not offered a Health-ID lookup. The lookup is
+         by exact Health ID only — never a name search. --}}
+    @capability('identify_patient')
     <div class="panel">
         <div class="panel-header">
             <h2 class="panel-title">
@@ -74,6 +79,8 @@
                     </div>
                     <span class="form-hint">{{ __('public.staff_portal.health_id_hint', [], app()->getLocale()) ?: 'Enter the full Health ID as printed on the patient card.' }}</span>
                 </div>
+                {{-- No facility field: the access is logged against the session's
+                     active facility (RequireFacilityContext), never a typed id. --}}
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label form-label-required" for="purpose">
@@ -85,19 +92,6 @@
                             <option value="lab_order" @selected(request('purpose') === 'lab_order')>{{ __('public.staff_portal.purpose_lab', [], app()->getLocale()) ?: 'Lab Order' }}</option>
                             <option value="insurance_claim" @selected(request('purpose') === 'insurance_claim')>{{ __('public.staff_portal.purpose_insurance', [], app()->getLocale()) ?: 'Insurance Claim' }}</option>
                         </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="facility_id">
-                            {{ __('public.staff_portal.facility_id', [], app()->getLocale()) ?: 'Facility ID' }}
-                        </label>
-                        <input
-                            type="text"
-                            id="facility_id"
-                            name="facility_id"
-                            class="form-control"
-                            placeholder="{{ __('public.staff_portal.facility_id_placeholder', [], app()->getLocale()) ?: 'FAC-XXXXX' }}"
-                            value="{{ request('facility_id') }}"
-                        >
                     </div>
                 </div>
                 <div class="mt-3">
@@ -136,8 +130,14 @@
             @endisset
         </div>
     </div>
+    @endcapability
 
-    {{-- Quick Links --}}
+    {{-- Quick Links — one shortcut per web surface the signed-in role holds.
+         Every link is gated by the SAME capability as its route (routes/web.php),
+         through @capability — never by a hand-written role list: a role gets a
+         shortcut by being added to config/staff_capabilities.php, once. The
+         panel itself only renders when at least one surface applies. --}}
+    @capability('front_desk', 'schedule', 'prescribe', 'blood_inventory', 'messaging')
     <div class="panel">
         <div class="panel-header">
             <h2 class="panel-title">
@@ -146,66 +146,38 @@
             </h2>
         </div>
         <div class="panel-body">
-            @php $roleSlug = auth()->user()->role?->name ?? ''; @endphp
             <div class="grid-2">
-                {{-- All roles --}}
+                @capability('front_desk', 'schedule')
                 <a href="{{ route('portals.staff.appointments') }}" class="btn btn-secondary">
                     <i data-lucide="calendar-check-2"></i>
                     {{ __('public.portal.nav_appointments', [], app()->getLocale()) ?: 'Appointments' }}
                 </a>
-                                                                                @feature('clinical_decision_support')
-                @endfeature
-                                                
-                {{-- Billing: receptionist, cashier, billing/finance staff, admins, doctors --}}
-                @if(in_array($roleSlug, ['receptionist', 'front_desk', 'cashier', 'billing_officer', 'finance_manager', 'hospital_admin', 'clinic_admin', 'doctor']))
-                @feature('billing')
-                                @endfeature
-                @endif
+                @endcapability
 
-                {{-- Referrals: doctor, hospital_admin, clinic_admin --}}
-                @if(in_array($roleSlug, ['doctor', 'hospital_admin', 'clinic_admin']))
-                                @endif
+                @capability('prescribe')
+                <a href="{{ route('portals.prescriber.index') }}" class="btn btn-secondary">
+                    <i data-lucide="file-text"></i>
+                    {{ __('prescriber.nav', [], app()->getLocale()) ?: 'Prescriptions' }}
+                </a>
+                @endcapability
 
-                {{-- Analytics: hospital_admin, clinic_admin, doctor --}}
-                @if(in_array($roleSlug, ['hospital_admin', 'clinic_admin', 'doctor']))
-                @feature('analytics_dashboards')
-                @endfeature
-                @endif
+                @capability('blood_inventory')
+                <a href="{{ route('portals.staff.inventory.blood') }}" class="btn btn-secondary">
+                    <i data-lucide="droplet"></i>
+                    {{ __('public.portal.nav_blood_inventory', [], app()->getLocale()) ?: 'Blood Inventory' }}
+                </a>
+                @endcapability
 
-                {{-- Telemedicine: doctor only --}}
-                @if($roleSlug === 'doctor')
-                @endif
-
-                {{-- HR Directory: hospital_admin, clinic_admin --}}
-                @if(in_array($roleSlug, ['hospital_admin', 'clinic_admin']))
-                                @endif
-
-                {{-- Pharmacy Stock: pharmacist, hospital_admin, clinic_admin --}}
-                @if(in_array($roleSlug, ['pharmacist', 'hospital_admin', 'clinic_admin']))
-                @feature('inventory_ops')
-                                @endfeature
-                @endif
-
-                {{-- Supply Chain: hospital_admin, clinic_admin, pharmacist --}}
-                @if(in_array($roleSlug, ['hospital_admin', 'clinic_admin', 'pharmacist']))
-                @feature('inventory_ops')
-                                @endfeature
-                @endif
-
-                {{-- Data Import: hospital_admin, clinic_admin --}}
-                @if(in_array($roleSlug, ['hospital_admin', 'clinic_admin']))
-                                @endif
-
-                {{-- Prescriptions: doctor, nurse, pharmacist --}}
-                @if(in_array($roleSlug, ['doctor', 'nurse', 'pharmacist']))
-                                @endif
-
-                {{-- Lab Orders: doctor, nurse, lab technicians --}}
-                @if(in_array($roleSlug, ['doctor', 'nurse', 'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection']))
-                                @endif
+                @capability('messaging')
+                <a href="{{ route('portals.staff.messages') }}" class="btn btn-secondary">
+                    <i data-lucide="messages-square"></i>
+                    {{ __('public.portal.nav_messages', [], app()->getLocale()) ?: 'Messages' }}
+                </a>
+                @endcapability
             </div>
         </div>
     </div>
+    @endcapability
 
 </div>
 

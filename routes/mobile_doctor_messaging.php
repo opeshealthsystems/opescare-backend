@@ -35,19 +35,30 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('api/mobile/doctor')->middleware('auth.provider')->group(function () {
 
-    // ── Messaging ────────────────────────────────────────────────────────
-    // Thread ids are bigints (message_threads.id), so {id} is digit
-    // constrained: an unconstrained segment reaches Postgres as a bigint
-    // cast and 500s where it should 404.
-    Route::get('messages/threads', [MobileDoctorMessagingController::class, 'index']);
-    Route::get('messages/unread-count', [MobileDoctorMessagingController::class, 'unreadCount']);
-    Route::get('messages/threads/{id}', [MobileDoctorMessagingController::class, 'show'])
-        ->whereNumber('id');
-    Route::post('messages/threads/{id}/messages', [MobileDoctorMessagingController::class, 'sendMessage'])
-        ->whereNumber('id')
-        ->middleware('throttle:30,1');
-    Route::patch('messages/threads/{id}/state', [MobileDoctorMessagingController::class, 'state'])
-        ->whereNumber('id');
+    // Role gate: `capability:messaging` (config/staff_capabilities.php) —
+    // clinicians, front desk, lab and pharmacy. Billing and facility admin
+    // get 403 {error_code: role_forbidden}. Nested inside the auth.provider
+    // group so it runs after provider_user_id has been set. The profile
+    // routes below the group stay open: every professional owns their own.
+    Route::middleware('capability:messaging')->group(function () {
+        // ── Messaging ────────────────────────────────────────────────────────
+        // Thread ids are bigints (message_threads.id), so {id} is digit
+        // constrained: an unconstrained segment reaches Postgres as a bigint
+        // cast and 500s where it should 404.
+        Route::get('messages/threads', [MobileDoctorMessagingController::class, 'index']);
+        // The messaging badge: { unread_threads, unread_messages }. This is the ONLY
+        // registration of this URI — routes/mobile_doctor_results.php used to
+        // register the same path and, loading later, silently won it. Result
+        // counts live at `results-inbox/counts` in that file.
+        Route::get('messages/unread-count', [MobileDoctorMessagingController::class, 'unreadCount']);
+        Route::get('messages/threads/{id}', [MobileDoctorMessagingController::class, 'show'])
+            ->whereNumber('id');
+        Route::post('messages/threads/{id}/messages', [MobileDoctorMessagingController::class, 'sendMessage'])
+            ->whereNumber('id')
+            ->middleware('throttle:30,1');
+        Route::patch('messages/threads/{id}/state', [MobileDoctorMessagingController::class, 'state'])
+            ->whereNumber('id');
+    });
 
     // ── The clinician's own profile ──────────────────────────────────────
     // No {user} segment, by design. See MobileDoctorProfileController's

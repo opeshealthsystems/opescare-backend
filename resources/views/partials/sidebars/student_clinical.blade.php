@@ -1,4 +1,7 @@
 @php $l = app()->getLocale(); @endphp
+{{-- Rendered for student_doctor, student_nurse and intern (`$trainees`):
+     schedule and messaging, no prescribing. Links self-gate with the same
+     @capability as their routes. --}}
 <div class="sidebar-role-badge">
     <i data-lucide="graduation-cap"></i>
     {{ __('portal.student_clinical_role', [], $l) ?: 'Student / Intern' }}
@@ -10,13 +13,23 @@
         <span>{{ __('public.portal.nav_dashboard', [], $l) ?: 'Dashboard' }}</span>
     </a>
 </div>
+@capability('front_desk', 'schedule', 'messaging')
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_clinical', [], $l) ?: 'Clinical' }}</div>
+    @capability('front_desk', 'schedule')
     <a href="{{ route('portals.staff.appointments') }}" class="sidebar-link {{ request()->routeIs('portals.staff.appointments*') ? 'active' : '' }}">
         <i data-lucide="calendar-check-2"></i>
         <span>{{ __('public.portal.nav_appointments', [], $l) ?: 'Appointments' }}</span>
     </a>
+    @endcapability
+    @capability('messaging')
+    <a href="{{ route('portals.staff.messages') }}" class="sidebar-link {{ request()->routeIs('portals.staff.messages*') ? 'active' : '' }}">
+        <i data-lucide="messages-square"></i>
+        <span>{{ __('messaging.nav', [], $l) ?: 'Messages' }}</span>
+    </a>
+    @endcapability
 </div>
+@endcapability
 
 
 {{-- Facility switching for clinicians posted at more than one facility.

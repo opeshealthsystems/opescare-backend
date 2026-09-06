@@ -1,4 +1,7 @@
 @php $l = app()->getLocale(); @endphp
+{{-- A medical school supervisor prescribes, sees the schedule, the blood bank
+     and messages (config/staff_capabilities.php `$supervisors`). Every link
+     self-gates with the same @capability as its route. --}}
 <div class="sidebar-role-badge">
     <i data-lucide="user-check"></i>
     {{ __('portal.medical_supervisor_role', [], $l) ?: 'Medical Supervisor' }}
@@ -10,13 +13,35 @@
         <span>{{ __('public.portal.nav_dashboard', [], $l) ?: 'Dashboard' }}</span>
     </a>
 </div>
+@capability('front_desk', 'schedule', 'prescribe', 'blood_inventory', 'messaging')
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_clinical', [], $l) ?: 'Clinical' }}</div>
+    @capability('front_desk', 'schedule')
+    <a href="{{ route('portals.staff.appointments') }}" class="sidebar-link {{ request()->routeIs('portals.staff.appointments*') ? 'active' : '' }}">
+        <i data-lucide="calendar-check-2"></i>
+        <span>{{ __('public.portal.nav_appointments', [], $l) ?: 'Appointments' }}</span>
+    </a>
+    @endcapability
+    @capability('prescribe')
     <a href="{{ route('portals.prescriber.index') }}" class="sidebar-link {{ request()->routeIs('portals.prescriber.*') ? 'active' : '' }}">
         <i data-lucide="file-text"></i>
         <span>{{ __('prescriber.nav', [], $l) ?: 'Prescriptions' }}</span>
     </a>
+    @endcapability
+    @capability('blood_inventory')
+    <a href="{{ route('portals.staff.inventory.blood') }}" class="sidebar-link {{ request()->routeIs('portals.staff.inventory.blood*') ? 'active' : '' }}">
+        <i data-lucide="droplet"></i>
+        <span>{{ __('public.portal.nav_blood_inventory', [], $l) ?: 'Blood Inventory' }}</span>
+    </a>
+    @endcapability
+    @capability('messaging')
+    <a href="{{ route('portals.staff.messages') }}" class="sidebar-link {{ request()->routeIs('portals.staff.messages*') ? 'active' : '' }}">
+        <i data-lucide="messages-square"></i>
+        <span>{{ __('messaging.nav', [], $l) ?: 'Messages' }}</span>
+    </a>
+    @endcapability
 </div>
+@endcapability
 
 
 {{-- Facility switching for clinicians posted at more than one facility.

@@ -1,7 +1,16 @@
 @php $l = app()->getLocale(); @endphp
 {{-- Front desk = the clinical operations desk (portals.staff → /facility).
      A receptionist runs appointments, blood inventory and messages for their
-     own facility; all links below are reachable by this role. --}}
+     own facility.
+
+     SHARED PARTIAL: this is also the sidebar for front_desk, cashier,
+     billing_officer, finance_manager and finance (RolesSeeder). The billing
+     roles hold only `billing` in config/staff_capabilities.php — no
+     appointments, no blood, no messages — so every link here self-gates with
+     the SAME @capability as its route. What a cashier sees is the dashboard
+     and nothing that would 403. (There is no billing page on the web yet; that
+     is a product gap, not something to link.) The prescriber-desk link that
+     used to be here is gone: no front-desk role holds `prescribe`. --}}
 <div class="sidebar-role-badge">
     <i data-lucide="monitor"></i>
     {{ __('portal.receptionist_role', [], $l) ?: 'Receptionist' }}
@@ -14,21 +23,26 @@
     </a>
 </div>
 
+@capability('front_desk', 'schedule', 'blood_inventory', 'messaging')
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_operations', [], $l) ?: 'Operations' }}</div>
+    @capability('front_desk', 'schedule')
     <a href="{{ route('portals.staff.appointments') }}" class="sidebar-link {{ request()->routeIs('portals.staff.appointments*') ? 'active' : '' }}">
         <i data-lucide="calendar-check-2"></i><span>{{ __('public.portal.nav_appointments', [], $l) ?: 'Appointments' }}</span>
     </a>
-    <a href="{{ route('portals.prescriber.index') }}" class="sidebar-link {{ request()->routeIs('portals.prescriber.*') ? 'active' : '' }}">
-        <i data-lucide="file-text"></i><span>{{ __('prescriber.nav', [], $l) ?: 'Prescriptions' }}</span>
-    </a>
+    @endcapability
+    @capability('blood_inventory')
     <a href="{{ route('portals.staff.inventory.blood') }}" class="sidebar-link {{ request()->routeIs('portals.staff.inventory.blood*') ? 'active' : '' }}">
         <i data-lucide="droplet"></i><span>{{ __('public.portal.nav_blood_inventory', [], $l) ?: 'Blood Inventory' }}</span>
     </a>
+    @endcapability
+    @capability('messaging')
     <a href="{{ route('portals.staff.messages') }}" class="sidebar-link {{ request()->routeIs('portals.staff.messages*') ? 'active' : '' }}">
         <i data-lucide="messages-square"></i><span>{{ __('public.portal.nav_messages', [], $l) ?: 'Messages' }}</span>
     </a>
+    @endcapability
 </div>
+@endcapability
 
 
 {{-- Facility switching for clinicians posted at more than one facility.

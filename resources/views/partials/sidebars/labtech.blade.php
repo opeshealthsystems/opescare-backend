@@ -1,4 +1,12 @@
 @php $l = app()->getLocale(); @endphp
+{{-- Rendered for labtech and lab_scientist. Every link self-gates with the
+     same @capability as its route (config/staff_capabilities.php).
+
+     No lab-results or sample-collection link, on purpose: the lab roles hold
+     `lab_results` and `sample_collection`, but there is NO web page for either
+     yet — results live only on the clinician API (routes/mobile_labs.php,
+     routes/mobile_doctor_results.php). A link to a page that does not exist is
+     worse than no link; add one here when the page ships. --}}
 <div class="sidebar-role-badge">
     <i data-lucide="flask-conical"></i>
     {{ __('portal.labtech_role', [], $l) ?: 'Lab Technician' }}
@@ -11,17 +19,27 @@
     </a>
 </div>
 
+@capability('blood_inventory', 'messaging')
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_lab', [], $l) ?: 'Laboratory' }}</div>
-            {{-- Blood Bank is NOT behind @feature('inventory_ops'). It is carved out of
+    {{-- Blood Bank is NOT behind @feature('inventory_ops'). It is carved out of
          that freeze because it is the only reachable writer of the public Blood
          Finder's data — see the 'inventory_ops' block in bootstrap/app.php.
          A screen with no way in is a feature that does not exist. --}}
+    @capability('blood_inventory')
     <a href="{{ route('portals.staff.inventory.blood') }}" class="sidebar-link {{ request()->routeIs('portals.staff.inventory.blood*') ? 'active' : '' }}">
         <i data-lucide="droplets"></i>
         <span>{{ __('public.portal.nav_inventory_blood', [], $l) ?: 'Blood Bank' }}</span>
     </a>
+    @endcapability
+    @capability('messaging')
+    <a href="{{ route('portals.staff.messages') }}" class="sidebar-link {{ request()->routeIs('portals.staff.messages*') ? 'active' : '' }}">
+        <i data-lucide="messages-square"></i>
+        <span>{{ __('messaging.nav', [], $l) ?: 'Messages' }}</span>
+    </a>
+    @endcapability
 </div>
+@endcapability
 
 
 {{-- Facility switching for clinicians posted at more than one facility.
