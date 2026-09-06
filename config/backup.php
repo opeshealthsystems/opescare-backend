@@ -11,12 +11,39 @@ use Spatie\Backup\Tasks\Cleanup\Strategies\DefaultStrategy;
 use Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumAgeInDays;
 use Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumStorageInMegabytes;
 
+/*
+|--------------------------------------------------------------------------
+| OpesCare Finder — backup destinations
+|--------------------------------------------------------------------------
+|
+| Ops history (2026-09-06): the destination list used to be `['s3']` only.
+| The S3 Flysystem adapter (league/flysystem-aws-s3-v3) was never installed
+| and the host never received AWS credentials, so `backup:run`, `backup:clean`
+| and `backup:monitor` all died at disk resolution with
+| `Class "League\Flysystem\AwsS3V3\PortableVisibilityConverter" not found`
+| — every night, before a single byte was dumped.
+|
+| The rule now: the `local` disk is ALWAYS a destination, so a backup exists
+| on the host no matter what; `s3` is added only when BACKUP_S3_ENABLED=true.
+| Turning S3 on requires the adapter package AND credentials — see
+| docs/ops-backups.md before flipping the flag.
+|
+| `backup:clean` and `backup:monitor` use the same computed list, so the
+| three commands can never disagree about where backups live.
+*/
+$backupS3Enabled = filter_var(env('BACKUP_S3_ENABLED', false), FILTER_VALIDATE_BOOLEAN);
+
+$backupDisks = $backupS3Enabled ? ['local', 's3'] : ['local'];
+
 return [
 
     'backup' => [
         /*
          * The name of this application. You can use this name to monitor
          * the backups.
+         *
+         * On the `local` disk (root storage/app/private) this is also the
+         * folder the archives land in: storage/app/private/<name>/.
          */
         'name' => env('APP_NAME', 'OpesCare'),
 
@@ -32,12 +59,25 @@ return [
                 /*
                  * These directories and files will be excluded from the backup.
                  *
-                 * Directories used by the backup process will automatically be excluded.
+                 * Directories used by the backup process (the temporary directory and
+                 * the local destination folder) are automatically excluded.
+                 *
+                 * Secrets are deliberately kept OUT of the archive: `.env` (and any
+                 * `.env.bak-*` copy) and `bootstrap/cache` (the cached config.php
+                 * holds every env value in plain text). The archive is not encrypted
+                 * unless BACKUP_ENCRYPTION_PASSWORD is set, and it may one day be
+                 * copied offsite. Keep the .env in the ops password manager instead;
+                 * a restore needs it from there, not from the archive.
+                 *
+                 * `storage/framework` is regenerated cache/session/view data — noise.
                  */
                 'exclude' => [
                     base_path('vendor'),
                     base_path('node_modules'),
+                    base_path('.env*'),
+                    base_path('bootstrap/cache'),
                     storage_path('logs'),
+                    storage_path('framework'),
                 ],
 
                 /*
@@ -161,15 +201,22 @@ return [
 
             /*
              * The disk names on which the backups will be stored.
+             *
+             * Computed at the top of this file: `local` always, `s3` only when
+             * BACKUP_S3_ENABLED=true. Never hardcode a remote-only list here —
+             * that is exactly what left the Finder with no backups at all.
              */
-            'disks' => [
-                's3',
-            ],
+            'disks' => $backupDisks,
 
             /*
              * Determines whether to allow backups to continue when some targets fail instead of failing completely.
+             *
+             * `true` so that an offsite (s3) hiccup never costs us the local copy:
+             * the local write still lands, the failing disk raises
+             * BackupHasFailed (mail alert), and only "failed on every disk"
+             * makes the command itself exit non-zero.
              */
-            'continue_on_failure' => false,
+            'continue_on_failure' => true,
         ],
 
         /*
@@ -180,8 +227,20 @@ return [
         /*
          * The password to be used for archive encryption.
          * Set to `null` to disable encryption.
+         *
+         * Empty on the Finder host today (archives are plain zips inside a
+         * 0700 folder owned by `finder`). Set it BEFORE enabling an offsite
+         * disk — and record it in the ops password manager, because an
+         * encrypted archive whose password was lost is not a backup.
+         *
+         * `?: null` matters: an env line that is present but EMPTY
+         * (`BACKUP_ENCRYPTION_PASSWORD=`) reaches here as "", and spatie only
+         * skips encryption for null — with "" it AES-encrypts every entry with
+         * an empty password and libzip then fails the archive at close() with
+         * "Invalid argument". That silently killed every run on the Finder host
+         * (found 2026-09-06, right behind the missing-S3-adapter error).
          */
-        'password' => env('BACKUP_ENCRYPTION_PASSWORD'),
+        'password' => env('BACKUP_ENCRYPTION_PASSWORD') ?: null,
 
         /*
          * The encryption algorithm to be used for archive encryption.
@@ -196,8 +255,12 @@ return [
         /*
          * After creating the zip, verify it can be opened and contains files.
          * Recommended for critical backups but adds a small overhead.
+         *
+         * On: re-opens the finished archive and counts its entries before it
+         * is copied anywhere, so an unreadable zip fails the run loudly (mail)
+         * instead of being stored as if it were a backup.
          */
-        'verify_backup' => false,
+        'verify_backup' => true,
 
         /*
          * The number of attempts, in case the backup command encounters an exception
@@ -223,9 +286,9 @@ return [
             BackupHasFailedNotification::class => ['mail'],
             UnhealthyBackupWasFoundNotification::class => ['mail'],
             CleanupHasFailedNotification::class => ['mail'],
-            BackupWasSuccessfulNotification::class => ['mail'],
-            HealthyBackupWasFoundNotification::class => ['mail'],
-            CleanupWasSuccessfulNotification::class => ['mail'],
+            BackupWasSuccessfulNotification::class => [],
+            HealthyBackupWasFoundNotification::class => [],
+            CleanupWasSuccessfulNotification::class => [],
         ],
 
         /*
@@ -292,27 +355,19 @@ return [
      * Here you can specify which backups should be monitored.
      * If a backup does not meet the specified requirements the
      * UnHealthyBackupWasFound event will be fired.
+     *
+     * Same disk list as the destination, so `backup:monitor` (09:00) checks
+     * exactly the places `backup:run` (01:00) wrote to.
      */
     'monitor_backups' => [
         [
             'name' => env('APP_NAME', 'OpesCare'),
-            'disks' => ['s3'],
+            'disks' => $backupDisks,
             'health_checks' => [
                 MaximumAgeInDays::class => 1,
                 MaximumStorageInMegabytes::class => 5000,
             ],
         ],
-
-        /*
-        [
-            'name' => 'name of the second app',
-            'disks' => ['local', 's3'],
-            'health_checks' => [
-                \Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumAgeInDays::class => 1,
-                \Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumStorageInMegabytes::class => 5000,
-            ],
-        ],
-        */
     ],
 
     'cleanup' => [
@@ -324,6 +379,15 @@ return [
          *
          * No matter how you configure it the default strategy will never
          * delete the newest backup.
+         *
+         * Retention policy (one scheduled backup per night at 01:00):
+         *   - every archive for 7 days (7 nightly points, plus any manual runs),
+         *   - then one per day for a further 7 days,
+         *   - then one per week for 4 weeks,
+         *   - then one per month for 3 months,
+         *   - no yearly archives,
+         *   - and never more than 5000 MB in total on a disk (oldest go first).
+         * `backup:clean` runs daily at 00:00 against the same disk list.
          */
         'strategy' => DefaultStrategy::class,
 
@@ -338,26 +402,25 @@ return [
              * of that day will be kept. Older backups within the same day will be removed.
              * If you create backups only once a day, no backups will be removed yet.
              */
-            'keep_daily_backups_for_days' => 16,
+            'keep_daily_backups_for_days' => 7,
 
             /*
              * After the "keep_daily_backups_for_days" period is over, the most recent backup
              * of that week will be kept. Older backups within the same week will be removed.
-             * If you create backups only once a week, no backups will be removed yet.
              */
-            'keep_weekly_backups_for_weeks' => 8,
+            'keep_weekly_backups_for_weeks' => 4,
 
             /*
              * After the "keep_weekly_backups_for_weeks" period is over, the most recent backup
              * of that month will be kept. Older backups within the same month will be removed.
              */
-            'keep_monthly_backups_for_months' => 4,
+            'keep_monthly_backups_for_months' => 3,
 
             /*
              * After the "keep_monthly_backups_for_months" period is over, the most recent backup
              * of that year will be kept. Older backups within the same year will be removed.
              */
-            'keep_yearly_backups_for_years' => 2,
+            'keep_yearly_backups_for_years' => 0,
 
             /*
              * After cleaning up the backups remove the oldest backup until
@@ -369,13 +432,14 @@ return [
 
         /*
          * OpesCare: camelCase alias for test compatibility and documentation clarity.
+         * Keep it identical to `default_strategy` above.
          */
         'defaultStrategy' => [
             'keepAllBackupsForDays' => 7,
-            'keepDailyBackupsForDays' => 16,
-            'keepWeeklyBackupsForWeeks' => 8,
-            'keepMonthlyBackupsForMonths' => 4,
-            'keepYearlyBackupsForYears' => 2,
+            'keepDailyBackupsForDays' => 7,
+            'keepWeeklyBackupsForWeeks' => 4,
+            'keepMonthlyBackupsForMonths' => 3,
+            'keepYearlyBackupsForYears' => 0,
             'deleteOldestBackupsWhenUsingMoreMegabytesThan' => 5000,
         ],
 
