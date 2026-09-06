@@ -60,6 +60,8 @@ use Illuminate\Support\Facades\Log;
  */
 class HealthPassportBuilder
 {
+    use \App\Services\Patient\Passport\FormatsRecords;
+
     public const VERSION = 'HP-2.1';
 
     public const TOTAL_PAGES = 30;
@@ -178,6 +180,15 @@ class HealthPassportBuilder
         }
 
         try {
+            // A page that has been given its own class is built by that class;
+            // anything still living in this file falls through to the match
+            // below. That is what lets the pages be migrated one at a time.
+            $source = \App\Services\Patient\Passport\PageRegistry::for($pageId);
+
+            if ($source !== null) {
+                return $source->build($patient);
+            }
+
             return match ($pageId) {
                 'patient-identity'     => $this->identity($patient),
                 'emergency-profile'    => $this->emergency($patient),
@@ -618,57 +629,6 @@ class HealthPassportBuilder
             ->pluck('substance')
             ->filter()
             ->values();
-    }
-
-    private function credentialStatus(Patient $patient): string
-    {
-        // identity_status is a backed enum on this model (App\Enums\IdentityStatus)
-        // and a plain string on older rows; read both without assuming either.
-        $raw    = $patient->identity_status;
-        $status = strtolower((string) ($raw instanceof \BackedEnum ? $raw->value : ($raw ?? '')));
-
-        return match ($status) {
-            'verified', 'active' => 'ACTIVE',
-            'provisional'        => 'PROVISIONAL',
-            'suspended'          => 'SUSPENDED',
-            'revoked', 'merged'  => 'REVOKED',
-            default              => 'PROVISIONAL',
-        };
-    }
-
-    private function displayName(Patient $patient): string
-    {
-        return trim(((string) $patient->first_name) . ' ' . ((string) $patient->last_name)) ?: (string) $patient->health_id;
-    }
-
-    /**
-     * A status the reader can understand, and never a raw translation key.
-     *
-     * Statuses arrive from several tables and some carry spellings this
-     * codebase has not met. A missing translation therefore falls back to the
-     * recorded word itself, tidied — "in_progress" reads as "In progress", not
-     * as "passport.status_in_progress".
-     */
-    private function statusLabel(?string $status): string
-    {
-        $raw = trim((string) $status);
-
-        if ($raw === '') {
-            return __('passport.not_recorded');
-        }
-
-        $key = 'passport.status_' . strtolower($raw);
-
-        return \Illuminate\Support\Facades\Lang::has($key)
-            ? __($key)
-            : ucfirst(str_replace('_', ' ', strtolower($raw)));
-    }
-
-    private function sexLabel(?string $sex): string
-    {
-        $key = 'passport.sex_' . strtolower(trim((string) $sex));
-
-        return \Illuminate\Support\Facades\Lang::has($key) ? __($key) : __('passport.not_recorded');
     }
 
     private function section(string $key, array $items): array
