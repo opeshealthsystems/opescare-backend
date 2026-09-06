@@ -5,6 +5,7 @@ namespace App\Services\Patient;
 use App\Models\Admission;
 use App\Models\ImmunizationRecord;
 use App\Models\LabOrder;
+use App\Models\OfficialDocument;
 use App\Models\Patient;
 use App\Models\Prescription;
 use App\Support\QrSvg;
@@ -153,6 +154,10 @@ class PatientDocumentService
     {
         $out = [];
 
+        // A prescription that already has an issued document is offered once,
+        // as that document, not twice.
+        $covered = $this->coveredRecordIds($patient);
+
         foreach (
             LabOrder::where('patient_id', $patient->id)
                 ->whereIn('status', ['resulted', 'completed', 'released', 'reported'])
@@ -209,9 +214,77 @@ class PatientDocumentService
             ];
         }
 
+        $out = array_values(array_filter(
+            $out,
+            fn (array $item) => ! isset($covered[$item['type'] . ':' . ($item['record'] ?? '')])
+        ));
+
         usort($out, fn ($a, $b) => (string) ($b['date'] ?? '') <=> (string) ($a['date'] ?? ''));
 
         return $out;
+    }
+
+    /**
+     * The record an already-issued document was made from, if we can render it.
+     *
+     * `official_documents` rows name their source in `payload_json` — a
+     * prescription id, a lab order id — but carry no file, because nothing in
+     * this codebase writes one. Rather than list them with a Download button
+     * that fails, they are rendered from the same record they were issued from.
+     *
+     * @return array{0: string, 1: string|null}|null  [type, record id]
+     */
+    public function renderableFor(OfficialDocument $document): ?array
+    {
+        $payload = $document->payload_json;
+
+        if (is_string($payload)) {
+            $payload = json_decode($payload, true);
+        }
+
+        $payload = is_array($payload) ? $payload : [];
+
+        $type = strtolower((string) $document->document_type);
+
+        $prescription = $payload['prescription_id'] ?? null;
+        $labOrder     = $payload['lab_order_id'] ?? ($payload['order_id'] ?? null);
+        $admission    = $payload['admission_id'] ?? null;
+
+        return match (true) {
+            in_array($type, ['rx', 'prescription'], true) && $prescription
+                => [self::PRESCRIPTION, (string) $prescription],
+            in_array($type, ['lab_report', 'laboratory_report'], true) && $labOrder
+                => [self::LABORATORY_REPORT, (string) $labOrder],
+            $type === 'discharge_summary' && $admission
+                => [self::DISCHARGE_SUMMARY, (string) $admission],
+            in_array($type, ['vaccination_card', 'immunisation_record', 'immunization_record'], true)
+                => [self::IMMUNISATION, null],
+            default => null,
+        };
+    }
+
+    /**
+     * The record ids already covered by an issued document, so the same
+     * prescription is not offered twice — once as the issued sheet and once as
+     * the on-demand one.
+     *
+     * @return array<string,true>
+     */
+    public function coveredRecordIds(Patient $patient): array
+    {
+        $covered = [];
+
+        foreach (
+            OfficialDocument::where('patient_id', $patient->id)->get() as $document
+        ) {
+            $renderable = $this->renderableFor($document);
+
+            if ($renderable !== null && $renderable[1] !== null) {
+                $covered[$renderable[0] . ':' . $renderable[1]] = true;
+            }
+        }
+
+        return $covered;
     }
 
     // ── What each document reads ─────────────────────────────────────────

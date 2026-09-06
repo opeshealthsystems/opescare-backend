@@ -106,7 +106,7 @@
                         <td>{{ $doc->expires_at ? \Illuminate\Support\Carbon::parse($doc->expires_at)->translatedFormat('d M Y') : '—' }}</td>
                         <td><span class="f-badge {{ $doc->status === 'released' ? 'f-badge--good' : 'pf-badge--muted' }}">@enum($doc->status)</span></td>
                         <td style="text-align:right;">
-                            @if($doc->status === 'released')
+                            @if(app(\App\Services\Patient\PatientDocumentService::class)->renderableFor($doc))
                             <a href="{{ route('portals.patient.documents.download', $doc->id) }}" class="f-btn" style="min-height:36px;padding:4px 10px;">
                                 <i data-lucide="download" aria-hidden="true" style="width:15px;height:15px;"></i>
                                 {{ __('family.doc_download') }}

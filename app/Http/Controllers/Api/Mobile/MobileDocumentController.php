@@ -153,7 +153,33 @@ class MobileDocumentController extends Controller
             'issued_at'         => $d->issued_at?->toIso8601String(),
             'document_number'   => $d->document_number,
             'verification_code' => $d->verification_code,
+            // An issued row names the record it was made from and carries no
+            // file, so it is rendered from that record rather than listed with
+            // a Download button that cannot work.
+            'download_url'      => $this->issuedDownloadUrl($d),
         ];
+    }
+
+    /** A signed link for an issued document we can render, or null. */
+    private function issuedDownloadUrl(OfficialDocument $d): ?string
+    {
+        $renderable = app(PatientDocumentService::class)->renderableFor($d);
+
+        if ($renderable === null) {
+            return null;
+        }
+
+        [$type, $record] = $renderable;
+
+        return URL::temporarySignedRoute(
+            'mobile.documents.download',
+            now()->addMinutes(15),
+            array_filter([
+                'type'    => $type,
+                'patient' => (string) $d->patient_id,
+                'record'  => $record,
+            ])
+        );
     }
 
     private function formatDocumentDetail(OfficialDocument $d): array

@@ -711,7 +711,7 @@ class PatientPortalController extends Controller
             ? OfficialDocument::where('patient_id', $patient->id)
                 // pdf_path is a server filesystem path — never expose it to the
                 // list view; downloads resolve it in their own scoped query.
-                ->select(['id', 'title', 'document_type', 'document_number', 'status', 'issued_at', 'expires_at', 'sensitivity_level'])
+                ->select(['id', 'title', 'document_type', 'document_number', 'status', 'issued_at', 'expires_at', 'sensitivity_level', 'payload_json', 'patient_id'])
                 ->orderByDesc('issued_at')
                 ->paginate(20)
             : collect([]);
@@ -737,44 +737,27 @@ class PatientPortalController extends Controller
      * Download a released official document PDF
      */
     /**
-     * Hand the patient one of their documents, generated now.
+     * An already-issued document, rendered from the record it was made from.
      *
-     * Nothing is stored. The sheet is rendered from the record at the moment of
-     * the request and streamed straight out, so what the patient takes away is
-     * the record as it stands rather than a copy of how it looked whenever some
-     * file happened to be written. See PatientDocumentService for why that is
-     * the design and not an optimisation.
-     *
-     * The patient is resolved the same way every other page in this portal
-     * resolves it — including a guardian who has switched to a dependent — and
-     * the service refuses any record that does not belong to them.
+     * These rows carry a document number and a verification code but no file —
+     * `pdf_path` is a column nothing in this codebase writes. This used to read
+     * that path and tell the patient the document was "not available", which
+     * was true and useless. It now renders the same record the document was
+     * issued from, so the button works.
      */
-    public function renderDocument(Request $request, PatientDocumentService $documents, string $type, ?string $record = null)
+    public function documentDownload(Request $request, string $id)
     {
         $patient = $this->resolveViewingPatient();
         abort_if(! $patient, 403);
 
-        $this->ctx->auditPatientAccess(
-            actionType:   'patient_document_generated',
-            resourceType: 'PatientDocument',
-            resourceId:   $record ?? $type,
-            patientId:    $patient->id,
-        );
-
-        return $documents->download($patient, $type, $record, $request->user()?->id);
-    }
-
-    public function documentDownload(Request $request, string $id)
-    {
-        $patient = $this->resolveViewingPatient();
-        abort_if(!$patient, 403);
-
         $doc = OfficialDocument::where('id', $id)
             ->where('patient_id', $patient->id)
-            ->where('status', 'released')
             ->firstOrFail();
 
-        if (!$doc->pdf_path || !Storage::exists($doc->pdf_path)) {
+        $documents  = app(PatientDocumentService::class);
+        $renderable = $documents->renderableFor($doc);
+
+        if ($renderable === null) {
             return back()->with('warning', __('flash.document_not_available'));
         }
 
@@ -785,9 +768,9 @@ class PatientPortalController extends Controller
             patientId:    $patient->id,
         );
 
-        $filename = Str::slug($doc->title ?? $doc->document_type) . '-' . ($doc->document_number ?? $doc->id) . '.pdf';
+        [$type, $record] = $renderable;
 
-        return Storage::download($doc->pdf_path, $filename, ['Content-Type' => 'application/pdf']);
+        return $documents->download($patient, $type, $record, $request->user()?->id);
     }
 
     /**
