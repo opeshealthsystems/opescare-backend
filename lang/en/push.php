@@ -45,6 +45,7 @@ return [
     'emergency_access' => [
         'title' => 'Emergency access to your record',
         'body'  => ':facility opened your health record under emergency access. Tap to see the details.',
+        'a_facility' => 'A facility',
     ],
 
     // Sent by `php artisan opescare:push-test` — proves the chain end to end.

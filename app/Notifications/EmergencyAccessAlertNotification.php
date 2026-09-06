@@ -52,7 +52,7 @@ class EmergencyAccessAlertNotification extends Notification implements ShouldQue
             'accessed_at'      => $this->accessedAt,
             'ip_address'       => $this->ipAddress,
             'severity'         => 'high',
-            'action_url'       => '/portals/patient/logs',
+            'action_url'       => '/patient/access-logs',
             'action_label'     => 'View Access Logs',
         ];
     }

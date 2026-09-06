@@ -12,6 +12,7 @@ use App\Models\AllergyRecord;
 use App\Models\Diagnosis;
 use App\Models\SecurityIncident;
 use App\Notifications\EmergencyAccessAlertNotification;
+use App\Support\PatientPush;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
@@ -582,6 +583,8 @@ class EmergencyAccessService
             $event->notified_at = Carbon::now();
             $event->save();
 
+            $this->pushBreakGlassAlert($patient, $event);
+
             return true;
         } catch (\Throwable $e) {
             Log::error('Break-glass patient alert failed', [
@@ -590,6 +593,51 @@ class EmergencyAccessService
             ]);
 
             return false;
+        }
+    }
+
+    /**
+     * The break-glass alert, on the patient's phone, with the emergency sound.
+     *
+     * The bell row above is the record; this is the part a patient actually
+     * notices while it is still happening. `emergency_access` is one of the
+     * types PatientPush never suppresses — a person cannot opt out of being
+     * told their record was opened without their consent — and it carries the
+     * facility's own name rather than an id, because "CHU de Yaounde opened
+     * your record" is the sentence that means something at 2am.
+     *
+     * Best effort, and deliberately after `notified_at` is saved: the bell has
+     * already landed, the override already stands, and a push that cannot be
+     * sent must not undo either.
+     */
+    private function pushBreakGlassAlert(Patient $patient, EmergencyAccessEvent $event): void
+    {
+        if (! class_exists(PatientPush::class)) {
+            return;
+        }
+
+        try {
+            $locale   = PatientPush::localeFor($patient);
+            $facility = Facility::withoutGlobalScope('isolate_demo')
+                ->whereKey($event->facility_id)
+                ->value('name');
+
+            PatientPush::send(
+                $patient,
+                'emergency_access',
+                __('push.emergency_access.title', [], $locale),
+                __('push.emergency_access.body', ['facility' => $facility ?: __('push.emergency_access.a_facility', [], $locale)], $locale),
+                [
+                    'emergency_access_event_id' => (string) $event->id,
+                    'facility_id'               => (string) $event->facility_id,
+                    'action_url'                => '/privacy/access-logs',
+                ],
+            );
+        } catch (\Throwable $e) {
+            Log::warning('Break-glass push was not sent', [
+                'emergency_access_event_id' => $event->id,
+                'error'                     => $e->getMessage(),
+            ]);
         }
     }
 

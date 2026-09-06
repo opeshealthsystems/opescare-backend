@@ -45,6 +45,7 @@ return [
     'emergency_access' => [
         'title' => 'Accès d\'urgence à votre dossier',
         'body'  => ':facility a ouvert votre dossier de santé en accès d\'urgence. Touchez pour voir les détails.',
+        'a_facility' => 'Un établissement',
     ],
 
     // Envoyé par `php artisan opescare:push-test` — vérifie toute la chaîne.
