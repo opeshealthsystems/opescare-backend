@@ -22,9 +22,13 @@ return [
 
     'latest_version' => env('MOBILE_LATEST_VERSION', '1.0.0'),
 
+    // The package this app is actually published under. It used to name
+    // `com.opescare.patient`, which is a different app: AppUpdateGate opens
+    // this URL, so a user told their build was too old was sent to somebody
+    // else's listing and could never get the update.
     'store_url' => env(
         'MOBILE_STORE_URL',
-        'https://play.google.com/store/apps/details?id=com.opescare.patient'
+        'https://play.google.com/store/apps/details?id=cloud.opescare.finder'
     ),
 
 ];
