@@ -60,6 +60,13 @@
   function flag(name) { return QUERY ? QUERY.get(name) : null; }
   var STATIC = flag('ui') === 'static';
   var CONTROL_POSITION = flag('controls') === 'topright' ? 'topright' : 'topleft';
+  var LABELS = flag('labels') === '1';
+  var RADIUS_KM = parseFloat(flag('radiusKm') || '') || 0;
+  var CENTER = (function () {
+    var raw = (flag('center') || '').split(',');
+    var lat = parseFloat(raw[0]), lng = parseFloat(raw[1]);
+    return (isFinite(lat) && isFinite(lng)) ? [lat, lng] : null;
+  })();
 
   function FinderMapInstance(container, config) {
     this.container = container;
@@ -77,7 +84,8 @@
     if (this._built || typeof L === 'undefined') return;
     this._built = true;
 
-    var center = this.facilities.length ? [this.facilities[0].lat, this.facilities[0].lng] : [5.5, 12.0];
+    var center = CENTER
+      || (this.facilities.length ? [this.facilities[0].lat, this.facilities[0].lng] : [5.5, 12.0]);
     this.map = L.map(this.container, {
       zoomControl: !STATIC,
       scrollWheelZoom: !STATIC && !this.single,
@@ -98,14 +106,37 @@
     }).addTo(this.map);
 
     var self = this, bounds = [];
+
+    // The search area, drawn before the pins so the pins sit on top of it.
+    var ring = null;
+    if (RADIUS_KM > 0 && CENTER) {
+      ring = L.circle(CENTER, {
+        radius: RADIUS_KM * 1000,
+        color: '#0F4C81', weight: 1.2, opacity: .55,
+        fillColor: '#0F4C81', fillOpacity: .07, interactive: false,
+      }).addTo(this.map);
+    }
+
     this.facilities.forEach(function (f) {
       var color = TYPE_COLORS[f.type] || TYPE_COLORS.other;
       var m = L.marker([f.lat, f.lng], { icon: markerIcon(color) }).addTo(self.map);
       m.bindPopup(self.popupHtml(f), { maxWidth: 250 });
+      // The reference labels every pin with the facility's name. Permanent,
+      // below the pin, and non-interactive so it never eats a tap on the pin.
+      if (LABELS && f.name) {
+        m.bindTooltip(esc(f.name), {
+          permanent: true, direction: 'bottom', offset: [0, 2],
+          className: 'finder-pin-label', interactive: false,
+        });
+      }
       self.markers[f.id] = m;
       bounds.push([f.lat, f.lng]);
     });
-    if (bounds.length > 1) this.map.fitBounds(L.latLngBounds(bounds).pad(0.2));
+
+    // Fit to the circle when there is one, so the area the patient asked for
+    // is the area they see — otherwise to the pins.
+    if (ring) this.map.fitBounds(ring.getBounds().pad(0.05));
+    else if (bounds.length > 1) this.map.fitBounds(L.latLngBounds(bounds).pad(0.2));
 
     // A "locate me" control drops the user pin on THIS map (no page reload).
     // A thumbnail has no controls at all.

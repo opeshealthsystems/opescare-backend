@@ -19,6 +19,19 @@
             overflow: hidden; text-overflow: ellipsis;
         }
         .finder-map-locate { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: #fff; color: #0F4C81; border: 0; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,.25); cursor: pointer; }
+        /* The reference's pin label: a small white plate under the pin. */
+        .finder-pin-label.leaflet-tooltip {
+            background: #fff; color: #0f172a; border: 0; border-radius: 5px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.28); padding: 2px 6px;
+            font-family: -apple-system, system-ui, Roboto, sans-serif;
+            font-size: 11px; font-weight: 600; line-height: 14px;
+            /* Natural width up to a cap: without it Leaflet sizes the
+               plate to its narrowest word and "Hopital Central de Yaounde"
+               came out one word per line. */
+            width: max-content; max-width: 150px;
+            white-space: normal; text-align: center;
+        }
+        .finder-pin-label.leaflet-tooltip::before { display: none; }
         .finder-user-dot { width: 22px; height: 22px; position: relative; }
         .finder-user-dot span { position: absolute; inset: 5px; background: #2563EB; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 0 4px rgba(37,99,235,.25); }
         .finder-map-popup { padding: .7rem; font-family: -apple-system, system-ui, Roboto, sans-serif; min-width: 160px; }
