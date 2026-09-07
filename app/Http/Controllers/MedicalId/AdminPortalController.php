@@ -51,6 +51,19 @@ class AdminPortalController extends Controller
             'monthly_revenue'      => \App\Models\Invoice::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->where('status', 'paid')->sum('subtotal_amount'),
         ] : null;
 
-        return view('portals.admin.index', compact('stats', 'recentLogs', 'platformStats'));
+        // The duplicate-review panel used to load itself from
+        // `/api/v1/connect/admin/merge-cases`, an endpoint this fork does not
+        // have — so it sat on its loading spinner forever. The real desk is
+        // AdminIdentityReviewController at /admin/mpi; the dashboard now shows
+        // that desk's own count and links to it instead of pretending to be it.
+        // Platform tier only, for the same reason the figures above are: the
+        // MPI queue spans every facility, and /admin/mpi is behind
+        // RequirePlatformAdmin — offering a facility admin a link that 403s
+        // is the exact bug SidebarLinksAreReachableTest exists to catch.
+        $duplicatesPending = $platformStats === null
+            ? null
+            : \App\Models\MpiCandidate::where('status', 'pending_review')->count();
+
+        return view('portals.admin.index', compact('stats', 'recentLogs', 'platformStats', 'duplicatesPending'));
     }
 }

@@ -1786,6 +1786,13 @@ return [
         'nav_help'                   => 'Help',
 
         // Page header
+        // The duplicate-review desk lives at /admin/mpi; the dashboard links
+        // to it rather than re-implementing it against an API this fork
+        // removed. See AdminIdentityReviewController.
+        'duplicates_pending'         => ':count case awaiting review|:count cases awaiting review',
+        'duplicates_none'            => 'No duplicate cases are waiting for review.',
+        'duplicates_open_desk'       => 'Open the identity desk',
+
         'page_title'                 => 'Admin Governance Portal',
         'page_subtitle'              => 'Manage Health IDs, review duplicate cases, and monitor security events.',
         'btn_duplicate_review'       => 'Duplicate Review',

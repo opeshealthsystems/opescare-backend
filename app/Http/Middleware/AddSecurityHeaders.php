@@ -46,6 +46,18 @@ class AddSecurityHeaders
         // on these pages only, and only for workers — script-src is untouched.
         $isDocs = $request->is('docs') || $request->is('docs/*');
 
+        // Laravel Horizon's dashboard is a compiled Vue bundle that builds its
+        // render functions at runtime, which needs 'unsafe-eval'. Without it
+        // the page loaded and then rendered nothing at all — a blank queue
+        // dashboard, with the reason only visible in the browser console.
+        //
+        // Granted on Horizon's own path and nowhere else. It is reachable only
+        // by a platform administrator, it serves Horizon's own asset rather
+        // than anything a user can influence, and script-src stays as it is for
+        // every other page on the deployment.
+        $horizonPath = trim((string) config('horizon.path', 'horizon'), '/');
+        $isHorizon = $horizonPath !== '' && ($request->is($horizonPath) || $request->is($horizonPath . '/*'));
+
         // ── Universal headers ────────────────────────────────────────────────
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('X-Frame-Options', $isEmbed ? 'SAMEORIGIN' : 'DENY');
@@ -81,7 +93,7 @@ class AddSecurityHeaders
                 // dashboards' buttons/icons are all dead. XSS defence still relies
                 // on Blade auto-escaping + CSRF. HARDENING TODO: externalise the
                 // inline JS to event listeners, then drop 'unsafe-inline'.
-                "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " .
+                "script-src 'self' 'unsafe-inline' " . ($isHorizon ? "'unsafe-eval' " : '') . "https://cdn.jsdelivr.net; " .
                 "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; " .
                 "font-src 'self' https://fonts.gstatic.com; " .
                 "img-src 'self' data: https:; " .

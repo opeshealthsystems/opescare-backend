@@ -1806,6 +1806,13 @@ return [
         'nav_help'                   => 'Aide',
 
         // Page header
+        // Le bureau de revue des doublons se trouve sur /admin/mpi ; le tableau
+        // de bord y renvoie au lieu de le réimplémenter contre une API que ce
+        // dépôt a retirée. Voir AdminIdentityReviewController.
+        'duplicates_pending'         => ':count dossier en attente de revue|:count dossiers en attente de revue',
+        'duplicates_none'            => 'Aucun doublon n’attend de revue.',
+        'duplicates_open_desk'       => 'Ouvrir le bureau des identités',
+
         'page_title'                 => 'Portail de Gouvernance Admin',
         'page_subtitle'              => "Gérez les identifiants de santé, révisez les cas de doublons et surveillez les événements de sécurité.",
         'btn_duplicate_review'       => 'Révision des doublons',
