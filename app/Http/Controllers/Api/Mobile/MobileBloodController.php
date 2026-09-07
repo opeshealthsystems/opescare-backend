@@ -237,6 +237,115 @@ class MobileBloodController extends Controller
     /**
      * POST /api/mobile/blood/requests/{id}/cancel
      */
+    /**
+     * GET /api/mobile/blood/requests/{id}
+     *
+     * The tracking screen (PM-BLOOD-05) needs ONE request, not the list: it
+     * polls a single row and must be able to tell "gone" from "not yours".
+     * Both answer 404 on purpose — a patient learning that a request id exists
+     * but belongs to somebody else is a disclosure, and the refusal wording
+     * must not reveal existence.
+     */
+    public function show(Request $request, string $id): JsonResponse
+    {
+        $patientId = (string) $request->attributes->get('patient_id');
+
+        $bloodRequest = BloodRequest::query()
+            ->with('careFacility')
+            ->where('patient_id', $patientId)
+            ->find($id);
+
+        if (! $bloodRequest) {
+            return response()->json([
+                'message'    => 'Request not found.',
+                'error_code' => 'REQUEST_NOT_FOUND',
+            ], 404);
+        }
+
+        return response()->json(['data' => $this->requestPayload($bloodRequest)]);
+    }
+
+    /**
+     * PATCH /api/mobile/blood/requests/{id}
+     *
+     * Amend a request the facility has not acted on yet (PM-BLOOD-06).
+     *
+     * ── What may change, and what may not ──────────────────────────────────
+     * Quantity, urgency, contact phone, note and needed-by. NOT the blood
+     * group, NOT the component, NOT the facility: those three define what was
+     * checked against stock and reserved when the request was accepted, so
+     * changing them is not an amendment, it is a different request. The
+     * patient cancels and asks again, which re-runs the availability check
+     * instead of quietly moving a hold onto units nobody verified.
+     *
+     * ── When it may change ─────────────────────────────────────────────────
+     * Only while the request is still cancellable by the patient — the same
+     * gate the cancel route uses (pending / confirmed / ready). Once a
+     * facility has fulfilled, rejected or expired it, the record is history
+     * and history is not edited.
+     *
+     * The row is written directly rather than through BloodRequestService
+     * because the service's `request()` is a CREATE path: it mints a
+     * reference, re-checks availability and takes a hold. None of that applies
+     * to editing a note or a phone number on a hold that already exists.
+     */
+    public function update(Request $request, string $id): JsonResponse
+    {
+        $validated = $request->validate([
+            'quantity'      => ['nullable', 'integer', 'min:1', 'max:' . BloodRequestService::MAX_UNITS],
+            'urgency'       => ['nullable', 'string', Rule::in(BloodRequestUrgency::values())],
+            'contact_phone' => ['nullable', 'string', 'max:32'],
+            'note'          => ['nullable', 'string', 'max:500'],
+            'needed_by'     => ['nullable', 'date', 'after_or_equal:today'],
+        ]);
+
+        $patientId = (string) $request->attributes->get('patient_id');
+
+        $bloodRequest = BloodRequest::query()
+            ->with('careFacility')
+            ->where('patient_id', $patientId)
+            ->find($id);
+
+        if (! $bloodRequest) {
+            return response()->json([
+                'message'    => 'Request not found.',
+                'error_code' => 'REQUEST_NOT_FOUND',
+            ], 404);
+        }
+
+        if (! $bloodRequest->status->isCancellableByPatient()) {
+            return response()->json([
+                'message'    => 'This request can no longer be changed.',
+                'error_code' => 'REQUEST_NOT_EDITABLE',
+            ], 409);
+        }
+
+        $changes = [];
+
+        if (array_key_exists('quantity', $validated) && $validated['quantity'] !== null) {
+            $changes['quantity'] = (int) $validated['quantity'];
+        }
+        if (array_key_exists('urgency', $validated) && $validated['urgency'] !== null) {
+            $changes['urgency'] = $validated['urgency'];
+        }
+        if (array_key_exists('contact_phone', $validated)) {
+            $changes['contact_phone'] = $validated['contact_phone'];
+        }
+        if (array_key_exists('note', $validated)) {
+            $changes['patient_note'] = $validated['note'];
+        }
+        if (array_key_exists('needed_by', $validated)) {
+            $changes['needed_by'] = $validated['needed_by'];
+        }
+
+        if ($changes !== []) {
+            $bloodRequest->update($changes);
+            $bloodRequest->refresh()->load('careFacility');
+        }
+
+        return response()->json(['data' => $this->requestPayload($bloodRequest)]);
+    }
+
     public function cancel(Request $request, string $id): JsonResponse
     {
         $request->validate(['reason' => 'nullable|string|max:255']);
