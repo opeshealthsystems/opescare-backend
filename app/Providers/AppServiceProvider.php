@@ -47,6 +47,17 @@ class AppServiceProvider extends ServiceProvider
          */
         \App\Models\MobileInvoice::observe(\App\Observers\MobileInvoiceObserver::class);
 
+        /*
+         * The appointment reminder ladder, kept in step with the appointment.
+         *
+         * An observer rather than a call at each booking site: an appointment
+         * is created or moved from self-booking, the front desk, the staff
+         * portal, the mobile reschedule endpoint, the waitlist and the demo
+         * seeders, and the bug being fixed here is exactly that NONE of them
+         * scheduled a reminder. See App\Observers\AppointmentReminderObserver.
+         */
+        \App\Models\Appointment::observe(\App\Observers\AppointmentReminderObserver::class);
+
         // @feature('insurance') … @endfeature — hide UI belonging to a module
         // frozen out of the V1 launch scope (config/features.php). FAILS CLOSED:
         // an unknown key renders nothing.

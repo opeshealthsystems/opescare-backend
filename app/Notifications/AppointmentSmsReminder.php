@@ -40,7 +40,11 @@ class AppointmentSmsReminder extends Notification
             : 'TBD';
         $facility = $appt->facility?->name ?? 'your facility';
 
+        // "Reply CANCEL to cancel" used to end this message. Nothing on this
+        // platform reads inbound SMS, so it was an instruction the software
+        // could not carry out; a patient who followed it would have kept an
+        // appointment they believed they had cancelled.
         return "OpesCare Reminder: Your appointment on {$date} at {$time} at {$facility} is confirmed. " .
-               "Reply CANCEL to cancel. OpesCare Support: " . (config('opescare.support_phone') ?: config('opescare.support_email') ?: 'support@opescare.com');
+               "OpesCare Support: " . (config('opescare.support_phone') ?: config('opescare.support_email') ?: 'support@opescare.com');
     }
 }

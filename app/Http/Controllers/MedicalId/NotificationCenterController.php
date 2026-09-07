@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\MedicalId;
 
 use App\Http\Controllers\Controller;
+use App\Support\WebNotificationLink;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -61,7 +62,9 @@ class NotificationCenterController extends Controller
                 'priority'   => $e->priority,
                 'title'      => $payload['title'] ?? null,
                 'body'       => $payload['body'] ?? ($payload['message'] ?? null),
-                'url'        => $payload['url'] ?? null,
+                // Most emitters write the APP's path here; the web can only
+                // link one the router actually has. See WebNotificationLink.
+                'url'        => WebNotificationLink::resolve($payload['url'] ?? null),
                 'created_at' => $e->created_at,
                 'is_new'     => $seenAt === null || $e->created_at > $seenAt,
             ];

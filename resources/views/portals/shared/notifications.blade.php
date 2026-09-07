@@ -88,7 +88,10 @@
 
                         $title = $p['title'] ?? \Illuminate\Support\Str::headline($e->event_type);
                         $body  = $p['body'] ?? ($p['message'] ?? '');
-                        $url   = $p['url'] ?? null;
+                        // The payload's url is usually an APP path (`/labs/<id>`,
+                        // `/clinician/results/lab-<id>`) and the web has no such
+                        // page; linking it produced a 404 from the bell.
+                        $url   = \App\Support\WebNotificationLink::resolve($p['url'] ?? null);
 
                         $isUnread = $seenAt === null || $e->created_at > $seenAt;
                         $time     = \Illuminate\Support\Carbon::parse($e->created_at)->diffForHumans();
