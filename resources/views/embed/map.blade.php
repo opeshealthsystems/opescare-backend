@@ -9,6 +9,15 @@
         html, body { height: 100%; margin: 0; padding: 0; background: #eef2f6; }
         #embed-shell { position: absolute; inset: 0; }
         #embed-map { width: 100%; height: 100%; }
+        /* A thumbnail is ~110pt square. OpenStreetMap's credit is a licence
+           condition and stays, but it has to stay INSIDE the box: on three
+           wrapped lines it spilled out under the rounded corner and sat
+           beneath the host's own "Map" button. */
+        body.is-static .leaflet-control-attribution {
+            font-size: 9px; line-height: 12px; padding: 0 4px;
+            max-width: 100%; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis;
+        }
         .finder-map-locate { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: #fff; color: #0F4C81; border: 0; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,.25); cursor: pointer; }
         .finder-user-dot { width: 22px; height: 22px; position: relative; }
         .finder-user-dot span { position: absolute; inset: 5px; background: #2563EB; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 0 4px rgba(37,99,235,.25); }
@@ -19,7 +28,7 @@
         .finder-map-popup .fmp-link { font-size: .8rem; font-weight: 600; color: #0F4C81; text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; }
     </style>
 </head>
-<body>
+<body @class(['is-static' => request()->query('ui') === 'static'])>
 @php
     // Accept EITHER ?markers=<url-encoded JSON array of {lat,lng,name,city,distance,id}>
     // OR a single facility via ?lat=&lng=&name=&city=. Everything is optional and
@@ -91,6 +100,6 @@
     @endif
 </script>
 <script src="{{ asset('js/leaflet.js') }}"></script>
-<script src="{{ asset('js/finder-map.js') }}"></script>
+<script src="{{ asset('js/finder-map.js') }}?v={{ @filemtime(public_path('js/finder-map.js')) ?: 1 }}"></script>
 </body>
 </html>

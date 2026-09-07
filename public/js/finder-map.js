@@ -53,6 +53,14 @@
   var I18N = (window.FINDER_MAP_I18N || {});
   function t(key, fallback) { return I18N[key] || fallback; }
 
+  // Presentation flags, read from the embed URL. Absent means "full map".
+  var QUERY = (function () {
+    try { return new URLSearchParams(window.location.search); } catch (e) { return null; }
+  })();
+  function flag(name) { return QUERY ? QUERY.get(name) : null; }
+  var STATIC = flag('ui') === 'static';
+  var CONTROL_POSITION = flag('controls') === 'topright' ? 'topright' : 'topleft';
+
   function FinderMapInstance(container, config) {
     this.container = container;
     this.single = !!config.single;
@@ -70,7 +78,20 @@
     this._built = true;
 
     var center = this.facilities.length ? [this.facilities[0].lat, this.facilities[0].lng] : [5.5, 12.0];
-    this.map = L.map(this.container, { zoomControl: true, scrollWheelZoom: !this.single }).setView(center, this.single ? 14 : 6);
+    this.map = L.map(this.container, {
+      zoomControl: !STATIC,
+      scrollWheelZoom: !STATIC && !this.single,
+      dragging: !STATIC,
+      touchZoom: !STATIC,
+      doubleClickZoom: !STATIC,
+      boxZoom: !STATIC,
+      keyboard: !STATIC,
+      tap: !STATIC,
+      attributionControl: true,
+    }).setView(center, this.single ? 14 : 6);
+    // Leaflet's own "Leaflet |" prefix is optional; OpenStreetMap's credit is not.
+    this.map.attributionControl.setPrefix(false);
+    if (!STATIC && this.map.zoomControl) this.map.zoomControl.setPosition(CONTROL_POSITION);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       maxZoom: 19,
@@ -87,8 +108,9 @@
     if (bounds.length > 1) this.map.fitBounds(L.latLngBounds(bounds).pad(0.2));
 
     // A "locate me" control drops the user pin on THIS map (no page reload).
+    // A thumbnail has no controls at all.
     var Locate = L.Control.extend({
-      options: { position: 'topleft' },
+      options: { position: CONTROL_POSITION },
       onAdd: function () {
         var btn = L.DomUtil.create('button', 'finder-map-locate');
         btn.type = 'button';
@@ -99,7 +121,7 @@
         return btn;
       },
     });
-    this.map.addControl(new Locate());
+    if (!STATIC) this.map.addControl(new Locate());
     setTimeout(function () { self.map.invalidateSize(); }, 60);
   };
 

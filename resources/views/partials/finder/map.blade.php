@@ -42,7 +42,7 @@
          with no dependency on the layout exposing a @stack. --}}
     <link rel="stylesheet" href="{{ asset('css/leaflet.css') }}">
     <script src="{{ asset('js/leaflet.js') }}" defer></script>
-    <script src="{{ asset('js/finder-map.js') }}" defer></script>
+    <script src="{{ asset('js/finder-map.js') }}?v={{ @filemtime(public_path('js/finder-map.js')) ?: 1 }}" defer></script>
     <script>
             window.FINDER_MAP_I18N = {
                 view: @json(__('finder_map.view', [], $l) ?: 'View'),
