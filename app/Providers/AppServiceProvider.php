@@ -29,7 +29,23 @@ class AppServiceProvider extends ServiceProvider
         // 'household' is added in Phase 3 alongside the Household model.
         Relation::morphMap([
             'patient' => \App\Models\Patient::class,
+            // A facility subscribes to the platform under its own audience in
+            // the plan catalogue, so `subscriber()` has to resolve for it too.
+            // Legacy rows carry the token 'organization' and are untouched.
+            'facility' => \App\Models\Facility::class,
         ]);
+
+        /*
+         * The wire between a settled invoice and the subscription it paid for.
+         *
+         * Registered here rather than inside the payment services because
+         * PaymentChargeService is the single writer of payment status and has
+         * no business knowing that subscriptions exist. The observer reacts
+         * only to a status CHANGE on an invoice stamped
+         * `subject_type = 'subscription'`; every other invoice passes through
+         * without a query. See App\Observers\MobileInvoiceObserver.
+         */
+        \App\Models\MobileInvoice::observe(\App\Observers\MobileInvoiceObserver::class);
 
         // @feature('insurance') … @endfeature — hide UI belonging to a module
         // frozen out of the V1 launch scope (config/features.php). FAILS CLOSED:
@@ -217,6 +233,12 @@ class AppServiceProvider extends ServiceProvider
         // parallel work on separate features cannot collide in one file.
         Route::middleware('api')
             ->group(base_path('routes/mobile_payments.php'));
+
+        // Mobile subscription routes (the plan catalogue and taking one out) —
+        // same rationale, and deliberately a separate file from the payments
+        // one: they share the payment rail, not the surface.
+        Route::middleware('api')
+            ->group(base_path('routes/mobile_subscriptions.php'));
 
         // Mobile messaging recipients route — loaded here rather than in
         // routes/api.php so parallel work on separate features cannot collide.

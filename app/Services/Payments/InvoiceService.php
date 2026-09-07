@@ -35,6 +35,12 @@ final class InvoiceService
      *
      * @param  string  $patientId    From `$request->attributes`, never a body.
      * @param  string  $subjectType  'appointment' | 'lab_order' | 'medicine_reservation' | …
+     * @param  string|null  $reference  For an issuer that carries its OWN
+     *         idempotency key and wants the unique index on `reference` to be
+     *         the thing that stops one submit issuing two invoices: pass a
+     *         reference derived from that key, and a retry collides on INSERT
+     *         instead of racing (see `SubscriptionCheckoutService`). Everyone
+     *         else passes null and gets a fresh random one.
      */
     public function issueFor(
         string $patientId,
@@ -45,9 +51,10 @@ final class InvoiceService
         ?string $facilityId = null,
         ?int $ttlHours = null,
         bool $isDemo = false,
+        ?string $reference = null,
     ): MobileInvoice {
         $invoice = new MobileInvoice([
-            'reference'    => $this->mintReference(),
+            'reference'    => $reference ?? $this->mintReference(),
             'facility_id'  => $facilityId,
             'subject_type' => $subjectType,
             'subject_id'   => $subjectId,

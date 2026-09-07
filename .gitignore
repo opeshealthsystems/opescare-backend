@@ -37,3 +37,6 @@ yarn-error.log
 /storage/framework/testing/*
 /storage/logs/*.log
 /storage/app/livewire-tmp/*
+
+# Local editor/tool config for this checkout only.
+/.claude
