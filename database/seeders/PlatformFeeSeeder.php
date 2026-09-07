@@ -83,6 +83,33 @@ class PlatformFeeSeeder extends Seeder
             'annual'   => 200_000,
             'blurb'    => 'Wards, admissions and the full clinical record across departments.',
         ],
+        'laboratory' => [
+            'name'     => 'Laboratory',
+            'audience' => 'facility',
+            'cycle'    => 'annual',
+            'daily'    => null,
+            'monthly'  => null,
+            'annual'   => 40_000,
+            'blurb'    => 'Order queue, result entry and release into the patient record.',
+        ],
+        'health_organization' => [
+            'name'     => 'Health organisation',
+            'audience' => 'facility',
+            'cycle'    => 'annual',
+            'daily'    => null,
+            'monthly'  => null,
+            'annual'   => 300_000,
+            'blurb'    => 'Group oversight across the facilities you own, each on its own plan.',
+        ],
+        'insurance' => [
+            'name'     => 'Insurer',
+            'audience' => 'facility',
+            'cycle'    => 'annual',
+            'daily'    => null,
+            'monthly'  => null,
+            'annual'   => 500_000,
+            'blurb'    => 'Coverage and claims across every facility your members attend.',
+        ],
     ];
 
     public function run(): void
@@ -134,8 +161,10 @@ class PlatformFeeSeeder extends Seeder
         }
 
         $this->command?->comment(
-            'Facility types with no plan (laboratory, insurance, developer, health_organization) are '
-            . 'deliberately unpriced — nobody has said what they should cost.'
+            'Still unpriced on purpose: `developer` is already sold through api_plans '
+            . '(Sandbox free / Growth 75 000 a month / Scale 350 000), and pricing it twice would '
+            . 'give one customer two contradictory prices; `lite` and `health_org` are single demo '
+            . 'rows whose meaning nobody has settled.'
         );
     }
 }
