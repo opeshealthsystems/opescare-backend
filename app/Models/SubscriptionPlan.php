@@ -55,6 +55,20 @@ class SubscriptionPlan extends Model
      */
     public function amountFor(string $interval): ?Money
     {
+        $minor = $this->minorFor($interval);
+
+        // Money holds an amount to CHARGE, and refuses zero — rightly, because
+        // charging nothing is not a payment. A free interval therefore has no
+        // Money at all, and callers asking "is this sold?" must ask
+        // offersInterval(), which reads the stored number instead.
+        return $minor === null || $minor <= 0
+            ? null
+            : Money::ofMinor($minor, $this->currency ?: 'XAF');
+    }
+
+    /** The stored price for an interval: null means "not sold this way". */
+    public function minorFor(string $interval): ?int
+    {
         $minor = match ($interval) {
             'daily'   => $this->daily_price_minor,
             'monthly' => $this->monthly_price_minor,
@@ -62,9 +76,7 @@ class SubscriptionPlan extends Model
             default   => null,
         };
 
-        // A zero price is a real answer — a free plan — and must survive the
-        // null check below.
-        return $minor === null ? null : Money::ofMinor((int) $minor, $this->currency ?: 'XAF');
+        return $minor === null ? null : (int) $minor;
     }
 
     /** @return list<string> the intervals this plan is sold in */
@@ -72,13 +84,13 @@ class SubscriptionPlan extends Model
     {
         return array_values(array_filter(
             self::INTERVALS,
-            fn (string $interval) => $this->amountFor($interval) !== null
+            fn (string $interval) => $this->minorFor($interval) !== null
         ));
     }
 
     public function offersInterval(string $interval): bool
     {
-        return $this->amountFor($interval) !== null;
+        return $this->minorFor($interval) !== null;
     }
 
     /**
@@ -92,9 +104,17 @@ class SubscriptionPlan extends Model
      */
     public function priceFormatted(?string $interval = null): string
     {
-        $amount = $this->amountFor($interval ?? $this->defaultInterval());
+        $interval ??= $this->defaultInterval();
 
-        return $amount?->format() ?? '—';
+        if ($amount = $this->amountFor($interval)) {
+            return $amount->format();
+        }
+
+        // Sold, but for nothing. Shown as an amount rather than as a dash, so
+        // "free" never reads as "we do not know".
+        return $this->minorFor($interval) === null
+            ? '—'
+            : '0 ' . Money::symbolFor($this->currency ?: 'XAF');
     }
 
     public function annualPriceFormatted(): ?string
@@ -116,6 +136,12 @@ class SubscriptionPlan extends Model
     public function priceForInterval(string $interval): int
     {
         return $this->amountFor($interval)?->minor ?? 0;
+    }
+
+    /** True when this interval is sold but costs nothing. */
+    public function isFreeInterval(string $interval): bool
+    {
+        return $this->minorFor($interval) === 0;
     }
 
     public function isFree(): bool

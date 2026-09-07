@@ -75,7 +75,16 @@ final class Money
      */
     public function symbol(): string
     {
-        return $this->currency === 'XAF' ? 'FCFA' : $this->currency;
+        return self::symbolFor($this->currency);
+    }
+
+    /**
+     * The symbol alone. A free plan has no amount to charge and therefore no
+     * Money, but it still has to be shown in a currency.
+     */
+    public static function symbolFor(string $currency): string
+    {
+        return strtoupper($currency) === 'XAF' ? 'FCFA' : strtoupper($currency);
     }
 
     /**
