@@ -85,9 +85,13 @@ class MailHealthCheck extends Command
 
         if ($null !== []) {
             $this->blocking(
-                "{$domain} publishes a NULL MX (RFC 7505), which tells every receiving server that it "
-                . 'accepts no mail. They reject messages FROM it with 550 5.7.27, so nothing this platform '
-                . 'sends can be delivered. Remove that record, or send from a domain that accepts mail.'
+                "{$domain} publishes a NULL MX (RFC 7505) — an MX of \".\" at priority 0 — which tells "
+                . 'every receiving server that it accepts no mail. They reject messages FROM it with '
+                . '550 5.7.27, so nothing this platform sends can be delivered.'
+                . PHP_EOL . '       THE FIX: delete that one MX record at the DNS host. Nothing else needs '
+                . 'to change — with no MX at all, mail for the domain follows its A record, which is this '
+                . 'server, so bounces are deliverable and SPF stays aligned. Add a real MX instead only if '
+                . "you want to RECEIVE mail at {$domain}."
             );
 
             return;
@@ -110,24 +114,104 @@ class MailHealthCheck extends Command
     }
 
     /**
-     * DKIM is checked by looking for the selectors that are actually in use;
-     * there is no way to enumerate them from DNS, so this reports rather than
-     * fails.
+     * DKIM is checked by asking for the selectors this deployment actually
+     * signs with — not by guessing.
+     *
+     * The first version of this check tried seven conventional names and gave
+     * up. This host signs with the selector `opescare`, whose key WAS already
+     * published, so the check reported "no DKIM" on a domain whose DKIM was
+     * working — and sent somebody looking for a problem that did not exist. A
+     * health check that cries wolf is worse than none.
+     *
+     * A selector cannot be enumerated from DNS, but it does not have to be
+     * guessed either: the MTA doing the signing runs on this host and its key
+     * table names the selector exactly. So the order is what ops configured,
+     * then what the local signer says, then the conventional names.
      */
     private function checkDkim(string $domain): void
     {
-        foreach (['default', 'mail', 'dkim', 's1', 'k1', 'google', 'selector1'] as $selector) {
+        foreach ($this->dkimSelectors($domain) as $selector => $source) {
             if ($this->txt($selector . '._domainkey.' . $domain, 'v=DKIM1') !== null) {
-                $this->ok('DKIM found on selector "' . $selector . '".');
+                $this->ok(sprintf('DKIM found on selector "%s" (%s).', $selector, $source));
 
                 return;
             }
         }
 
         $this->caution(
-            'No DKIM record found on the usual selectors. Gmail and Outlook now require authenticated mail '
-            . 'from bulk senders, so unsigned mail is increasingly filtered.'
+            'No DKIM record found for ' . $domain . ' on any selector this deployment knows about ('
+            . implode(', ', array_keys($this->dkimSelectors($domain))) . '). Gmail and Outlook now require '
+            . 'authenticated mail from bulk senders, so unsigned mail is increasingly filtered. If this host '
+            . 'signs with a selector that is not listed, set MAIL_DKIM_SELECTORS.'
         );
+    }
+
+    /**
+     * Every selector worth asking DNS about, and where each one came from — so
+     * the OK line can say why it looked there.
+     *
+     * @return array<string, string>
+     */
+    private function dkimSelectors(string $domain): array
+    {
+        $selectors = [];
+
+        foreach ((array) config('mail_health.dkim_selectors', []) as $selector) {
+            $selector = trim((string) $selector);
+            if ($selector !== '') {
+                $selectors[$selector] = 'configured';
+            }
+        }
+
+        foreach ($this->selectorsFromLocalSigner($domain) as $selector) {
+            $selectors[$selector] ??= 'named by the local opendkim key table';
+        }
+
+        foreach (['default', 'mail', 'dkim', 's1', 'k1', 'google', 'selector1'] as $selector) {
+            $selectors[$selector] ??= 'a conventional selector';
+        }
+
+        return $selectors;
+    }
+
+    /**
+     * The selectors opendkim on THIS host signs `$domain` with.
+     *
+     * key.table lines look like:
+     *   opescare._domainkey.opescare.cloud opescare.cloud:opescare:/etc/.../opescare.private
+     * so the middle field of the colon-separated spec is the selector.
+     *
+     * Absent, unreadable or malformed is not an error — plenty of deployments
+     * relay through a provider and have no local signer at all.
+     *
+     * @return list<string>
+     */
+    private function selectorsFromLocalSigner(string $domain): array
+    {
+        $path = (string) config('mail_health.opendkim_key_table', '/etc/opendkim/key.table');
+
+        if ($path === '' || ! @is_readable($path)) {
+            return [];
+        }
+
+        $found = [];
+
+        foreach (preg_split('/\R/', (string) @file_get_contents($path)) ?: [] as $line) {
+            $line = trim($line);
+
+            if ($line === '' || str_starts_with($line, '#')) {
+                continue;
+            }
+
+            $parts = preg_split('/\s+/', $line);
+            $spec  = explode(':', $parts[1] ?? '');
+
+            if (count($spec) >= 2 && strtolower(trim($spec[0])) === $domain && trim($spec[1]) !== '') {
+                $found[] = trim($spec[1]);
+            }
+        }
+
+        return array_values(array_unique($found));
     }
 
     private function checkDmarc(string $domain): void
