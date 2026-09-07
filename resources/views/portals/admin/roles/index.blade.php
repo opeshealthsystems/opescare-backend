@@ -73,7 +73,10 @@
                         <div id="delete-role-{{ $role->id }}" class="modal-backdrop mt-6" hidden>
                             <div class="modal" role="dialog" aria-modal="true">
                                 <h3 class="modal__title"><i data-lucide="alert-triangle"></i> {{ __('public.adm_roles_idx_modal_delete_title') }}</h3>
-                                <form method="POST" action="{{ route('portals.admin.roles.destroy', $role) }}">@csrf @method('DELETE')
+                                {{-- portals.admin.roles.destroy is POST {id}/delete, like store and
+                                     update in the same group. @method('DELETE') spoofed the verb to
+                                     one that route does not answer, so Delete returned 405. --}}
+                                <form method="POST" action="{{ route('portals.admin.roles.destroy', $role) }}">@csrf
                                     <div class="modal__body"><p>{{ __('public.adm_roles_idx_modal_delete_body_before') }} <strong>{{ $role->name }}</strong>? {{ __('public.adm_roles_idx_cannot_undo') }}</p></div>
                                     <div class="modal__footer">
                                         <button type="button" class="btn btn-ghost" onclick="opCloseModal('delete-role-{{ $role->id }}')">{{ __('public.adm_roles_idx_btn_cancel') }}</button>
@@ -135,8 +138,10 @@
 <div id="edit-role-modal" class="modal-backdrop mt-6" hidden>
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="edit-role-title">
         <h3 class="modal__title" id="edit-role-title"><i data-lucide="pencil"></i> {{ __('public.adm_roles_idx_modal_edit_title') }}</h3>
+        {{-- Same as Delete above: portals.admin.roles.update is POST {id}/update,
+             so no method spoofing. The action is filled in by openEditRole(). --}}
         <form method="POST" id="edit-role-form" action="">
-            @csrf @method('PUT')
+            @csrf
             <div class="modal__body">
                 <div class="form-group mb-6">
                     <label class="form-label">{{ __('public.adm_roles_idx_lbl_role_name') }}</label>
@@ -172,6 +177,10 @@
 <script>
 function opOpenModal(id){ document.getElementById(id).removeAttribute('hidden'); }
 function opCloseModal(id){ document.getElementById(id).setAttribute('hidden',''); }
+// From the named route, id substituted client-side. The hand-written
+// '/portals/admin/roles/' + id it replaces is not a route at all (the update
+// endpoint is {id}/update), so Save answered 405.
+var editRoleUrl = '{{ route('portals.admin.roles.update', ['id' => '__ID__']) }}';
 function openEditRole(id, name, description, portal, isProtected) {
     document.getElementById('edit-role-name').value    = name;
     document.getElementById('edit-role-desc').value    = description;
@@ -185,7 +194,7 @@ function openEditRole(id, name, description, portal, isProtected) {
         protectedEl.disabled = false;
         noteEl.textContent = '';
     }
-    document.getElementById('edit-role-form').action = '/portals/admin/roles/' + id;
+    document.getElementById('edit-role-form').action = editRoleUrl.replace('__ID__', encodeURIComponent(id));
     opOpenModal('edit-role-modal');
 }
 document.addEventListener('keydown', function(e){

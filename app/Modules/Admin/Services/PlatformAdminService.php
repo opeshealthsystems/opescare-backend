@@ -8,6 +8,7 @@ use App\Models\FeatureFlag;
 use App\Models\MaintenanceWindow;
 use App\Models\ModuleToggle;
 use App\Models\PlatformSetting;
+use App\Models\SubscriptionPlan;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -173,6 +174,134 @@ class PlatformAdminService
 
         $this->log($actorId, $active ? 'maintenance_activated' : 'maintenance_deactivated', 'maintenance_window', $id, $before, $window->fresh()->toArray(), $ip);
         return $window->fresh();
+    }
+
+    // ── Subscription plan pricing ─────────────────────────────────
+    //
+    // What the platform charges. It lives here, next to settings and feature
+    // flags, for one reason: the private log() below is how this application
+    // records an administrator changing something, and a price change has to
+    // land in the SAME admin_action_logs table the Control Center's audit page
+    // already reads. A second audit trail nobody looks at is worse than none.
+    //
+    // ── Amounts are whole francs ──────────────────────────────────────────
+    // XAF has an ISO 4217 exponent of 0, so `*_price_minor` holds francs, not
+    // hundredths. See App\Services\Payments\Domain\Money — the class that
+    // actually charges — and the migration that renamed these columns away
+    // from "kobo" precisely so nobody divides by 100 again.
+
+    /** resource_type written on every subscription-plan audit row. */
+    public const PLAN_RESOURCE = 'subscription_plan';
+
+    /** @return \Illuminate\Database\Eloquent\Collection<int, SubscriptionPlan> */
+    public function allSubscriptionPlans(): \Illuminate\Database\Eloquent\Collection
+    {
+        return SubscriptionPlan::orderBy('sort_order')->orderBy('name')->get();
+    }
+
+    /**
+     * The last audited change per plan, keyed by plan id.
+     *
+     * "Who last changed it" is deliberately NOT a column on
+     * subscription_plans. The audit row already carries the actor, the moment
+     * and the before/after; reading the answer back out of the audit is what
+     * keeps the screen and the log from ever disagreeing.
+     *
+     * @param  list<string>  $planIds
+     * @return array<string, AdminActionLog>
+     */
+    public function lastPlanChanges(array $planIds): array
+    {
+        if ($planIds === []) {
+            return [];
+        }
+
+        return AdminActionLog::query()
+            ->where('resource_type', self::PLAN_RESOURCE)
+            ->whereIn('resource_id', $planIds)
+            ->orderByDesc('occurred_at')
+            ->get()
+            ->groupBy('resource_id')
+            ->map(fn ($rows) => $rows->first())
+            ->all();
+    }
+
+    /**
+     * Write new per-interval prices.
+     *
+     * $prices is keyed by interval; a null value means "no longer sold this
+     * way". Only intervals the plan already offers may appear — the caller
+     * enforces that, and this method assumes it, because the alternative is a
+     * hospital acquiring a daily rate merely because a nullable column exists.
+     *
+     * @param  array<string, int|null>  $prices
+     */
+    public function updatePlanPrices(SubscriptionPlan $plan, array $prices, string $actorId, ?string $ip = null): SubscriptionPlan
+    {
+        $before = $this->planSnapshot($plan);
+
+        foreach ($prices as $interval => $minor) {
+            $plan->{$interval . '_price_minor'} = $minor;
+        }
+
+        // `price_minor` is the legacy single-price column and is NOT NULL. It
+        // carries the DEFAULT interval's price so anything still reading it
+        // agrees with what the subscriber is shown. defaultInterval() is
+        // recomputed against the writes above, so clearing the interval a plan
+        // led with moves this onto whatever it still sells.
+        $plan->price_minor = (int) ($plan->{$plan->defaultInterval() . '_price_minor'} ?? 0);
+
+        $plan->save();
+
+        $after = $this->planSnapshot($plan->fresh());
+
+        // Nothing moved: no audit row. A log full of "changed X to X" is a log
+        // people stop reading.
+        if ($before === $after) {
+            return $plan->fresh();
+        }
+
+        $this->log($actorId, 'plan_price_updated', self::PLAN_RESOURCE, $plan->id, $before, $after, $ip);
+
+        return $plan->fresh();
+    }
+
+    /** Put a plan on sale, or take it off sale. */
+    public function toggleSubscriptionPlan(SubscriptionPlan $plan, bool $active, string $actorId, ?string $ip = null): SubscriptionPlan
+    {
+        $before = $this->planSnapshot($plan);
+
+        $plan->forceFill(['is_active' => $active])->save();
+
+        $after = $this->planSnapshot($plan->fresh());
+
+        if ($before === $after) {
+            return $plan->fresh();
+        }
+
+        $this->log($actorId, 'plan_toggled', self::PLAN_RESOURCE, $plan->id, $before, $after, $ip);
+
+        return $plan->fresh();
+    }
+
+    /**
+     * What a plan audit row records — the fields a reader of the audit needs,
+     * and nothing else. The slug rides along so an entry stays legible long
+     * after the plan itself may have been renamed.
+     *
+     * @return array<string, mixed>
+     */
+    private function planSnapshot(SubscriptionPlan $plan): array
+    {
+        return [
+            'slug'                => $plan->slug,
+            'currency'            => $plan->currency,
+            'daily_price_minor'   => $plan->daily_price_minor === null ? null : (int) $plan->daily_price_minor,
+            'monthly_price_minor' => $plan->monthly_price_minor === null ? null : (int) $plan->monthly_price_minor,
+            'annual_price_minor'  => $plan->annual_price_minor === null ? null : (int) $plan->annual_price_minor,
+            'price_minor'         => (int) $plan->price_minor,
+            'is_active'           => (bool) $plan->is_active,
+        ];
     }
 
     // ── System Health ─────────────────────────────────────────────

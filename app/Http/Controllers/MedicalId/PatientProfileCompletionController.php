@@ -120,7 +120,7 @@ class PatientProfileCompletionController extends Controller
         $refCode = $request->session()->pull('pending_referral_code');
         if ($refCode) {
             try {
-                $rewards = app(\App\Modules\Subscription\Services\ReferralRewardService::class);
+                $rewards = app(\App\Services\Referral\ReferralRewardService::class);
                 $invite  = $rewards->recordSignup($patient, $refCode);
                 if ($invite !== null) {
                     $rewards->grantRewards($invite);

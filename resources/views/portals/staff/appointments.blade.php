@@ -159,11 +159,15 @@
 
 @section('scripts')
 <script>
-    var apptBase = '{{ url('/portals/staff/appointments') }}';
+    // Built from the named route, with the id substituted client-side. The old
+    // hand-written '/portals/staff/appointments' prefix is a GET-only legacy
+    // redirect, so posting the cancel form to it answered 405 and the modal's
+    // Confirm button did nothing.
+    var apptCancelUrl = '{{ route('portals.staff.appointments.cancel', ['id' => '__ID__']) }}';
 
     function openApptCancelModal(id, label) {
         document.getElementById('appt-cancel-label').textContent = label;
-        document.getElementById('appt-cancel-form').action = apptBase + '/' + id + '/cancel';
+        document.getElementById('appt-cancel-form').action = apptCancelUrl.replace('__ID__', encodeURIComponent(id));
         document.getElementById('appt-cancel-modal').removeAttribute('hidden');
         document.getElementById('appt-cancel-reason').focus();
     }

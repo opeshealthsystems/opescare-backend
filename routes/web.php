@@ -503,6 +503,22 @@ Route::middleware(['web', 'auth', 'platform.admin'])->group(function () {
 });
 
 /*
+ * Plans & pricing — what the platform charges.
+ *
+ * PlatformFeeSeeder establishes the plans and says in its own docblock that it
+ * "does not own the prices"; this is the screen that does. Platform-tier only
+ * (RequirePlatformAdmin treats everything under /admin/ as platform-only), and
+ * every change here writes an admin_action_logs row, so the Control Center's
+ * audit page answers "who changed this price, when, and from what" without a
+ * second trail being invented for money.
+ */
+Route::middleware(['web', 'auth', 'platform.admin'])->group(function () {
+    Route::get('/admin/plans',                [\App\Http\Controllers\MedicalId\AdminPlanPricingController::class, 'index'])->name('portals.admin.plans.index');
+    Route::post('/admin/plans/{plan}/prices', [\App\Http\Controllers\MedicalId\AdminPlanPricingController::class, 'updatePrices'])->name('portals.admin.plans.update');
+    Route::post('/admin/plans/{plan}/toggle', [\App\Http\Controllers\MedicalId\AdminPlanPricingController::class, 'toggle'])->name('portals.admin.plans.toggle');
+});
+
+/*
  * Legal & compliance desk.
  *
  * LegalAdminController shipped with nine admin methods, five Blade views and

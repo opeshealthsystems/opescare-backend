@@ -110,6 +110,9 @@
     <a href="{{ route('portals.admin.cc.settings') }}" class="sidebar-link {{ request()->routeIs('portals.admin.cc.settings*') ? 'active' : '' }}">
         <i data-lucide="sliders-horizontal"></i><span>{{ __('public.adm_cc_sidebar_platform_settings', [], $l) ?: 'Platform Settings' }}</span>
     </a>
+    <a href="{{ route('portals.admin.plans.index') }}" class="sidebar-link {{ request()->routeIs('portals.admin.plans.*') ? 'active' : '' }}">
+        <i data-lucide="banknote"></i><span>{{ __('plan_pricing.nav', [], $l) ?: 'Plans & pricing' }}</span>
+    </a>
     <a href="{{ route('portals.admin.cc.feature_flags') }}" class="sidebar-link {{ request()->routeIs('portals.admin.cc.feature_flags*') ? 'active' : '' }}">
         <i data-lucide="toggle-right"></i><span>{{ __('public.adm_cc_sidebar_feature_flags', [], $l) ?: 'Feature Flags' }}</span>
     </a>

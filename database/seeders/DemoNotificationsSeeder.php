@@ -86,6 +86,13 @@ class DemoNotificationsSeeder extends Seeder
             ->whereIn('event_type', self::EVENT_TYPES)
             ->delete();
 
+        // Destinations come from route() rather than hand-typed paths: the
+        // notification centre renders `url` as a real link, so a path that has
+        // drifted seeds a 404 into every demo bell instead of failing here.
+        // Second argument `false` keeps them relative — an absolute URL baked
+        // from the seeding host would follow the row to production.
+        $to = fn (string $name): string => route($name, [], false);
+
         // One flat list, staggered over the last ~2 days (most recent first) so
         // the ordering is visible in the centre. hoursAgo drives created_at.
         // [email, event_type, category, priority, requiresAck, hoursAgo, title, body, url]
@@ -95,31 +102,31 @@ class DemoNotificationsSeeder extends Seeder
             ['demo.receptionist@opescare.test', 'blood_order_received', 'blood', 'high', true, 2,
                 'New blood request: O+ × 3',
                 'Requested by Yaoundé General — urgent',
-                '/facility/inventory/blood'],
+                $to('portals.staff.inventory.blood')],
 
             // Pharmacy reservation — the pharmacy category/sound demo.
             ['demo.pharmacist@opescare.test', 'pharmacy_order_received', 'pharmacy', 'high', false, 5,
                 'New medicine reservation: Paracetamol × 2',
                 'Reserved for pickup by a patient via the Finder.',
-                '/pharmacy/stock'],
+                $to('portals.pharmacy.stock')],
 
             // Pharmacy low-stock nudge — a plain general note.
             ['demo.pharmacist@opescare.test', 'low_stock_alert', 'general', 'normal', false, 9,
                 'Low stock: Amoxicillin 500mg',
                 '3 packs remaining — reorder soon to avoid a stock-out.',
-                '/pharmacy/stock'],
+                $to('portals.pharmacy.stock')],
 
             // Front desk appointment reminder.
             ['demo.receptionist@opescare.test', 'appointment_reminder', 'appointment', 'normal', false, 14,
                 'Upcoming appointment at 14:00',
                 'Aïssatou N. — General consultation, Room 3.',
-                '/facility/appointments'],
+                $to('portals.staff.appointments')],
 
             // Facility admin account notice.
             ['demo.facility.admin@opescare.test', 'staff_joined', 'account', 'normal', false, 20,
                 'A new staff member joined your facility',
                 'Dr. Amara Diallo now has access to the facility desk.',
-                '/facility/staff'],
+                $to('portals.facility.team')],
 
         ];
 
@@ -128,22 +135,25 @@ class DemoNotificationsSeeder extends Seeder
         // to now, like the story they belong to (DEMO_DATA_BRIEF.md).
         $reviewDate = now()->addWeeks(3)->format('j M');
         foreach (self::PATIENT_EMAILS as $patientEmail) {
+            // Each one points at the page that actually holds the thing it is
+            // announcing. The health tip announces nothing openable, so it
+            // carries no url and the centre renders it as plain text.
             $events[] = [$patientEmail, 'lab_result_available', 'general', 'high', false, 6,
                 'Lab result available — Fasting Blood Glucose',
                 '5.1 mmol/L, within range. Open Lab Results to see the full report.',
-                '/portal/notifications'];
+                $to('portals.patient.timeline')];
             $events[] = [$patientEmail, 'prescription_issued', 'pharmacy', 'normal', false, 26,
                 'Prescription issued — Metformin, Amlodipine',
                 'Your quarterly repeat is ready to collect. Show the prescription code at the pharmacy.',
-                '/portal/notifications'];
+                $to('portals.patient.prescriptions')];
             $events[] = [$patientEmail, 'appointment_confirmed', 'appointment', 'normal', false, 30,
                 'Appointment confirmed',
                 "Your quarterly review on {$reviewDate} at 09:30 is confirmed.",
-                '/portal/notifications'];
+                $to('portals.patient.appointments')];
             $events[] = [$patientEmail, 'health_tip', 'general', 'normal', false, 44,
                 'Health tip: stay hydrated',
                 'Drink water regularly, especially during the dry season.',
-                '/portal/notifications'];
+                ''];
         }
 
         $seeded = 0;

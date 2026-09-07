@@ -290,7 +290,11 @@
 
 @section('scripts')
 <script>
-    var bloodBase = '{{ url('/portals/staff/inventory/blood') }}';
+    // Built from the named routes, with the id substituted client-side. The old
+    // hand-written '/portals/staff/inventory/blood' prefix is a GET-only legacy
+    // redirect, so both of these modals posted to a 405 and saved nothing.
+    var bloodAdjustUrl = '{{ route('portals.staff.inventory.blood.adjust', ['id' => '__ID__']) }}';
+    var bloodFlagUrl   = '{{ route('portals.staff.inventory.blood.flag', ['id' => '__ID__']) }}';
 
     // Big-thumb stepper: nudge a numeric input without leaving the modal.
     function fsStep(id, delta) {
@@ -308,7 +312,7 @@
         document.getElementById('adjust-label').textContent = group + ' · ' + component.replace(/_/g,' ');
         document.getElementById('adjust-title').textContent = direction === 'add' ? '{{ __('staff_inv.js_add_units', [], app()->getLocale()) ?: 'Add Units' }}' : '{{ __('staff_inv.js_use_units', [], app()->getLocale()) ?: 'Use Units' }}';
         document.getElementById('adjust-direction').value = direction;
-        document.getElementById('adjust-form').action = bloodBase + '/' + id + '/adjust';
+        document.getElementById('adjust-form').action = bloodAdjustUrl.replace('__ID__', encodeURIComponent(id));
         var btn = document.getElementById('adjust-btn');
         btn.className = direction === 'add' ? 'btn btn-primary btn-sm fs-tap' : 'btn btn-warning btn-sm fs-tap';
         btn.textContent = direction === 'add' ? '{{ __('staff_inv.js_add', [], app()->getLocale()) ?: 'Add' }}' : '{{ __('staff_inv.js_use', [], app()->getLocale()) ?: 'Use' }}';
@@ -319,7 +323,7 @@
 
     function openBloodFlagModal(id, label, expired, unsafe, quarantined) {
         document.getElementById('blood-flag-label').textContent = label;
-        document.getElementById('blood-flag-form').action = bloodBase + '/' + id + '/flag';
+        document.getElementById('blood-flag-form').action = bloodFlagUrl.replace('__ID__', encodeURIComponent(id));
         document.getElementById('bf-expired').checked = !!expired;
         document.getElementById('bf-unsafe').checked = !!unsafe;
         document.getElementById('bf-quarantined').checked = !!quarantined;

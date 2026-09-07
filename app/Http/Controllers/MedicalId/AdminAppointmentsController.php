@@ -4,6 +4,8 @@ namespace App\Http\Controllers\MedicalId;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use App\Models\Facility;
+use App\Models\Patient;
 use App\Modules\Appointments\Services\AppointmentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,13 +23,16 @@ class AdminAppointmentsController extends Controller
     {
         if (!Auth::check()) return redirect()->route('login');
 
-        $query = Appointment::with(['patient', 'facility']);
+        $query = Appointment::with(['patient', 'facility', 'provider']);
 
         if ($status = $request->input('status')) {
             $query->where('status', $status);
         }
 
-        if ($facilityId = $request->input('facility_id')) {
+        // Ids are UUIDs; anything else is a hand-edited query string and would
+        // otherwise reach Postgres as an invalid uuid cast (a 500, not a filter).
+        $facilityId = (string) $request->input('facility_id', '');
+        if ($facilityId !== '' && \Illuminate\Support\Str::isUuid($facilityId)) {
             $query->where('facility_id', $facilityId);
         }
 
@@ -62,14 +67,18 @@ class AdminAppointmentsController extends Controller
             'no_show_today'   => (clone $statsBase)->where('status', 'no_show')->count(),
         ];
 
-        return view('portals.admin.appointments.index', compact('appointments', 'stats'));
+        // The facility filter's options. Without them the select renders with
+        // only "All facilities" and the filter can never be used.
+        $facilities = Facility::orderBy('name')->get(['id', 'name']);
+
+        return view('portals.admin.appointments.index', compact('appointments', 'stats', 'facilities'));
     }
 
     public function show(string $id)
     {
         if (!Auth::check()) return redirect()->route('login');
 
-        $appointment = Appointment::with(['patient', 'provider', 'facility', 'notes'])
+        $appointment = Appointment::with(['patient', 'provider', 'facility'])
             ->findOrFail($id);
 
         return view('portals.admin.appointments.show', compact('appointment'));

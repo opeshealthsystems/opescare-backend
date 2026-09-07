@@ -446,12 +446,21 @@
             document.getElementById('step-progress').style.width = fillPct + '%';
             document.getElementById('btn-prev').style.visibility = (currentStep === 1) ? 'hidden' : 'visible';
             const btnNext = document.getElementById('btn-next');
-            if (currentStep === totalSteps) {
-                btnNext.querySelector('span').innerText = "{{ __('onboarding.org.cta_btn') }}";
-                btnNext.querySelector('i').setAttribute('data-lucide', 'check');
-            } else {
-                btnNext.querySelector('span').innerText = "{{ __('onboarding.common.continue') }}";
-                btnNext.querySelector('i').setAttribute('data-lucide', 'arrow-right');
+            const isLastStep = currentStep === totalSteps;
+            btnNext.querySelector('span').innerText = isLastStep
+                ? "{{ __('onboarding.org.cta_btn') }}"
+                : "{{ __('onboarding.common.continue') }}";
+
+            // lucide.createIcons() replaces the <i data-lucide> placeholder with
+            // an <svg>, so from the first render on there is no <i> left to
+            // re-point: querySelector('i') returned null and every step change
+            // threw "Cannot read properties of null (reading 'setAttribute')".
+            // Swap whichever node is present for a fresh placeholder instead.
+            const icon = btnNext.querySelector('i[data-lucide], svg');
+            if (icon) {
+                const placeholder = document.createElement('i');
+                placeholder.setAttribute('data-lucide', isLastStep ? 'check' : 'arrow-right');
+                icon.replaceWith(placeholder);
             }
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }

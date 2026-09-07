@@ -97,9 +97,14 @@
     var _ag = {
         modulePrefix: @json(__('public.adm_cc_mod_js_module_prefix')),
     };
+    // The enable form above already posts to this named route; the disable modal
+    // hand-wrote '/portals/admin/cc/modules/{key}/toggle', which is not a route
+    // on this app at all, so Disable answered 405 and nothing toggled.
+    var moduleToggleUrl = '{{ route('portals.admin.cc.modules.toggle', ['key' => '__KEY__']) }}';
+
     function openDisableModal(id, label) {
         document.getElementById('disable-module-name').textContent = _ag.modulePrefix + label;
-        document.getElementById('disable-form').action = '/portals/admin/cc/modules/' + encodeURIComponent(id) + '/toggle';
+        document.getElementById('disable-form').action = moduleToggleUrl.replace('__KEY__', encodeURIComponent(id));
         document.getElementById('disable-modal').classList.add('open');
     }
     function closeDisableModal() { document.getElementById('disable-modal').classList.remove('open'); }

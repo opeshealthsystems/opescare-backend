@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Marketing;
 
 use App\Http\Controllers\Controller;
 use App\Models\ReferralInvite;
-use App\Modules\Subscription\Services\ReferralRewardService;
+use App\Services\Referral\ReferralRewardService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 

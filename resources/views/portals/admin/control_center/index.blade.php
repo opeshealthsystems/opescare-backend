@@ -45,17 +45,16 @@
         <h2>{{ __('public.adm_cc_idx_god_mode_heading') }}</h2>
     </div>
     <div class="card-grid">
+        {{-- Only desks this app actually serves. The tiles are built from
+             route() so a renamed route breaks the build instead of shipping a
+             404: the six hand-written paths that used to sit here (patients,
+             staff, financial, support, cdss, organizations) were platform-only
+             desks that never existed in Finder and 404'd on every click. --}}
         @php $godCards = [
-            [__('public.adm_cc_idx_god_users'),        'users',        '/portals/admin/users',         __('public.adm_cc_idx_god_users_desc')],
-            [__('public.adm_cc_idx_god_facilities'),   'building',     '/portals/admin/facilities',     __('public.adm_cc_idx_god_facilities_desc')],
-            [__('public.adm_cc_idx_god_patients'),     'heart-pulse',  '/portals/admin/patients',       __('public.adm_cc_idx_god_patients_desc')],
-            [__('public.adm_cc_idx_god_staff'),        'user-check',   '/portals/admin/staff',          __('public.adm_cc_idx_god_staff_desc')],
-            [__('public.adm_cc_idx_god_financial'),    'banknote',     '/portals/admin/financial',      __('public.adm_cc_idx_god_financial_desc')],
-            [__('public.adm_cc_idx_god_appointments'), 'calendar',     '/portals/admin/appointments',   __('public.adm_cc_idx_god_appointments_desc')],
-            [__('public.adm_cc_idx_god_support'),      'headphones',   '/portals/admin/support',        __('public.adm_cc_idx_god_support_desc')],
-            [__('public.adm_cc_idx_god_cdss'),         'activity',     '/portals/admin/cdss',           __('public.adm_cc_idx_god_cdss_desc')],
-            [__('public.adm_cc_idx_god_roles'),        'shield',       '/portals/admin/roles',          __('public.adm_cc_idx_god_roles_desc')],
-            [__('public.adm_cc_idx_god_orgs'),         'landmark',     '/portals/admin/organizations',  __('public.adm_cc_idx_god_orgs_desc')],
+            [__('public.adm_cc_idx_god_users'),        'users',    route('portals.admin.users.index'),        __('public.adm_cc_idx_god_users_desc')],
+            [__('public.adm_cc_idx_god_facilities'),   'building', route('portals.admin.facilities.index'),   __('public.adm_cc_idx_god_facilities_desc')],
+            [__('public.adm_cc_idx_god_appointments'), 'calendar', route('portals.admin.appointments.index'), __('public.adm_cc_idx_god_appointments_desc')],
+            [__('public.adm_cc_idx_god_roles'),        'shield',   route('portals.admin.roles.index'),        __('public.adm_cc_idx_god_roles_desc')],
         ]; @endphp
         @foreach($godCards as [$title, $icon, $url, $desc])
         <a href="{{ $url }}" class="nav-card nav-card--danger">

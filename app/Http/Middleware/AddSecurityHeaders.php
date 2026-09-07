@@ -39,6 +39,13 @@ class AddSecurityHeaders
         // and allowed to use geolocation (for the "locate me"/directions map).
         $isEmbed = $request->is('embed/*');
 
+        // The API reference pages render with Redoc, which builds its search
+        // index inside a Web Worker created from a blob: URL. `worker-src`
+        // falls back to `script-src`, which lists no blob:, so the worker was
+        // blocked and the docs search box silently returned nothing. Granted
+        // on these pages only, and only for workers — script-src is untouched.
+        $isDocs = $request->is('docs') || $request->is('docs/*');
+
         // ── Universal headers ────────────────────────────────────────────────
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('X-Frame-Options', $isEmbed ? 'SAMEORIGIN' : 'DENY');
@@ -79,6 +86,7 @@ class AddSecurityHeaders
                 "font-src 'self' https://fonts.gstatic.com; " .
                 "img-src 'self' data: https:; " .
                 "connect-src 'self'; " .
+                ($isDocs ? "worker-src 'self' blob:; " : '') .
                 "frame-ancestors " . ($isEmbed ? "'self'" : "'none'") . ";"
             );
         }
