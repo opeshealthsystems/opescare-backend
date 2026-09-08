@@ -213,6 +213,11 @@ class AppServiceProvider extends ServiceProvider
         Route::middleware('api')
             ->group(base_path('routes/mobile_doctor_schedule.php'));
 
+        // Mobile doctor referral routes — loaded here rather than in routes/api.php so
+        // parallel work on separate features cannot collide in one file.
+        Route::middleware('api')
+            ->group(base_path('routes/mobile_doctor_referrals.php'));
+
         // Mobile front-desk routes (/api/mobile/desk) — same reason.
         Route::middleware('api')
             ->group(base_path('routes/mobile_front_desk.php'));
