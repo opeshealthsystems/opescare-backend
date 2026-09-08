@@ -49,6 +49,36 @@ class EnsurePortalAccess
         'facility/team' => [
             'facility_admin', 'clinic_admin', 'hospital_admin', 'facility_ceo', 'branch_admin',
         ],
+        // The facility's own service catalogue ("what we offer"). Listed
+        // BEFORE 'facility' for the same reason 'facility/team' is: it also
+        // starts with 'facility' and the first matching prefix wins.
+        //
+        // It needs its own key because its audience straddles the two portals
+        // below. A facility administrator publishes the institution's service
+        // list but is closed out of the clinical operations desk; a lab or
+        // pharmacy manager owns their own menu and lives inside that desk. The
+        // one screen has to admit both, and neither existing key does.
+        //
+        // The list is DELIBERATELY WIDER than the set allowed to use the page.
+        // This layer decides which portal bucket a path belongs to, not who may
+        // act; `capability:service_catalogue` decides that, from the one map in
+        // config/staff_capabilities.php. Naming only the permitted roles here
+        // would turn a role refusal into a redirect to another portal, and a
+        // labtech who clicked the wrong link would be bounced somewhere else
+        // instead of being told plainly that this is not theirs. A refusal is a
+        // 403 that names the reason.
+        'facility/catalogue' => [
+            'facility_admin', 'clinic_admin', 'hospital_admin', 'facility_ceo', 'branch_admin',
+            'department_manager',
+            'doctor', 'multi_doctor', 'specialist', 'consultant', 'resident', 'visiting_doctor',
+            'nurse', 'triage_nurse', 'ward_nurse', 'midwife', 'nurse_supervisor',
+            'student_doctor', 'student_nurse', 'intern', 'medical_supervisor',
+            'receptionist', 'front_desk', 'appointment_coordinator', 'queue_manager', 'records_officer',
+            'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection',
+            'pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'medicine_stock', 'dispensing_officer',
+            'cashier', 'billing_officer', 'finance_manager', 'refund_approver', 'wallet_ops',
+            'data_steward', 'reconciliation_officer', 'data_import_officer', 'data_quality_reviewer',
+        ],
         // Operations desk (was /portals/staff, now /facility).
         'facility' => [
             // Clinical providers

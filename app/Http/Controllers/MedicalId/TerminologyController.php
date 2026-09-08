@@ -7,6 +7,7 @@ use App\Models\AuditEvent;
 use App\Models\ClinicalCodeDictionary;
 use App\Models\CodeSystemMapping;
 use App\Services\Terminology\TerminologyApplier;
+use App\Services\Terminology\TerminologyReconciler;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -134,8 +135,26 @@ class TerminologyController extends Controller
      */
     public function dictionary(Request $request)
     {
+        // The allow-list comes from the TABLE, never from a literal.
+        //
+        // This read `in_array($system, ['ICD-10', 'LOINC'])` when the dictionary
+        // held exactly those two. It now holds eight, and the filter silently
+        // discarded any request for the other six — ATC, UCUM, CVX, EDQM-route,
+        // SNOMED-CT, HL7-service-type were all in the table and unreachable
+        // from this screen. A hardcoded list of what a data table contains is a
+        // bug with a delay on it: correct on the day it is written, wrong the
+        // first time somebody adds a row.
+        //
+        // Still an allow-list, not a pass-through: the value reaches a WHERE,
+        // so it is checked against what actually exists rather than trusted.
+        $systems = ClinicalCodeDictionary::query()
+            ->select('system')
+            ->distinct()
+            ->orderBy('system')
+            ->pluck('system');
+
         $system = $request->query('system');
-        $system = in_array($system, ['ICD-10', 'LOINC'], true) ? $system : null;
+        $system = $systems->contains($system) ? $system : null;
 
         $codes = ClinicalCodeDictionary::query()
             ->search($request->query('q'))
@@ -166,7 +185,31 @@ class TerminologyController extends Controller
             ->orderBy('system')
             ->get();
 
-        return view('portals.admin.terminology.dictionary', compact('codes', 'totals', 'releases', 'system'));
+        return view('portals.admin.terminology.dictionary', compact('codes', 'totals', 'releases', 'system', 'systems'));
+    }
+
+    /**
+     * The reconciliation report: this deployment's own clinical values read
+     * back against the dictionary, and what does not resolve.
+     *
+     * READ-ONLY, AND THERE IS DELIBERATELY NO COUNTERPART POST. The dictionary
+     * screen asks "what is the code for this"; this one asks "does what we
+     * already wrote down still mean anything". Neither writes. The page carries
+     * no fix button on purpose: the remedy for a superseded code on a clinical
+     * record is an amendment by an accountable person through the mapping desk
+     * above, not a bulk update launched from a report.
+     *
+     * NOT LOGGED AS PATIENT ACCESS, unlike show() below. show() reads the rows
+     * one mapping would land on, which are patient-linked; this reads counts
+     * and distinct code values across whole tables and can say nothing about
+     * any one patient. The reasoning is written out on TerminologyReconciler.
+     */
+    public function gaps(TerminologyReconciler $reconciler)
+    {
+        $findings = $reconciler->report();
+        $vocabularies = $reconciler->vocabularies();
+
+        return view('portals.admin.terminology.gaps', compact('findings', 'vocabularies'));
     }
 
     /**

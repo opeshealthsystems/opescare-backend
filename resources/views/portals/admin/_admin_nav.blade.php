@@ -92,6 +92,12 @@
     <a href="{{ route('portals.admin.terminology.dictionary') }}" class="sidebar-link {{ request()->routeIs('portals.admin.terminology.dictionary') ? 'active' : '' }}">
         <i data-lucide="library"></i><span>{{ __('terminology.dict_title', [], $l) ?: 'Code dictionary' }}</span>
     </a>
+    {{-- And the third question, which neither screen above answers: not "is
+         our mapping right" and not "what is the code for this", but "does what
+         we already wrote onto the records still resolve at all". --}}
+    <a href="{{ route('portals.admin.terminology.gaps') }}" class="sidebar-link {{ request()->routeIs('portals.admin.terminology.gaps') ? 'active' : '' }}">
+        <i data-lucide="scan-search"></i><span>{{ __('terminology.gaps_nav', [], $l) ?: 'Terminology gaps' }}</span>
+    </a>
 </div>
 
 {{-- Compliance --}}

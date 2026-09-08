@@ -294,6 +294,7 @@ class StaffRoleMatrixTest extends TestCase
         'blood_inventory'     => 'portals.staff.inventory.blood',
         'messaging'           => 'portals.staff.messages',
         'facility_team'       => 'portals.facility.team',
+        'service_catalogue'   => 'portals.facility.catalogue',
     ];
 
     public static function linkedRoles(): array

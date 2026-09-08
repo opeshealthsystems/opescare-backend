@@ -19,6 +19,14 @@
     <a href="{{ route('portals.facility.team') }}" class="sidebar-link {{ request()->routeIs('portals.facility.team*') ? 'active' : '' }}">
         <i data-lucide="users"></i><span>{{ __('public.portal.nav_team', [], $l) ?: 'Team' }}</span>
     </a>
+    {{-- "What we offer": the facility's own service list, drawn from the
+         institutional code dictionary. Self-gates on the same capability the
+         route does, so a role without it sees no dead link. --}}
+    @capability('service_catalogue')
+    <a href="{{ route('portals.facility.catalogue') }}" class="sidebar-link {{ request()->routeIs('portals.facility.catalogue*') ? 'active' : '' }}">
+        <i data-lucide="clipboard-list"></i><span>{{ __('catalogue.nav', [], $l) }}</span>
+    </a>
+    @endcapability
 </div>
 
 

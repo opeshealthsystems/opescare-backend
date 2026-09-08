@@ -78,5 +78,16 @@ return [
 
         // Facility team management (the /facility/team pages).
         'facility_team' => $facilityAdmins,
+
+        // Curate the facility's own service list — which dictionary entries
+        // (tests, procedures, services) this facility actually offers, what it
+        // calls them locally and what it charges in whole francs.
+        //
+        // Deliberately NOT every facility role. This publishes a claim about
+        // the institution to patients, so it belongs to the people who answer
+        // for the institution: its administrators, plus the lab and pharmacy
+        // managers who own their own menus. A dispensing technician or a ward
+        // nurse has no business setting the hospital's published prices.
+        'service_catalogue' => [...$facilityAdmins, 'lab_manager', 'pharmacy_manager'],
     ],
 ];

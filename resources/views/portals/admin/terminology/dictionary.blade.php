@@ -50,7 +50,10 @@
 
     <select name="system" class="form-control">
         <option value="">{{ __('terminology.dict_all_systems') }}</option>
-        @foreach(['ICD-10', 'LOINC'] as $s)
+        {{-- Built from the table, not a literal. Hardcoding the two systems
+             that existed on the day this was written hid six others the
+             moment they were imported. --}}
+        @foreach($systems as $s)
         <option value="{{ $s }}" @selected($system === $s)>{{ $s }}</option>
         @endforeach
     </select>

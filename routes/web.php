@@ -361,6 +361,30 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'platform.adm
         Route::post('/facility/team/join-requests/{id}/decline', [\App\Http\Controllers\MedicalId\FacilityStaffController::class, 'declineJoinRequest'])->name('portals.facility.team.join.decline');
     });
 
+    // ── Facility service catalogue: "what we offer" ──────────────────────
+    // The facility picks, from the institutional code dictionary, the tests,
+    // procedures and services it actually provides, and states its own local
+    // name, price (whole francs) and turnaround for each.
+    //
+    // ROUTE ORDER: /facility/catalogue/browse is a LITERAL segment and must be
+    // declared before the {id} routes below it, or `browse` is swallowed as an
+    // item id. (Those routes are ->whereUuid as well, which makes it safe
+    // twice over; the declaration order is still the rule.)
+    //
+    // The facility comes from the session context this middleware stack has
+    // already resolved — never from the request. There is no facility_id field
+    // on any of these forms to tamper with.
+    //
+    //   php artisan route:list --path=facility/catalogue
+    Route::middleware('capability:service_catalogue')->group(function () {
+        Route::get('/facility/catalogue',               [\App\Http\Controllers\MedicalId\FacilityCatalogueController::class, 'index'])->name('portals.facility.catalogue');
+        Route::get('/facility/catalogue/browse',        [\App\Http\Controllers\MedicalId\FacilityCatalogueController::class, 'browse'])->name('portals.facility.catalogue.browse');
+        Route::post('/facility/catalogue',              [\App\Http\Controllers\MedicalId\FacilityCatalogueController::class, 'store'])->name('portals.facility.catalogue.store');
+        Route::post('/facility/catalogue/{id}',         [\App\Http\Controllers\MedicalId\FacilityCatalogueController::class, 'update'])->whereUuid('id')->name('portals.facility.catalogue.update');
+        Route::post('/facility/catalogue/{id}/retire',  [\App\Http\Controllers\MedicalId\FacilityCatalogueController::class, 'deactivate'])->whereUuid('id')->name('portals.facility.catalogue.retire');
+        Route::post('/facility/catalogue/{id}/restore', [\App\Http\Controllers\MedicalId\FacilityCatalogueController::class, 'reactivate'])->whereUuid('id')->name('portals.facility.catalogue.restore');
+    });
+
 
     // ── Family Management ──────────────────────────────────────────────────────
     Route::get('/patient/family',                           [\App\Http\Controllers\MedicalId\FamilyController::class, 'index'])->name('portals.patient.family');
@@ -884,6 +908,10 @@ Route::middleware(['web', 'auth', 'platform.admin'])->group(function () {
     // /log does: whereUuid would reject the word "dictionary" and the wildcard
     // would swallow the path before this line ever ran.
     Route::get('/admin/terminology/dictionary',         [\App\Http\Controllers\MedicalId\TerminologyController::class, 'dictionary'])->name('portals.admin.terminology.dictionary');
+    // Also a literal segment, so it belongs ABOVE the {id} routes with /log and
+    // /dictionary. GET only and read-only: the report has no POST counterpart
+    // because nothing it finds may be fixed in bulk from a screen.
+    Route::get('/admin/terminology/gaps',               [\App\Http\Controllers\MedicalId\TerminologyController::class, 'gaps'])->name('portals.admin.terminology.gaps');
     Route::get('/admin/terminology/{id}',             [\App\Http\Controllers\MedicalId\TerminologyController::class, 'show'])->whereUuid('id')->name('portals.admin.terminology.show');
     Route::post('/admin/terminology/{id}/approve',      [\App\Http\Controllers\MedicalId\TerminologyController::class, 'approve'])->whereUuid('id')->name('portals.admin.terminology.approve');
     Route::post('/admin/terminology/{id}/reject',       [\App\Http\Controllers\MedicalId\TerminologyController::class, 'reject'])->whereUuid('id')->name('portals.admin.terminology.reject');
