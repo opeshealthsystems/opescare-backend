@@ -137,6 +137,57 @@ class ClinicalCodeDictionaryTest extends TestCase
         $this->assertFalse(ClinicalCode::isLoinc('70563-7'));
     }
 
+    public function test_a_facility_can_offer_a_procedure_a_service_and_a_vaccine(): void
+    {
+        // The regression this pins: the facility catalogue filtered on
+        // assignable(), which answers "may a clinician record this against a
+        // patient". Procedures, services, vaccines and specialties are none of
+        // those, so every one of them was invisible on the one screen built to
+        // select them — a hospital could declare it runs a haemoglobin assay
+        // but not that it performs a caesarean section.
+        $this->code(['system' => 'ICHI', 'code' => 'NME.JF.AA', 'kind' => 'procedure',
+            'display' => 'Delivery by caesarean section']);
+        $this->code(['system' => 'HL7-service-type', 'code' => '57', 'kind' => 'service',
+            'display' => 'Immunization']);
+        $this->code(['system' => 'CVX', 'code' => '19', 'kind' => 'vaccine',
+            'display' => 'Bacillus Calmette-Guerin vaccine']);
+        $this->code(['system' => 'SNOMED-CT', 'code' => '394579002', 'kind' => 'specialty',
+            'display' => 'Cardiology']);
+
+        $offerable = ClinicalCodeDictionary::offerable()->pluck('code')->all();
+
+        foreach (['NME.JF.AA', '57', '19', '394579002'] as $code) {
+            $this->assertContains($code, $offerable, "{$code} must be offerable by a facility");
+        }
+
+        // And none of them may be recorded as a diagnosis.
+        $this->assertSame(0, ClinicalCodeDictionary::assignable()
+            ->whereIn('code', ['NME.JF.AA', '57', '19', '394579002'])->count());
+    }
+
+    public function test_headings_and_units_are_never_offerable(): void
+    {
+        // A facility offers the drug, not the ATC group heading above it; and
+        // nobody offers a unit of measure or a route of administration.
+        $this->code(['system' => 'ATC', 'code' => 'J01CA', 'kind' => 'group', 'display' => 'Penicillins']);
+        $this->code(['system' => 'ICD-10', 'code' => 'I', 'kind' => 'chapter', 'display' => 'Infectious diseases']);
+        $this->code(['system' => 'UCUM', 'code' => 'mg', 'kind' => 'unit', 'display' => 'milligram']);
+        $this->code(['system' => 'EDQM-route', 'code' => '20035000', 'kind' => 'route', 'display' => 'Intramuscular use']);
+        $this->code(['system' => 'CVX', 'code' => '86', 'kind' => 'nonvaccine', 'display' => 'immune globulin']);
+
+        $this->assertSame(0, ClinicalCodeDictionary::offerable()->count());
+    }
+
+    public function test_a_withdrawn_code_is_offerable_to_nobody(): void
+    {
+        // Historical records still resolve it; nothing new may be built on it.
+        $this->code(['system' => 'ICHI', 'code' => 'AAN.AD.AA', 'kind' => 'procedure',
+            'display' => 'Biopsy of cranial nerve', 'is_active' => false]);
+
+        $this->assertSame(0, ClinicalCodeDictionary::offerable()->count());
+        $this->assertDatabaseHas('clinical_code_dictionary', ['code' => 'AAN.AD.AA']);
+    }
+
     public function test_composed_titles_are_distinguishable_from_published_ones(): void
     {
         // WHO publishes no single string for E11.9; its title is assembled

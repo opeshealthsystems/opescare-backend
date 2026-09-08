@@ -153,6 +153,12 @@ class AppServiceProvider extends ServiceProvider
         Route::middleware('api')
             ->group(base_path('routes/mobile_vitals.php'));
 
+        // Pre-consult questionnaire — the short clinical intake a patient
+        // completes before an appointment, plus the clinician's read of it.
+        // Same rationale as above: its own file so parallel work cannot collide.
+        Route::middleware('api')
+            ->group(base_path('routes/mobile_preconsult.php'));
+
         // Account deletion — the in-app erasure flow (Apple 5.1.1(v) and Google
         // Play both require one when an app creates accounts) plus the public
         // page that documents it.
@@ -286,6 +292,13 @@ class AppServiceProvider extends ServiceProvider
         // method+URI and both surfaces must stay whole.
         Route::middleware('api')
             ->group(base_path('routes/mobile_blood_desk.php'));
+
+        // Triage desk (web portal) — the first surface over the triage schema,
+        // which shipped with the clinical MVP and had no route and no screen.
+        // Its own file rather than routes/web.php, same rationale as above.
+        // The middleware stack, including `capability:triage`, is declared
+        // inside the file with the routes it gates.
+        Route::group([], base_path('routes/triage.php'));
 
         /*
          * Second-factor and one-time codes.

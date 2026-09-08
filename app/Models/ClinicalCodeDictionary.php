@@ -93,4 +93,40 @@ class ClinicalCodeDictionary extends Model
     {
         return $query->whereIn('kind', ['category', 'term'])->where('is_active', true);
     }
+
+    /**
+     * Codes a FACILITY can declare it offers. A different question entirely.
+     *
+     * `assignable()` answers "may a clinician record this against a patient",
+     * and its job is to keep an ICD chapter heading out of a diagnosis field.
+     * The facility service catalogue asks something else — "does this hospital
+     * do this" — and the two answers are not the same set.
+     *
+     * Using `assignable()` for the catalogue made every procedure, vaccine,
+     * department and specialty INVISIBLE on the one screen built to select
+     * them: 8,923 ICHI interventions, 596 HL7 service types, 290 CVX vaccines
+     * and 115 specialties, none of them offerable, because none of them is a
+     * `category` or a `term`. A hospital could declare it does a haemoglobin
+     * assay but not that it performs a caesarean section.
+     *
+     * What is excluded here is excluded for a reason, not by omission:
+     *
+     *   chapter, block, group   headings. "ANTIINFECTIVES FOR SYSTEMIC USE" is
+     *                           not a service; the drug beneath it is.
+     *   unit, route             `mg/dL` and "Intramuscular use" describe HOW a
+     *                           thing is measured or given. No facility offers
+     *                           a unit.
+     *   nonvaccine              CDC ships immune globulins inside CVX; they are
+     *                           flagged so they cannot pass as vaccines.
+     *
+     * Inactive rows are excluded from both scopes: a withdrawn code stays in
+     * the table so historical records still resolve, but nothing new may be
+     * built on it.
+     */
+    public function scopeOfferable(Builder $query): Builder
+    {
+        return $query
+            ->whereIn('kind', ['category', 'term', 'procedure', 'service', 'vaccine', 'specialty'])
+            ->where('is_active', true);
+    }
 }

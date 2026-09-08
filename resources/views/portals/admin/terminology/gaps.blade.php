@@ -8,12 +8,21 @@
 {{--
     Terminology reconciliation report.
 
-    A READING SCREEN. There is not one form, not one button and not one POST on
-    this page, and that is the design rather than an omission: everything below
-    is a question for a person who is accountable for the answer, and clinical
-    records on this platform are amended by that person through the mapping
-    desk, never rewritten in bulk from a report. If a "fix all" control ever
-    appears here, it is a bug.
+    A READING SCREEN WITH EXACTLY ONE ACTION, AND THAT ACTION IS NOT A FIX.
+
+    The only POST on this page raises a suggestion as a PENDING
+    `CodeSystemMapping` — a proposal a reviewer then approves or rejects on the
+    terminology queue, and which only an approved mapping's separate apply step
+    could ever put onto a record. Nothing here writes to `medicines`,
+    `diagnoses`, `lab_results` or `immunization_records`, and nothing here ever
+    may: clinical records on this platform are amended by an accountable
+    person, never rewritten in bulk from a report. If a control appears on this
+    page that changes a clinical value — however guarded, however confirmed —
+    it is a bug.
+
+    Findings that cannot become a proposal say so, in words, where the button
+    would otherwise be. A missing control whose absence the reader cannot
+    explain is indistinguishable from one somebody forgot to build.
 --}}
 
 @section('content')
@@ -32,7 +41,15 @@
 
 <div class="alert alert-info mb-6">
     <i data-lucide="eye"></i>
-    <div>{{ __('terminology.gaps_readonly_notice') }}</div>
+    <div>
+        <div>{{ __('terminology.gaps_readonly_notice') }}</div>
+        <div class="mt-2">{{ __('terminology.propose_intro') }}</div>
+        {{-- Said out loud rather than discovered later: a proposal for an ATC
+             or CVX code is a decision that gets recorded and kept, not a code
+             that will land on a row. Only laboratory rows carrying LOINC have
+             a target column the applier may write. --}}
+        <div class="mt-2 text-sm">{{ __('terminology.propose_review_only') }}</div>
+    </div>
 </div>
 
 {{-- What is loaded to check against. A report that found nothing because no
@@ -135,14 +152,52 @@
                             </td>
                             <td>{{ number_format($u['rows']) }}</td>
                             <td>
+                                @php $already = $existingProposals[$f['key']][$u['value']] ?? null; @endphp
+
+                                @if($already)
+                                    {{-- One live proposal per value, stated ONCE and above the
+                                         suggestions rather than repeated beside each of them.
+                                         A second proposal would put two contradictory mappings
+                                         in front of the same approver, so every button for this
+                                         value becomes a way to read the first one instead. --}}
+                                    <a href="{{ route('portals.admin.terminology.show', $already['id']) }}" class="btn btn-ghost btn-xs mb-2">
+                                        <i data-lucide="external-link"></i>
+                                        {{ __('terminology.propose_existing', ['code' => $already['code'], 'status' => __('terminology.status_' . $already['status'])]) }}
+                                    </a>
+                                @endif
+
                                 @forelse($u['suggestions'] ?? [] as $s)
-                                    <div>
+                                    <div class="mb-1">
                                         <code>{{ $s['code'] }}</code> {{ $s['display'] }}
                                         <span class="pill pill--muted">{{ __('terminology.gaps_basis_' . $s['basis']) }}</span>
+
+                                        @if(($proposable[$f['key']] ?? false) && ! $already)
+                                            <form method="POST" action="{{ route('portals.admin.terminology.propose') }}" class="inline-form">
+                                                @csrf
+                                                <input type="hidden" name="key" value="{{ $f['key'] }}">
+                                                <input type="hidden" name="value" value="{{ $u['value'] }}">
+                                                <input type="hidden" name="code" value="{{ $s['code'] }}">
+                                                <button type="submit" class="btn btn-ghost btn-xs">
+                                                    <i data-lucide="git-pull-request"></i>
+                                                    {{ __('terminology.propose_button') }}
+                                                </button>
+                                            </form>
+                                        @endif
                                     </div>
                                 @empty
                                     <span class="text-muted">—</span>
                                 @endforelse
+
+                                @unless($proposable[$f['key']] ?? false)
+                                    {{-- Not a missing button. There is no mapping to write down
+                                         for this column, and the reason is on the page rather
+                                         than in somebody's head. --}}
+                                    <div class="text-muted text-sm">
+                                        <i data-lucide="info"></i>
+                                        {{ __('terminology.propose_not_here') }}
+                                        {{ __($notProposable[$f['key']] ?? 'terminology.propose_why_unknown') }}
+                                    </div>
+                                @endunless
                             </td>
                         </tr>
                     @endforeach
@@ -173,6 +228,12 @@
                     </p>
                 @endforeach
                 <p class="text-muted text-sm">{{ __('terminology.gaps_duplicates_caveat') }}</p>
+                {{-- And there is deliberately no button on any of them: a
+                     duplicate pair has no local-code-means-standard-code
+                     sentence to record, so a proposal could not express it. --}}
+                <p class="text-muted text-sm">
+                    <i data-lucide="info"></i> {{ __('terminology.propose_duplicates_note') }}
+                </p>
             </div>
             @endif
         @endif

@@ -235,6 +235,21 @@ class TerminologyReconciler
         ];
     }
 
+    /**
+     * The declared targets themselves, read-only.
+     *
+     * Exposed so that a caller checking whether a suggested code is assignable
+     * can read the SAME `kinds` this report checked against, instead of keeping
+     * a second copy of them somewhere that will drift. Still a pure read: it
+     * returns the map, it does not let anyone change it.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function targets(): array
+    {
+        return $this->map();
+    }
+
     /** The whole report: one finding per declared target, in map order. */
     public function report(): array
     {

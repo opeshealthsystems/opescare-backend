@@ -154,7 +154,7 @@ return [
     'gaps_nav' => 'Terminology gaps',
     'gaps_title' => 'Terminology gaps',
     'gaps_subtitle' => 'The codes, units and routes already written onto this deployment’s records, read back against the published vocabularies. It finds what no longer resolves, what is spelled two ways, and what was never backed by a vocabulary at all.',
-    'gaps_readonly_notice' => 'This report reads. It changes nothing, and there is no control on this page that could. A clinical record is corrected by an accountable person who amends it — never by a bulk fix launched from a report.',
+    'gaps_readonly_notice' => 'This report changes no clinical record, and nothing on this page can. Its one action raises a suggestion as a pending proposal for a reviewer to decide on the terminology queue — a record itself is only ever corrected by an accountable person who amends it, never by a bulk fix launched from a report.',
     'gaps_vocabularies' => 'Checked against:',
     'gaps_no_vocabularies' => 'No vocabulary is loaded — nothing below could be checked against anything.',
     'gaps_expected' => 'Expected vocabulary: :systems',
@@ -181,4 +181,29 @@ return [
     'gaps_rule_near_string' => 'one character apart',
     'gaps_rule_declared_synonym' => 'known abbreviation for the same route',
     'gaps_footer' => 'Nothing on this page has been changed. Every line is for a person to decide.',
+    // Raising a gap-report finding as a PENDING proposal. The report proposes;
+    // the review queue decides; only then may the applier write. Every string
+    // here has to keep those three apart, because a reader who thinks the
+    // button fixes the record has been misled by the copy.
+    'propose_intro' => 'Where a suggestion below names a standard code specifically enough, you can raise it as a proposal. A proposal is a pending mapping and nothing more: it is inert until a reviewer approves it on the terminology queue, and the value on the record is untouched either way.',
+    'propose_button' => 'Propose this code',
+    'propose_existing' => 'Already proposed — :code (:status)',
+    'propose_view' => 'Open the proposal',
+    'propose_not_here' => 'No proposal can be raised here.',
+    'propose_why_unit' => 'This is one unit spelled two ways, not a local code awaiting a standard one. UCUM units are composed from a grammar rather than looked up as dictionary rows, so there is no mapping to write down — and a unit on a result that has already been reported is corrected by the laboratory that issued it, as an amendment.',
+    'propose_why_route' => 'These are two spellings of one route in a free-text field. A mapping would record one string as meaning another string; the remedy is to stop both spellings being written, not to map between them.',
+    'propose_why_unknown' => 'This column has no code-mapping shape, so there is nothing a proposal could record here.',
+    'propose_duplicates_note' => 'None of these pairs can be proposed. A duplicate is two spellings of one thing, while a mapping records a local code meaning a standard code; deciding one of these is an amendment to the records that carry it.',
+    'propose_review_only' => 'A proposal records a decision. Writing a code onto records is a separate act and is available only for laboratory rows carrying LOINC — an ATC, ICD-10 or CVX proposal is approved and kept, and the applier says so plainly rather than pretending it can write it.',
+    'propose_refuse_no_finding' => 'That finding is no longer in the report, so nothing was proposed. Reload the page and read it again.',
+    'propose_refuse_not_suggested' => 'That code is not one of the suggestions for this value. Nothing was proposed.',
+    'propose_refuse_malformed' => 'That code fails its own system’s check. Nothing was proposed.',
+    'propose_refuse_not_in_dictionary' => 'That code is not an assignable entry in the loaded vocabulary. Nothing was proposed.',
+    'propose_refuse_duplicate' => 'A proposal for this value is already waiting for a decision. Nothing was proposed.',
+    'propose_flash_created' => 'Proposed: “:value” → :code. It is pending, it is written nowhere else, and a reviewer decides it on the terminology queue.',
+    'propose_note_origin' => 'Raised from the terminology gap report, target :target.',
+    'propose_note_basis_display' => 'Suggested by the rule that matches a dictionary title against the label already on the record.',
+    'propose_note_basis_code_shape' => 'Suggested by the rule that finds neighbouring codes under a shared prefix.',
+    'propose_note_rows' => 'Records carrying this value: :rows.',
+    'propose_note_unjudged' => 'Machine suggestion — no person has judged it yet.',
 ];

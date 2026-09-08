@@ -154,7 +154,7 @@ return [
     'gaps_nav' => 'Écarts de terminologie',
     'gaps_title' => 'Écarts de terminologie',
     'gaps_subtitle' => 'Les codes, unités et voies d’administration déjà inscrits sur les dossiers de ce déploiement, relus au regard des nomenclatures publiées. Le rapport signale ce qui ne correspond plus à rien, ce qui est écrit de deux façons, et ce qui n’a jamais été adossé à une nomenclature.',
-    'gaps_readonly_notice' => 'Ce rapport lit. Il ne modifie rien, et aucune commande de cette page ne le pourrait. Un dossier clinique est corrigé par une personne responsable qui l’amende — jamais par une correction en masse lancée depuis un rapport.',
+    'gaps_readonly_notice' => 'Ce rapport ne modifie aucun dossier clinique, et aucune commande de cette page ne le pourrait. Sa seule action consiste à soumettre une suggestion comme proposition en attente, qu’un relecteur tranchera dans la file terminologique — un dossier, lui, n’est jamais corrigé que par une personne responsable qui l’amende, jamais par une correction en masse lancée depuis un rapport.',
     'gaps_vocabularies' => 'Comparé à :',
     'gaps_no_vocabularies' => 'Aucune nomenclature n’est chargée — rien de ce qui suit n’a pu être comparé à quoi que ce soit.',
     'gaps_expected' => 'Nomenclature attendue : :systems',
@@ -181,4 +181,29 @@ return [
     'gaps_rule_near_string' => 'un seul caractère d’écart',
     'gaps_rule_declared_synonym' => 'abréviation connue de la même voie',
     'gaps_footer' => 'Rien sur cette page n’a été modifié. Chaque ligne relève d’une décision humaine.',
+    // Signalement d’un constat du rapport d’écarts en PROPOSITION en attente.
+    // Le rapport propose, la file de revue tranche, et l’application n’écrit
+    // qu’ensuite. Chaque libellé doit maintenir cette distinction : un lecteur
+    // qui croit que le bouton corrige le dossier a été induit en erreur.
+    'propose_intro' => 'Lorsqu’une suggestion ci-dessous désigne un code standard de façon suffisamment précise, vous pouvez la soumettre comme proposition. Une proposition n’est qu’une correspondance en attente : elle reste sans effet tant qu’un relecteur ne l’a pas approuvée dans la file terminologique, et la valeur inscrite au dossier n’est modifiée dans aucun cas.',
+    'propose_button' => 'Proposer ce code',
+    'propose_existing' => 'Déjà proposé — :code (:status)',
+    'propose_view' => 'Ouvrir la proposition',
+    'propose_not_here' => 'Aucune proposition ne peut être soumise ici.',
+    'propose_why_unit' => 'Il s’agit d’une même unité écrite de deux façons, et non d’un code local en attente d’un code standard. Les unités UCUM se composent selon une grammaire au lieu d’être recherchées comme des entrées de nomenclature : il n’y a donc aucune correspondance à consigner — et une unité portée sur un résultat déjà communiqué se corrige par un amendement du laboratoire qui l’a émis.',
+    'propose_why_route' => 'Ce sont deux orthographes d’une même voie d’administration dans un champ libre. Une correspondance consignerait qu’une chaîne de caractères en signifie une autre ; le remède est d’empêcher que les deux orthographes soient saisies, non d’établir une correspondance entre elles.',
+    'propose_why_unknown' => 'Cette colonne n’a pas la forme d’une correspondance de codes : une proposition n’aurait rien à y consigner.',
+    'propose_duplicates_note' => 'Aucune de ces paires ne peut faire l’objet d’une proposition. Un doublon, ce sont deux orthographes d’une même chose, alors qu’une correspondance consigne qu’un code local signifie un code standard ; trancher l’un de ces cas relève de l’amendement des dossiers concernés.',
+    'propose_review_only' => 'Une proposition consigne une décision. Inscrire un code sur les dossiers est un acte distinct, réservé aux lignes de laboratoire portant un code LOINC — une proposition ATC, CIM-10 ou CVX est approuvée puis conservée, et l’outil d’application le dit clairement au lieu de feindre de pouvoir l’écrire.',
+    'propose_refuse_no_finding' => 'Ce constat ne figure plus dans le rapport ; rien n’a été proposé. Rechargez la page et relisez-la.',
+    'propose_refuse_not_suggested' => 'Ce code ne fait pas partie des suggestions pour cette valeur. Rien n’a été proposé.',
+    'propose_refuse_malformed' => 'Ce code échoue au contrôle propre à sa nomenclature. Rien n’a été proposé.',
+    'propose_refuse_not_in_dictionary' => 'Ce code n’est pas une entrée attribuable de la nomenclature chargée. Rien n’a été proposé.',
+    'propose_refuse_duplicate' => 'Une proposition portant sur cette valeur attend déjà une décision. Rien n’a été proposé.',
+    'propose_flash_created' => 'Proposé : « :value » → :code. La proposition est en attente, elle n’est inscrite nulle part ailleurs, et un relecteur la tranchera dans la file terminologique.',
+    'propose_note_origin' => 'Issue du rapport d’écarts terminologiques, cible :target.',
+    'propose_note_basis_display' => 'Suggérée par la règle qui rapproche un libellé de la nomenclature du libellé déjà porté au dossier.',
+    'propose_note_basis_code_shape' => 'Suggérée par la règle qui recherche les codes voisins sous un préfixe commun.',
+    'propose_note_rows' => 'Dossiers portant cette valeur : :rows.',
+    'propose_note_unjudged' => 'Suggestion automatique — aucune personne ne l’a encore appréciée.',
 ];

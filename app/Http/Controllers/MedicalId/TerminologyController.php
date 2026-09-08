@@ -7,6 +7,7 @@ use App\Models\AuditEvent;
 use App\Models\ClinicalCodeDictionary;
 use App\Models\CodeSystemMapping;
 use App\Services\Terminology\TerminologyApplier;
+use App\Services\Terminology\TerminologyProposer;
 use App\Services\Terminology\TerminologyReconciler;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -51,8 +52,10 @@ class TerminologyController extends Controller
     /** Statuses `code_system_mappings.status` may hold. Matches the migration. */
     private const STATUSES = ['pending', 'approved', 'rejected', 'deprecated'];
 
-    public function __construct(private readonly TerminologyApplier $applier)
-    {
+    public function __construct(
+        private readonly TerminologyApplier $applier,
+        private readonly TerminologyProposer $proposer,
+    ) {
     }
 
     // ── Queue ────────────────────────────────────────────────────────────
@@ -209,7 +212,94 @@ class TerminologyController extends Controller
         $findings = $reconciler->report();
         $vocabularies = $reconciler->vocabularies();
 
-        return view('portals.admin.terminology.gaps', compact('findings', 'vocabularies'));
+        // What a reviewer may DO with each line, worked out here so the screen
+        // never has to guess. Three separate facts per target:
+        //
+        //  - proposable: this target has a `CodeSystemMapping` shape at all.
+        //  - reason: if it has not, WHY not, as a sentence the reader can read.
+        //    A near miss with no button and no explanation reads as a bug.
+        //  - existing: a live proposal already raised for this exact value, so
+        //    the button becomes a link to it rather than a second attempt.
+        $proposable = [];
+        $notProposable = [];
+        $existingProposals = [];
+
+        foreach ($findings as $f) {
+            $key = $f['key'];
+            $proposable[$key] = $this->proposer->isProposable($key);
+            $notProposable[$key] = $this->proposer->notProposableReason($key);
+            $existingProposals[$key] = [];
+
+            if (! $proposable[$key] || $f['system'] === null) {
+                continue;
+            }
+
+            foreach ($f['unresolved'] as $u) {
+                $existing = $this->proposer->existing($u['value'], $f['system']);
+
+                if ($existing !== null) {
+                    $existingProposals[$key][$u['value']] = [
+                        'id' => (string) $existing->id,
+                        'status' => $existing->status,
+                        'code' => $existing->standard_code,
+                    ];
+                }
+            }
+        }
+
+        return view('portals.admin.terminology.gaps', compact(
+            'findings', 'vocabularies', 'proposable', 'notProposable', 'existingProposals'
+        ));
+    }
+
+    /**
+     * Turn one gap-report line into a PENDING proposal.
+     *
+     * THE ONLY WRITE THIS SCREEN CAN CAUSE, AND IT IS NOT A CLINICAL WRITE.
+     * It inserts a row into `code_system_mappings` with status `pending` and
+     * an audit event. It does not touch `medicines`, `diagnoses`,
+     * `lab_results` or `immunization_records` — the value the report
+     * complained about is exactly as it was afterwards, and can be seen to be.
+     *
+     * The proposal then travels the desk that already exists: a reviewer
+     * approves or rejects it, and only an approved mapping may be applied.
+     * This action adds a step in FRONT of that queue; it does not shorten it.
+     *
+     * Nothing posted here is trusted. TerminologyProposer re-runs the
+     * reconciliation and refuses anything that is not still a real finding
+     * with that code among its own suggestions, refuses a code that fails its
+     * own check digit or is not assignable in the dictionary, and refuses a
+     * duplicate of a proposal already awaiting a decision. Every refusal comes
+     * back as a named reason, never as a silent no-op.
+     */
+    public function propose(Request $request)
+    {
+        $validated = $request->validate([
+            'key'   => ['required', 'string', 'max:120'],
+            'value' => ['required', 'string', 'max:255'],
+            'code'  => ['required', 'string', 'max:64'],
+        ]);
+
+        [$actorId, $actorRole, $facilityId, $ip] = $this->actor($request);
+
+        $result = $this->proposer->propose(
+            $validated['key'],
+            $validated['value'],
+            $validated['code'],
+            $actorId,
+            $actorRole,
+            $facilityId,
+            $ip,
+        );
+
+        if ($result['refused'] !== null) {
+            return back()->with('error', __($result['refused']));
+        }
+
+        return back()->with('success', __('terminology.propose_flash_created', [
+            'value' => $validated['value'],
+            'code'  => $validated['code'],
+        ]));
     }
 
     /**

@@ -909,9 +909,22 @@ Route::middleware(['web', 'auth', 'platform.admin'])->group(function () {
     // would swallow the path before this line ever ran.
     Route::get('/admin/terminology/dictionary',         [\App\Http\Controllers\MedicalId\TerminologyController::class, 'dictionary'])->name('portals.admin.terminology.dictionary');
     // Also a literal segment, so it belongs ABOVE the {id} routes with /log and
-    // /dictionary. GET only and read-only: the report has no POST counterpart
-    // because nothing it finds may be fixed in bulk from a screen.
+    // /dictionary. GET only: the report itself reads. Its one POST is
+    // /propose below, which raises a finding as a PENDING mapping for a
+    // reviewer and writes to no clinical table, because nothing this report
+    // finds may be fixed in bulk from a screen.
     Route::get('/admin/terminology/gaps',               [\App\Http\Controllers\MedicalId\TerminologyController::class, 'gaps'])->name('portals.admin.terminology.gaps');
+    // A LITERAL segment, and therefore declared ABOVE the {id} routes for the
+    // same reason /log, /dictionary and /gaps are: the wildcard would swallow
+    // the word "propose" before this line ever ran.
+    //
+    // The gap report's one action. It creates a PENDING CodeSystemMapping from
+    // a finding and writes an audit row, and that is the whole of it — no
+    // clinical table is touched, here or anywhere downstream of here without a
+    // human approval first. The proposal joins the queue at
+    // /admin/terminology, where a reviewer approves or rejects it, and only
+    // then may TerminologyApplier put the code onto records.
+    Route::post('/admin/terminology/propose',           [\App\Http\Controllers\MedicalId\TerminologyController::class, 'propose'])->name('portals.admin.terminology.propose');
     Route::get('/admin/terminology/{id}',             [\App\Http\Controllers\MedicalId\TerminologyController::class, 'show'])->whereUuid('id')->name('portals.admin.terminology.show');
     Route::post('/admin/terminology/{id}/approve',      [\App\Http\Controllers\MedicalId\TerminologyController::class, 'approve'])->whereUuid('id')->name('portals.admin.terminology.approve');
     Route::post('/admin/terminology/{id}/reject',       [\App\Http\Controllers\MedicalId\TerminologyController::class, 'reject'])->whereUuid('id')->name('portals.admin.terminology.reject');

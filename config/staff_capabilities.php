@@ -49,6 +49,20 @@ return [
         // Emergency (break-glass) access to an emergency profile.
         'emergency_access' => [...$doctors, ...$nurses, ...$supervisors],
 
+        // Perform a triage assessment, re-triage a waiting patient, and read
+        // the triage queue (the /facility/triage desk).
+        //
+        // Nurses because triage is a nursing act — `triage_nurse` is a seeded
+        // role that until now had no surface of its own. Doctors and medical
+        // supervisors because the attending clinician must be able to READ
+        // what the nurse recorded and, when the patient in front of them has
+        // deteriorated, re-triage. Deliberately NOT the front desk: booking a
+        // patient in and assigning them a clinical priority are different
+        // jobs, and the second one is not a receptionist's. Deliberately NOT
+        // students/interns either — assigning an acuity is an unsupervised
+        // clinical decision.
+        'triage' => [...$nurses, ...$doctors, ...$supervisors],
+
         // Dispense against prescriptions at the pharmacy counter.
         'dispense' => $pharmacy,
 

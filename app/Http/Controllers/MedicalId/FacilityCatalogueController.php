@@ -135,8 +135,11 @@ class FacilityCatalogueController extends Controller
      *
      * The system filter is built from what is actually loaded, so the day the
      * imaging importer lands its codes are offered here without a line of this
-     * file changing. Headings — ICD-10 chapters and blocks — are excluded by
-     * `assignable()`: a facility offers a test, not a chapter of the ICD.
+     * file changing. Headings — ICD-10 chapters and blocks, ATC groups — are excluded by
+     * `offerable()`, NOT by `assignable()`: a facility offers a test, not a
+     * chapter of the ICD, but it does offer procedures and vaccines, and
+     * `assignable()` (which answers "may a clinician record this against a
+     * patient") hid every one of them from this screen.
      *
      * Codes already on this facility's list are marked as such instead of
      * being filtered out, so the answer to "did I already add this?" is on the
@@ -156,7 +159,7 @@ class FacilityCatalogueController extends Controller
             ->search($request->query('q'))
             ->when($system, fn ($q) => $q->where('system', $system))
             ->when($request->boolean('common'), fn ($q) => $q->where('is_common', true))
-            ->assignable()
+            ->offerable()
             ->orderBy('system')
             ->orderBy('code')
             ->paginate(25)
@@ -191,7 +194,7 @@ class FacilityCatalogueController extends Controller
      *
      * The (system, code) pair is validated against the dictionary itself, not
      * against a list of strings: a facility may only offer something the
-     * institutional vocabulary actually names, and `assignable()` keeps
+     * institutional vocabulary actually names, and `offerable()` keeps
      * headings and withdrawn codes out. Re-adding something retired revives
      * the original row — the unique key makes a second row impossible, and
      * reviving is the honest behaviour anyway.
@@ -212,7 +215,7 @@ class FacilityCatalogueController extends Controller
         ]);
 
         $known = ClinicalCodeDictionary::query()
-            ->assignable()
+            ->offerable()
             ->where('system', $data['system'])
             ->where('code', $data['code'])
             ->exists();

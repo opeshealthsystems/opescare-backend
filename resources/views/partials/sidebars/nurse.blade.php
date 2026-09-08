@@ -13,9 +13,16 @@
         <i data-lucide="layout-dashboard"></i><span>{{ __('public.portal.nav_dashboard', [], $l) ?: 'Dashboard' }}</span>
     </a>
 </div>
-@capability('front_desk', 'schedule', 'blood_inventory', 'messaging')
+@capability('triage', 'front_desk', 'schedule', 'blood_inventory', 'messaging')
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_clinical', [], $l) ?: 'Clinical' }}</div>
+    {{-- Triage. The first surface over the triage schema; gated by the same
+         `triage` capability as its routes (config/staff_capabilities.php). --}}
+    @capability('triage')
+    <a href="{{ route('portals.triage.index') }}" class="sidebar-link {{ request()->routeIs('portals.triage.*') ? 'active' : '' }}">
+        <i data-lucide="siren"></i><span>{{ __('triage.nav', [], $l) ?: 'Triage' }}</span>
+    </a>
+    @endcapability
     @capability('front_desk', 'schedule')
     <a href="{{ route('portals.staff.appointments') }}" class="sidebar-link {{ request()->routeIs('portals.staff.appointments*') ? 'active' : '' }}">
         <i data-lucide="calendar-check-2"></i><span>{{ __('public.portal.nav_appointments', [], $l) ?: 'Appointments' }}</span>
