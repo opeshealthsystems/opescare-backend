@@ -65,16 +65,51 @@ class ImportRollbackService
 
                     $query = DB::table($table)->where('id', $link->record_id);
 
+                    /*
+                     * A PATIENT IS NEVER DELETED.
+                     *
+                     * 89 tables cascade-delete from `patients` — diagnoses,
+                     * visits, allergy_records, consent_grants and
+                     * medical_id_access_events among them. Deleting the row
+                     * would take a person's clinical record AND the audit
+                     * trail of who opened it, which is precisely what this
+                     * platform's immutability rule exists to prevent: the
+                     * evidence of access would vanish along with the evidence
+                     * of care.
+                     *
+                     * `entered_in_error` is the platform's own word for a
+                     * record that should never have existed — the same status
+                     * a voided immunisation carries. The row stays, the
+                     * history stays, and every screen that already reads the
+                     * enum reports it correctly.
+                     */
+                    if ($table === 'patients') {
+                        $query->update([
+                            'identity_status' => 'entered_in_error',
+                            'updated_at'      => now(),
+                        ]);
+                        $counts[$table . ':entered_in_error'] = ($counts[$table . ':entered_in_error'] ?? 0) + 1;
+                        continue;
+                    }
+
                     if (Schema::hasColumn($table, 'deleted_at')) {
                         $query->update(['deleted_at' => now()]);
                         $counts[$table . ':soft_deleted'] = ($counts[$table . ':soft_deleted'] ?? 0) + 1;
                     } else {
+                        // Reference and catalogue rows only — an import writes
+                        // insurance_providers, service_prices and
+                        // inventory_items, none of which carry clinical history.
                         $query->delete();
                         $counts[$table . ':deleted'] = ($counts[$table . ':deleted'] ?? 0) + 1;
                     }
                 }
 
-                DB::table('import_record_links')->where('import_job_id', $job->id)->delete();
+                /*
+                 * The links are KEPT. They are the record of what this import
+                 * created and what the rollback reversed; deleting them would
+                 * leave a retracted patient with nothing explaining why they
+                 * are marked entered-in-error.
+                 */
 
                 $job->forceFill(['status' => 'rolled_back'])->save();
 

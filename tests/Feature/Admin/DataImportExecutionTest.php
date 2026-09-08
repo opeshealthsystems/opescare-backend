@@ -296,12 +296,51 @@ class DataImportExecutionTest extends TestCase
         $this->assertSame(1, DB::table('insurance_providers')->where('id', $othersRow)->count());
         $this->assertSame(1, DB::table('insurance_providers')->where('id', $preExisting)->count());
 
-        // Only my links are cleared; the other job's provenance survives.
-        $this->assertSame(0, DB::table('import_record_links')->where('import_job_id', $mine->id)->count());
+        // Links are KEPT on both sides. They are the record of what each import
+        // created and what the rollback reversed — deleting them would leave a
+        // retracted row with nothing explaining why.
+        $this->assertSame(1, DB::table('import_record_links')->where('import_job_id', $mine->id)->count());
         $this->assertSame(1, DB::table('import_record_links')->where('import_job_id', $other->id)->count());
 
         $this->assertSame('rolled_back', $mine->fresh()->status);
         $this->assertSame('completed', $other->fresh()->status);
+    }
+
+    /**
+     * A patient is NEVER hard-deleted by a rollback.
+     *
+     * 89 tables cascade-delete from `patients` — diagnoses, visits,
+     * allergy_records, consent_grants and medical_id_access_events among
+     * them. A DELETE here would take a person's clinical record and the audit
+     * trail of who opened it, which is exactly what the platform's
+     * immutability rule exists to prevent. The row is marked
+     * `entered_in_error` instead: the platform's own word for a record that
+     * should never have existed.
+     */
+    public function test_rollback_retracts_a_patient_rather_than_destroying_them(): void
+    {
+        $job = $this->completedJob();
+
+        $patient = Patient::factory()->create(['identity_status' => 'provisional']);
+        $this->link($job, 'patients', $patient->id);
+
+        app(ImportRollbackService::class)->rollback($job, 'tester', 'wrong file');
+
+        // The row survives — nothing cascaded.
+        $this->assertSame(1, DB::table('patients')->where('id', $patient->id)->count());
+
+        // And it reads as what it is.
+        $this->assertSame(
+            'entered_in_error',
+            DB::table('patients')->where('id', $patient->id)->value('identity_status'),
+        );
+
+        // The trace of why survives too.
+        $this->assertDatabaseHas('import_record_links', [
+            'import_job_id' => $job->id,
+            'target_table'  => 'patients',
+            'record_id'     => $patient->id,
+        ]);
     }
 
     public function test_rollback_prefers_a_soft_delete_where_the_table_carries_deleted_at(): void
