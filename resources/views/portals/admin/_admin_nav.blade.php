@@ -78,6 +78,14 @@
     <a href="{{ route('portals.admin.data_import.index') }}" class="sidebar-link {{ request()->routeIs('portals.admin.data_import.*') ? 'active' : '' }}">
         <i data-lucide="upload-cloud"></i><span>{{ __('staff_data.title_import', [], $l) ?: 'Data Import' }}</span>
     </a>
+    <a href="{{ route('portals.admin.terminology.index') }}" class="sidebar-link {{ request()->routeIs('portals.admin.terminology.*') ? 'active' : '' }}">
+        <i data-lucide="book-marked"></i><span>{{ __('terminology.nav', [], $l) ?: 'Clinical terminology' }}</span>
+        {{-- Mappings nobody has decided on. Twenty have sat pending since May
+             because there was no screen to decide them; the badge makes that
+             state visible instead of inferred. --}}
+        @php $pendingMappings = rescue(fn () => \App\Models\CodeSystemMapping::where('status', 'pending')->count(), 0, false); @endphp
+        @if($pendingMappings > 0)<span class="sidebar-badge sidebar-badge--warning">{{ $pendingMappings }}</span>@endif
+    </a>
 </div>
 
 {{-- Compliance --}}

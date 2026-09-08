@@ -849,3 +849,39 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'platform.adm
         Route::post('/facility/blood-requests/{id}/fulfil',       [\App\Http\Controllers\MedicalId\BloodRequestDeskController::class, 'fulfil'])->whereUuid('id')->name('portals.staff.blood_requests.fulfil');
     });
 });
+
+/*
+ * Clinical terminology review desk — approving LOINC / ICD-10 mappings, and
+ * putting an approved code onto the records it describes.
+ *
+ * `code_system_mappings` has carried twenty proposals since May with an
+ * approve() method, a reject() and an `approved` scope, and no screen at all.
+ * Twenty pending, zero approved, every `lab_results.loinc_code` null: the
+ * interoperability layer was a table waiting for a person who had no door.
+ *
+ * Same group as the data-import and security desks — ['web','auth',
+ * 'platform.admin'] — and RequirePlatformAdmin treats every path under /admin/
+ * as platform tier, so a facility-tier admin gets a 403 that names the reason
+ * rather than a 404 that hides the page.
+ *
+ * The mappings are platform-wide (facility_id null) and this desk is
+ * cross-facility by definition, so no facility id is read from a header, body,
+ * query string or "the one facility we found"; the controller takes it from
+ * $request->attributes only, and only to stamp the audit trail.
+ *
+ * ROUTE ORDER: /log is declared before the {id} routes and every {id} route
+ * carries whereUuid, so the literal segment cannot be swallowed by the
+ * wildcard and a malformed id is an honest 404 rather than a Postgres 22P02
+ * cast error surfacing as a 500.
+ *
+ * Appended as its own block so nothing already routed changes. Verify with:
+ *   php artisan route:list --path=admin/terminology
+ */
+Route::middleware(['web', 'auth', 'platform.admin'])->group(function () {
+    Route::get('/admin/terminology',                    [\App\Http\Controllers\MedicalId\TerminologyController::class, 'index'])->name('portals.admin.terminology.index');
+    Route::get('/admin/terminology/log',                [\App\Http\Controllers\MedicalId\TerminologyController::class, 'log'])->name('portals.admin.terminology.log');
+    Route::get('/admin/terminology/{id}',               [\App\Http\Controllers\MedicalId\TerminologyController::class, 'show'])->whereUuid('id')->name('portals.admin.terminology.show');
+    Route::post('/admin/terminology/{id}/approve',      [\App\Http\Controllers\MedicalId\TerminologyController::class, 'approve'])->whereUuid('id')->name('portals.admin.terminology.approve');
+    Route::post('/admin/terminology/{id}/reject',       [\App\Http\Controllers\MedicalId\TerminologyController::class, 'reject'])->whereUuid('id')->name('portals.admin.terminology.reject');
+    Route::post('/admin/terminology/{id}/apply',        [\App\Http\Controllers\MedicalId\TerminologyController::class, 'apply'])->whereUuid('id')->name('portals.admin.terminology.apply');
+});
