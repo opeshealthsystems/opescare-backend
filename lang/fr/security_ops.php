@@ -9,6 +9,7 @@
  */
 return [
 
+    'action_failed' => 'Une erreur s’est produite et l’action n’a pas été effectuée. Les détails figurent dans le journal.',
     // Commun
     'nav' => 'Supervision sécurité',
     'breadcrumb_home' => 'Admin',

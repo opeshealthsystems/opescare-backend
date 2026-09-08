@@ -9,6 +9,7 @@
  */
 return [
 
+    'action_failed' => 'Something went wrong and the action was not carried out. The details are in the log.',
     // Shared
     'nav' => 'Security oversight',
     'breadcrumb_home' => 'Admin',

@@ -48,7 +48,8 @@ use Throwable;
  * hosted Finder runs — so the global scope would hide REAL break-glass events
  * from the desk whose whole job is to see them. Rows carry a demo badge in the
  * view instead, so the two are never confused.
- */
+ */use Illuminate\Support\Facades\Log;
+
 class SecurityOpsController extends Controller
 {
     /** Statuses a reviewer may record on an override. Matches the migration. */
@@ -137,6 +138,8 @@ class SecurityOpsController extends Controller
      */
     public function emergencyReview(Request $request, string $id)
     {
+        $this->assertUuid($id);
+
         $data = $request->validate([
             'status' => 'required|in:'.implode(',', self::REVIEW_STATUSES),
             'notes' => 'nullable|string|max:2000',
@@ -158,7 +161,7 @@ class SecurityOpsController extends Controller
             return redirect()->route('portals.admin.security.emergency_access')
                 ->with('success', __('security_ops.emerg_review_saved'));
         } catch (Throwable $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', $this->failureMessage($e));
         }
     }
 
@@ -203,12 +206,14 @@ class SecurityOpsController extends Controller
             return redirect()->route('portals.admin.security.incidents')
                 ->with('success', __('flash.security_incident_logged'));
         } catch (Throwable $e) {
-            return back()->withInput()->with('error', $e->getMessage());
+            return back()->withInput()->with('error', $this->failureMessage($e));
         }
     }
 
     public function incidentUpdate(Request $request, string $id)
     {
+        $this->assertUuid($id);
+
         $data = $request->validate([
             'status' => 'required|in:open,investigating,contained,resolved,closed',
             'summary' => 'nullable|string|max:2000',
@@ -223,7 +228,7 @@ class SecurityOpsController extends Controller
             return redirect()->route('portals.admin.security.incidents')
                 ->with('success', __('flash.incident_updated'));
         } catch (Throwable $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', $this->failureMessage($e));
         }
     }
 
@@ -302,5 +307,38 @@ class SecurityOpsController extends Controller
             ->whereIn('emergency_access_event_id', $ids)
             ->get()
             ->keyBy('emergency_access_event_id');
+    }
+
+    /**
+     * What the operator is told when an action fails.
+     *
+     * NEVER the raw exception message. A malformed id used to reach the
+     * Postgres driver, and the resulting 22P02 message — which carries the
+     * whole SQL statement, the database name, the host and the port — was
+     * being flashed straight onto the page. The detail belongs in the log,
+     * where the operator cannot read it and an engineer can.
+     */
+    private function failureMessage(Throwable $e): string
+    {
+        Log::warning('security ops action failed', [
+            'exception' => $e::class,
+            'message'   => $e->getMessage(),
+        ]);
+
+        return __('security_ops.action_failed');
+    }
+
+    /**
+     * A route id that is not a uuid is a 404, not a database error.
+     *
+     * Without this the value reaches the driver and Postgres raises 22P02 —
+     * which also aborts the surrounding transaction, so every later query on
+     * the connection fails too.
+     */
+    private function assertUuid(string $id): void
+    {
+        if (! preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $id)) {
+            abort(404);
+        }
     }
 }

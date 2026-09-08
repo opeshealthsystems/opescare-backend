@@ -31,7 +31,8 @@ use Illuminate\Support\Str;
  * Every type without a mapping is parked at `requires_manual_review` rather
  * than half-imported. Every row created is recorded in `import_record_links`
  * so ImportRollbackService can reverse exactly this batch and nothing else.
- */
+ */use App\Modules\PatientIdentity\Exceptions\DuplicateIdentityFound;
+
 class ExecuteImportJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -242,7 +243,7 @@ class ExecuteImportJob implements ShouldQueue
                 ]);
                 $created++;
             } catch (\Throwable $e) {
-                if (str_contains($e->getMessage(), 'Duplicate candidate')) {
+                if ($e instanceof DuplicateIdentityFound) {
                     $dupes++;
                 } else {
                     $failed++;
