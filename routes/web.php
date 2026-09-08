@@ -769,3 +769,27 @@ Route::middleware(['web', 'auth', 'platform.admin'])->group(function () {
     Route::post('/admin/data-import/{id}/cancel',           [\App\Http\Controllers\MedicalId\DataImportController::class, 'cancel'])->name('portals.admin.data_import.cancel');
     Route::get('/admin/data-import/{id}/log',               [\App\Http\Controllers\MedicalId\DataImportController::class, 'auditLog'])->name('portals.admin.data_import.audit');
 });
+
+/*
+ * Security oversight — the break-glass review desk.
+ *
+ * Ported from the main platform's /portals/admin/security and mounted on the
+ * Finder's clean /admin/security prefix. Same group as the MPI and data-import
+ * desks: ['web','auth','platform.admin']. RequirePlatformAdmin treats every
+ * path under /admin/ as platform tier, so a facility-tier admin gets 403 here
+ * rather than a 404 — the refusal names the reason instead of hiding the page.
+ *
+ * Oversight of emergency access is cross-facility by definition, so nothing on
+ * this desk is facility-scoped and no facility id is ever read from a header,
+ * body or query string. The only write against an override is a review case
+ * recorded ALONGSIDE it; the access event and the audit trail are immutable.
+ */
+Route::middleware(['web', 'auth', 'platform.admin'])->group(function () {
+    Route::get('/admin/security',                                    [\App\Http\Controllers\MedicalId\SecurityOpsController::class, 'index'])->name('portals.admin.security.index');
+    Route::get('/admin/security/emergency-access',                   [\App\Http\Controllers\MedicalId\SecurityOpsController::class, 'emergencyAccess'])->name('portals.admin.security.emergency_access');
+    Route::post('/admin/security/emergency-access/{id}/review',      [\App\Http\Controllers\MedicalId\SecurityOpsController::class, 'emergencyReview'])->name('portals.admin.security.emergency_access.review');
+    Route::get('/admin/security/incidents',                          [\App\Http\Controllers\MedicalId\SecurityOpsController::class, 'incidents'])->name('portals.admin.security.incidents');
+    Route::post('/admin/security/incidents',                         [\App\Http\Controllers\MedicalId\SecurityOpsController::class, 'incidentStore'])->name('portals.admin.security.incidents.store');
+    Route::post('/admin/security/incidents/{id}',                    [\App\Http\Controllers\MedicalId\SecurityOpsController::class, 'incidentUpdate'])->name('portals.admin.security.incidents.update');
+    Route::get('/admin/security/audit',                              [\App\Http\Controllers\MedicalId\SecurityOpsController::class, 'auditExplorer'])->name('portals.admin.security.audit_explorer');
+});

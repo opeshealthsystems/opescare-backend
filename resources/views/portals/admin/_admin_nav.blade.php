@@ -102,6 +102,17 @@
     <a href="{{ route('portals.admin.legal.minor_transitions') }}" class="sidebar-link {{ request()->routeIs('portals.admin.legal.minor_transitions*') ? 'active' : '' }}">
         <i data-lucide="user-round-cog"></i><span>{{ __('public.adm_legal_btn_minor_transitions', [], $l) ?: 'Minor Transitions' }}</span>
     </a>
+    <a href="{{ route('portals.admin.security.index') }}" class="sidebar-link {{ request()->routeIs('portals.admin.security.*') ? 'active' : '' }}">
+        <i data-lucide="shield-alert"></i><span>{{ __('security_ops.nav', [], $l) ?: 'Security oversight' }}</span>
+        {{-- Emergency overrides nobody has signed off on. Demo isolation is
+             lifted for the same reason the desk lifts it: a real break-glass
+             must not be invisible because the host runs in demo mode. --}}
+        @php $unreviewedBreakGlass = rescue(fn () => \App\Models\EmergencyAccessEvent::withoutGlobalScope('isolate_demo')
+            ->whereNotExists(fn ($q) => $q->selectRaw('1')->from('emergency_review_cases')
+                ->whereColumn('emergency_review_cases.emergency_access_event_id', 'emergency_access_events.id')
+                ->where('emergency_review_cases.status', '!=', 'pending'))->count(), 0, false); @endphp
+        @if($unreviewedBreakGlass > 0)<span class="sidebar-badge sidebar-badge--warning">{{ $unreviewedBreakGlass }}</span>@endif
+    </a>
 </div>
 
 {{-- Control Center --}}
