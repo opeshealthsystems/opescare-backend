@@ -745,3 +745,27 @@ foreach ([
         return redirect('/' . $cleanPrefix . '/' . $rest . ($qs ? '?' . $qs : ''), 301);
     })->where('rest', '.*');
 }
+
+/*
+ * Bulk data import — the upload → map → validate → preview → approve wizard.
+ *
+ * Ported from the main platform, where it lived under /portals/staff. Here it
+ * is admin-only: an approved import writes records (patients among them) into a
+ * facility at scale, so it sits behind the same ['web','auth','platform.admin']
+ * group as the MPI desk, and RequirePlatformAdmin treats everything under
+ * /admin/ as platform tier. The facility is taken from the session context
+ * only — never a header, body field or "the one facility we found".
+ */
+Route::middleware(['web', 'auth', 'platform.admin'])->group(function () {
+    Route::get('/admin/data-import',                        [\App\Http\Controllers\MedicalId\DataImportController::class, 'index'])->name('portals.admin.data_import.index');
+    Route::get('/admin/data-import/new',                    [\App\Http\Controllers\MedicalId\DataImportController::class, 'create'])->name('portals.admin.data_import.create');
+    Route::post('/admin/data-import',                       [\App\Http\Controllers\MedicalId\DataImportController::class, 'store'])->name('portals.admin.data_import.store');
+    Route::get('/admin/data-import/{id}/mapping',           [\App\Http\Controllers\MedicalId\DataImportController::class, 'mapping'])->name('portals.admin.data_import.mapping');
+    Route::post('/admin/data-import/{id}/mapping',          [\App\Http\Controllers\MedicalId\DataImportController::class, 'mappingStore'])->name('portals.admin.data_import.mapping.store');
+    Route::post('/admin/data-import/{id}/validate',         [\App\Http\Controllers\MedicalId\DataImportController::class, 'validate'])->name('portals.admin.data_import.validate');
+    Route::get('/admin/data-import/{id}/preview',           [\App\Http\Controllers\MedicalId\DataImportController::class, 'preview'])->name('portals.admin.data_import.preview');
+    Route::post('/admin/data-import/{id}/approve',          [\App\Http\Controllers\MedicalId\DataImportController::class, 'approve'])->name('portals.admin.data_import.approve');
+    Route::post('/admin/data-import/{id}/rollback',         [\App\Http\Controllers\MedicalId\DataImportController::class, 'rollback'])->name('portals.admin.data_import.rollback');
+    Route::post('/admin/data-import/{id}/cancel',           [\App\Http\Controllers\MedicalId\DataImportController::class, 'cancel'])->name('portals.admin.data_import.cancel');
+    Route::get('/admin/data-import/{id}/log',               [\App\Http\Controllers\MedicalId\DataImportController::class, 'auditLog'])->name('portals.admin.data_import.audit');
+});

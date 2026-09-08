@@ -75,6 +75,9 @@
     <a href="{{ route('portals.admin.leads') }}" class="sidebar-link {{ request()->routeIs('portals.admin.leads*') ? 'active' : '' }}">
         <i data-lucide="user-plus"></i><span>{{ __('leads.admin.page_title', [], $l) ?: 'Leads' }}</span>
     </a>
+    <a href="{{ route('portals.admin.data_import.index') }}" class="sidebar-link {{ request()->routeIs('portals.admin.data_import.*') ? 'active' : '' }}">
+        <i data-lucide="upload-cloud"></i><span>{{ __('staff_data.title_import', [], $l) ?: 'Data Import' }}</span>
+    </a>
 </div>
 
 {{-- Compliance --}}
