@@ -159,7 +159,7 @@ class BloodRequestService
                     $componentType->label(),
                     $contactPhone !== null ? ' · ' . $contactPhone : '',
                 ),
-                'url'   => url('/facility/inventory/blood'),
+                'url'   => route('portals.staff.blood_requests.index'),
             ],
             [],
             'high',

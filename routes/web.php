@@ -793,3 +793,59 @@ Route::middleware(['web', 'auth', 'platform.admin'])->group(function () {
     Route::post('/admin/security/incidents/{id}',                    [\App\Http\Controllers\MedicalId\SecurityOpsController::class, 'incidentUpdate'])->name('portals.admin.security.incidents.update');
     Route::get('/admin/security/audit',                              [\App\Http\Controllers\MedicalId\SecurityOpsController::class, 'auditExplorer'])->name('portals.admin.security.audit_explorer');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Staff Portal — BLOOD REQUEST QUEUE (the facility side of a patient's ask)
+|--------------------------------------------------------------------------
+|
+| The queue blood-bank staff answer in the browser. Until now the only
+| receivers were the partner API (routes/blood_bank.php, behind
+| VerifyIntegrationClient — zero credentials issued in production) and the
+| provider app (routes/mobile_blood_desk.php). On the web there was no screen
+| at all: BloodRequestService pinged every staff member at the facility the
+| moment a request landed and sent them to /facility/inventory/blood, the
+| STOCK page, which never shows a request. That notification now points here.
+|
+| MIDDLEWARE — deliberately identical to the group at line ~265 that carries
+| the rest of the staff portal, plus the same capability gate as the blood
+| stock screen it sits beside:
+|
+|   web, auth, mfa.verified, portal.access, platform.admin, facility.context,
+|   patient.profile, guardian.profile, throttle:portal
+|     + capability:blood_inventory
+|
+| `facility.context` is what makes the scoping in BloodRequestDeskController
+| safe: the facility is resolved from the session by middleware and read back
+| through PortalContextService, never from a header, body, query string or a
+| fallback default. capability:blood_inventory is the SAME gate as
+| portals.staff.inventory.blood — the authority that reads the blood shelf is
+| the authority that answers a request against it, and no new capability is
+| invented. Everyone else is refused 403 {error_code: role_forbidden} before
+| the controller runs; a request belonging to ANOTHER blood bank is 404, never
+| 403, because "forbidden" would already confirm a patient asked elsewhere.
+|
+| Appended as its own block rather than folded into the existing group so that
+| nothing already routed changes. Verify with:
+|   php artisan route:list --path=blood-requests
+|
+| ROUTE ORDER: every action ends in a literal segment, so nothing here can be
+| swallowed by the {id} wildcard. whereUuid keeps a malformed id from reaching
+| Postgres as a bad uuid cast (22P02) and surfacing as a 500 instead of the
+| honest 404 — blood_requests.id is a uuid (App\Models\BloodRequest uses
+| HasUuids).
+|
+| Nothing on this surface deletes a request, edits its history, moves it
+| backwards, or touches `blood_availability`: confirming is the blood bank
+| saying "yes, come", not a reservation.
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'platform.admin', 'facility.context', 'patient.profile', 'guardian.profile', 'throttle:portal'])->group(function () {
+    Route::middleware('capability:blood_inventory')->group(function () {
+        Route::get('/facility/blood-requests',                    [\App\Http\Controllers\MedicalId\BloodRequestDeskController::class, 'index'])->name('portals.staff.blood_requests.index');
+        Route::get('/facility/blood-requests/{id}',               [\App\Http\Controllers\MedicalId\BloodRequestDeskController::class, 'show'])->whereUuid('id')->name('portals.staff.blood_requests.show');
+        Route::post('/facility/blood-requests/{id}/decide',       [\App\Http\Controllers\MedicalId\BloodRequestDeskController::class, 'decide'])->whereUuid('id')->name('portals.staff.blood_requests.decide');
+        Route::post('/facility/blood-requests/{id}/ready',        [\App\Http\Controllers\MedicalId\BloodRequestDeskController::class, 'ready'])->whereUuid('id')->name('portals.staff.blood_requests.ready');
+        Route::post('/facility/blood-requests/{id}/fulfil',       [\App\Http\Controllers\MedicalId\BloodRequestDeskController::class, 'fulfil'])->whereUuid('id')->name('portals.staff.blood_requests.fulfil');
+    });
+});

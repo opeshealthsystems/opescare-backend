@@ -27,6 +27,11 @@
         <i data-lucide="droplet"></i>
         <span>{{ __('public.portal.nav_blood_inventory', [], $l) ?: 'Blood Inventory' }}</span>
     </a>
+    {{-- The queue of patients asking this blood bank for units. Sits beside
+         the shelf it is asked against, behind the same capability. --}}
+    <a href="{{ route('portals.staff.blood_requests.index') }}" class="sidebar-link {{ request()->routeIs('portals.staff.blood_requests.*') ? 'active' : '' }}">
+        <i data-lucide="clipboard-list"></i><span>{{ __('blood_desk.nav', [], $l) ?: 'Blood Requests' }}</span>
+    </a>
     @endcapability
     @capability('messaging')
     <a href="{{ route('portals.staff.messages') }}" class="sidebar-link {{ request()->routeIs('portals.staff.messages*') ? 'active' : '' }}">
