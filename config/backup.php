@@ -59,8 +59,22 @@ return [
                 /*
                  * These directories and files will be excluded from the backup.
                  *
-                 * Directories used by the backup process (the temporary directory and
-                 * the local destination folder) are automatically excluded.
+                 * The backup process's OWN directories are excluded EXPLICITLY below.
+                 * This comment used to claim they were excluded automatically. They
+                 * were not, and the cost was two failed backups and an archive that
+                 * had grown from 1.6 MB to 224 MB by swallowing its predecessors:
+                 *
+                 *   · storage/app/backup-tmp holds the zip WHILE it is being built.
+                 *     It is inside the include path, so it entered its own manifest
+                 *     and then vanished when the job moved it — which is exactly the
+                 *     "ZipArchive::close(): Can't open file: No such file or
+                 *     directory" that killed the 6 Sept and 7 Sept runs.
+                 *   · the destination folder holds every PREVIOUS archive, so each
+                 *     backup was zipping the last one inside itself.
+                 *
+                 * Only those two paths are excluded, NOT the whole of
+                 * storage/app/private — patient photos and record exports live there
+                 * and must keep being backed up.
                  *
                  * Secrets are deliberately kept OUT of the archive: `.env` (and any
                  * `.env.bak-*` copy) and `bootstrap/cache` (the cached config.php
@@ -78,6 +92,19 @@ return [
                     base_path('bootstrap/cache'),
                     storage_path('logs'),
                     storage_path('framework'),
+
+                    // The backup's own workspace and output. See the note above:
+                    // without these the job put itself in its own manifest.
+                    storage_path('app/backup-tmp'),
+                    storage_path('app/private/' . env('APP_NAME', 'OpesCare')),
+
+                    // The sideload APKs — ~396 MB across the live build and two
+                    // rollback copies, which was roughly 90% of every archive.
+                    // They are build artefacts: reproducible from the EAS build,
+                    // and their SHA-256 is recorded in playstore/artifacts/
+                    // MANIFEST.md. A backup exists to restore what cannot be
+                    // rebuilt; this can be rebuilt.
+                    base_path('public/downloads'),
                 ],
 
                 /*
