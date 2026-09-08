@@ -4,6 +4,7 @@ namespace App\Http\Controllers\MedicalId;
 
 use App\Http\Controllers\Controller;
 use App\Models\AuditEvent;
+use App\Models\ClinicalCodeDictionary;
 use App\Models\CodeSystemMapping;
 use App\Services\Terminology\TerminologyApplier;
 use Illuminate\Http\Request;
@@ -116,6 +117,56 @@ class TerminologyController extends Controller
         return view('portals.admin.terminology.index', compact(
             'mappings', 'radius', 'systems', 'counts', 'statuses', 'status', 'system'
         ));
+    }
+
+    /**
+     * Browse the published vocabularies themselves — WHO ICD-10 and LOINC.
+     *
+     * The review queue answers "is OUR local code mapped correctly". This
+     * answers "what IS the code for X", which is the question a clinician
+     * choosing a diagnosis or a lab manager building a test menu actually
+     * has, and which until now had no answer inside the platform at all.
+     *
+     * Not access-logged, and deliberately so: this reads WHO and LOINC
+     * reference data and touches no patient row. Logging it would bury the
+     * log that matters — who opened whose record — under lookups of a public
+     * code table.
+     */
+    public function dictionary(Request $request)
+    {
+        $system = $request->query('system');
+        $system = in_array($system, ['ICD-10', 'LOINC'], true) ? $system : null;
+
+        $codes = ClinicalCodeDictionary::query()
+            ->search($request->query('q'))
+            ->when($system, fn ($q) => $q->where('system', $system))
+            ->when($request->boolean('common'), fn ($q) => $q->where('is_common', true))
+            ->when(! $request->boolean('headings'), fn ($q) => $q->assignable())
+            ->orderBy('system')
+            ->orderBy('code')
+            ->paginate(50)
+            ->withQueryString();
+
+        // The standing state of the dictionary. A total of zero means the
+        // importers have never been run, which is a very different thing from
+        // a search that found nothing — and the screen must not let those two
+        // look the same.
+        $totals = ClinicalCodeDictionary::query()
+            ->selectRaw('system, count(*) as total')
+            ->selectRaw('count(*) filter (where is_common) as common')
+            ->groupBy('system')
+            ->get()
+            ->keyBy('system');
+
+        // Provenance, shown on the page. Reference data whose release nobody
+        // can see is reference data nobody can check.
+        $releases = ClinicalCodeDictionary::query()
+            ->select('system', 'source', 'source_version')
+            ->distinct()
+            ->orderBy('system')
+            ->get();
+
+        return view('portals.admin.terminology.dictionary', compact('codes', 'totals', 'releases', 'system'));
     }
 
     /**

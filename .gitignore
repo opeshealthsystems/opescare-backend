@@ -40,3 +40,6 @@ yarn-error.log
 
 # Local editor/tool config for this checkout only.
 /.claude
+
+# Terminology release files are downloaded by the importers, not committed.
+/storage/app/terminology/

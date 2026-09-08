@@ -880,7 +880,11 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'platform.adm
 Route::middleware(['web', 'auth', 'platform.admin'])->group(function () {
     Route::get('/admin/terminology',                    [\App\Http\Controllers\MedicalId\TerminologyController::class, 'index'])->name('portals.admin.terminology.index');
     Route::get('/admin/terminology/log',                [\App\Http\Controllers\MedicalId\TerminologyController::class, 'log'])->name('portals.admin.terminology.log');
-    Route::get('/admin/terminology/{id}',               [\App\Http\Controllers\MedicalId\TerminologyController::class, 'show'])->whereUuid('id')->name('portals.admin.terminology.show');
+    // A literal segment, so it stays ABOVE the {id} routes for the same reason
+    // /log does: whereUuid would reject the word "dictionary" and the wildcard
+    // would swallow the path before this line ever ran.
+    Route::get('/admin/terminology/dictionary',         [\App\Http\Controllers\MedicalId\TerminologyController::class, 'dictionary'])->name('portals.admin.terminology.dictionary');
+    Route::get('/admin/terminology/{id}',             [\App\Http\Controllers\MedicalId\TerminologyController::class, 'show'])->whereUuid('id')->name('portals.admin.terminology.show');
     Route::post('/admin/terminology/{id}/approve',      [\App\Http\Controllers\MedicalId\TerminologyController::class, 'approve'])->whereUuid('id')->name('portals.admin.terminology.approve');
     Route::post('/admin/terminology/{id}/reject',       [\App\Http\Controllers\MedicalId\TerminologyController::class, 'reject'])->whereUuid('id')->name('portals.admin.terminology.reject');
     Route::post('/admin/terminology/{id}/apply',        [\App\Http\Controllers\MedicalId\TerminologyController::class, 'apply'])->whereUuid('id')->name('portals.admin.terminology.apply');
