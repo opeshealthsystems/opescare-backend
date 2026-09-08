@@ -38,6 +38,10 @@ return [
             'label'       => 'Résultat de laboratoire',
             'description' => 'Produit par un laboratoire à partir d\'un prélèvement.',
         ],
+        'partner_reported' => [
+            'label'       => 'Transmis par un autre système',
+            'description' => 'Transmis via l\'API d\'interopérabilité par un système externe. Personne ici ne l\'a observé.',
+        ],
     ],
 
     /* Ce qu'un patient peut enregistrer, et le nom de chaque nombre. */

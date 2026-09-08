@@ -23,6 +23,7 @@ namespace App\Enums;
  *   self_reported      → `patient_recorded_vitals`  (this feature's write path)
  *   facility_measured  → `triage_vital_signs`, `vital_signs`
  *   laboratory_result  → `lab_results`
+ *   partner_reported   → `fhir_partner_observations` (the FHIR R4 ingest door)
  */
 enum VitalProvenance: string
 {
@@ -34,6 +35,19 @@ enum VitalProvenance: string
 
     /** A published laboratory result — a sample the laboratory ran. */
     case LaboratoryResult = 'laboratory_result';
+
+    /**
+     * Pushed in over the FHIR R4 ingest API by an external system.
+     *
+     * A partner asserting a reading is not the same act as a nurse taking
+     * one. Nobody at this facility observed it, nobody here signed for it,
+     * and the platform cannot re-check it — so it is never clinically
+     * verified here, however trustworthy the partner is.
+     *
+     * Structural, like the rest: these live in `fhir_partner_observations`,
+     * which no clinical reader queries as a facility measurement.
+     */
+    case PartnerReported = 'partner_reported';
 
     /**
      * @return string[]
@@ -53,7 +67,7 @@ enum VitalProvenance: string
     public function isClinicallyVerified(): bool
     {
         return match ($this) {
-            self::SelfReported => false,
+            self::SelfReported, self::PartnerReported => false,
             self::FacilityMeasured, self::LaboratoryResult => true,
         };
     }

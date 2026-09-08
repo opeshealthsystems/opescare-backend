@@ -58,9 +58,9 @@ class AuthController extends Controller
 
         // ── Path 1: Argon2id (migrated clients) ──────────────────────────────
         if ($client->client_secret_argon !== null) {
-            if (Hash::check($clientSecret, $client->client_secret_argon)) {
+            if (\App\Support\ClientSecretHasher::check($clientSecret, $client->client_secret_argon)) {
                 $authenticated = true;
-                if (Hash::needsRehash($client->client_secret_argon)) {
+                if (\App\Support\ClientSecretHasher::needsRehash($client->client_secret_argon)) {
                     $needsUpgrade = true;
                 }
             }
@@ -81,7 +81,7 @@ class AuthController extends Controller
         // ── Rolling upgrade: write Argon2id on first SHA-256 success ─────────
         if ($needsUpgrade) {
             $client->updateQuietly([
-                'client_secret_argon' => Hash::make($clientSecret),
+                'client_secret_argon' => \App\Support\ClientSecretHasher::make($clientSecret),
                 'secret_upgraded_at'  => now(),
             ]);
         }

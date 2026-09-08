@@ -81,10 +81,10 @@ class VerifyIntegrationClient
 
             // ── Path 1: Argon2id (new, fast for already-upgraded clients) ─────
             if ($client->client_secret_argon !== null) {
-                if (Hash::check($clientSecret, $client->client_secret_argon)) {
+                if (\App\Support\ClientSecretHasher::check($clientSecret, $client->client_secret_argon)) {
                     $authenticated = true;
                     // Rehash if Argon2 configuration has changed (work factor increase)
-                    if (Hash::needsRehash($client->client_secret_argon)) {
+                    if (\App\Support\ClientSecretHasher::needsRehash($client->client_secret_argon)) {
                         $needsUpgrade = true;
                     }
                 }
@@ -105,7 +105,7 @@ class VerifyIntegrationClient
             // ── Rolling upgrade: write Argon2id hash on first SHA-256 success ─
             if ($needsUpgrade) {
                 $client->updateQuietly([
-                    'client_secret_argon' => Hash::make($clientSecret),
+                    'client_secret_argon' => \App\Support\ClientSecretHasher::make($clientSecret),
                     'secret_upgraded_at'  => now(),
                 ]);
             }

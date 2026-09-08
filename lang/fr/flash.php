@@ -3,6 +3,7 @@ return [
     // Appointments
     'appointment_cancelled'                => 'Rendez-vous annulé avec succès.',
     'appointment_cancel_failed'            => 'Échec de l\'annulation du rendez-vous.',
+    'appointment_marked_entered_in_error' => "Rendez-vous marqué comme saisi par erreur. La réservation et les réponses de pré-consultation sont conservées.",
     'appointment_only_cancelled_deletable' => 'Seuls les rendez-vous annulés peuvent être supprimés.',
     'appointment_deleted'                  => 'Rendez-vous supprimé.',
     'appointment_booked'                   => 'Rendez-vous réservé avec succès.',
@@ -13,6 +14,7 @@ return [
     'user_created'                         => 'Utilisateur créé avec succès.',
     'user_updated'                         => 'Utilisateur mis à jour.',
     'user_deleted'                         => 'Utilisateur supprimé.',
+    'user_deactivated'                     => "Compte désactivé. Il ne peut plus se connecter ni agir, et rien n'a été supprimé : les dossiers et les entrées d'audit qu'il a créés sont intacts. Vous pouvez le réactiver depuis cet écran à tout moment.",
     'user_suspended'                       => 'Compte utilisateur suspendu.',
     'user_reinstated'                      => 'Compte utilisateur réactivé.',
     'user_role_updated'                    => 'Rôle utilisateur mis à jour.',
@@ -22,6 +24,7 @@ return [
     'facility_created'                     => 'Établissement créé.',
     'facility_updated'                     => 'Établissement mis à jour.',
     'facility_deleted'                     => 'Établissement supprimé.',
+    'facility_deactivated'                 => "Établissement désactivé. Ses consultations, ordonnances et consentements sont intacts et les patients y conservent un accès complet. Vous pouvez le réactiver depuis cet écran à tout moment.",
     'facility_activated'                   => 'Établissement activé.',
     'facility_deactivated'                 => 'Établissement désactivé.',
     // Staff
@@ -112,8 +115,8 @@ return [
     'ticket_deleted'                      => 'Ticket supprimé avec succès.',
     // Users (extended)
     'user_password_reset'                 => 'Mot de passe réinitialisé avec succès.',
-    'user_delete_self'                    => 'Vous ne pouvez pas supprimer votre propre compte.',
-    'user_delete_last_super_admin'        => 'Impossible de supprimer le dernier super administrateur.',
+    'user_delete_self'                    => 'Vous ne pouvez pas désactiver votre propre compte.',
+    'user_delete_last_super_admin'        => 'Impossible de désactiver le dernier super administrateur actif.',
     'user_activated'                      => 'Utilisateur activé.',
     // Bridge
     'bridge_agent_registered'             => 'Agent Bridge enregistré.',

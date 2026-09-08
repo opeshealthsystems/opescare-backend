@@ -77,6 +77,37 @@ class VerifyBearerToken
             }
         }
 
+        // ── Client-level revocation ──────────────────────────────────────
+        // A JWT carries facts frozen at issue time, so revoking a client used
+        // to do nothing to the tokens it had already been handed: the partner
+        // desk could set status=revoked and that partner would keep reading
+        // patient data until the token expired. The token endpoint only
+        // refuses to MINT tokens for a non-active client; nothing asked the
+        // question again on the way in.
+        //
+        // Ask it here, on every request, against the table rather than a
+        // cache — a revocation an administrator has just made must bite on the
+        // very next request, not when a TTL feels like it. One indexed lookup
+        // on a unique column.
+        //
+        // A token whose subject is not an integration client at all finds no
+        // row; that is not a revocation and is not treated as one. (The
+        // testing bypass above returns before reaching this point.)
+        $bearerClientId = $claims['client_id'] ?? $claims['sub'] ?? null;
+        if ($bearerClientId) {
+            $clientStatus = \Illuminate\Support\Facades\DB::table('integration_clients')
+                ->where('client_id', $bearerClientId)
+                ->value('status');
+
+            if ($clientStatus !== null && $clientStatus !== 'active') {
+                return response()->json([
+                    'status'  => 'rejected',
+                    'error'   => 'client_revoked',
+                    'message' => 'The integration client for this token is no longer active.',
+                ], 401);
+            }
+        }
+
         $request->attributes->add([
             'integration_client_id' => $claims['client_id']   ?? $claims['sub'] ?? null,
             'facility_id'           => $claims['facility_id'] ?? null,

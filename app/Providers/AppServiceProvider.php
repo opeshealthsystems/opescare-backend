@@ -300,6 +300,17 @@ class AppServiceProvider extends ServiceProvider
         // inside the file with the routes it gates.
         Route::group([], base_path('routes/triage.php'));
 
+        // FHIR R4 ingest — the door partner systems push clinical data through
+        // (Observation, DiagnosticReport, Immunization, transaction Bundle).
+        // Its own file rather than routes/api.php, same rationale as above.
+        //
+        // There is deliberately NO Patient write route in it: a partner may
+        // never mint a Health ID. See routes/fhir.php for the full rationale.
+        // The middleware stack is declared inside the file with the routes it
+        // gates, because each resource carries its own SMART-on-FHIR scope.
+        Route::middleware('api')
+            ->group(base_path('routes/fhir.php'));
+
         /*
          * Second-factor and one-time codes.
          *

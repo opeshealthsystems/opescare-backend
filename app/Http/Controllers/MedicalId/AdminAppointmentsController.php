@@ -107,6 +107,20 @@ class AdminAppointmentsController extends Controller
         return redirect()->back()->with('success', __('flash.appointment_cancelled'));
     }
 
+    /**
+     * "Delete" a cancelled appointment — which marks it entered-in-error.
+     *
+     * $appointment->delete() was a hard DELETE (Appointment has no SoftDeletes)
+     * and `preconsult_questionnaire_responses.appointment_id` cascades from it,
+     * so removing a cancelled booking silently took the patient's pre-consult
+     * answers with it and left the queue entries pointing at nothing.
+     *
+     * An appointment is a care event: it is marked, never overwritten.
+     * `entered_in_error` is the platform's existing word for a record that
+     * should not have been created — ImportRollbackService uses it for the same
+     * reason — and lang/{en,fr}/enums.php already renders it, so the admin list
+     * shows the state correctly with no new vocabulary.
+     */
     public function destroy(string $id)
     {
         if (!Auth::check()) return redirect()->route('login');
@@ -117,8 +131,10 @@ class AdminAppointmentsController extends Controller
             return redirect()->back()->with('error', __('flash.appointment_only_cancelled_deletable'));
         }
 
-        $appointment->delete();
+        $appointment->status = 'entered_in_error';
+        $appointment->save();
 
-        return redirect()->route('portals.admin.appointments.index')->with('success', __('flash.appointment_deleted'));
+        return redirect()->route('portals.admin.appointments.index')
+            ->with('success', __('flash.appointment_marked_entered_in_error'));
     }
 }

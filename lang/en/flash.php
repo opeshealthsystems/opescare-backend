@@ -3,6 +3,7 @@ return [
     // Appointments
     'appointment_cancelled'                => 'Appointment cancelled successfully.',
     'appointment_cancel_failed'            => 'Failed to cancel appointment.',
+    'appointment_marked_entered_in_error' => 'Appointment marked entered in error. The booking and any pre-consult answers are retained.',
     'appointment_only_cancelled_deletable' => 'Only cancelled appointments can be deleted.',
     'appointment_deleted'                  => 'Appointment deleted.',
     'appointment_booked'                   => 'Appointment booked successfully.',
@@ -13,6 +14,7 @@ return [
     'user_created'                         => 'User created successfully.',
     'user_updated'                         => 'User updated.',
     'user_deleted'                         => 'User deleted.',
+    'user_deactivated'                     => 'Account deactivated. It can no longer sign in or act, and nothing was deleted — the records and audit entries it created are intact. Reactivate it from this screen at any time.',
     'user_suspended'                       => 'User account suspended.',
     'user_reinstated'                      => 'User account reinstated.',
     'user_role_updated'                    => 'User role updated.',
@@ -22,6 +24,7 @@ return [
     'facility_created'                     => 'Facility created.',
     'facility_updated'                     => 'Facility updated.',
     'facility_deleted'                     => 'Facility deleted.',
+    'facility_deactivated'                 => 'Facility deactivated. Its visits, prescriptions and consent records are intact and patients keep full access to them. Reactivate it from this screen at any time.',
     'facility_activated'                   => 'Facility activated.',
     'facility_deactivated'                 => 'Facility deactivated.',
     // Staff
@@ -112,8 +115,8 @@ return [
     'ticket_deleted'                      => 'Ticket deleted successfully.',
     // Users (extended)
     'user_password_reset'                 => 'Password reset successfully.',
-    'user_delete_self'                    => 'You cannot delete your own account.',
-    'user_delete_last_super_admin'        => 'Cannot delete the last super admin.',
+    'user_delete_self'                    => 'You cannot deactivate your own account.',
+    'user_delete_last_super_admin'        => 'Cannot deactivate the last active super admin.',
     'user_activated'                      => 'User activated.',
     // Bridge
     'bridge_agent_registered'             => 'Bridge Agent registered.',

@@ -930,3 +930,31 @@ Route::middleware(['web', 'auth', 'platform.admin'])->group(function () {
     Route::post('/admin/terminology/{id}/reject',       [\App\Http\Controllers\MedicalId\TerminologyController::class, 'reject'])->whereUuid('id')->name('portals.admin.terminology.reject');
     Route::post('/admin/terminology/{id}/apply',        [\App\Http\Controllers\MedicalId\TerminologyController::class, 'apply'])->whereUuid('id')->name('portals.admin.terminology.apply');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Partner onboarding — the desk that issues integration credentials
+|--------------------------------------------------------------------------
+| `integration_clients` is what every external system authenticates against,
+| and until this block there was no route in the product that could create a
+| row in it. The developer self-service portal above lets a DEVELOPER make a
+| sandbox app for themselves; nothing let the PLATFORM onboard a partner
+| organisation, choose its scopes, or revoke it. This is that desk.
+|
+| ROUTE ORDER: /create is a literal segment and is declared ABOVE the {id}
+| routes, which all carry whereUuid — so the wildcard cannot swallow the word
+| "create", and a malformed id is an honest 404 rather than a Postgres 22P02
+| cast error surfacing as a 500.
+|
+| Appended as its own block so nothing already routed changes. Verify with:
+|   php artisan route:list --path=admin/partners
+*/
+Route::middleware(['web', 'auth', 'platform.admin'])->group(function () {
+    Route::get('/admin/partners',                    [\App\Http\Controllers\MedicalId\PartnerOnboardingController::class, 'index'])->name('portals.admin.partners.index');
+    Route::get('/admin/partners/create',             [\App\Http\Controllers\MedicalId\PartnerOnboardingController::class, 'create'])->name('portals.admin.partners.create');
+    Route::post('/admin/partners',                   [\App\Http\Controllers\MedicalId\PartnerOnboardingController::class, 'store'])->name('portals.admin.partners.store');
+    Route::get('/admin/partners/{id}',               [\App\Http\Controllers\MedicalId\PartnerOnboardingController::class, 'show'])->whereUuid('id')->name('portals.admin.partners.show');
+    Route::post('/admin/partners/{id}/rotate',       [\App\Http\Controllers\MedicalId\PartnerOnboardingController::class, 'rotate'])->whereUuid('id')->name('portals.admin.partners.rotate');
+    Route::post('/admin/partners/{id}/scopes',       [\App\Http\Controllers\MedicalId\PartnerOnboardingController::class, 'scopes'])->whereUuid('id')->name('portals.admin.partners.scopes');
+    Route::post('/admin/partners/{id}/status',       [\App\Http\Controllers\MedicalId\PartnerOnboardingController::class, 'status'])->whereUuid('id')->name('portals.admin.partners.status');
+});

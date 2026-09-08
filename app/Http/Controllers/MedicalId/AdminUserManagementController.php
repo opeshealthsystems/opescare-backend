@@ -12,6 +12,7 @@ use App\Services\Portal\PortalContextService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 /**
@@ -425,6 +426,29 @@ class AdminUserManagementController extends Controller
         return redirect()->back()->with('success', __('flash.user_password_reset'));
     }
 
+    /**
+     * "Remove" a staff account — which DEACTIVATES it and never deletes it.
+     *
+     * This method used to call $user->delete(). `users` carries no SoftDeletes
+     * trait, so that was a hard DELETE, and 47 tables cascade from `users`:
+     * allergy_records.provider_id, clinical_notes.provider_id,
+     * diagnoses.provider_id, problem_lists.provider_id,
+     * imaging_orders.ordered_by — and access_logs.actor_id. Removing one doctor
+     * therefore erased their patients' recorded allergies (a prescribing-error
+     * pathway) together with the audit trail proving who had opened those
+     * records. The evidence of care and the evidence of access went in the same
+     * statement.
+     *
+     * The platform already has the right vocabulary and this reuses it rather
+     * than inventing any: `users.status`. `suspended` is the value the login
+     * path itself refuses (PublicPageController::login), it is already counted
+     * on this screen's own stats tile, and `activate` already reverses it. So a
+     * removed account is a suspended account with an audit event that says it
+     * was removed — the state is honest, reversible, and destroys nothing.
+     *
+     * The same reasoning as ImportRollbackService: a record that should no
+     * longer be acted upon is marked, never deleted, and the trace is kept.
+     */
     public function destroy(string $id)
     {
         if (!Auth::check()) return redirect()->route('login');
@@ -437,14 +461,49 @@ class AdminUserManagementController extends Controller
 
         $superAdminRole = Role::where('name', 'super_admin')->first();
         if ($superAdminRole) {
-            $superAdminCount = User::where('role_id', $superAdminRole->id)->count();
+            $superAdminCount = User::where('role_id', $superAdminRole->id)
+                ->where('status', 'active')
+                ->count();
             if ($superAdminCount <= 1 && $user->role_id === $superAdminRole->id) {
                 return redirect()->back()->with('error', __('flash.user_delete_last_super_admin'));
             }
         }
 
-        $user->delete();
+        if ($user->status === 'suspended') {
+            return redirect()->route('admin.users.index')->with('success', __('flash.user_deactivated'));
+        }
 
-        return redirect()->route('admin.users.index')->with('success', __('flash.user_deleted'));
+        $before = $user->status;
+
+        $user->status = 'suspended';
+        $user->save();
+
+        // Withdraw every standing facility assignment: the account must stop
+        // being able to act anywhere, not merely stop being able to log in.
+        // Deactivated, not deleted — the row records access once granted, and
+        // `activate` plus a re-assignment revives it.
+        FacilityRoleAssignment::query()
+            ->where('user_id', $user->id)
+            ->where('is_active', true)
+            ->update(['is_active' => false, 'expires_at' => now()]);
+
+        // Cut live sessions. A session row is a credential, not a record of
+        // care, so removing it destroys no history.
+        DB::table('sessions')->where('user_id', $user->id)->delete();
+
+        // audit_events.actor_id is a uuid column; PortalContextService::actorId()
+        // returns Auth::id() (a uuid) or null. Never the email fallback.
+        $this->ctx->auditPatientAccess(
+            actionType:   'admin_user_deactivated',
+            resourceType: 'User',
+            resourceId:   $user->id,
+            extra: [
+                'reason'       => 'removed_by_admin',
+                'before_state' => ['status' => $before],
+                'after_state'  => ['status' => 'suspended'],
+            ],
+        );
+
+        return redirect()->route('admin.users.index')->with('success', __('flash.user_deactivated'));
     }
 }

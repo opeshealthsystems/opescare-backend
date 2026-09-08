@@ -15,13 +15,45 @@ class BridgeSyncController extends Controller
     /**
      * Receive a sync batch posted by a Bridge Agent.
      *
-     * POST /v1/bridge/sync
      * Header: X-Bridge-Agent-Key: <raw_key>
+     *
+     * ── THIS CONTROLLER IS DELIBERATELY NOT ROUTED ───────────────────────
+     * The doc-block here used to advertise `POST /v1/bridge/sync`. That route
+     * is declared in no route file, and it must not be added until the
+     * contract below is finished. Leaving it unrouted was, by accident, the
+     * thing that prevented real harm.
+     *
+     * WHAT WAS WRONG. The validator accepted six sync types —
+     * `ehr_records`, `lab_results`, `billing`, `appointments`,
+     * `pharmacy_stock`, `blood_stock` — while `processRecords()` handled only
+     * the last three. The other three fell through a `default => 'skipped'`
+     * arm. So a facility's on-prem agent could post 500 lab results, receive
+     * HTTP 200 with the batch recorded as `completed`, and have NOTHING
+     * stored. Silent data loss, reported as success, against clinical data.
+     *
+     * A facility trusting that response would believe its laboratory results
+     * had reached the platform. They would not be in a patient's record, and
+     * nobody would be told.
+     *
+     * WHAT CHANGED HERE. The accepted types are now exactly the handled
+     * types, so an unsupported type is refused loudly at the edge (422 with
+     * the list of what IS supported) instead of being accepted and dropped.
+     * `processRecords()` no longer has a silent default.
+     *
+     * BEFORE THIS IS ROUTED, all of these must be true:
+     *   1. Clinical ingest goes through the FHIR R4 endpoints, which resolve
+     *      an EXISTING Health ID and require patient consent. A bridge agent
+     *      must not be a second, weaker door into the same records.
+     *   2. `bridge_agents` are onboarded and their keys are hashed, not raw.
+     *   3. There is at least one test. There is currently none.
      */
     public function sync(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'sync_type' => 'required|in:ehr_records,lab_results,appointments,billing,pharmacy_stock,blood_stock',
+            // Exactly the types processRecords() implements — see the note
+            // above. Adding a type here without a handler re-creates a silent
+            // data-loss endpoint.
+            'sync_type' => 'required|in:appointments,pharmacy_stock,blood_stock',
             'records'   => 'required|array|min:1|max:500',
             'checksum'  => 'nullable|string|size:64',
         ]);
@@ -160,11 +192,16 @@ class BridgeSyncController extends Controller
 
         foreach ($records as $i => $record) {
             try {
+                // NO SILENT DEFAULT. An unhandled type used to become
+                // 'skipped', which counted the record, reported the batch
+                // 'completed', and stored nothing — the caller could not tell
+                // a dropped record from a duplicate one. An unhandled type is
+                // now a programming error and says so; the validator above is
+                // what turns an unsupported type into an honest 422.
                 $outcome = match($syncType) {
-                    'appointments'    => $this->upsertAppointment($facilityId, $record),
-                    'pharmacy_stock'  => $this->upsertPharmacyStock($facilityId, $record),
-                    'blood_stock'     => $this->upsertBloodStock($facilityId, $record),
-                    default           => 'skipped',
+                    'appointments'   => $this->upsertAppointment($facilityId, $record),
+                    'pharmacy_stock' => $this->upsertPharmacyStock($facilityId, $record),
+                    'blood_stock'    => $this->upsertBloodStock($facilityId, $record),
                 };
 
                 match($outcome) {

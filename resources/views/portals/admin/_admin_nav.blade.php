@@ -53,6 +53,12 @@
 {{-- Partners --}}
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_partners', [], $l) ?: 'Partners' }}</div>
+    {{-- The keys themselves. The two links below manage the PEOPLE (developer
+         accounts) and their REQUESTS; this one manages the credentials every
+         external system actually authenticates with. --}}
+    <a href="{{ route('portals.admin.partners.index') }}" class="sidebar-link {{ request()->routeIs('portals.admin.partners.*') ? 'active' : '' }}">
+        <i data-lucide="key-round"></i><span>{{ __('partners.nav', [], $l) ?: 'Partner onboarding' }}</span>
+    </a>
     <a href="{{ route('portals.admin.developer.accounts') }}" class="sidebar-link {{ request()->routeIs('portals.admin.developer.accounts*') ? 'active' : '' }}">
         <i data-lucide="code-2"></i><span>{{ __('public.adm_cc_sidebar_developer_accounts', [], $l) ?: 'Developer Accounts' }}</span>
     </a>

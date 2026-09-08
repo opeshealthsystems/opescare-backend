@@ -41,6 +41,10 @@ return [
             'label'       => 'Laboratory result',
             'description' => 'Produced by a laboratory from a sample.',
         ],
+        'partner_reported' => [
+            'label'       => 'Sent by another system',
+            'description' => 'Pushed in over the interoperability API by an outside system. Nobody here observed it.',
+        ],
     ],
 
     /* What a patient may log, and what each number is called. */
