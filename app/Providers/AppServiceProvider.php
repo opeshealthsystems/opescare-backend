@@ -278,6 +278,15 @@ class AppServiceProvider extends ServiceProvider
         Route::middleware('api')
             ->group(base_path('routes/mobile_pharmacy_desk.php'));
 
+        // Mobile blood-bank staff desk (the receiving end of a patient's blood
+        // request) — loaded here rather than in routes/api.php so parallel work
+        // on separate features cannot collide in one file. Mounted on
+        // `api/mobile/blood-desk`, a SIBLING of the patient prefix in
+        // routes/mobile_blood.php, because Laravel keeps one handler per
+        // method+URI and both surfaces must stay whole.
+        Route::middleware('api')
+            ->group(base_path('routes/mobile_blood_desk.php'));
+
         /*
          * Second-factor and one-time codes.
          *
