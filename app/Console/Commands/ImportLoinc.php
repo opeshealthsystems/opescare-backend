@@ -137,7 +137,7 @@ class ImportLoinc extends Command
         }
 
         foreach (self::UNIVERSAL_SLICES as $slice) {
-            $this->harvest($slice, 'LOINC Universal Lab Orders', $collected);
+            $this->harvestDeep($slice, "LOINC Universal Lab Orders", $collected);
         }
 
         $this->line(sprintf('  %-24s +%d', 'universal lab orders', count($collected)));
@@ -146,7 +146,7 @@ class ImportLoinc extends Command
             $before = count($collected);
 
             foreach ($terms as $term) {
-                $this->harvest($term, 'Disease burden: ' . $area, $collected);
+                $this->harvestDeep($term, 'Disease burden: ' . $area, $collected);
             }
 
             $this->line(sprintf('  %-24s +%d', $area, count($collected) - $before));
@@ -357,6 +357,47 @@ class ImportLoinc extends Command
         );
 
         return count($batch);
+    }
+
+    /**
+     * Words that split an over-large result set along LOINC's own axes.
+     *
+     * NLM ANDs the words in `terms`, so "creatinine serum" is a strict subset
+     * of "creatinine". Slicing a term by specimen, property and scale reaches
+     * the results the 1,000-row ceiling would otherwise hide, without any
+     * guessing about what the extra codes are — LOINC's index still decides
+     * every match.
+     */
+    private const SLICES = [
+        'serum', 'plasma', 'blood', 'urine', 'CSF', 'stool', 'tissue',
+        'mass', 'moles', 'presence', 'panel', 'qualitative', 'quantitative',
+        'ratio', 'rate', 'antibody', 'antigen', 'culture', 'DNA', 'RNA',
+    ];
+
+    /**
+     * Harvest a term, and slice it if it hit the ceiling.
+     *
+     * A term that matches more than one request can return is re-issued
+     * narrowed by each slice word above. This does not guarantee completeness
+     * — a slice can hit the ceiling too — so whatever is still short after
+     * slicing is reported rather than quietly dropped.
+     */
+    private function harvestDeep(string $term, string $reason, array &$collected): void
+    {
+        $this->harvest($term, $reason, $collected);
+
+        if (! isset($this->shortfalls[$term])) {
+            return;
+        }
+
+        // The parent's shortfall is superseded by whatever the slices leave
+        // behind; drop it so the report shows the remaining gap, not the
+        // original one.
+        unset($this->shortfalls[$term]);
+
+        foreach (self::SLICES as $slice) {
+            $this->harvest($term . ' ' . $slice, $reason, $collected);
+        }
     }
 
     /**

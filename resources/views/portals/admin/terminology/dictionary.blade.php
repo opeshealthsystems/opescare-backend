@@ -93,7 +93,14 @@
                     @endif
                 </td>
                 <td>
-                    {{ $code->display }}
+                    {{ $code->label }}
+                    @if($code->label !== $code->display)
+                        {{-- The published English, kept visible under the French
+                             title. A code exchanged with another system travels
+                             under its English label, so hiding it would make the
+                             screen disagree with the wire. --}}
+                        <div class="text-muted text-sm">{{ $code->display }}</div>
+                    @endif
                     @if($code->synonyms)
                         <div class="text-muted text-sm">{{ Str::limit($code->synonyms, 120) }}</div>
                     @endif

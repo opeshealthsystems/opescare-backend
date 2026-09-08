@@ -62,8 +62,30 @@ class ClinicalCodeDictionary extends Model
         return $query->where(function (Builder $q) use ($escaped, $like) {
             $q->where('code', 'ILIKE', $escaped . '%')
                 ->orWhere('display', 'ILIKE', $like)
+                // Searched in BOTH languages regardless of the current locale.
+                // A francophone clinician types "paludisme" and an anglophone
+                // one types "malaria" for the same code, and neither should
+                // have to know which language the record was filed in.
+                ->orWhere('display_fr', 'ILIKE', $like)
                 ->orWhere('synonyms', 'ILIKE', $like);
         });
+    }
+
+    /**
+     * The title to show, in the reader's language where one exists.
+     *
+     * Falls back to the published English rather than to nothing: 84 ICD-10
+     * codes — the U-chapter emergency-use placeholders — have no French title
+     * because CIM-10 FR does not carry them, and an empty row would be worse
+     * than an English one.
+     */
+    public function getLabelAttribute(): string
+    {
+        if (app()->getLocale() === 'fr' && filled($this->display_fr)) {
+            return $this->display_fr;
+        }
+
+        return $this->display;
     }
 
     /** Codes a clinician can actually assign — never a chapter or block heading. */
