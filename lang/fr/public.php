@@ -2301,7 +2301,7 @@ return [
         'btn_clear'                   => 'Effacer',
         'confirm_dispense_msg'        => "Marquer l'ordonnance comme entièrement délivrée ?",
         'no_prescriptions'            => 'Aucune ordonnance trouvée.',
-        'ph_search_patient'           => 'Nom du patient…',
+        'ph_search_patient'           => 'Identifiant Santé (exact)…',
         'breadcrumb_section_inventory'=> "Inventaire des Médicaments",
         'page_heading_inventory'      => "Inventaire des médicaments",
         'page_subtitle_inventory'     => 'Niveaux de stock actuels, péremptions et disponibilité.',

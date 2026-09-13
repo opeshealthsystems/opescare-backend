@@ -109,6 +109,18 @@
 {{-- Compliance --}}
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_compliance', [], $l) ?: 'Compliance' }}</div>
+    {{-- Patient rights: statutory data-export and record-correction requests.
+         These tables have been filling up since the mobile app shipped and
+         nothing in the product could decide any of them — the only approval
+         code had no route and no screen. The badge counts what is still
+         waiting on a human, because an unanswerable statutory request must
+         not be invisible. --}}
+    <a href="{{ route('portals.admin.governance.index') }}" class="sidebar-link {{ request()->routeIs('portals.admin.governance.*') ? 'active' : '' }}">
+        <i data-lucide="scroll-text"></i><span>{{ __('governance_desk.nav', [], $l) ?: 'Patient rights' }}</span>
+        @php $pendingRights = rescue(fn () => \App\Models\DataExportRequest::where('status', 'pending')->count()
+            + \App\Models\CorrectionRequest::where('status', 'pending')->count(), 0, false); @endphp
+        @if($pendingRights > 0)<span class="sidebar-badge sidebar-badge--warning">{{ $pendingRights }}</span>@endif
+    </a>
     <a href="{{ route('portals.admin.legal.index') }}" class="sidebar-link {{ request()->routeIs('portals.admin.legal.index') || request()->routeIs('portals.admin.legal.show') || request()->routeIs('portals.admin.legal.store') || request()->routeIs('portals.admin.legal.versions.*') ? 'active' : '' }}">
         <i data-lucide="scale"></i><span>{{ __('public.adm_legal_page_title', [], $l) ?: 'Legal Documents' }}</span>
     </a>

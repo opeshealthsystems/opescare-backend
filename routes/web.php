@@ -958,3 +958,43 @@ Route::middleware(['web', 'auth', 'platform.admin'])->group(function () {
     Route::post('/admin/partners/{id}/scopes',       [\App\Http\Controllers\MedicalId\PartnerOnboardingController::class, 'scopes'])->whereUuid('id')->name('portals.admin.partners.scopes');
     Route::post('/admin/partners/{id}/status',       [\App\Http\Controllers\MedicalId\PartnerOnboardingController::class, 'status'])->whereUuid('id')->name('portals.admin.partners.status');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Patient rights desk — data export and record correction requests
+|--------------------------------------------------------------------------
+|
+| THE DEFECT THIS CLOSES. Patients can file a statutory data-export request
+| and a record-correction request from the shipped mobile app; both land in
+| `data_export_requests` / `correction_requests` as `pending`. The ONLY code
+| able to approve either was `Api\V1\Admin\AdminGovernanceController`, which
+| has never had a single route registered anywhere in this application, and
+| `DataExportService::downloadExport()` refuses to produce anything that is
+| not approved. So a patient exercised a right under Cameroon Law No.
+| 2010/012, the request was stored, and no human being on this platform could
+| act on it. This block is the door.
+|
+| Platform tier: everything under /admin/ is platform-only by
+| RequirePlatformAdmin::isPlatformOnlyPath(), so a facility-tier user is
+| refused with a 403 before the controller runs.
+|
+| ROUTE ORDER: the literal segment /log is declared ABOVE the {id} routes,
+| which all carry whereUuid — so the wildcard cannot swallow the word "log",
+| and a malformed id is an honest 404 rather than a Postgres 22P02 cast error
+| surfacing as a 500.
+|
+| Appended as its own block so nothing already routed changes. Verify with:
+|   php artisan route:list --path=admin/governance
+*/
+Route::middleware(['web', 'auth', 'platform.admin'])->group(function () {
+    Route::get('/admin/governance',      [\App\Http\Controllers\MedicalId\GovernanceRequestsController::class, 'index'])->name('portals.admin.governance.index');
+    Route::get('/admin/governance/log',  [\App\Http\Controllers\MedicalId\GovernanceRequestsController::class, 'log'])->name('portals.admin.governance.log');
+
+    Route::get('/admin/governance/exports/{id}',          [\App\Http\Controllers\MedicalId\GovernanceRequestsController::class, 'showExport'])->whereUuid('id')->name('portals.admin.governance.exports.show');
+    Route::post('/admin/governance/exports/{id}/approve', [\App\Http\Controllers\MedicalId\GovernanceRequestsController::class, 'approveExport'])->whereUuid('id')->name('portals.admin.governance.exports.approve');
+    Route::post('/admin/governance/exports/{id}/refuse',  [\App\Http\Controllers\MedicalId\GovernanceRequestsController::class, 'refuseExport'])->whereUuid('id')->name('portals.admin.governance.exports.refuse');
+
+    Route::get('/admin/governance/corrections/{id}',          [\App\Http\Controllers\MedicalId\GovernanceRequestsController::class, 'showCorrection'])->whereUuid('id')->name('portals.admin.governance.corrections.show');
+    Route::post('/admin/governance/corrections/{id}/approve', [\App\Http\Controllers\MedicalId\GovernanceRequestsController::class, 'approveCorrection'])->whereUuid('id')->name('portals.admin.governance.corrections.approve');
+    Route::post('/admin/governance/corrections/{id}/refuse',  [\App\Http\Controllers\MedicalId\GovernanceRequestsController::class, 'refuseCorrection'])->whereUuid('id')->name('portals.admin.governance.corrections.refuse');
+});

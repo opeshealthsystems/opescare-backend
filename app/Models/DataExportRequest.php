@@ -19,11 +19,15 @@ class DataExportRequest extends Model
         'approved_by',
         'file_path',
         'expires_at',
+        'rejected_by',
+        'rejected_at',
+        'decision_reason',
     ];
 
     protected $casts = [
         'scope_json' => 'array',
         'expires_at' => 'datetime',
+        'rejected_at' => 'datetime',
     ];
 
     public function patient()

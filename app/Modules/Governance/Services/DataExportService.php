@@ -81,6 +81,25 @@ class DataExportService
     {
         $request = DataExportRequest::findOrFail($requestId);
 
+        /*
+         * ONLY THE PERSON WHO FILED IT MAY DOWNLOAD IT.
+         *
+         * An export is the patient's ENTIRE record in one payload. This method
+         * previously took `$userId` for the audit line only and never checked
+         * it against the request, so any authenticated caller holding a request
+         * id could pull another patient's whole chart. A uuid is not an
+         * authorisation.
+         *
+         * The check is identity, not facility: the filer is the patient (or a
+         * guardian acting for them, who files under their own user id). The
+         * refusal is deliberately indistinguishable from "not approved" —
+         * confirming that someone else's export exists and is approved would
+         * itself be a disclosure.
+         */
+        if ((string) $request->requested_by_user_id !== (string) $userId) {
+            throw new UnauthorizedException("Export is not approved.");
+        }
+
         if ($request->status !== 'approved') {
             throw new UnauthorizedException("Export is not approved.");
         }

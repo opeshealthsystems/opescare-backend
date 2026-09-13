@@ -2293,7 +2293,7 @@ return [
         'btn_clear'                   => 'Clear',
         'confirm_dispense_msg'        => 'Mark prescription as fully dispensed?',
         'no_prescriptions'            => 'No prescriptions found.',
-        'ph_search_patient'           => 'Patient name…',
+        'ph_search_patient'           => 'Health ID (exact)…',
         /* inventory.blade.php */
         'breadcrumb_section_inventory'=> 'Drug Inventory',
         'page_heading_inventory'      => 'Drug inventory',

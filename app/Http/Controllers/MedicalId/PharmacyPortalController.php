@@ -123,7 +123,34 @@ class PharmacyPortalController extends Controller
         }
 
         if ($search = $req->input('search')) {
-            $q->whereHas('patient', fn($p) => $p->where('full_name', 'like', "%{$search}%"));
+            /*
+             * EXACT HEALTH ID, NEVER A NAME SEARCH.
+             *
+             * This read `where('full_name', 'like', "%{$search}%")`, which was
+             * wrong twice over.
+             *
+             * It crashed. `patients` carries first_name / middle_name /
+             * last_name and no `full_name` at all, so every use of the search
+             * box on this screen was a 500 — SQLSTATE 42703, undefined column.
+             *
+             * And had that column existed, the result would have been worse
+             * than the crash: a LIKE across patient names is precisely the
+             * enumeration search this platform forbids. Type "a" at a pharmacy
+             * counter and you walk the patient register. The bug was the only
+             * thing preventing it.
+             *
+             * `resolveHealthId()` is what the rest of the platform uses — this
+             * same controller already calls it at the dispensing counter — and
+             * it matches one patient exactly, following an alias and following
+             * a merge. Finding nothing is the correct answer to a partial
+             * Health ID.
+             */
+            $patient = \App\Models\Patient::resolveHealthId($search);
+
+            // No match must return NO prescriptions, not all of them. Omitting
+            // the clause when the lookup fails would turn a failed search into
+            // "show me every prescription in this facility".
+            $q->where('patient_id', $patient?->id ?? '00000000-0000-0000-0000-000000000000');
         }
 
         $prescriptions = $q->orderByDesc('created_at')->paginate(25)->withQueryString();
