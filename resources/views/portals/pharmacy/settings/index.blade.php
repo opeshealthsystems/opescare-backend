@@ -34,6 +34,11 @@
     'sectionIcon' => 'store',
 ])
 
+@include('portals.facility.settings._photo', [
+    'ns'     => 'pharmacy_settings',
+    'action' => route('portals.pharmacy.settings.photo'),
+])
+
 @include('portals.facility.settings._location', [
     'ns'       => 'pharmacy_settings',
     'action'   => route('portals.pharmacy.settings.location'),

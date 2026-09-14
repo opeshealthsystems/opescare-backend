@@ -3,16 +3,21 @@
 namespace App\Http\Controllers\MedicalId;
 
 use App\Http\Controllers\Controller;
+use App\Models\Bed;
 use App\Models\Facility;
 use App\Models\FacilityRoleAssignment;
 use App\Models\FacilityStaffInvite;
 use App\Models\Role;
+use App\Models\Ward;
 use App\Services\Portal\FacilityAdminDeskService;
 use App\Services\Portal\PortalContextService;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * FacilityAdminDeskController — the facility administrator's own desk.
@@ -39,7 +44,7 @@ class FacilityAdminDeskController extends Controller
     {
         $facilityId = $this->ctx->facilityId();
 
-        abort_if($facilityId === null, 403, 'No facility context for this account.');
+        abort_if($facilityId === null, 403, __('facility_admin.no_facility_context'));
 
         return $facilityId;
     }
@@ -87,6 +92,198 @@ class FacilityAdminDeskController extends Controller
         return view('portals.facility.admin.departments', [
             'departments' => $this->desk->departments($facilityId),
         ]);
+    }
+
+    // ── Reports & exports (H-6) ──────────────────────────────────────────
+
+    /**
+     * The date range a report covers: `from`/`to` as Y-m-d, defaulting to
+     * this month, `to` never before `from`, at most REPORT_MAX_DAYS
+     * inclusive. A bad range is a validation error, not a silently clamped one.
+     *
+     * @return array{0: Carbon, 1: Carbon}
+     */
+    private function reportRange(Request $request): array
+    {
+        $request->validate([
+            'from' => ['nullable', 'date_format:Y-m-d'],
+            'to'   => ['nullable', 'date_format:Y-m-d'],
+        ]);
+
+        $from = $request->filled('from') ? Carbon::createFromFormat('Y-m-d', $request->input('from'))->startOfDay() : now()->startOfMonth();
+        $to   = $request->filled('to')   ? Carbon::createFromFormat('Y-m-d', $request->input('to'))->startOfDay()   : now()->startOfDay();
+
+        if ($to->lt($from)) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['to' => __('facility_admin.reports_range_order')]);
+        }
+
+        if ($from->diffInDays($to) + 1 > FacilityAdminDeskService::REPORT_MAX_DAYS) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'to' => __('facility_admin.reports_range_too_long', ['days' => FacilityAdminDeskService::REPORT_MAX_DAYS]),
+            ]);
+        }
+
+        return [$from, $to];
+    }
+
+    public function reports(Request $request): View
+    {
+        $facilityId = $this->facilityId();
+        [$from, $to] = $this->reportRange($request);
+
+        return view('portals.facility.admin.reports', [
+            'from'    => $from,
+            'to'      => $to,
+            'reports' => $this->desk->reports($facilityId, $from, $to),
+            'tables'  => FacilityAdminDeskService::REPORT_TABLES,
+        ]);
+    }
+
+    /**
+     * One table as a streamed CSV: UTF-8 BOM so Excel reads the accents,
+     * the facility slug and the range in the filename. Every cell is a
+     * count, a median or a whole-franc sum — the service never selects a
+     * patient column, so no name or Health ID can reach the file.
+     */
+    public function exportReport(Request $request): StreamedResponse
+    {
+        $facilityId = $this->facilityId();
+
+        $request->validate(['table' => ['required', 'in:' . implode(',', FacilityAdminDeskService::REPORT_TABLES)]]);
+        [$from, $to] = $this->reportRange($request);
+
+        $table = $request->input('table');
+        [$headers, $rows] = $this->desk->reportTable($table, $facilityId, $from, $to);
+
+        $facility = Facility::withoutGlobalScopes()->whereKey($facilityId)->first();
+        $slug     = Str::slug((string) ($facility?->name ?? $facilityId)) ?: 'facility';
+        $filename = sprintf('%s_%s_%s_%s.csv', $slug, $table, $from->toDateString(), $to->toDateString());
+
+        // resource_id is a uuid column: the facility reported on, with the
+        // table named in after_state.
+        $this->ctx->auditPatientAccess(
+            actionType:   'facility_report_exported',
+            resourceType: 'FacilityReport',
+            resourceId:   $facilityId,
+            extra: ['after_state' => ['table' => $table, 'from' => $from->toDateString(), 'to' => $to->toDateString(), 'rows' => count($rows)]],
+        );
+
+        return response()->streamDownload(function () use ($headers, $rows) {
+            $out = fopen('php://output', 'w');
+            fwrite($out, "\xEF\xBB\xBF");
+            fputcsv($out, $headers);
+            foreach ($rows as $row) {
+                fputcsv($out, array_map(fn ($v) => $v ?? '', $row));
+            }
+            fclose($out);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    // ── Wards & beds (H-5) ───────────────────────────────────────────────
+
+    public function wards(): View
+    {
+        $facilityId = $this->facilityId();
+        $board      = $this->desk->wardBoard($facilityId);
+
+        $beds = [];
+        foreach ($board['wards'] as $w) {
+            $beds[$w['id']] = Bed::query()->where('ward_id', $w['id'])->orderBy('bed_number')->get();
+        }
+
+        return view('portals.facility.admin.wards', [
+            'board'     => $board,
+            'bedsByWard' => $beds,
+            'wardTypes' => array_keys(Ward::wardTypes()),
+        ]);
+    }
+
+    public function createWard(Request $request): RedirectResponse
+    {
+        $facilityId = $this->facilityId();
+
+        $v = $request->validate([
+            'name'      => ['required', 'string', 'max:120'],
+            'ward_type' => ['required', 'string', 'in:' . implode(',', array_keys(Ward::wardTypes()))],
+            'capacity'  => ['required', 'integer', 'min:0', 'max:1000'],
+        ]);
+
+        $ward = $this->desk->createWard($facilityId, trim($v['name']), $v['ward_type'], (int) $v['capacity']);
+
+        $this->ctx->auditPatientAccess(
+            actionType:   'facility_ward_created',
+            resourceType: 'Ward',
+            resourceId:   $ward->id,
+            extra: ['after_state' => ['name' => $ward->name, 'ward_type' => $ward->ward_type, 'total_beds' => $ward->total_beds]],
+        );
+
+        return redirect()->route('portals.facility.admin.wards')
+            ->with('success', __('facility_admin.ward_created', ['name' => $ward->name]));
+    }
+
+    public function addBeds(Request $request, string $wardId): RedirectResponse
+    {
+        $facilityId = $this->facilityId();
+
+        $ward = $this->desk->ward($facilityId, $wardId);
+        abort_if($ward === null, 404);
+
+        $v = $request->validate([
+            'count'  => ['required', 'integer', 'min:1', 'max:200'],
+            'prefix' => ['nullable', 'string', 'max:10', 'regex:/^[A-Za-z0-9]+$/'],
+        ]);
+
+        $prefix = strtoupper($v['prefix'] ?? '') ?: strtoupper(Str::substr(Str::slug($ward->name, ''), 0, 1)) ?: 'B';
+        $before = Bed::query()->where('ward_id', $ward->id)->count();
+        $labels = $this->desk->addBeds($ward, (int) $v['count'], $prefix);
+
+        $this->ctx->auditPatientAccess(
+            actionType:   'facility_ward_beds_added',
+            resourceType: 'Ward',
+            resourceId:   $ward->id,
+            extra: [
+                'before_state' => ['beds' => $before],
+                'after_state'  => ['beds' => $before + count($labels), 'labels' => $labels],
+            ],
+        );
+
+        return redirect()->route('portals.facility.admin.wards')
+            ->with('success', __('facility_admin.beds_added', ['count' => count($labels), 'ward' => $ward->name]));
+    }
+
+    public function setBedService(Request $request, string $wardId, string $bedId): RedirectResponse
+    {
+        $facilityId = $this->facilityId();
+
+        $ward = $this->desk->ward($facilityId, $wardId);
+        abort_if($ward === null, 404);
+
+        $bed = Str::isUuid($bedId) ? Bed::query()->where('ward_id', $ward->id)->whereKey($bedId)->first() : null;
+        abort_if($bed === null, 404);
+
+        $v = $request->validate(['in_service' => ['required', 'boolean']]);
+
+        $change = $this->desk->setBedService($bed, (bool) $v['in_service']);
+
+        if ($change === null) {
+            return redirect()->route('portals.facility.admin.wards')
+                ->with('error', __('facility_admin.bed_status_unchanged', ['bed' => $bed->bed_number]));
+        }
+
+        [$before, $after] = $change;
+
+        $this->ctx->auditPatientAccess(
+            actionType:   'facility_bed_service_changed',
+            resourceType: 'Bed',
+            resourceId:   $bed->id,
+            extra: [
+                'before_state' => ['status' => $before, 'ward_id' => $ward->id],
+                'after_state'  => ['status' => $after, 'ward_id' => $ward->id],
+            ],
+        );
+
+        return redirect()->route('portals.facility.admin.wards')
+            ->with('success', __($after === FacilityAdminDeskService::BED_IN_SERVICE ? 'facility_admin.bed_back_in_service' : 'facility_admin.bed_out_of_service', ['bed' => $bed->bed_number]));
     }
 
     // ── Member page ──────────────────────────────────────────────────────

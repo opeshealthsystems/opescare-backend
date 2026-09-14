@@ -23,5 +23,10 @@
   .ps-title-icon{display:inline-flex;align-items:center;gap:.5rem}
   .ps-title-icon i,.ps-title-icon svg{width:22px;height:22px;color:#0F4C81}
   fieldset.ps-locked{border:0;padding:0;margin:0;opacity:.55}
+  .ps-photo{display:flex;gap:var(--p-space-5);flex-wrap:wrap;align-items:flex-start}
+  .ps-photo__frame{width:180px;height:180px;flex:0 0 auto;border:1px solid var(--f-line,#E2E8F0);border-radius:12px;background:var(--f-wash,#F1F5F9);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.4rem;overflow:hidden;color:var(--f-muted,#64748B);font-size:.75rem;text-align:center;padding:.5rem}
+  .ps-photo__frame img{width:100%;height:100%;object-fit:contain;display:block}
+  .ps-photo__frame i,.ps-photo__frame svg{width:28px;height:28px}
+  .ps-photo__form{flex:1 1 260px;min-width:0}
   .form-error{color:var(--p-danger)}
 </style>

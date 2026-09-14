@@ -35,4 +35,7 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'capability:service_catalogue'
         ->name('portals.pharmacy.settings.location');
     Route::post('/pharmacy/settings/hours', [PharmacySettingsController::class, 'updateHours'])
         ->name('portals.pharmacy.settings.hours');
+    // The photo is served by the signed `facility.photo` route in routes/facility_settings.php.
+    Route::post('/pharmacy/settings/photo', [PharmacySettingsController::class, 'updatePhoto'])
+        ->name('portals.pharmacy.settings.photo');
 });

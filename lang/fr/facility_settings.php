@@ -91,6 +91,16 @@ return [
     'section_hours'  => "Horaires d'ouverture",
     'hours_intro'    => "Un jour sans horaire, ni marqué ouvert 24 h/24, ni marqué fermé, reste non renseigné.",
     'btn_save_hours' => "Enregistrer les horaires",
+    // ── Photo / logo ──────────────────────────────────────────────────────
+    'section_photo'      => "Photo ou logo",
+    'label_photo'        => "Image",
+    'hint_photo'         => "JPEG, PNG ou WebP, 2 Mo au plus, au moins 200 × 200 pixels. Elle remplace l'image actuelle.",
+    'photo_none'         => "Aucune image pour le moment",
+    'photo_alt'          => "Image de l'établissement",
+    'btn_save_photo'     => "Téléverser l'image",
+    'photo_not_an_image' => "Le fichier n'a pas pu être lu comme une image.",
+    'flash_photo_saved'  => "Image mise à jour.",
+
 
     // ── Messages ──────────────────────────────────────────────────────────
     'flash_saved'       => ":count champ(s) mis à jour.",

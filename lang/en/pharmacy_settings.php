@@ -71,6 +71,16 @@ return [
     'section_hours'  => "Opening hours",
     'hours_intro'    => "A day with no time, not marked open all day and not marked closed, is left unstated.",
     'btn_save_hours' => "Save hours",
+    // ── Photo / logo ──────────────────────────────────────────────────────
+    'section_photo'      => "Photo or logo",
+    'label_photo'        => "Picture",
+    'hint_photo'         => "JPEG, PNG or WebP, at most 2 MB, at least 200 × 200 pixels. It replaces the current picture.",
+    'photo_none'         => "No picture yet",
+    'photo_alt'          => "Facility picture",
+    'btn_save_photo'     => "Upload picture",
+    'photo_not_an_image' => "The file could not be read as an image.",
+    'flash_photo_saved'  => "Picture updated.",
+
 
     // ── Flash ─────────────────────────────────────────────────────────────
     'flash_saved'       => ":count field(s) updated.",

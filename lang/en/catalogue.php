@@ -79,4 +79,8 @@ return [
     'flash_retired'      => 'No longer offered. The entry is kept, not deleted.',
     'flash_restored'     => 'Offered again.',
     'flash_unknown_code' => 'That code is not in the institutional dictionary, so it cannot be added.',
+
+    // Publication to the public lab finder
+    'unlinked_title' => 'Your public listing is not linked yet — lab tests on this list are not visible to patients',
+    'unlinked_body'  => 'Laboratory tests and their prices are published to the public lab finder through your public directory listing. This account is not connected to one, so nothing on this list reaches a patient yet. Linking is done by an OpesCare administrator, never automatically: find and claim your facility in the directory.',
 ];

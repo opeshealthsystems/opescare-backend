@@ -25,6 +25,20 @@
 <div class="alert alert-danger mb-4"><i data-lucide="alert-circle"></i><div>{{ session('error') }}</div></div>
 @endif
 
+{{-- Lab tests on this list are published to the public lab finder through
+     the facility's public listing. With no listing linked they reach no
+     patient, and the page must say so rather than let the manager believe
+     the prices are out there. Linking is an admin decision, never done here. --}}
+@if(! empty($unlinked))
+<div class="banner banner--danger mb-4">
+    <i data-lucide="unlink"></i>
+    <div>
+        <strong>{{ __('catalogue.unlinked_title') }}</strong><br>
+        {{ __('catalogue.unlinked_body') }}
+    </div>
+</div>
+@endif
+
 {{-- Retired entries are one click away, not hidden. A manager who cannot see
      that a service was retired will simply add it again. --}}
 <div class="filter-bar mb-4">

@@ -116,8 +116,15 @@ class GlobalSearchService
     {
         $like = $this->likeTerm($query);
 
-        return LabTestAvailability::whereRaw('LOWER(test_name) LIKE ?', [$like])
-            ->orWhereRaw('LOWER(loinc_code) LIKE ?', [$like])
+        // Same gate as the public lab finder: only rows a real source
+        // published, and only tests still offered.
+        return LabTestAvailability::query()
+            ->reportedByRealSource()
+            ->available()
+            ->where(function ($q) use ($like) {
+                $q->whereRaw('LOWER(test_name) LIKE ?', [$like])
+                    ->orWhereRaw('LOWER(loinc_code) LIKE ?', [$like]);
+            })
             ->limit(10)
             ->get()
             ->map(fn (LabTestAvailability $test) => [

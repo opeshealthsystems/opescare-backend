@@ -10,14 +10,13 @@ use App\Models\FacilityRoleAssignment;
 use App\Models\FacilityStaffInvite;
 use App\Models\Role;
 use App\Models\User;
-use App\Notifications\FacilityStaffInviteNotification;
+use App\Services\Facility\StaffInviteService;
 use App\Services\Portal\PortalContextService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\View\View;
 
 /**
@@ -160,51 +159,15 @@ class FacilityStaffController extends Controller
      */
     private function mailInvite(FacilityStaffInvite $invite, string $rawToken): array
     {
-        try {
-            $facilityName = Facility::query()->whereKey($invite->facility_id)->value('name')
-                ?? Facility::withoutGlobalScopes()->whereKey($invite->facility_id)->value('name')
-                ?? '';
-
-            $roleName  = $invite->role?->name ?? Role::whereKey($invite->role_id)->value('name');
-            $roleLabel = $this->roleLabel($roleName);
-
-            Notification::route('mail', $invite->email)->notify(
-                new FacilityStaffInviteNotification(
-                    invite:       $invite,
-                    rawToken:     $rawToken,
-                    facilityName: (string) $facilityName,
-                    roleLabel:    $roleLabel,
-                    inviterName:  Auth::user()?->name,
-                )
-            );
-
-            Log::info('facility_staff_invite_mail_accepted', [
-                'invite_id' => $invite->id,
-                'mailer'    => config('mail.default'),
-            ]);
-
-            return ['ok' => true, 'message' => __('team.invite_mail_accepted', ['email' => $invite->email])];
-        } catch (\Throwable $e) {
-            Log::warning('facility_staff_invite_mail_failed', [
-                'invite_id' => $invite->id,
-                'mailer'    => config('mail.default'),
-                'error'     => $e->getMessage(),
-            ]);
-
-            return ['ok' => false, 'message' => __('team.invite_mail_failed', ['email' => $invite->email])];
-        }
+        // The mail itself lives in StaffInviteService so the lead-conversion
+        // desk (LeadConversionService) sends the very same invitation.
+        return app(StaffInviteService::class)->mail($invite, $rawToken, Auth::user()?->name);
     }
 
     /** Bilingual label for a role name, falling back to the raw name. */
     private function roleLabel(?string $roleName): string
     {
-        if ($roleName === null || $roleName === '') {
-            return '';
-        }
-
-        $label = __('team.roles.' . $roleName);
-
-        return is_string($label) && $label !== 'team.roles.' . $roleName ? $label : $roleName;
+        return StaffInviteService::roleLabel($roleName);
     }
 
     // ── Issue an invite ──────────────────────────────────────────────────

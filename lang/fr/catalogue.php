@@ -80,4 +80,8 @@ return [
     'flash_retired'      => 'N\'est plus proposé. L\'entrée est conservée, pas supprimée.',
     'flash_restored'     => 'De nouveau proposé.',
     'flash_unknown_code' => 'Ce code ne figure pas dans le dictionnaire institutionnel : il ne peut pas être ajouté.',
+
+    // Publication vers le moteur public de recherche d'analyses
+    'unlinked_title' => 'Votre fiche publique n\'est pas encore reliée — les analyses de cette liste ne sont pas visibles des patients',
+    'unlinked_body'  => 'Les analyses de laboratoire et leurs tarifs sont publiés dans le moteur public de recherche d\'analyses via votre fiche de l\'annuaire public. Ce compte n\'est relié à aucune fiche : rien de cette liste n\'atteint encore un patient. Le rattachement est effectué par un administrateur OpesCare, jamais automatiquement : retrouvez et revendiquez votre établissement dans l\'annuaire.',
 ];

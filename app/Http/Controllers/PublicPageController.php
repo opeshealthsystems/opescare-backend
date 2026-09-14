@@ -756,7 +756,9 @@ class PublicPageController extends Controller
                 // Belt and braces: the allow-list is enforced when the invite is
                 // issued, and again here. A role that was renamed out of the
                 // allow-list between issue and acceptance must not be granted.
-                if (! $role || ! in_array($role->name, \App\Models\FacilityStaffInvite::INVITABLE_ROLES, true)) {
+                // isRedeemableRole = INVITABLE_ROLES plus the facility_admin a
+                // platform admin issues at lead conversion (and nothing else).
+                if (! $role || ! \App\Models\FacilityStaffInvite::isRedeemableRole($role->name)) {
                     throw new \RuntimeException('INVITE_ROLE_NOT_ALLOWED');
                 }
 

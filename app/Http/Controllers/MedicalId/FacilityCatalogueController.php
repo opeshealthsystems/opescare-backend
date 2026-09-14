@@ -4,7 +4,9 @@ namespace App\Http\Controllers\MedicalId;
 
 use App\Http\Controllers\Controller;
 use App\Models\ClinicalCodeDictionary;
+use App\Models\Facility;
 use App\Models\FacilityCatalogueItem;
+use App\Services\Lab\LabCatalogueProjector;
 use App\Services\Portal\PortalContextService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -62,7 +64,41 @@ use Illuminate\View\View;
  */
 class FacilityCatalogueController extends Controller
 {
-    public function __construct(private readonly PortalContextService $ctx) {}
+    public function __construct(
+        private readonly PortalContextService $ctx,
+        private readonly LabCatalogueProjector $projector,
+    ) {}
+
+    // ── Publication to the public lab finder ─────────────────────────────
+
+    /**
+     * Push this facility's lab tests to the public finder after a write.
+     *
+     * Only LOINC items are lab tests, so only a LOINC write re-projects; a
+     * procedure or a vaccine changes nothing the lab finder shows. The
+     * projector itself refuses (and logs) when the tenant has no linked
+     * public listing — the page says so in a banner; nothing here links one.
+     */
+    private function publish(FacilityCatalogueItem $item): void
+    {
+        if ($item->system !== LabCatalogueProjector::LAB_TEST_SYSTEM) {
+            return;
+        }
+
+        $tenant = Facility::withoutGlobalScope('isolate_demo')->find($item->facility_id);
+
+        if ($tenant) {
+            $this->projector->syncListing($tenant);
+        }
+    }
+
+    /** Whether this facility has a public listing its catalogue can reach. */
+    private function isLinked(string $facilityId): bool
+    {
+        $tenant = Facility::withoutGlobalScope('isolate_demo')->find($facilityId);
+
+        return $tenant !== null && $this->projector->isLinked($tenant);
+    }
 
     /**
      * The facility this request acts on. Session-resolved, never
@@ -125,6 +161,9 @@ class FacilityCatalogueController extends Controller
             'systems'    => $systems,
             'show'       => $show,
             'system'     => $request->query('system'),
+            // An unlinked tenant's lab tests reach no patient. Said on the
+            // page, never fixed here: linking is an admin decision.
+            'unlinked'   => ! $this->isLinked($facilityId),
         ]);
     }
 
@@ -245,6 +284,8 @@ class FacilityCatalogueController extends Controller
         $item->added_by = $item->added_by ?? $this->ctx->actorId();
         $item->save();
 
+        $this->publish($item);
+
         return back()->with('success', $revived
             ? __('catalogue.flash_restored')
             : __('catalogue.flash_added'));
@@ -280,6 +321,8 @@ class FacilityCatalogueController extends Controller
             'notes'      => $data['notes'] ?? null,
         ])->save();
 
+        $this->publish($item);
+
         return back()->with('success', __('catalogue.flash_updated'));
     }
 
@@ -296,6 +339,8 @@ class FacilityCatalogueController extends Controller
             'deactivated_by' => $this->ctx->actorId(),
         ])->save();
 
+        $this->publish($item);
+
         return back()->with('success', __('catalogue.flash_retired'));
     }
 
@@ -309,6 +354,8 @@ class FacilityCatalogueController extends Controller
             'deactivated_at' => null,
             'deactivated_by' => null,
         ])->save();
+
+        $this->publish($item);
 
         return back()->with('success', __('catalogue.flash_restored'));
     }

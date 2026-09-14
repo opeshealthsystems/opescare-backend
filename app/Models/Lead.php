@@ -24,7 +24,25 @@ class Lead extends Model
         'status',
         'assigned_to',
         'notes',
+        'converted_facility_id',
+        'converted_at',
+        'converted_by',
     ];
+
+    protected $casts = [
+        'converted_at' => 'datetime',
+    ];
+
+    /** Already turned into a tenant (LeadConversionService)? Never converted twice. */
+    public function isConverted(): bool
+    {
+        return $this->converted_facility_id !== null;
+    }
+
+    public function convertedFacility(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Facility::class, 'converted_facility_id')->withoutGlobalScopes();
+    }
 
     /** Valid organization types (matches the public demo-request form). */
     public const ORGANIZATION_TYPES = [
@@ -43,5 +61,7 @@ class Lead extends Model
         'qualified',
         'won',
         'lost',
+        // Written only by LeadConversionService, never picked by hand.
+        'converted',
     ];
 }

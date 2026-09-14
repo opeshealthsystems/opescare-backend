@@ -52,6 +52,25 @@ class FacilityStaffInvite extends Model
         'cashier', 'billing_officer',
     ];
 
+    /**
+     * The one extra role a PLATFORM administrator may put on an invite, and
+     * only through lead conversion (LeadConversionService): the first person
+     * at a brand-new tenant has to be able to administer it, and no facility
+     * user exists yet to do so. It is deliberately NOT in INVITABLE_ROLES —
+     * a facility admin still cannot mint another facility admin — so the two
+     * lists must be read together only where an invite is REDEEMED.
+     */
+    public const PLATFORM_ONLY_INVITABLE_ROLES = ['facility_admin'];
+
+    /** May an invite carrying this role be redeemed? (facility list ∪ platform list) */
+    public static function isRedeemableRole(?string $roleName): bool
+    {
+        return $roleName !== null && (
+            in_array($roleName, self::INVITABLE_ROLES, true)
+            || in_array($roleName, self::PLATFORM_ONLY_INVITABLE_ROLES, true)
+        );
+    }
+
     /** How long a fresh invite stays redeemable. */
     public const TTL_DAYS = 7;
 

@@ -99,3 +99,12 @@ Schedule::command('opescare:notify-expiring-credentials')->dailyAt('07:30');
 // retired within the hour, slow enough that receipts have had time to appear.
 // Silent when EXPO_PUSH_ENABLED=false. See docs/push-delivery-backend.md.
 Schedule::command('push:check-receipts')->everyFifteenMinutes()->withoutOverlapping();
+
+// OpesCare: the facility service catalogue → the public lab finder.
+//
+// Every catalogue write projects on its own (LabCatalogueProjector); this
+// nightly pass is for the listing an admin linked AFTER the lab filled its
+// catalogue — the link does not itself trigger a projection — and is the
+// backfill for catalogues curated before the projector existed. Idempotent,
+// nothing deleted. Runs after the blood/MPI night jobs.
+Schedule::command('lab:publish-catalogue')->dailyAt('04:30')->withoutOverlapping();

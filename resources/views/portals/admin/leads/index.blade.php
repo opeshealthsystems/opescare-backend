@@ -51,7 +51,7 @@
             <tbody>
                 @forelse($leads as $lead)
                 @php
-                $statusBadge = match($lead->status){'new'=>'badge-danger','contacted'=>'badge-warning','qualified'=>'badge-primary','won'=>'badge-success','lost'=>'badge-neutral',default=>'badge-neutral'};
+                $statusBadge = match($lead->status){'new'=>'badge-danger','contacted'=>'badge-warning','qualified'=>'badge-primary','won'=>'badge-success','converted'=>'badge-success','lost'=>'badge-neutral',default=>'badge-neutral'};
                 @endphp
                 <tr>
                     <td data-label="{{ __('leads.admin.col_organization') }}"><span class="td-strong">{{ $lead->organization_name ?: '—' }}</span></td>
@@ -64,7 +64,14 @@
                     <td data-label="{{ __('leads.admin.col_status') }}"><span class="badge {{ $statusBadge }}">{{ __('leads.statuses.'.$lead->status) }}</span></td>
                     <td data-label="{{ __('leads.admin.col_date') }}">{{ $lead->created_at?->format('d M Y') }}</td>
                     <td class="row-actions" data-label="{{ __('leads.admin.col_actions') }}">
+                        @if($lead->isConverted())
+                        <a href="{{ route('portals.admin.leads.convert', $lead) }}" class="btn btn-ghost btn-sm"><i data-lucide="building-2"></i> {{ __('leads.conversion.action_view_tenant') }}</a>
+                        @else
                         <button type="button" class="btn btn-ghost btn-sm" onclick="opOpenModal('lead-{{ $lead->id }}')"><i data-lucide="pencil"></i> {{ __('leads.admin.action_update') }}</button>
+                        @if(in_array($lead->organization_type, ['facility', 'lab', 'pharmacy', 'other', null], true))
+                        <a href="{{ route('portals.admin.leads.convert', $lead) }}" class="btn btn-primary btn-sm"><i data-lucide="building-2"></i> {{ __('leads.conversion.action_convert') }}</a>
+                        @endif
+                        @endif
                     </td>
                 </tr>
                 @empty
@@ -89,7 +96,7 @@
                 <p class="td-strong mb-2">{{ $lead->organization_name ?: $lead->name }}</p>
                 <label class="demo-label" for="status-{{ $lead->id }}">{{ __('leads.admin.modal_status') }}</label>
                 <select name="status" id="status-{{ $lead->id }}" class="filter-select" style="width:100%;margin-bottom:1rem;">
-                    @foreach(\App\Models\Lead::STATUSES as $s)
+                    @foreach(array_diff(\App\Models\Lead::STATUSES, ['converted']) as $s)
                     <option value="{{ $s }}" @selected($lead->status===$s)>{{ __('leads.statuses.'.$s) }}</option>
                     @endforeach
                 </select>

@@ -34,6 +34,11 @@
     'sectionIcon' => $typeIcon,
 ])
 
+@include('portals.facility.settings._photo', [
+    'ns'     => 'facility_settings',
+    'action' => route('portals.facility.settings.photo'),
+])
+
 @include('portals.facility.settings._location', [
     'ns'       => 'facility_settings',
     'action'   => route('portals.facility.settings.location'),

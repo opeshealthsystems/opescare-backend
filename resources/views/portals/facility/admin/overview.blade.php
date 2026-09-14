@@ -167,6 +167,11 @@
                 </div>
             </div>
         @endif
+        <p style="margin:.75rem 0 0;">
+            <a href="{{ route('portals.facility.admin.wards') }}" class="btn btn-secondary btn-sm">
+                <i data-lucide="bed"></i> {{ __('facility_admin.action_open_wards') }}
+            </a>
+        </p>
     </div>
 </div>
 
@@ -194,6 +199,9 @@
         <p style="margin:.5rem 0 0;">
             <a href="{{ route('portals.facility.admin.invoices') }}" class="btn btn-secondary btn-sm">
                 <i data-lucide="receipt-text"></i> {{ __('facility_admin.action_open_invoices') }}
+            </a>
+            <a href="{{ route('portals.facility.admin.reports') }}" class="btn btn-secondary btn-sm">
+                <i data-lucide="bar-chart-3"></i> {{ __('facility_admin.action_open_reports') }}
             </a>
         </p>
     </div>

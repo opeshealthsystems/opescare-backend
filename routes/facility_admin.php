@@ -68,6 +68,33 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'facility.con
     Route::get('/facility/team/overview/departments', [FacilityAdminDeskController::class, 'departments'])
         ->name('portals.facility.admin.departments');
 
+    // Reports (H-6): per-day tables over EXISTING rows of the session
+    // facility — counts, medians, whole-franc sums. The CSV export carries
+    // the same aggregates and never a patient column; every export is
+    // audited. The range is validated (≤ 366 days), never clamped.
+    Route::get('/facility/team/overview/reports', [FacilityAdminDeskController::class, 'reports'])
+        ->name('portals.facility.admin.reports');
+
+    Route::get('/facility/team/overview/reports/export', [FacilityAdminDeskController::class, 'exportReport'])
+        ->name('portals.facility.admin.reports.export');
+
+    // Wards & beds (H-5 writer): the structure only. Occupancy is READ from
+    // `admissions` (active, undischarged); admitting and discharging are
+    // clinical acts and are not offered here. Beds are never deleted — they
+    // go out of service and come back, each change an AuditEvent. A ward id
+    // of another facility is a 404.
+    Route::get('/facility/team/overview/wards', [FacilityAdminDeskController::class, 'wards'])
+        ->name('portals.facility.admin.wards');
+
+    Route::post('/facility/team/overview/wards', [FacilityAdminDeskController::class, 'createWard'])
+        ->name('portals.facility.admin.wards.create');
+
+    Route::post('/facility/team/overview/wards/{wardId}/beds', [FacilityAdminDeskController::class, 'addBeds'])
+        ->name('portals.facility.admin.wards.beds');
+
+    Route::post('/facility/team/overview/wards/{wardId}/beds/{bedId}/service', [FacilityAdminDeskController::class, 'setBedService'])
+        ->name('portals.facility.admin.wards.bed.service');
+
     Route::get('/facility/team/members/{userId}', [FacilityAdminDeskController::class, 'member'])
         ->name('portals.facility.admin.member');
 

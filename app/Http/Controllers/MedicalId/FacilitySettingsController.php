@@ -4,6 +4,7 @@ namespace App\Http\Controllers\MedicalId;
 
 use App\Http\Controllers\CareMap\FacilityListingController;
 use App\Http\Controllers\Controller;
+use App\Services\CareMap\FacilityPhotoService;
 use App\Services\CareMap\FacilitySettingsService;
 use App\Support\StaffCapabilities;
 use Illuminate\Contracts\View\View;
@@ -73,6 +74,7 @@ class FacilitySettingsController extends Controller
             'title'     => is_string($title) && $title !== $titleKey ? $title : __('facility_settings.title'),
             'typeIcon'  => self::TYPE_ICONS[$type] ?? self::TYPE_ICONS['other'],
             'homeUrl'   => $this->homeUrl($facility->id),
+            'photoUrl'  => FacilityPhotoService::urlFor($listing),
         ]);
     }
 
@@ -109,6 +111,20 @@ class FacilitySettingsController extends Controller
         $count = $this->settings->updateHours($request, $listing, Auth::id());
 
         return $this->back(__('facility_settings.flash_hours_saved', ['count' => $count]));
+    }
+
+    /** The facility photo / logo — see FacilityPhotoService for the storage contract. */
+    public function updatePhoto(Request $request, FacilityPhotoService $photos): RedirectResponse
+    {
+        $listing = $this->settings->listingOrFail($this->settings->facility());
+        $request->validate(FacilityPhotoService::rules());
+
+        if (! $photos->store($listing, $request->file('photo'), Auth::id())) {
+            return redirect()->route('portals.facility.settings.index')
+                ->withErrors(['photo' => __('facility_settings.photo_not_an_image')]);
+        }
+
+        return $this->back(__('facility_settings.flash_photo_saved'));
     }
 
     private function back(string $message): RedirectResponse

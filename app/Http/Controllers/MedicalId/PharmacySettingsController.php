@@ -5,6 +5,7 @@ namespace App\Http\Controllers\MedicalId;
 use App\Http\Controllers\CareMap\FacilityListingController;
 use App\Http\Controllers\Controller;
 use App\Modules\Pharmacy\Services\PharmacyStockReportService;
+use App\Services\CareMap\FacilityPhotoService;
 use App\Services\CareMap\FacilitySettingsService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -44,6 +45,7 @@ class PharmacySettingsController extends Controller
             'issues'    => $this->report->listingIssues($listing),
             'hours'     => $listing ? $listing->hours->keyBy('day_of_week') : collect(),
             'dayLabels' => FacilityListingController::dayLabels(),
+            'photoUrl'  => FacilityPhotoService::urlFor($listing),
         ]);
     }
 
@@ -80,6 +82,20 @@ class PharmacySettingsController extends Controller
         $count = $this->settings->updateHours($request, $listing, Auth::id());
 
         return $this->back(__('pharmacy_settings.flash_hours_saved', ['count' => $count]));
+    }
+
+    /** The pharmacy photo / logo — see FacilityPhotoService for the storage contract. */
+    public function updatePhoto(Request $request, FacilityPhotoService $photos): RedirectResponse
+    {
+        $listing = $this->settings->listingOrFail($this->settings->facility());
+        $request->validate(FacilityPhotoService::rules());
+
+        if (! $photos->store($listing, $request->file('photo'), Auth::id())) {
+            return redirect()->route('portals.pharmacy.settings.index')
+                ->withErrors(['photo' => __('pharmacy_settings.photo_not_an_image')]);
+        }
+
+        return $this->back(__('pharmacy_settings.flash_photo_saved'));
     }
 
     private function back(string $message): RedirectResponse

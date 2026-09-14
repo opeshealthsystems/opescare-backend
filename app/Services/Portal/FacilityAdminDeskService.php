@@ -14,7 +14,9 @@ use App\Models\User;
 use App\Models\Ward;
 use App\Services\Queue\PatientQueueService;
 use Carbon\CarbonInterface;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * FacilityAdminDeskService — the numbers a facility administrator answers
@@ -108,34 +110,371 @@ class FacilityAdminDeskService
     }
 
     /**
-     * Null when the facility has no wards at all: the ward desk has not been
-     * built and no seeder writes these tables, so the tile stays off the page
-     * rather than reporting "0 beds" as if that were a measurement.
+     * Null when the facility has no wards at all: no seeder writes these
+     * tables, so the tile stays off the page rather than reporting "0 beds"
+     * as if that were a measurement. The figures are the SAME rows the ward
+     * desk lists (wardBoard()), summed — one query, one truth.
      */
     private function beds(string $facilityId): ?array
     {
-        $wards = Ward::query()->where('facility_id', $facilityId)->where('is_active', true)->count();
+        $board  = $this->wardBoard($facilityId);
+        $active = array_values(array_filter($board['wards'], fn (array $w) => $w['is_active']));
 
-        if ($wards === 0) {
+        if ($active === []) {
             return null;
         }
 
-        $wardIds = Ward::query()->where('facility_id', $facilityId)->where('is_active', true)->pluck('id');
-
-        $beds      = Bed::query()->whereIn('ward_id', $wardIds)->count();
-        $occupied  = Bed::query()->whereIn('ward_id', $wardIds)->where('status', 'occupied')->count();
-        $available = Bed::query()->whereIn('ward_id', $wardIds)->where('status', 'available')->count();
-
-        $admissions = Admission::query()->where('facility_id', $facilityId)->where('status', 'active')->count();
+        $beds      = array_sum(array_column($active, 'beds'));
+        $occupied  = array_sum(array_column($active, 'occupied'));
+        $available = array_sum(array_column($active, 'available'));
 
         return [
-            'wards'             => $wards,
+            'wards'             => count($active),
             'beds'              => $beds,
             'occupied'          => $occupied,
             'available'         => $available,
-            'active_admissions' => $admissions,
+            'active_admissions' => $board['active_admissions'],
             'occupancy_pct'     => $beds > 0 ? (int) round($occupied * 100 / $beds) : null,
         ];
+    }
+
+    // ── Wards & beds (H-5 writer) ────────────────────────────────────────
+
+    /** Bed status the desk writes for "out of service" (schema: available | occupied | maintenance | reserved). */
+    public const BED_OUT_OF_SERVICE = 'maintenance';
+    public const BED_IN_SERVICE     = 'available';
+
+    /**
+     * Every ward of this facility with its bed counts.
+     *
+     * OCCUPANCY COMES FROM ADMISSIONS: a bed is occupied when an admission
+     * of this facility sits on it with status `active` and no discharge, or
+     * when the bed row itself is flagged `occupied` (the flag the admission
+     * writer will set the day it exists). Until admissions are recorded the
+     * occupied column is 0 and the page says why. Nothing is estimated.
+     *
+     * @return array{wards: list<array{id:string,name:string,ward_type:string,total_beds:int,is_active:bool,beds:int,occupied:int,available:int,out_of_service:int,occupancy_pct:int|null}>, active_admissions:int}
+     */
+    public function wardBoard(string $facilityId): array
+    {
+        $rows = DB::table('wards')
+            ->leftJoin('beds', 'beds.ward_id', '=', 'wards.id')
+            ->leftJoin('admissions', function ($join) use ($facilityId) {
+                $join->on('admissions.bed_id', '=', 'beds.id')
+                    ->where('admissions.facility_id', '=', $facilityId)
+                    ->where('admissions.status', '=', 'active')
+                    ->whereNull('admissions.discharged_at');
+            })
+            ->where('wards.facility_id', $facilityId)
+            ->groupBy('wards.id', 'wards.name', 'wards.ward_type', 'wards.total_beds', 'wards.is_active', 'wards.created_at')
+            ->orderBy('wards.created_at')
+            ->selectRaw(
+                'wards.id, wards.name, wards.ward_type, wards.total_beds, wards.is_active, '
+                . 'COUNT(DISTINCT beds.id) AS beds, '
+                . "COUNT(DISTINCT beds.id) FILTER (WHERE admissions.id IS NOT NULL OR beds.status = 'occupied') AS occupied, "
+                . 'COUNT(DISTINCT beds.id) FILTER (WHERE beds.status = ?) AS out_of_service, '
+                . 'COUNT(DISTINCT beds.id) FILTER (WHERE admissions.id IS NULL AND beds.status = ?) AS available',
+                [self::BED_OUT_OF_SERVICE, self::BED_IN_SERVICE]
+            )
+            ->get();
+
+        $wards = [];
+        foreach ($rows as $r) {
+            $beds    = (int) $r->beds;
+            $wards[] = [
+                'id'             => (string) $r->id,
+                'name'           => (string) $r->name,
+                'ward_type'      => (string) $r->ward_type,
+                'total_beds'     => (int) $r->total_beds,
+                'is_active'      => (bool) $r->is_active,
+                'beds'           => $beds,
+                'occupied'       => (int) $r->occupied,
+                'available'      => (int) $r->available,
+                'out_of_service' => (int) $r->out_of_service,
+                'occupancy_pct'  => $beds > 0 ? (int) round((int) $r->occupied * 100 / $beds) : null,
+            ];
+        }
+
+        return [
+            'wards'             => $wards,
+            'active_admissions' => Admission::query()->where('facility_id', $facilityId)
+                ->where('status', 'active')->whereNull('discharged_at')->count(),
+        ];
+    }
+
+    /** A ward of THIS facility or null — the caller answers 404, never confirming a foreign id. */
+    public function ward(string $facilityId, string $wardId): ?Ward
+    {
+        if (! Str::isUuid($wardId)) {
+            return null;
+        }
+
+        return Ward::query()->where('facility_id', $facilityId)->whereKey($wardId)->first();
+    }
+
+    /** Beds of one ward, in label order. */
+    public function bedsOf(Ward $ward): Collection
+    {
+        return Bed::query()->where('ward_id', $ward->id)->orderBy('bed_number')->get();
+    }
+
+    public function createWard(string $facilityId, string $name, string $type, int $capacity): Ward
+    {
+        return Ward::create([
+            'facility_id' => $facilityId,
+            'name'        => $name,
+            'ward_type'   => $type,
+            'total_beds'  => $capacity,
+            'is_active'   => true,
+        ]);
+    }
+
+    /**
+     * Add N beds labelled PREFIX-NN, numbering on past the labels already in
+     * the ward so a second batch never collides with the first (UNIQUE
+     * ward_id + bed_number). Capacity grows to fit. Returns the labels created.
+     *
+     * @return list<string>
+     */
+    public function addBeds(Ward $ward, int $count, string $prefix): array
+    {
+        return DB::transaction(function () use ($ward, $count, $prefix) {
+            $existing = Bed::query()->where('ward_id', $ward->id)->pluck('bed_number')->flip();
+            $labels   = [];
+            $n        = 0;
+
+            while (count($labels) < $count) {
+                $n++;
+                $label = sprintf('%s-%02d', $prefix, $n);
+                if ($existing->has($label)) {
+                    continue;
+                }
+                Bed::create(['ward_id' => $ward->id, 'bed_number' => $label, 'status' => self::BED_IN_SERVICE]);
+                $labels[] = $label;
+            }
+
+            $now = $existing->count() + $count;
+            if ($ward->total_beds < $now) {
+                $ward->total_beds = $now;
+                $ward->save();
+            }
+
+            return $labels;
+        });
+    }
+
+    /**
+     * Take a bed out of service or bring it back. Returns [before, after]
+     * status, or null when the bed is occupied (an occupied bed is a clinical
+     * fact this desk does not override) or already in the requested state.
+     *
+     * @return array{0:string,1:string}|null
+     */
+    public function setBedService(Bed $bed, bool $inService): ?array
+    {
+        $after = $inService ? self::BED_IN_SERVICE : self::BED_OUT_OF_SERVICE;
+
+        if ($bed->status === $after || $bed->status === 'occupied') {
+            return null;
+        }
+
+        $before      = $bed->status;
+        $bed->status = $after;
+        $bed->save();
+
+        return [$before, $after];
+    }
+
+    // ── Reports (H-6) ────────────────────────────────────────────────────
+
+    /** Longest range a report may span, in days (inclusive). */
+    public const REPORT_MAX_DAYS = 366;
+
+    public const REPORT_TABLES = ['appointments', 'queue', 'lab', 'billing', 'staff'];
+
+    /**
+     * Every report table for the range. Each row is already flat for the
+     * page and the CSV: counts, medians and whole-franc sums only — no
+     * patient, no name, no Health ID, no free text from any record.
+     *
+     * @return array{
+     *   appointments: array{statuses:list<string>, days:list<array<string,int|string>>, total:int, no_show:int, no_show_rate_pct:int|null},
+     *   queue: list<array{day:string,checked_in:int,seen:int,left:int,median_wait_seconds:int|null}>,
+     *   lab: list<array{day:string,released:int,median_turnaround_seconds:int|null}>,
+     *   billing: list<array{day:string,issued:int,issued_amount:int,collected:int,collected_amount:int}>,
+     *   staff: list<array{role:string,headcount:int}>
+     * }
+     */
+    public function reports(string $facilityId, CarbonInterface $from, CarbonInterface $to): array
+    {
+        return [
+            'appointments' => $this->appointmentsByDay($facilityId, $from, $to),
+            'queue'        => $this->queueByDay($facilityId, $from, $to),
+            'lab'          => $this->labByDay($facilityId, $from, $to),
+            'billing'      => $this->billingByDay($facilityId, $from, $to),
+            'staff'        => $this->staffByRole($facilityId),
+        ];
+    }
+
+    /**
+     * One report table as [headers, rows] for a CSV writer. Headers are
+     * column keys (the page translates them); rows are scalars only.
+     *
+     * @return array{0: list<string>, 1: list<list<int|string|null>>}
+     */
+    public function reportTable(string $table, string $facilityId, CarbonInterface $from, CarbonInterface $to): array
+    {
+        if ($table === 'appointments') {
+            $a       = $this->appointmentsByDay($facilityId, $from, $to);
+            $headers = array_merge(['day'], $a['statuses'], ['total']);
+            $rows    = array_map(fn (array $d) => array_map(fn ($h) => $d[$h], $headers), $a['days']);
+
+            return [$headers, $rows];
+        }
+
+        [$headers, $data] = match ($table) {
+            'queue'   => [['day', 'checked_in', 'seen', 'left', 'median_wait_seconds'], $this->queueByDay($facilityId, $from, $to)],
+            'lab'     => [['day', 'released', 'median_turnaround_seconds'], $this->labByDay($facilityId, $from, $to)],
+            'billing' => [['day', 'issued', 'issued_amount', 'collected', 'collected_amount'], $this->billingByDay($facilityId, $from, $to)],
+            'staff'   => [['role', 'headcount'], $this->staffByRole($facilityId)],
+            default   => throw new \InvalidArgumentException("Unknown report table {$table}"),
+        };
+
+        $rows = array_map(fn (array $d) => array_map(fn ($h) => $d[$h] ?? '', $headers), $data);
+
+        return [$headers, $rows];
+    }
+
+    private function range(CarbonInterface $from, CarbonInterface $to): array
+    {
+        return [$from->copy()->startOfDay(), $to->copy()->endOfDay()];
+    }
+
+    private function appointmentsByDay(string $facilityId, CarbonInterface $from, CarbonInterface $to): array
+    {
+        // Postgres: TO_CHAR, never DATE_FORMAT. Statuses are whatever the
+        // rows carry, in a fixed display order, then anything unexpected.
+        $rows = DB::table('appointments')
+            ->selectRaw("TO_CHAR(scheduled_at, 'YYYY-MM-DD') AS day, status, COUNT(*) AS n")
+            ->where('facility_id', $facilityId)
+            ->whereBetween('scheduled_at', $this->range($from, $to))
+            ->groupByRaw("TO_CHAR(scheduled_at, 'YYYY-MM-DD'), status")
+            ->orderBy('day')
+            ->get();
+
+        $known    = ['scheduled', 'confirmed', 'checked_in', 'in_progress', 'completed', 'no_show', 'cancelled'];
+        $seen     = $rows->pluck('status')->unique()->values()->all();
+        $statuses = array_values(array_unique(array_merge(array_intersect($known, $seen), array_diff($seen, $known))));
+
+        $days = [];
+        foreach ($rows as $r) {
+            $days[$r->day] ??= array_merge(['day' => $r->day], array_fill_keys($statuses, 0), ['total' => 0]);
+            $days[$r->day][$r->status] = (int) $r->n;
+            $days[$r->day]['total']   += (int) $r->n;
+        }
+
+        $total  = array_sum(array_column($days, 'total'));
+        $noShow = array_sum(array_column($days, 'no_show'));
+
+        return [
+            'statuses'         => $statuses,
+            'days'             => array_values($days),
+            'total'            => $total,
+            'no_show'          => $noShow,
+            'no_show_rate_pct' => $total > 0 ? (int) round($noShow * 100 / $total) : null,
+        ];
+    }
+
+    /**
+     * One PatientQueueService::summaryFor() per day: the only queue read this
+     * class makes, and only counts and medians come back. Days with no
+     * check-in are omitted (nothing to report, not "0 min").
+     */
+    private function queueByDay(string $facilityId, CarbonInterface $from, CarbonInterface $to): array
+    {
+        $out = [];
+        for ($day = $from->copy()->startOfDay(); $day->lte($to); $day->addDay()) {
+            $s = $this->queue->summaryFor($facilityId, $day);
+            if ($s['checked_in'] === 0) {
+                continue;
+            }
+            $out[] = [
+                'day'                 => $day->toDateString(),
+                'checked_in'          => $s['checked_in'],
+                'seen'                => $s['seen'],
+                'left'                => $s['left'],
+                'median_wait_seconds' => $s['median_wait_seconds'],
+            ];
+        }
+
+        return $out;
+    }
+
+    private function labByDay(string $facilityId, CarbonInterface $from, CarbonInterface $to): array
+    {
+        $rows = DB::table('lab_orders')
+            ->selectRaw(
+                "TO_CHAR(resulted_at, 'YYYY-MM-DD') AS day, COUNT(*) AS released, "
+                . 'PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY EXTRACT(EPOCH FROM (resulted_at - ordered_at))) '
+                . 'FILTER (WHERE ordered_at IS NOT NULL) AS median_turnaround_seconds'
+            )
+            ->where('facility_id', $facilityId)
+            ->whereNotNull('resulted_at')
+            ->whereBetween('resulted_at', $this->range($from, $to))
+            ->groupByRaw("TO_CHAR(resulted_at, 'YYYY-MM-DD')")
+            ->orderBy('day')
+            ->get();
+
+        return $rows->map(fn ($r) => [
+            'day'                       => $r->day,
+            'released'                  => (int) $r->released,
+            'median_turnaround_seconds' => $r->median_turnaround_seconds === null ? null : (int) round((float) $r->median_turnaround_seconds),
+        ])->all();
+    }
+
+    /** Whole francs (XAF exponent 0). Issued by created_at as the overview does; collected by paid_at. */
+    private function billingByDay(string $facilityId, CarbonInterface $from, CarbonInterface $to): array
+    {
+        $issued = DB::table('invoices')
+            ->selectRaw("TO_CHAR(created_at, 'YYYY-MM-DD') AS day, COUNT(*) AS n, COALESCE(SUM(patient_responsibility_amount), 0) AS amount")
+            ->where('facility_id', $facilityId)
+            ->whereBetween('created_at', $this->range($from, $to))
+            ->groupByRaw("TO_CHAR(created_at, 'YYYY-MM-DD')")
+            ->get()->keyBy('day');
+
+        $collected = DB::table('invoices')
+            ->selectRaw("TO_CHAR(paid_at, 'YYYY-MM-DD') AS day, COUNT(*) AS n, COALESCE(SUM(paid_amount), 0) AS amount")
+            ->where('facility_id', $facilityId)
+            ->whereNotNull('paid_at')
+            ->whereBetween('paid_at', $this->range($from, $to))
+            ->groupByRaw("TO_CHAR(paid_at, 'YYYY-MM-DD')")
+            ->get()->keyBy('day');
+
+        $days = $issued->keys()->merge($collected->keys())->unique()->sort()->values();
+
+        return $days->map(fn (string $day) => [
+            'day'              => $day,
+            'issued'           => (int) ($issued[$day]->n ?? 0),
+            'issued_amount'    => (int) round((float) ($issued[$day]->amount ?? 0)),
+            'collected'        => (int) ($collected[$day]->n ?? 0),
+            'collected_amount' => (int) round((float) ($collected[$day]->amount ?? 0)),
+        ])->all();
+    }
+
+    /** Active postings at this facility (same rule as FacilityRoleAssignment::active()), one person once per role. */
+    private function staffByRole(string $facilityId): array
+    {
+        return DB::table('facility_role_assignments')
+            ->join('roles', 'roles.id', '=', 'facility_role_assignments.role_id')
+            ->where('facility_role_assignments.facility_id', $facilityId)
+            ->where('facility_role_assignments.is_active', true)
+            ->where(fn ($q) => $q->whereNull('facility_role_assignments.expires_at')->orWhere('facility_role_assignments.expires_at', '>', now()))
+            ->groupBy('roles.name')
+            ->orderBy('roles.name')
+            ->selectRaw('roles.name AS role, COUNT(DISTINCT facility_role_assignments.user_id) AS headcount')
+            ->get()
+            ->map(fn ($r) => ['role' => (string) $r->role, 'headcount' => (int) $r->headcount])
+            ->all();
     }
 
     private function billing(string $facilityId, CarbonInterface $day): array

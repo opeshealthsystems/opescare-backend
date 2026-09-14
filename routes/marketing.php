@@ -41,4 +41,10 @@ Route::middleware(['auth', 'mfa.verified', 'portal.access', 'platform.admin', 'f
             ->name('portals.admin.leads');
         Route::post('/portals/admin/leads/{lead}/status', [LeadAdminController::class, 'updateStatus'])
             ->name('portals.admin.leads.status');
+        // Lead → tenant conversion (P-6). Under /admin/* so RequirePlatformAdmin
+        // holds it to the platform tier like the rest of the god-mode console.
+        Route::get('/admin/leads/{lead}/convert', [LeadAdminController::class, 'convertForm'])
+            ->name('portals.admin.leads.convert');
+        Route::post('/admin/leads/{lead}/convert', [LeadAdminController::class, 'convert'])
+            ->name('portals.admin.leads.convert.store');
     });

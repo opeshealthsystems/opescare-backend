@@ -14,6 +14,7 @@
 | App\Services\CareMap\FacilitySettingsService.
 */
 
+use App\Http\Controllers\CareMap\FacilityPhotoController;
 use App\Http\Controllers\MedicalId\FacilitySettingsController;
 use Illuminate\Support\Facades\Route;
 
@@ -47,4 +48,16 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'capability:service_catalogue'
         ->name('portals.facility.settings.location');
     Route::post('/facility/settings/hours', [FacilitySettingsController::class, 'updateHours'])
         ->name('portals.facility.settings.hours');
+    Route::post('/facility/settings/photo', [FacilitySettingsController::class, 'updatePhoto'])
+        ->name('portals.facility.settings.photo');
 });
+
+/*
+| The photo itself, for the <img> on both settings pages (and any future
+| public slot): OUTSIDE the portal gate, the SIGNATURE is the authorisation,
+| minted for 60 minutes by FacilityPhotoService::urlFor() and checked by the
+| `signed` middleware — the same contract as the patient photo in routes/api.php.
+*/
+Route::get('/facility/photo/{listing}', [FacilityPhotoController::class, 'show'])
+    ->middleware(['web', 'signed'])
+    ->name('facility.photo');
