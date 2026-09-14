@@ -163,7 +163,10 @@ class PatientDocumentService
 
         foreach (
             LabOrder::where('patient_id', $patient->id)
-                ->whereIn('status', ['resulted', 'completed', 'released', 'reported'])
+                // Every released spelling, INCLUDING `verified` — the web desk's
+                // second-person validation. Before this read the model's list, a
+                // validated panel vanished from the patient's documents.
+                ->whereIn('status', [...LabOrder::RELEASED_STATUSES, 'reported'])
                 ->orderByDesc('resulted_at')
                 ->get() as $order
         ) {
@@ -353,7 +356,7 @@ class PatientDocumentService
         // early puts an unreviewed value in a patient's hands, which is exactly
         // what the release step exists to prevent.
         abort_unless(
-            in_array(strtolower((string) $order->status), ['resulted', 'completed', 'released', 'reported'], true),
+            in_array(strtolower((string) $order->status), [...LabOrder::RELEASED_STATUSES, 'reported'], true),
             404,
             'This report has not been released yet.'
         );

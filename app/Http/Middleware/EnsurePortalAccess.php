@@ -106,6 +106,30 @@ class EnsurePortalAccess
             'cashier', 'billing_officer', 'finance_manager', 'refund_approver', 'wallet_ops',
             'data_steward', 'reconciliation_officer', 'data_import_officer', 'data_quality_reviewer',
         ],
+        // "My facility" settings (/facility/settings): the public listing's
+        // name, licence, map position, hours and contacts. Same shape and same
+        // reasoning as 'facility/catalogue' above — the page is answered for
+        // by a facility administrator (who lives under /admin and is closed
+        // out of the desk) AND by a lab manager (who lives inside it), so
+        // neither existing key admits both. Listed BEFORE 'facility' because
+        // it also starts with 'facility' and the first matching prefix wins.
+        //
+        // The list is DELIBERATELY WIDER than the set allowed to use the page:
+        // this layer only picks the portal bucket; `capability:service_catalogue`
+        // (the one map in config/staff_capabilities.php) decides who may act,
+        // and a refusal is a 403 that names the reason — never a redirect.
+        'facility/settings' => [
+            'facility_admin', 'clinic_admin', 'hospital_admin', 'facility_ceo', 'branch_admin',
+            'department_manager',
+            'doctor', 'multi_doctor', 'specialist', 'consultant', 'resident', 'visiting_doctor',
+            'nurse', 'triage_nurse', 'ward_nurse', 'midwife', 'nurse_supervisor',
+            'student_doctor', 'student_nurse', 'intern', 'medical_supervisor',
+            'receptionist', 'front_desk', 'appointment_coordinator', 'queue_manager', 'records_officer',
+            'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection',
+            'pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'medicine_stock', 'dispensing_officer',
+            'cashier', 'billing_officer', 'finance_manager', 'refund_approver', 'wallet_ops',
+            'data_steward', 'reconciliation_officer', 'data_import_officer', 'data_quality_reviewer',
+        ],
         // Operations desk (was /portals/staff, now /facility).
         'facility' => [
             // Clinical providers

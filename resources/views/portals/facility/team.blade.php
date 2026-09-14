@@ -296,6 +296,7 @@
                         <th>{{ __('team.col_email') }}</th>
                         <th>{{ __('team.col_role') }}</th>
                         <th>{{ __('team.col_status') }}</th>
+                        <th>{{ __('facility_admin.col_manage') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -312,6 +313,13 @@
                             <span class="badge {{ $member->status === 'active' ? 'badge-success' : 'badge-neutral' }}">
                                 {{ $statusLabel($member->status) }}
                             </span>
+                        </td>
+                        {{-- The member page: profile, credentials, change role,
+                             end / reopen the posting (routes/facility_admin.php). --}}
+                        <td data-label="{{ __('facility_admin.col_manage') }}">
+                            <a href="{{ route('portals.facility.admin.member', $member->id) }}" class="btn btn-secondary btn-sm fs-tap">
+                                <i data-lucide="user-cog"></i> {{ __('facility_admin.action_open') }}
+                            </a>
                         </td>
                     </tr>
                 @endforeach

@@ -60,6 +60,11 @@ class CareIsNeverGatedOnQueueTest extends TestCase
         'app/Models/QueueDisplaySetting.php',
         'app/Models/FacilityQueue.php',
         'app/Models/AppointmentCheckIn.php',
+        // The facility-admin overview reads PatientQueueService::summaryFor()
+        // for its tiles: counts and median waits for the day, nothing else.
+        // It never loads a ticket, never transitions one, and links only to
+        // the queue desk. A number on a dashboard cannot gate anyone's care.
+        'app/Services/Portal/FacilityAdminDeskService.php',
     ];
 
     /** Structural: no clinical code can spell the queue. */

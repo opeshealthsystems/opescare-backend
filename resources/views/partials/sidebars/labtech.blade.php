@@ -27,6 +27,14 @@
     <div class="sidebar-nav-label">{{ __('public.portal.nav_lab', [], $l) ?: 'Laboratory' }}</div>
     {{-- The bench: worklist, result entry, release. Same gate as routes/lab.php. --}}
     @capability('lab_results')
+    <a href="{{ route('portals.lab_manager.dashboard') }}" class="sidebar-link {{ request()->routeIs('portals.lab_manager.dashboard') ? 'active' : '' }}">
+        <i data-lucide="layout-dashboard"></i><span>{{ __('lab_manager.nav_dashboard', [], $l) }}</span>
+    </a>
+    <a href="{{ route('portals.lab_manager.requests') }}" class="sidebar-link {{ request()->routeIs('portals.lab_manager.requests') ? 'active' : '' }}">
+        <i data-lucide="inbox"></i><span>{{ __('lab_manager.nav_requests', [], $l) }}</span>
+    </a>
+    @endcapability
+    @capability('lab_results')
     <a href="{{ route('portals.lab.index') }}" class="sidebar-link {{ request()->routeIs('portals.lab.index', 'portals.lab.show') ? 'active' : '' }}">
         <i data-lucide="flask-conical"></i><span>{{ __('lab_desk.nav', [], $l) }}</span>
     </a>

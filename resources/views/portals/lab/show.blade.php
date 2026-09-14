@@ -28,6 +28,8 @@
     $canEnter  = $open && ! $validated;
     $canRelease = $open && ! $released && $order->results->isNotEmpty();
     $canDoValidate = $open && $status === 'resulted' && $canValidate;
+    // A sample is refused only while nothing has been entered (routes/lab_manager.php).
+    $canReject = $open && ! $released && $order->results->isEmpty();
 
     try { $dob = $p?->date_of_birth; } catch (\Throwable) { $dob = null; }
     $age = $dob ? \Illuminate\Support\Carbon::parse($dob)->age : null;
@@ -43,9 +45,17 @@
             <span class="{{ $urgencyBadge }}">{{ __('lab_desk.urgency.' . $urgency) }}</span>
         </p>
     </div>
-    <a href="{{ route('portals.lab.index', ['status' => $status === 'cancelled' ? 'ordered' : $status]) }}" class="btn btn-secondary">
-        <i data-lucide="arrow-left"></i> {{ __('lab_desk.back_to_worklist') }}
-    </a>
+    <div class="row-actions-inline">
+        @if($released)
+        {{-- The patient's own Secure sheet, generated now — for the walk-in patient without a phone. --}}
+        <a href="{{ route('portals.lab_manager.report', $order->id) }}" class="btn btn-primary" title="{{ __('lab_manager.print_report_hint') }}">
+            <i data-lucide="printer"></i> {{ __('lab_manager.print_report') }}
+        </a>
+        @endif
+        <a href="{{ route('portals.lab.index', ['status' => $status === 'cancelled' ? 'ordered' : $status]) }}" class="btn btn-secondary">
+            <i data-lucide="arrow-left"></i> {{ __('lab_desk.back_to_worklist') }}
+        </a>
+    </div>
 </div>
 
 @if(session('success'))<div class="alert alert-success mb-6"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
@@ -313,6 +323,28 @@
         @elseif($open && $status === 'resulted')
             <p class="form-hint"><i data-lucide="lock"></i> {{ __('lab_desk.validation_locked') }}</p>
         @endif
+    </div>
+</div>
+@endif
+
+{{-- ── Reject the sample ─────────────────────────────────────────────── --}}
+@if($canReject)
+<div class="panel form-panel mt-4">
+    <div class="panel-body">
+        <details>
+            <summary class="btn btn-secondary"><i data-lucide="ban"></i> {{ __('lab_manager.reject') }}</summary>
+            <form method="POST" action="{{ route('portals.lab_manager.reject', $order->id) }}" class="form-grid">
+                @csrf
+                <p class="form-hint">{{ __('lab_manager.reject_hint') }}</p>
+                <div class="form-group">
+                    <label class="form-label form-label-required" for="reject-reason">{{ __('lab_manager.reject_reason') }}</label>
+                    <input type="text" id="reject-reason" name="reason" class="form-control" required minlength="3" maxlength="1000" value="{{ old('reason') }}">
+                </div>
+                <div class="row-actions-inline">
+                    <button type="submit" class="btn btn-danger"><i data-lucide="ban"></i> {{ __('lab_manager.submit_reject') }}</button>
+                </div>
+            </form>
+        </details>
     </div>
 </div>
 @endif

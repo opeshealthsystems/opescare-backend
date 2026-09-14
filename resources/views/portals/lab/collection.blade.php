@@ -85,6 +85,18 @@
                                     <i data-lucide="check"></i> {{ __('lab_desk.mark_collected') }}
                                 </button>
                             </form>
+                            {{-- The collector who sees the unusable tube refuses it here (routes/lab_manager.php). --}}
+                            <details>
+                                <summary class="btn btn-secondary btn-sm"><i data-lucide="ban"></i> {{ __('lab_manager.reject') }}</summary>
+                                <form method="POST" action="{{ route('portals.lab_manager.reject', $order->id) }}" class="form-grid">
+                                    @csrf
+                                    <div class="form-group">
+                                        <label class="form-label form-label-required" for="reject-reason-{{ $order->id }}">{{ __('lab_manager.reject_reason') }}</label>
+                                        <input type="text" id="reject-reason-{{ $order->id }}" name="reason" class="form-control" required minlength="3" maxlength="1000">
+                                    </div>
+                                    <button type="submit" class="btn btn-danger btn-sm"><i data-lucide="ban"></i> {{ __('lab_manager.submit_reject') }}</button>
+                                </form>
+                            </details>
                         </td>
                     </tr>
                 @endforeach

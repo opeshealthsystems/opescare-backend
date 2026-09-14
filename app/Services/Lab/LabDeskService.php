@@ -806,6 +806,61 @@ class LabDeskService
     }
 
     /**
+     * A rejected sample: the patient hears a new sample is needed, the ordering
+     * clinician hears why. Public so the manager's desk (LabManagerDeskService)
+     * tells people through the same bells as a release, not a second copy.
+     */
+    public function notifySampleRejected(LabOrder $order, string $reason, string $userId): void
+    {
+        $facilityName = $this->facility($order->facility_id)?->name ?? '';
+        $patient      = $this->patientForNotification($order->patient_id);
+
+        if ($patient !== null) {
+            $locale = $this->patientLocale($patient->id);
+            $title  = __('lab_manager.notify.rejected_patient_title', ['test' => $order->test_name], $locale);
+            $body   = __('lab_manager.notify.rejected_patient_body', ['facility' => $facilityName, 'reason' => $reason], $locale);
+
+            $this->bellPatient($patient, 'lab_sample_rejected', $title, $body, 'normal', '/labs/' . $order->id,
+                __('lab_api.notify.result_ready_action', [], $locale), ['lab_order_id' => $order->id]);
+
+            $this->pushPatient($patient, 'lab_sample_rejected', $title, $body, [
+                'lab_order_id' => $order->id,
+                'action_url'   => '/labs/' . $order->id,
+            ]);
+        }
+
+        if (blank($order->ordered_by)) {
+            return;
+        }
+
+        try {
+            Notify::toUser(
+                (string) $order->ordered_by,
+                'lab_sample_rejected',
+                'lab',
+                [
+                    'title'        => __('lab_manager.notify.rejected_clinician_title', ['test' => $order->test_name]),
+                    'message'      => __('lab_manager.notify.rejected_clinician_body', [
+                        'test'     => $order->test_name,
+                        'facility' => $facilityName,
+                        'reason'   => $reason,
+                    ]),
+                    'url'          => '/clinician/results/lab-' . $order->id,
+                    'lab_order_id' => $order->id,
+                    'patient_id'   => $order->patient_id,
+                    'facility_id'  => $order->facility_id,
+                ],
+                'normal',
+                $userId,
+                'LabOrder',
+                (string) $order->id,
+            );
+        } catch (\Throwable $e) {
+            Log::warning('lab desk: rejection bell failed', ['lab_order_id' => $order->id, 'error' => $e->getMessage()]);
+        }
+    }
+
+    /**
      * One row in Laravel's `notifications` table — the feed the patient app's
      * bell reads (MobileNotificationController::scopedQuery), in the payload
      * shape the real notification classes write.
