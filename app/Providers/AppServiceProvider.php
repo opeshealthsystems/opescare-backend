@@ -337,6 +337,8 @@ class AppServiceProvider extends ServiceProvider
         Route::group([], base_path('routes/facility_settings.php'));
         Route::group([], base_path('routes/lab_manager.php'));
         Route::group([], base_path('routes/facility_admin.php'));
+        // Developer dashboard completion (docs/DEVELOPER_DASHBOARD_AUDIT.md).
+        Route::group([], base_path('routes/developer_ext.php'));
 
         // Laboratory desk (web portal) — the first web surface over lab_orders /
         // lab_results, whose capabilities were granted and gated nothing. Its
