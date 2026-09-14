@@ -112,6 +112,10 @@ Last updated: 2026-09-14.
 | **Found on review — footer told patients to write to the no-reply mailbox** | **live** | `e9856a8` | yes | `support_email` fell back to `MAIL_FROM_ADDRESS` (`noreply@opescare.cloud` on prod, support unset). Fallback removed in config + 3 templates; sentence omitted until `OPESCARE_SUPPORT_EMAIL` is set (owner action #6) |
 | Not verifiable here | — | — | — | Outlook/Gmail rendering (no client available); logo image only resolves after deploy; `OpesCareNotificationMail` callers still pass English bodies (chrome bilingual, body not) |
 
+## Pharmacy dashboard (2026-09-14, docs/PHARMACY_DASHBOARD_AUDIT.md)
+
+Audited against code and prod as the demo pharmacist; 9 gaps ranked. Live in `037e4b1`, `8aab72e`, `604a8c5`: KPIs/alerts/controlled register read real stock (P-1); orders desk `/pharmacy/orders` (P-2); pharmacy + lab managers run their own team (P-3); price list `/pharmacy/prices` in whole francs with append-only history (P-4); `/pharmacy/settings` with map pick mode and shared hours service (P-5); demo pharmacy manager (P-8); patient names, stranger's-queue read fallback and the reservation notification id space fixed. **Open:** P-6 lead → tenant conversion (admin), photo/logo upload, `pharmacy_inventories` table still present (unread).
+
 ## Phase plan
 
 - **Phase 1** (in-flight work) — done.
