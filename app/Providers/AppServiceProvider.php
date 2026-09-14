@@ -324,6 +324,13 @@ class AppServiceProvider extends ServiceProvider
         // declared inside the file with the routes it gates.
         Route::group([], base_path('routes/pharmacy_ops.php'));
 
+        // Pharmacy desk slices from the dashboard audit (docs/PHARMACY_DASHBOARD_AUDIT.md):
+        // patient orders, the price list and the facility settings page. Each file
+        // declares its own middleware stack next to the routes it gates.
+        Route::group([], base_path('routes/pharmacy_orders.php'));
+        Route::group([], base_path('routes/pharmacy_prices.php'));
+        Route::group([], base_path('routes/pharmacy_settings.php'));
+
         // Laboratory desk (web portal) — the first web surface over lab_orders /
         // lab_results, whose capabilities were granted and gated nothing. Its
         // own file, same rationale; the middleware stack, including

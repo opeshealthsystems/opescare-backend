@@ -152,6 +152,10 @@ class StaffRoleMatrixTest extends TestCase
                 'POST /facility/prescriptions'       => 403,
                 'GET /facility/inventory/blood'      => 200,
                 'GET /facility/messages'             => 200,
+                // Lab roles are in the facility/team portal bucket now (a lab
+                // manager runs its own team), so a labtech is refused by the
+                // capability layer — a 403 that names the reason, not a bounce.
+                'GET /facility/team'                 => 403,
             ] + $facilityOnly],
 
             // The pharmacist lives in TWO portal buckets (facility + pharmacy):
@@ -172,7 +176,8 @@ class StaffRoleMatrixTest extends TestCase
                 'GET /pharmacy/prescriptions/lookup' => 200,
                 'GET /pharmacy/stock'                => 200,
                 'GET /pharmacy/controlled'           => 200,
-                'GET /facility/team'                 => '302 /pharmacy',
+                // Same reasoning as labtech: in the bucket, refused by capability.
+                'GET /facility/team'                 => 403,
                 'GET /admin/appointments'            => 403,
             ]],
 
@@ -188,6 +193,7 @@ class StaffRoleMatrixTest extends TestCase
                 'GET /facility/appointments'         => 403,
                 'GET /facility/inventory/blood'      => 403,
                 'GET /facility/messages'             => 403,
+                'GET /facility/team'                 => 403,
             ]],
 
             'pharmacy_manager' => ['pharmacy_manager', [
@@ -198,6 +204,8 @@ class StaffRoleMatrixTest extends TestCase
                 'GET /pharmacy/controlled'           => 200,
                 'GET /facility/messages'             => 200,
                 'GET /facility/prescriptions'        => 403,
+                // The manager runs the pharmacy's own team (facility_team).
+                'GET /facility/team'                 => 200,
             ]],
 
             'records_officer' => ['records_officer', [

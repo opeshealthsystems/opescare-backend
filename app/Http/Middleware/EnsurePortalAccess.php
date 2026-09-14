@@ -46,8 +46,16 @@ class EnsurePortalAccess
         // entire clinical portal. Only the five real facility-administration
         // roles are listed; platform roles are deliberately absent, since they
         // have no facility context to scope a team page to.
+        //
+        // The pharmacy and lab roles are here too, for the reason given under
+        // 'facility/catalogue': a pharmacy or lab manager runs their own
+        // tenant's team, and this layer only picks the portal bucket —
+        // `capability:facility_team` decides who may act, so a pharmacist who
+        // follows the link gets a 403 that names the reason, not a redirect.
         'facility/team' => [
             'facility_admin', 'clinic_admin', 'hospital_admin', 'facility_ceo', 'branch_admin',
+            'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection',
+            'pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'medicine_stock', 'dispensing_officer',
         ],
         // The facility's own service catalogue ("what we offer"). Listed
         // BEFORE 'facility' for the same reason 'facility/team' is: it also

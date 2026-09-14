@@ -154,4 +154,9 @@ return [
     'btn_add_supplier'  => 'Add supplier',
     'flash_supplier_added' => 'Supplier :name added.',
     'xaf'               => 'XAF',
+
+    // In-app notification raised to the pharmacy when a patient reserves.
+    'notify_medicine_fallback'  => 'Medicine',
+    'notify_reservation_title'  => 'New medicine reservation: :medicine × :qty',
+    'notify_reservation_body'   => 'Ref :ref:pack',
 ];

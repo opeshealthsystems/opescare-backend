@@ -69,6 +69,9 @@ class FinderDemoSeeder extends Seeder
             ['demo.admin@opescare.test',          'Demo — Platform Admin',    'platform_admin', null],
             // Facility types.
             ['demo.pharmacist@opescare.test',     'Demo — Pharmacy',          'pharmacist',     $pharmacy?->id],
+            // The manager desk: stock ops, team, listing, catalogue. Until this
+            // row existed no pharmacy_manager account existed anywhere.
+            ['demo.pharmacy.manager@opescare.test', 'Demo — Pharmacy Manager', 'pharmacy_manager', $pharmacy?->id],
             ['demo.facility.admin@opescare.test', 'Demo — Facility Admin',    'facility_admin', $hospital?->id],
             ['demo.facility.ceo@opescare.test',   'Demo — Facility Executive','facility_ceo',   $hospital?->id],
             // Front desk — the clinical operations desk (/facility): appointments,

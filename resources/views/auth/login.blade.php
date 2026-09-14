@@ -173,6 +173,11 @@
                         <span>Aïcha Coulibaly</span>
                         <small>Pharmacist</small>
                     </button>
+                    <button type="button" class="demo-login-btn demo-btn-clinical" data-demo-role="pharmacy_manager" data-demo-email="demo.pharmacy.manager@opescare.test">
+                        <i data-lucide="store"></i>
+                        <span>Demo — Pharmacy Manager</span>
+                        <small>{{ __('portal.pharmacy_manager_role') }}</small>
+                    </button>
                     <button type="button" class="demo-login-btn demo-btn-clinical" data-demo-role="labtech" data-demo-email="demo.labtech@opescare.test">
                         <i data-lucide="flask-conical"></i>
                         <span>Lab Tech Boubacar Keïta</span>

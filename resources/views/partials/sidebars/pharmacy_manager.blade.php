@@ -89,6 +89,17 @@
 @endcapability
 
 
+{{-- Team management (/facility/team): invite, reissue, revoke, approve join
+     requests. Self-gates on the same capability as the route. --}}
+@capability('facility_team')
+<div class="sidebar-nav-section">
+    <div class="sidebar-nav-label">{{ __('public.portal.nav_facility', [], $l) ?: 'Facility' }}</div>
+    <a href="{{ route('portals.facility.team') }}" class="sidebar-link {{ request()->routeIs('portals.facility.team*') ? 'active' : '' }}">
+        <i data-lucide="users"></i><span>{{ __('public.portal.nav_team', [], $l) ?: 'Team' }}</span>
+    </a>
+</div>
+@endcapability
+
 {{-- Facility switching for clinicians posted at more than one facility.
      Self-gating: renders nothing unless this user holds more than one active
      posting (see partials/sidebars/_switch_facility.blade.php). --}}

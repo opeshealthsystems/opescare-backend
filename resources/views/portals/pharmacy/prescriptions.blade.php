@@ -51,7 +51,7 @@
                 @forelse($prescriptions as $rx)
                 <tr>
                     <td data-label="{{ __('public.pharmacy_portal.col_patient', [], $l) ?: 'Patient' }}">
-                        <span class="td-strong">{{ $rx->patient?->full_name ?? '—' }}</span>
+                        <span class="td-strong">{{ trim(($rx->patient?->first_name ?? '') . ' ' . ($rx->patient?->last_name ?? '')) ?: '—' }}</span>
                         <div class="td-muted">{{ $rx->patient?->health_id ?? '' }}</div>
                     </td>
                     <td data-label="{{ __('public.pharmacy_portal.col_items', [], $l) ?: 'Items' }}">

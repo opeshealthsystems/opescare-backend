@@ -130,20 +130,29 @@ class MedicineReservationService
         // persisted reservation is returned regardless. roleNames is [] so every
         // active staff member at the pharmacy is pinged. actorId stays null: the
         // caller's patient_id is a patients.id, not the users.id actor_id expects.
-        $medicineName = $medicine->name ?: ($medicine->generic_name ?: ($medicine->brand_name ?: 'Medicine'));
+        $medicineName = $medicine->name ?: ($medicine->generic_name ?: ($medicine->brand_name ?: __('pharmacy_ops.notify_medicine_fallback')));
 
-        rescue(fn () => Notify::toFacilityStaff(
-            $reservation->care_facility_id,
+        // THE TENANT ID, NOT THE LISTING ID. This passed `care_facility_id` — a
+        // care_facilities row. Notify resolves staff through
+        // facility_role_assignments.facility_id and users.primary_facility_id,
+        // both keyed on `facilities`. Different UUID spaces: it matched nobody,
+        // so no pharmacy was ever told a reservation arrived. The listing's
+        // `facility_id` is the one bridge; a listing with no tenant has no
+        // staff to tell, and an empty string would abort the transaction
+        // (see BloodRequestService for the same lesson).
+        $tenantId = (string) $pharmacy->facility_id;
+
+        rescue(fn () => $tenantId === '' ? null : Notify::toFacilityStaff(
+            $tenantId,
             'pharmacy_order_received',
             'pharmacy',
             [
-                'title' => sprintf('New medicine reservation: %s × %d', $medicineName, $reservation->quantity),
-                'body'  => sprintf(
-                    'Ref %s%s',
-                    $reservation->reference,
-                    $reservation->pack_size !== null ? ' · ' . $reservation->pack_size : '',
-                ),
-                'url'   => url('/pharmacy/stock'),
+                'title' => __('pharmacy_ops.notify_reservation_title', ['medicine' => $medicineName, 'qty' => $reservation->quantity]),
+                'body'  => __('pharmacy_ops.notify_reservation_body', [
+                    'ref'  => $reservation->reference,
+                    'pack' => $reservation->pack_size !== null ? ' · ' . $reservation->pack_size : '',
+                ]),
+                'url'   => route('portals.pharmacy.dashboard'),
             ],
             [],
             'high',

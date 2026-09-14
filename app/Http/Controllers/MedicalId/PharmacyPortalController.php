@@ -4,11 +4,9 @@ namespace App\Http\Controllers\MedicalId;
 
 use App\Enums\PharmacyStockStatus;
 use App\Http\Controllers\Controller;
-use App\Models\Facility;
 use App\Models\Medicine;
 use App\Models\MedicinePharmacyStock;
 use App\Models\Patient;
-use App\Models\PharmacyInventory;
 use App\Models\Prescription;
 use App\Models\PrescriptionItem;
 use App\Modules\Pharmacy\Services\PharmacyStockReportService;
@@ -36,25 +34,25 @@ class PharmacyPortalController extends Controller
         'pregabalin', 'zolpidem', 'amphetamine', 'methylphenidate',
     ];
 
+    /**
+     * The session facility, or null.
+     *
+     * This used to end in `?? Facility::value('id')` for reads — "whatever
+     * facility happens to be first in the table". That was called harmless
+     * for an empty read; it was not. A user with no facility context was
+     * shown that stranger's prescription queue, dispense buttons included.
+     * No facility means an empty desk, never someone else's.
+     */
     private function facilityId(): ?string
     {
         return session('active_facility_id')
-            ?? auth()->user()?->primary_facility_id
-            ?? Facility::value('id');
+            ?? auth()->user()?->primary_facility_id;
     }
 
-    /**
-     * The facility a stock report may be written against.
-     *
-     * Deliberately narrower than facilityId(): the `Facility::value('id')`
-     * fallback there resolves to "whatever facility happens to be first in the
-     * table", which is harmless for an empty read but would let a user with no
-     * facility context publish stock in a stranger's name.
-     */
+    /** Same rule for writes; kept as a named method so the intent reads at the call site. */
     private function writableFacilityId(): ?string
     {
-        return session('active_facility_id')
-            ?? auth()->user()?->primary_facility_id;
+        return $this->facilityId();
     }
 
     // ------------------------------------------------------------------
@@ -65,6 +63,18 @@ class PharmacyPortalController extends Controller
     {
         $facilityId = $this->facilityId();
 
+        // THE TABLES THE PHARMACY WRITES, NOT `pharmacy_inventories`. The four
+        // stock tiles and the alerts panel read PharmacyInventory, a table no
+        // pharmacy screen has ever written (its only service is reachable
+        // through the blood routes). A pharmacy with 44 published medicines
+        // and a full batch ledger saw "0 drugs, 0 low, 0 expired" for ever.
+        // Published availability lives in medicine_pharmacy_stocks (keyed on
+        // the directory listing); expiry lives in the batch ledger (keyed on
+        // the tenant facility).
+        $listing   = $this->stockReports->listingFor($facilityId);
+        $published = MedicinePharmacyStock::query()
+            ->where('care_facility_id', $listing?->id ?? '00000000-0000-0000-0000-000000000000');
+
         $stats = [
             'pending_rx'     => Prescription::where('facility_id', $facilityId)
                                     ->whereIn('status', ['active', 'partially_dispensed'])
@@ -73,15 +83,14 @@ class PharmacyPortalController extends Controller
                                     ->where('status', 'dispensed')
                                     ->whereDate('dispensed_at', today())
                                     ->count(),
-            'total_drugs'    => PharmacyInventory::where('facility_id', $facilityId)->count(),
-            'low_stock'      => PharmacyInventory::where('facility_id', $facilityId)
-                                    ->where('stock_status', 'low_stock')
-                                    ->count(),
-            'expired'        => PharmacyInventory::where('facility_id', $facilityId)
-                                    ->where('is_expired', true)
-                                    ->count(),
-            'out_of_stock'   => PharmacyInventory::where('facility_id', $facilityId)
-                                    ->where('stock_status', 'out_of_stock')
+            'total_drugs'    => (clone $published)->count(),
+            'low_stock'      => (clone $published)->where('stock_status', PharmacyStockStatus::LowStock->value)->count(),
+            'out_of_stock'   => (clone $published)->where('stock_status', PharmacyStockStatus::OutOfStock->value)->count(),
+            'expired'        => \App\Models\StockBatch::query()
+                                    ->where('facility_id', $facilityId ?? '00000000-0000-0000-0000-000000000000')
+                                    ->whereNotNull('expiry_date')
+                                    ->whereDate('expiry_date', '<', today())
+                                    ->whereRaw('(quantity_in - quantity_out + quantity_adjusted) > 0')
                                     ->count(),
         ];
 
@@ -92,13 +101,11 @@ class PharmacyPortalController extends Controller
             ->limit(8)
             ->get();
 
-        $alerts = PharmacyInventory::where('facility_id', $facilityId)
-            ->where(function ($q) {
-                $q->where('is_expired', true)
-                  ->orWhere('stock_status', 'out_of_stock')
-                  ->orWhere('stock_status', 'low_stock');
-            })
+        $alerts = (clone $published)
+            ->with('medicine')
+            ->whereIn('stock_status', [PharmacyStockStatus::OutOfStock->value, PharmacyStockStatus::LowStock->value])
             ->orderByRaw("CASE stock_status WHEN 'out_of_stock' THEN 0 WHEN 'low_stock' THEN 1 ELSE 2 END")
+            ->orderBy('last_reported_at')
             ->limit(6)
             ->get();
 
@@ -465,15 +472,23 @@ class PharmacyPortalController extends Controller
 
         $keywords = self::CONTROLLED_KEYWORDS;
 
-        $controlled = PharmacyInventory::where('facility_id', $facilityId)
-            ->where('is_recalled', false)
-            ->where(function ($q) use ($keywords) {
+        // `medicines.is_controlled` is the institutional flag; the keyword net
+        // stays as a safety catch for catalogue rows the flag was never set on.
+        // Reads the published stock rows — the register used to read
+        // pharmacy_inventories, which nothing writes, so it was always empty.
+        $listing = $this->stockReports->listingFor($facilityId);
+
+        $controlled = MedicinePharmacyStock::query()
+            ->where('care_facility_id', $listing?->id ?? '00000000-0000-0000-0000-000000000000')
+            ->with('medicine')
+            ->whereHas('medicine', function ($m) use ($keywords) {
+                $m->where('is_controlled', true);
                 foreach ($keywords as $kw) {
-                    $q->orWhere('generic_name', 'like', "%{$kw}%")
-                      ->orWhere('medicine_name', 'like', "%{$kw}%");
+                    $m->orWhere('generic_name', 'ilike', "%{$kw}%")
+                      ->orWhere('name', 'ilike', "%{$kw}%");
                 }
             })
-            ->orderBy('medicine_name')
+            ->orderBy(Medicine::select('name')->whereColumn('medicines.id', 'medicine_pharmacy_stocks.medicine_id'))
             ->limit(100)
             ->get();
 

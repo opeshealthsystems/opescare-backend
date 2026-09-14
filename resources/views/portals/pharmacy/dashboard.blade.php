@@ -38,14 +38,24 @@
         <div class="stat-card__value">{{ $stats['dispensed_today'] ?? 0 }}</div>
     </a>
     @endcapability
-    @feature('inventory_ops')
-        @endfeature
-    @feature('inventory_ops')
-        @endfeature
-    @feature('inventory_ops')
-        @endfeature
-    @feature('inventory_ops')
-        @endfeature
+    @capability('pharmacy_stock')
+    <a href="{{ route('portals.pharmacy.stock') }}" class="stat-card">
+        <div class="stat-card__label">{{ __('public.pharmacy_portal.stat_drug_lines', [], app()->getLocale()) ?: 'Drug Lines' }}</div>
+        <div class="stat-card__value">{{ $stats['total_drugs'] ?? 0 }}</div>
+    </a>
+    <a href="{{ route('portals.pharmacy.stock', ['stock_status' => 'low_stock']) }}" class="stat-card stat-card--warning">
+        <div class="stat-card__label">{{ __('public.pharmacy_portal.stat_low_stock', [], app()->getLocale()) ?: 'Low Stock' }}</div>
+        <div class="stat-card__value">{{ $stats['low_stock'] ?? 0 }}</div>
+    </a>
+    <a href="{{ route('portals.pharmacy.stock', ['stock_status' => 'out_of_stock']) }}" class="stat-card stat-card--danger">
+        <div class="stat-card__label">{{ __('public.pharmacy_portal.stat_out_of_stock', [], app()->getLocale()) ?: 'Out of Stock' }}</div>
+        <div class="stat-card__value">{{ $stats['out_of_stock'] ?? 0 }}</div>
+    </a>
+    <a href="{{ route('portals.pharmacy.stock.batches') }}" class="stat-card stat-card--danger">
+        <div class="stat-card__label">{{ __('public.pharmacy_portal.stat_expired', [], app()->getLocale()) ?: 'Expired' }}</div>
+        <div class="stat-card__value">{{ $stats['expired'] ?? 0 }}</div>
+    </a>
+    @endcapability
 </div>
 
 <div class="field-grid">
@@ -68,7 +78,7 @@
                 @forelse($pendingRx as $rx)
                 <tr>
                     <td data-label="{{ __('public.portal.col_patient', [], app()->getLocale()) ?: 'Patient' }}">
-                        <span class="td-strong">{{ $rx->patient?->full_name ?? '—' }}</span>
+                        <span class="td-strong">{{ trim(($rx->patient?->first_name ?? '') . ' ' . ($rx->patient?->last_name ?? '')) ?: '—' }}</span>
                         <div class="td-muted">{{ $rx->items()->count() }} {{ __('public.pharmacy_portal.lbl_items', [], app()->getLocale()) ?: 'item(s)' }} &middot; {{ $rx->created_at?->diffForHumans() }}</div>
                     </td>
                     <td data-label="{{ __('public.portal.col_status', [], app()->getLocale()) ?: 'Status' }}"><span class="badge badge-{{ $rx->statusColor() }}">@enum($rx->status)</span></td>
@@ -99,8 +109,7 @@
     <div class="panel">
         <div class="panel-header">
             <h3 class="panel-title"><i data-lucide="alert-triangle"></i> {{ __('public.pharmacy_portal.panel_stock_alerts', [], app()->getLocale()) ?: 'Stock alerts' }}</h3>
-            @feature('inventory_ops')
-                        @endfeature
+            <a href="{{ route('portals.pharmacy.stock') }}" class="btn btn-secondary btn-sm">{{ __('public.portal.view_all', [], app()->getLocale()) ?: 'View all' }}</a>
         </div>
         <div class="table-wrapper">
             <table class="data-table">
@@ -110,15 +119,14 @@
                 </tr></thead>
                 <tbody>
                 @forelse($alerts as $drug)
+                @php $st = $drug->stock_status instanceof \BackedEnum ? $drug->stock_status->value : (string) $drug->stock_status; @endphp
                 <tr>
                     <td data-label="{{ __('public.pharmacy_portal.col_medicine', [], app()->getLocale()) ?: 'Medicine' }}">
-                        <span class="td-strong">{{ $drug->medicine_name }}</span>
-                        <div class="td-muted">{{ $drug->generic_name }} &middot; {{ $drug->form }} {{ $drug->strength }}</div>
+                        <span class="td-strong">{{ $drug->medicine?->name ?? '—' }}</span>
+                        <div class="td-muted">{{ $drug->medicine?->generic_name }} &middot; {{ $drug->medicine?->form }} {{ $drug->medicine?->strength }}</div>
                     </td>
                     <td data-label="{{ __('public.portal.col_status', [], app()->getLocale()) ?: 'Status' }}">
-                        <span class="badge badge-{{ $drug->is_expired ? 'danger' : ($drug->stock_status === 'out_of_stock' ? 'danger' : 'warning') }}">
-                            @if($drug->is_expired){{ __('public.pharmacy_portal.lbl_expired', [], app()->getLocale()) ?: 'Expired' }}@else@enum($drug->stock_status, 'stock_status')@endif
-                        </span>
+                        <span class="badge badge-{{ $st === 'out_of_stock' ? 'danger' : 'warning' }}">@enum($st, 'stock_status')</span>
                     </td>
                 </tr>
                 @empty

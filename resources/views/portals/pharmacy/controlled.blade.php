@@ -27,13 +27,14 @@
                 </tr></thead>
                 <tbody>
                     @forelse($controlled as $drug)
+                    @php $st = $drug->stock_status instanceof \BackedEnum ? $drug->stock_status->value : (string) $drug->stock_status; @endphp
                     <tr>
-                        <td data-label="{{ __('public.pharmacy_portal.col_drug', [], $l) ?: 'Drug' }}" class="td-strong">{{ $drug->medicine_name }}</td>
-                        <td data-label="{{ __('public.pharmacy_portal.col_form', [], $l) ?: 'Form' }}" class="td-muted">{{ $drug->form }} {{ $drug->strength }}</td>
-                        <td data-label="{{ __('public.pharmacy_portal.col_qty', [], $l) ?: 'Qty' }}" class="td-strong">{{ $drug->available_quantity }}</td>
+                        <td data-label="{{ __('public.pharmacy_portal.col_drug', [], $l) ?: 'Drug' }}" class="td-strong">{{ $drug->medicine?->name ?? '—' }}</td>
+                        <td data-label="{{ __('public.pharmacy_portal.col_form', [], $l) ?: 'Form' }}" class="td-muted">{{ $drug->medicine?->form }} {{ $drug->medicine?->strength }}</td>
+                        <td data-label="{{ __('public.pharmacy_portal.col_qty', [], $l) ?: 'Qty' }}" class="td-strong">{{ $drug->packs_available ?? '—' }}</td>
                         <td data-label="{{ __('public.pharmacy_portal.col_status', [], $l) ?: 'Status' }}">
-                            <span class="badge badge-{{ match($drug->stock_status) { 'in_stock' => 'success', 'low_stock' => 'warning', 'out_of_stock' => 'danger', default => 'neutral' } }}">
-                                @enum($drug->stock_status, 'stock_status')
+                            <span class="badge badge-{{ match($st) { 'in_stock' => 'success', 'low_stock' => 'warning', 'out_of_stock' => 'danger', default => 'neutral' } }}">
+                                @enum($st, 'stock_status')
                             </span>
                         </td>
                     </tr>
@@ -57,7 +58,7 @@
                 <tbody>
                     @forelse($recentRx as $rx)
                     <tr>
-                        <td data-label="{{ __('public.pharmacy_portal.col_patient', [], $l) ?: 'Patient' }}" class="td-strong">{{ $rx->patient?->full_name ?? '—' }}</td>
+                        <td data-label="{{ __('public.pharmacy_portal.col_patient', [], $l) ?: 'Patient' }}" class="td-strong">{{ trim(($rx->patient?->first_name ?? '') . ' ' . ($rx->patient?->last_name ?? '')) ?: '—' }}</td>
                         <td data-label="{{ __('public.pharmacy_portal.col_items', [], $l) ?: 'Items' }}" class="td-muted">{{ $rx->items->count() }} {{ __('public.pharmacy_portal.lbl_items_count', [], $l) ?: 'item(s)' }}</td>
                         <td data-label="{{ __('public.pharmacy_portal.col_dispensed', [], $l) ?: 'Dispensed' }}" class="td-muted">{{ $rx->dispensed_at?->format('d M Y H:i') ?? '—' }}</td>
                     </tr>

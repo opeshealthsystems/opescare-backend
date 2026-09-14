@@ -121,7 +121,10 @@ return [
         'refund_approve' => ['refund_approver', 'finance_manager'],
 
         // Facility team management (the /facility/team pages).
-        'facility_team' => $facilityAdmins,
+        // Pharmacy and lab managers run their own tenant: without this a
+        // pharmacy could not add a single technician except through the
+        // platform admin. The invite list is still FacilityStaffInvite::INVITABLE_ROLES.
+        'facility_team' => [...$facilityAdmins, 'pharmacy_manager', 'lab_manager'],
 
         // Curate the facility's own service list — which dictionary entries
         // (tests, procedures, services) this facility actually offers, what it
