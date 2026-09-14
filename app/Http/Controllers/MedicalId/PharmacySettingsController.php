@@ -170,7 +170,11 @@ class PharmacySettingsController extends Controller
             abort(403, __('pharmacy_ops.no_facility_context'));
         }
 
-        return Facility::findOrFail($facilityId);
+        // The session facility is already authorised context. Facility carries
+        // the demo-partition scope (IsDemoRecord); on the demo-mode host a real
+        // tenant is is_demo=false and findOrFail() 404ed the whole page for it.
+        // Lifting that one scope for an id we already trust is not a leak.
+        return Facility::withoutGlobalScope('isolate_demo')->findOrFail($facilityId);
     }
 
     private function listingFor(Facility $facility): ?CareFacility
