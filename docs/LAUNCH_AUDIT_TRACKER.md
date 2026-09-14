@@ -116,5 +116,6 @@ Last updated: 2026-09-14.
 
 - **Phase 1** (in-flight work) — done.
 - **Phase 2** (audit blockers + ops) — done except S3, which is `owner`.
-- **Phase 3** — queue system (S8), S5–S7, S9 — agents dispatched 2026-09-14. M4 waitlist after S6 dedupe.
-- **Phase 4** — email templates DONE (pending gate). Remaining dashboards: D-B4 lab desk (L), D-B5 sample collection (M), D-B6 pharmacy stock ops (M), D-B8 patient chart (L), D-B9 blood-request creation (M), D-B10 billing (L), D-B3 rest (S), M4 waitlist, then final deploy.
+- **Phase 3** — queue system (S8), S5–S7, S9 — all live (`1e16428`); M4 waitlist live (`918ba13`, 2026-09-14).
+- **Phase 4** — email templates live (`e9856a8`); every dashboard row D-B1…D-B15 live (`a46baae`, `6362e34`); M1–M7 closed except the two owner decisions (M1 USSD, D-B11 data_steward tier). Final deploy done 2026-09-14.
+- **Open, owner only:** S3 keys + driver, `OPESCARE_SUPPORT_EMAIL`, null MX at Hostinger, ICHI licence, M1, D-B11.
