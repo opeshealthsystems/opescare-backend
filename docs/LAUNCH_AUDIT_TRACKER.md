@@ -116,6 +116,18 @@ Last updated: 2026-09-14.
 
 Audited against code and prod as the demo pharmacist; 9 gaps ranked. Live in `037e4b1`, `8aab72e`, `604a8c5`: KPIs/alerts/controlled register read real stock (P-1); orders desk `/pharmacy/orders` (P-2); pharmacy + lab managers run their own team (P-3); price list `/pharmacy/prices` in whole francs with append-only history (P-4); `/pharmacy/settings` with map pick mode and shared hours service (P-5); demo pharmacy manager (P-8); patient names, stranger's-queue read fallback and the reservation notification id space fixed. **Open:** P-6 lead → tenant conversion (admin), photo/logo upload, `pharmacy_inventories` table still present (unread).
 
+## Facility-type dashboards (2026-09-14, second pass)
+
+Live in `a15c8fd`, `e83d46c`. Audits: `docs/LAB_DASHBOARD_AUDIT.md`, `docs/HOSPITAL_ADMIN_DASHBOARD_AUDIT.md`, `docs/DEVELOPER_DASHBOARD_AUDIT.md`; logins in `docs/DEMO_ACCOUNTS.md`.
+
+| Type | Built | Open |
+|---|---|---|
+| All non-pharmacy | `/facility/settings` (identity, map pick, hours, contacts) via shared `FacilitySettingsService` | photo/logo |
+| Laboratory | `/facility/lab/dashboard` (KPIs, TAT), `/facility/lab/requests` (patient requests approve/decline), sample rejection, printable secure report; fixed validated panels vanishing from patient documents | L-7 publish catalogue to public lab finder (`lab_test_availabilities` has no writer), L-3 specimen referral, L-8 reagent stock |
+| Hospital / clinic / health centre | `/facility/team/overview` (+ invoices, departments), member page (change role / deactivate / reactivate, audited), token tile scoped, facility resolution agreed across the tier, orphan roles seeded | reports/exports, ward/bed writers, `department_manager` scoped desk |
+| Developer | was **500 on prod** (sidebar route without its parameter) — fixed; webhooks registration, activity log (FHIR ingest + API calls), quickstart | consent-grants view (needs D-5: portal apps have no facility), analytics tables unwritten, webhook dispatch never wired into domain writes, admin approval pages URL-only, `approved_scopes` null-write bug in admin handler |
+| Demo | one tenant + linked listing + hours + logins for 10 facility types; login panel "Facility types" tab | — |
+
 ## Phase plan
 
 - **Phase 1** (in-flight work) — done.
