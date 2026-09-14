@@ -191,6 +191,11 @@
             </div>
         </div>
         <p class="page-subtitle" style="margin:.75rem 0 0;">{{ __('facility_admin.billing_note') }}</p>
+        <p style="margin:.5rem 0 0;">
+            <a href="{{ route('portals.facility.admin.invoices') }}" class="btn btn-secondary btn-sm">
+                <i data-lucide="receipt-text"></i> {{ __('facility_admin.action_open_invoices') }}
+            </a>
+        </p>
     </div>
 </div>
 
@@ -214,6 +219,11 @@
                 <div class="stat-card__value" data-kpi="pending_joins">{{ $t['pending_joins'] }}</div>
             </a>
         </div>
+        <p style="margin:.75rem 0 0;">
+            <a href="{{ route('portals.facility.admin.departments') }}" class="btn btn-secondary btn-sm">
+                <i data-lucide="layout-grid"></i> {{ __('facility_admin.action_open_departments') }}
+            </a>
+        </p>
     </div>
 </div>
 

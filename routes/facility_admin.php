@@ -23,6 +23,14 @@ use Illuminate\Support\Facades\Route;
 |
 |   web, auth, mfa.verified   the ordinary portal preamble
 |   portal.access             the user may open this portal bucket at all
+|   facility.context          ONE rule for the whole facility-admin tier: a
+|                             single-facility user is resolved silently, a
+|                             user posted at more than one DISTINCT facility
+|                             is sent to /select-facility. /facility/team and
+|                             /facility/catalogue already ran it; without it
+|                             here the same person got the overview at their
+|                             primary facility and the selector on the team
+|                             page (tests/Feature/Facility/FacilityContextAgreementTest).
 |   capability:facility_team  the role, AT THE ACTIVE FACILITY, runs the team
 |                             (config/staff_capabilities.php). A refusal is a
 |                             403 `role_forbidden` — never a 404. No new
@@ -41,10 +49,24 @@ use Illuminate\Support\Facades\Route;
 | swallowed by a wildcard.
 */
 
-Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'capability:facility_team'])->group(function () {
+Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'facility.context', 'capability:facility_team'])->group(function () {
 
     Route::get('/facility/team/overview', [FacilityAdminDeskController::class, 'overview'])
         ->name('portals.facility.admin.overview');
+
+    // Read-only invoice list for the people who answer for the till but do
+    // not run it. `capability:billing` gates the WRITES of /facility/billing
+    // (issue, pay, void, refund) in the same group as its reads, so it is not
+    // widened to administrators; this page reads `invoices` for the session
+    // facility and offers no action. Nothing here gates care on payment.
+    Route::get('/facility/team/overview/invoices', [FacilityAdminDeskController::class, 'invoices'])
+        ->name('portals.facility.admin.invoices');
+
+    // Departments as they exist today: `staff_profiles.department` is free
+    // text, so this is a grouping of this facility's active staff by that
+    // string — no Department model, no schema decision.
+    Route::get('/facility/team/overview/departments', [FacilityAdminDeskController::class, 'departments'])
+        ->name('portals.facility.admin.departments');
 
     Route::get('/facility/team/members/{userId}', [FacilityAdminDeskController::class, 'member'])
         ->name('portals.facility.admin.member');

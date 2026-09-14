@@ -26,7 +26,12 @@ $labCollection = ['sample_collection'];
 $pharmacy = ['pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'dispensing_officer'];
 $pharmacyStock = ['medicine_stock'];
 $billing = ['cashier', 'billing_officer', 'finance_manager', 'finance', 'refund_approver', 'wallet_ops'];
-$facilityAdmins = ['facility_admin', 'clinic_admin', 'hospital_admin', 'facility_ceo', 'branch_admin'];
+// department_manager and multi_facility_admin: seeded as roles on 2026-09-14
+// (they were dashboard profiles no role pointed at). They render the
+// facility-admin / multi-facility sidebars, whose links are gated on these
+// capabilities, so they hold the same set — never `billing`, which gates the
+// till's writes (see routes/facility_admin.php for the read-only alternative).
+$facilityAdmins = ['facility_admin', 'clinic_admin', 'hospital_admin', 'facility_ceo', 'branch_admin', 'department_manager', 'multi_facility_admin'];
 
 $clinical = [...$doctors, ...$nurses, ...$trainees, ...$supervisors];
 

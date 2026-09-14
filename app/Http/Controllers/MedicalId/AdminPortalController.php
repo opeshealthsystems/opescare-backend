@@ -18,13 +18,28 @@ class AdminPortalController extends Controller
     public function index(Request $request)
     {
         $facilityId = $this->facilityId();
+        $isPlatform = \App\Http\Middleware\RequirePlatformAdmin::isPlatformTier($request->user());
+
+        // Active QR tokens. health_id_qr_tokens carries no facility_id, so the
+        // scope goes through the patient: a facility-tier viewer counts the
+        // tokens of THEIR facility's patients; a platform viewer counts all.
+        // A facility-tier account with no facility context gets null and the
+        // view hides the tile — a platform-wide figure was the one number on
+        // this page that leaked across facilities (audit finding (a)).
+        $activeTokens = match (true) {
+            $isPlatform            => HealthIdQrToken::where('status', 'active')->count(),
+            $facilityId !== null   => HealthIdQrToken::where('status', 'active')
+                                          ->whereIn('patient_id', Patient::query()->select('id')->where('facility_id', $facilityId))
+                                          ->count(),
+            default                => null,
+        };
 
         $stats = [
             'total_ids'         => Patient::whereNotNull('health_id')
                                           ->when($facilityId, fn ($q) => $q->where('facility_id', $facilityId))
                                           ->where('is_demo', false)
                                           ->count(),
-            'active_tokens'     => HealthIdQrToken::where('status', 'active')->count(),
+            'active_tokens'     => $activeTokens,
             'total_access_logs' => MedicalIdAccessEvent::when($facilityId, fn ($q) => $q->where('facility_id', $facilityId))->count(),
             'denied_access'     => MedicalIdAccessEvent::when($facilityId, fn ($q) => $q->where('facility_id', $facilityId))
                                                        ->where('result', 'denied')

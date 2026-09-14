@@ -108,6 +108,18 @@ class FinderDemoSeeder extends Seeder
                     ['user_id' => $user->id, 'facility_id' => $facilityId, 'role_id' => $role->id],
                     ['is_active' => true, 'expires_at' => null, 'assigned_at' => now()]
                 );
+
+                // The key above includes facility_id, so a re-run that resolves
+                // a DIFFERENT hospital (one was created on the first run, a
+                // real "Hôpital Central de Yaoundé" imported later) leaves the
+                // old posting active and the demo account multi-facility —
+                // which is why demo.facility.admin@ met /select-facility on
+                // the team page. A demo account holds one posting: end the rest.
+                FacilityRoleAssignment::query()
+                    ->where('user_id', $user->id)
+                    ->where('facility_id', '!=', $facilityId)
+                    ->where('is_active', true)
+                    ->update(['is_active' => false]);
             }
 
             $this->command?->info("  {$email}  ({$roleName})" . ($facilityId ? "  → facility scoped" : ''));
@@ -126,6 +138,29 @@ class FinderDemoSeeder extends Seeder
         // Seed a few realistic notifications for the demo accounts so the bell
         // and notification centre show real content the moment you log in.
         $this->call(DemoNotificationsSeeder::class);
+
+        // One tenant + one linked listing + operator logins for EVERY facility
+        // type in the directory (clinic, health centre, lab, dental, imaging,
+        // eye clinic, diagnostic centre, maternity) — see its class doc.
+        // The developer portal keys on developer_accounts by email; without this
+        // row the demo developer lands on the onboarding form every time (prod
+        // had no row — the seeder that made one lives in the platform-only
+        // DemoDatabaseSeeder). Same fields onboardStore() writes.
+        \App\Models\DeveloperAccount::updateOrCreate(
+            ['email' => 'demo.developer@opescare.test'],
+            [
+                'display_name'          => 'Demo — Developer',
+                'company_name'          => 'Demo Integrations',
+                'status'                => 'active',
+                'api_terms_accepted'    => true,
+                'api_terms_accepted_at' => now(),
+                'api_terms_version'     => '1.0',
+                'sandbox_only'          => true,
+                'email_verified_at'     => now(),
+            ]
+        );
+
+        $this->call(DemoFacilityTypesSeeder::class);
     }
 
     private function seedBlood(string $facilityId): void

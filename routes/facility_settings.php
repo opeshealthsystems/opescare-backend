@@ -35,7 +35,10 @@ use Illuminate\Support\Facades\Route;
 | it. No route here creates or links a listing — that stays an admin
 | decision (admin.care-map.review.listings.link).
 */
-Route::middleware(['web', 'auth', 'mfa.verified', 'capability:service_catalogue', 'portal.access'])->group(function () {
+// facility.context: the same rule as routes/facility_admin.php and
+// /facility/team — a user posted at more than one distinct facility chooses
+// one; nobody is pinned to primary_facility_id here while the team page asks.
+Route::middleware(['web', 'auth', 'mfa.verified', 'capability:service_catalogue', 'portal.access', 'facility.context'])->group(function () {
     Route::get('/facility/settings', [FacilitySettingsController::class, 'index'])
         ->name('portals.facility.settings.index');
     Route::post('/facility/settings/identity', [FacilitySettingsController::class, 'updateIdentity'])

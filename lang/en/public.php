@@ -676,6 +676,19 @@ return [
         'org_insurance'       => 'DemoCare Insurance',
         'org_public_health'   => 'Demo Public Health Unit',
         'org_platform'        => 'OpesCare Platform',
+
+        // Login page — "Facility types" tab: one admin/manager login per type
+        'tab_facility_types'  => 'Facility types',
+        'type_hospital'       => 'Hospital',
+        'type_clinic'         => 'Clinic',
+        'type_health_center'  => 'Health center',
+        'type_laboratory'     => 'Laboratory',
+        'type_pharmacy'       => 'Pharmacy',
+        'type_dental'         => 'Dental practice',
+        'type_imaging_center' => 'Imaging center',
+        'type_eye_clinic'     => 'Eye clinic',
+        'type_diagnostic_center' => 'Diagnostic center',
+        'type_maternity'      => 'Maternity',
     ],
 
     /* ── Staff Portal ───────────────────────────────── */

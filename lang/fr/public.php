@@ -674,6 +674,19 @@ return [
         'org_insurance'       => 'Assurance DemoCare',
         'org_public_health'   => 'Unité de Santé Publique Démo',
         'org_platform'        => 'Plateforme OpesCare',
+
+        // Page de connexion — onglet « Types d'établissement »
+        'tab_facility_types'  => "Types d'établissement",
+        'type_hospital'       => 'Hôpital',
+        'type_clinic'         => 'Clinique',
+        'type_health_center'  => 'Centre de santé',
+        'type_laboratory'     => 'Laboratoire',
+        'type_pharmacy'       => 'Pharmacie',
+        'type_dental'         => 'Cabinet dentaire',
+        'type_imaging_center' => "Centre d'imagerie",
+        'type_eye_clinic'     => 'Clinique ophtalmologique',
+        'type_diagnostic_center' => 'Centre de diagnostic',
+        'type_maternity'      => 'Maternité',
     ],
 
     /* ── Staff Portal ───────────────────────────────── */

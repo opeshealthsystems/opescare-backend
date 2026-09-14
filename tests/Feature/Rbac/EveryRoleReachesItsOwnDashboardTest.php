@@ -123,7 +123,10 @@ class EveryRoleReachesItsOwnDashboardTest extends TestCase
 
             $this->assertStringNotContainsString("route('portals.admin')", $blade, $partial);
             $this->assertStringContainsString("route('portals.developer.dashboard')", $blade, $partial);
-            $this->assertStringContainsString("route('portals.developer.webhook_deliveries')", $blade, $partial);
+            // The per-app route needs a {clientId}; a bare route() call on it threw on
+            // every page. Either the overview (portals.developer.webhooks) or a
+            // parameterised per-app link is a real Webhooks link.
+            $this->assertMatchesRegularExpression("/route\('portals\.developer\.webhook(s|_deliveries', )/", $blade, $partial);
         }
     }
 }

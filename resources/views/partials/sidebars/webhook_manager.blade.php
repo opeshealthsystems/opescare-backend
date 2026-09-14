@@ -16,8 +16,13 @@
 
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_developer_accounts', [], $l) ?: 'Developer' }}</div>
-    <a href="{{ route('portals.developer.webhook_deliveries') }}" class="sidebar-link {{ request()->routeIs('portals.developer.webhook_deliveries*') ? 'active' : '' }}">
-        <i data-lucide="webhook"></i><span>{{ __('public.portal.nav_webhooks', [], $l) ?: 'Webhooks' }}</span>
+    {{-- portals.developer.webhook_deliveries needs a {clientId}; linking it bare threw a
+         UrlGenerationException on every page (docs/DEVELOPER_DASHBOARD_AUDIT.md D-1). --}}
+    <a href="{{ route('portals.developer.webhooks') }}" class="sidebar-link {{ request()->routeIs('portals.developer.webhook*') ? 'active' : '' }}">
+        <i data-lucide="webhook"></i><span>{{ __('developer_ext.nav_webhooks', [], $l) }}</span>
+    </a>
+    <a href="{{ route('portals.developer.activity') }}" class="sidebar-link {{ request()->routeIs('portals.developer.activity') ? 'active' : '' }}">
+        <i data-lucide="activity"></i><span>{{ __('developer_ext.nav_activity', [], $l) }}</span>
     </a>
     <a href="{{ route('portals.developer.apps') }}" class="sidebar-link {{ request()->routeIs('portals.developer.apps*') ? 'active' : '' }}">
         <i data-lucide="terminal"></i><span>{{ __('public.portal.nav_apps', [], $l) ?: 'My Apps' }}</span>

@@ -16,6 +16,35 @@ return [
 
     'nav_overview'  => 'Facility overview',
     'nav_members'   => 'Team member',
+    'nav_invoices'    => 'Invoices',
+    'nav_departments' => 'Departments',
+
+    // ── Invoices (read only) ──────────────────────────────────────────────
+    'action_open_invoices'  => 'See the invoices',
+    'invoices_title'        => 'Invoices',
+    'invoices_subtitle'     => 'Every invoice raised at this facility, newest first. This page is read-only: raising, paying, voiding and refunding stay with the billing desk.',
+    'invoices_empty'        => 'No invoice has been raised at this facility yet.',
+    'col_invoice_number'    => 'Number',
+    'col_invoice_patient'   => 'Patient',
+    'col_invoice_status'    => 'Status',
+    'col_invoice_total'     => 'Patient share',
+    'col_invoice_paid'      => 'Paid',
+    'col_invoice_balance'   => 'Balance',
+    'col_invoice_date'      => 'Raised',
+    'invoice_patient_unknown' => 'Patient not on record',
+
+    // ── Departments (read only) ───────────────────────────────────────────
+    'action_open_departments' => 'See the departments',
+    'departments_title'       => 'Departments',
+    'departments_subtitle'    => 'This facility\'s active staff grouped by the department written on their staff record.',
+    'departments_free_text'   => 'Departments are free text today: each name is grouped exactly as it was typed on the staff record, so two spellings are two rows. There is no department register yet.',
+    'departments_empty'       => 'No active staff record at this facility carries a department yet.',
+    'department_unassigned'   => 'No department recorded',
+    'department_members'      => ':count staff',
+    'col_department'          => 'Department',
+    'col_department_count'    => 'Staff',
+    'col_department_roles'    => 'Roles',
+    'col_department_members'  => 'Members',
 
     // ── Overview ──────────────────────────────────────────────────────────
     'overview_title'    => 'Facility overview',

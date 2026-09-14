@@ -19,7 +19,9 @@
     <a href="{{ route('portals.developer.apps') }}" class="sidebar-link {{ request()->routeIs('portals.developer.apps*') ? 'active' : '' }}">
         <i data-lucide="terminal"></i><span>{{ __('public.portal.nav_apps', [], $l) ?: 'My Apps' }}</span>
     </a>
-    <a href="{{ route('portals.developer.webhook_deliveries') }}" class="sidebar-link {{ request()->routeIs('portals.developer.webhook_deliveries*') ? 'active' : '' }}">
+    {{-- portals.developer.webhook_deliveries needs a {clientId}; linking it bare threw a
+         UrlGenerationException on every page (docs/DEVELOPER_DASHBOARD_AUDIT.md D-1). --}}
+    <a href="{{ route('portals.developer.webhooks') }}" class="sidebar-link {{ request()->routeIs('portals.developer.webhook*') ? 'active' : '' }}">
         <i data-lucide="webhook"></i><span>{{ __('public.portal.nav_webhooks', [], $l) ?: 'Webhooks' }}</span>
     </a>
     <a href="{{ route('portals.developer.production_requests') }}" class="sidebar-link {{ request()->routeIs('portals.developer.production_requests*') ? 'active' : '' }}">

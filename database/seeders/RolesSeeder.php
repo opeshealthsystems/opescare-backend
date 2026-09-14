@@ -123,6 +123,13 @@ class RolesSeeder extends Seeder
         ['hospital_admin',       'facility_administration', 'facility_admin',       'Hospital Admin'],
         ['facility_ceo',         'facility_administration', 'facility_executive',   'Hospital Director / Facility Executive'],
         ['branch_admin',         'facility_administration', 'multi_facility_admin', 'Branch / Multi-Facility Admin'],
+        // Until 2026-09-14 these two were dashboard_profiles rows (and, for
+        // department_manager, EnsurePortalAccess bucket entries) that no role
+        // pointed at — orphans nobody could hold. Seeded so the profiles are
+        // real: a department manager renders the facility-admin sidebar (there
+        // is no department-scoped desk yet), a multi-facility admin its own.
+        ['department_manager',   'facility_administration', 'facility_admin',       'Department Manager'],
+        ['multi_facility_admin', 'facility_administration', 'multi_facility_admin', 'Multi-Facility Admin'],
         ['finance',              'billing_finance',         'receptionist',      'Facility Finance Role'],
 
         // Health Organization / NGO

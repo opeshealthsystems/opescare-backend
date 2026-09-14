@@ -54,6 +54,9 @@ class EnsurePortalAccess
         // follows the link gets a 403 that names the reason, not a redirect.
         'facility/team' => [
             'facility_admin', 'clinic_admin', 'hospital_admin', 'facility_ceo', 'branch_admin',
+            // Seeded 2026-09-14 (RolesSeeder); they render the admin sidebars,
+            // whose Team / overview links land here.
+            'department_manager', 'multi_facility_admin',
             'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection',
             'pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'medicine_stock', 'dispensing_officer',
         ],
@@ -77,7 +80,7 @@ class EnsurePortalAccess
         // 403 that names the reason.
         'facility/catalogue' => [
             'facility_admin', 'clinic_admin', 'hospital_admin', 'facility_ceo', 'branch_admin',
-            'department_manager',
+            'department_manager', 'multi_facility_admin',
             'doctor', 'multi_doctor', 'specialist', 'consultant', 'resident', 'visiting_doctor',
             'nurse', 'triage_nurse', 'ward_nurse', 'midwife', 'nurse_supervisor',
             'student_doctor', 'student_nurse', 'intern', 'medical_supervisor',
@@ -96,7 +99,7 @@ class EnsurePortalAccess
         // a 403 that names the reason — never a redirect elsewhere.
         'facility/queue' => [
             'facility_admin', 'clinic_admin', 'hospital_admin', 'facility_ceo', 'branch_admin',
-            'department_manager',
+            'department_manager', 'multi_facility_admin',
             'doctor', 'multi_doctor', 'specialist', 'consultant', 'resident', 'visiting_doctor',
             'nurse', 'triage_nurse', 'ward_nurse', 'midwife', 'nurse_supervisor',
             'student_doctor', 'student_nurse', 'intern', 'medical_supervisor',
@@ -120,7 +123,7 @@ class EnsurePortalAccess
         // and a refusal is a 403 that names the reason — never a redirect.
         'facility/settings' => [
             'facility_admin', 'clinic_admin', 'hospital_admin', 'facility_ceo', 'branch_admin',
-            'department_manager',
+            'department_manager', 'multi_facility_admin',
             'doctor', 'multi_doctor', 'specialist', 'consultant', 'resident', 'visiting_doctor',
             'nurse', 'triage_nurse', 'ward_nurse', 'midwife', 'nurse_supervisor',
             'student_doctor', 'student_nurse', 'intern', 'medical_supervisor',
@@ -161,7 +164,7 @@ class EnsurePortalAccess
         'admin' => [
             // Facility administration
             'facility_admin', 'clinic_admin', 'hospital_admin', 'facility_ceo',
-            'department_manager', 'branch_admin', 'finance',
+            'department_manager', 'branch_admin', 'multi_facility_admin', 'finance',
             // Platform administration
             'platform_admin', 'super_admin', 'product_admin', 'system_admin',
             'legal_admin', 'country_admin', 'regional_admin',

@@ -17,6 +17,35 @@ return [
 
     'nav_overview'  => "Vue d'ensemble",
     'nav_members'   => "Membre de l'équipe",
+    'nav_invoices'    => 'Factures',
+    'nav_departments' => 'Services',
+
+    // ── Factures (lecture seule) ──────────────────────────────────────────
+    'action_open_invoices'  => 'Voir les factures',
+    'invoices_title'        => 'Factures',
+    'invoices_subtitle'     => "Toutes les factures émises dans cet établissement, les plus récentes en premier. Cette page est en lecture seule : émettre, encaisser, annuler et rembourser restent au guichet de facturation.",
+    'invoices_empty'        => "Aucune facture n'a encore été émise dans cet établissement.",
+    'col_invoice_number'    => 'Numéro',
+    'col_invoice_patient'   => 'Patient',
+    'col_invoice_status'    => 'Statut',
+    'col_invoice_total'     => 'Part patient',
+    'col_invoice_paid'      => 'Payé',
+    'col_invoice_balance'   => 'Solde',
+    'col_invoice_date'      => 'Émise le',
+    'invoice_patient_unknown' => 'Patient introuvable',
+
+    // ── Services (lecture seule) ──────────────────────────────────────────
+    'action_open_departments' => 'Voir les services',
+    'departments_title'       => 'Services',
+    'departments_subtitle'    => "Le personnel actif de cet établissement, regroupé par le service inscrit sur sa fiche.",
+    'departments_free_text'   => "Les services sont du texte libre aujourd'hui : chaque nom est regroupé exactement tel qu'il a été saisi sur la fiche du personnel, deux orthographes font donc deux lignes. Il n'existe pas encore de registre des services.",
+    'departments_empty'       => "Aucune fiche de personnel active de cet établissement ne porte encore de service.",
+    'department_unassigned'   => 'Aucun service inscrit',
+    'department_members'      => ':count membres',
+    'col_department'          => 'Service',
+    'col_department_count'    => 'Effectif',
+    'col_department_roles'    => 'Rôles',
+    'col_department_members'  => 'Membres',
 
     // ── Vue d'ensemble ────────────────────────────────────────────────────
     'overview_title'    => "Vue d'ensemble de l'établissement",

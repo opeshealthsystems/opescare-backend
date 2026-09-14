@@ -58,14 +58,18 @@
             <div class="kpi-sub">{{ __('public.admin_governance.kpi_registered_patients', [], app()->getLocale()) ?: 'Registered patients' }}</div>
         </div>
     </div>
-    <div class="kpi-card">
+    {{-- null = a facility-tier viewer with no facility context: no honest
+         number to show, so no tile (AdminPortalController@index). --}}
+    @if(($stats['active_tokens'] ?? null) !== null)
+    <div class="kpi-card" data-kpi="active_tokens">
         <div class="kpi-icon teal"><i data-lucide="qr-code"></i></div>
         <div class="kpi-body">
             <div class="kpi-label">{{ __('public.admin_governance.kpi_active_tokens', [], app()->getLocale()) ?: 'Active Tokens' }}</div>
-            <div class="kpi-value">{{ number_format($stats['active_tokens'] ?? 0) }}</div>
+            <div class="kpi-value" data-kpi-value="active_tokens">{{ number_format($stats['active_tokens']) }}</div>
             <div class="kpi-sub">{{ __('public.admin_governance.kpi_live_tokens', [], app()->getLocale()) ?: 'Live access tokens' }}</div>
         </div>
     </div>
+    @endif
     <div class="kpi-card">
         <div class="kpi-icon blue"><i data-lucide="activity"></i></div>
         <div class="kpi-body">

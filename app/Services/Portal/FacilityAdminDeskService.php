@@ -164,6 +164,111 @@ class FacilityAdminDeskService
         ];
     }
 
+    // ── Read-only invoices (H-4) ─────────────────────────────────────────
+
+    /**
+     * This facility's invoices, newest first, with the patient's name.
+     *
+     * READ ONLY. `capability:billing` gates the writes of /facility/billing in
+     * the same group as its reads, so it was not widened to administrators;
+     * this list is the administrator's view of the till and offers no action.
+     * BillingDeskService exposes no read method, so the read is here, scoped
+     * by `invoices.facility_id` exactly like the overview totals.
+     *
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator<Invoice>
+     */
+    public function invoices(string $facilityId, int $perPage = 25): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        return Invoice::query()
+            ->where('facility_id', $facilityId)
+            ->orderByDesc('created_at')
+            ->paginate($perPage);
+    }
+
+    /** @return array<string, \App\Models\Patient> keyed by patient id, demo scope lifted for ids already ours */
+    public function patientsFor(iterable $invoices): array
+    {
+        $ids = collect($invoices)->pluck('patient_id')->filter()->unique()->values()->all();
+
+        return $ids === []
+            ? []
+            : \App\Models\Patient::withoutGlobalScopes()->whereIn('id', $ids)->get()->keyBy('id')->all();
+    }
+
+    // ── Departments (H-5, read only) ─────────────────────────────────────
+
+    /**
+     * This facility's active staff grouped by `staff_profiles.department`.
+     *
+     * `department` is a FREE-TEXT string today — there is no Department model
+     * and no departments table — so the grouping is by the exact string as
+     * typed (trimmed). Nothing is normalised or merged: "Cardiology" and
+     * "cardiology" are two rows, which is precisely the picture the
+     * administrator needs before a schema decision is taken. A profile with
+     * no department lands in the '' bucket, which the view labels unassigned.
+     *
+     * The role shown is the one held AT THIS FACILITY (active assignment),
+     * falling back to the account role — the same rule as User::roleAtFacility().
+     *
+     * @return array<string, array{count:int, roles:array<string,int>, members:list<array{user_id:string,name:string,role:?string,job_title:?string}>}>
+     */
+    public function departments(string $facilityId): array
+    {
+        $profiles = \App\Models\StaffProfile::query()
+            ->where('facility_id', $facilityId)
+            ->where('status', 'active')
+            ->whereNotNull('user_id')
+            ->get();
+
+        // StaffProfile declares no user() relation; one query, keyed by id.
+        $users = User::query()
+            ->with('role')
+            ->whereIn('id', $profiles->pluck('user_id')->unique()->all())
+            ->get()
+            ->keyBy(fn (User $u) => (string) $u->getKey());
+
+        $rolesHere = FacilityRoleAssignment::query()
+            ->active()
+            ->where('facility_id', $facilityId)
+            ->with('role')
+            ->get()
+            ->keyBy(fn (FacilityRoleAssignment $a) => (string) $a->user_id);
+
+        $groups = [];
+
+        foreach ($profiles as $profile) {
+            $user = $users->get((string) $profile->user_id);
+            if ($user === null) {
+                continue;
+            }
+            $key  = trim((string) ($profile->department ?? ''));
+            $role = $rolesHere->get((string) $profile->user_id)?->role ?? $user->role;
+            $name = $role?->name;
+
+            $groups[$key] ??= ['count' => 0, 'roles' => [], 'members' => []];
+            $groups[$key]['count']++;
+            if ($name !== null) {
+                $groups[$key]['roles'][$name] = ($groups[$key]['roles'][$name] ?? 0) + 1;
+            }
+            $groups[$key]['members'][] = [
+                'user_id'   => (string) $profile->user_id,
+                'name'      => (string) $user->name,
+                'role'      => $name,
+                'job_title' => $profile->job_title,
+            ];
+        }
+
+        // Named departments alphabetically, the unassigned bucket last.
+        $unassigned = $groups[''] ?? null;
+        unset($groups['']);
+        ksort($groups, SORT_NATURAL | SORT_FLAG_CASE);
+        if ($unassigned !== null) {
+            $groups[''] = $unassigned;
+        }
+
+        return $groups;
+    }
+
     private function team(string $facilityId): array
     {
         return [

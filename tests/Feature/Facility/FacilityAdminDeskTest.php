@@ -327,7 +327,15 @@ class FacilityAdminDeskTest extends TestCase
         $role = Role::where('name', 'facility_admin')->firstOrFail();
         $stray = User::factory()->create(['role_id' => $role->id, 'primary_facility_id' => null, 'status' => 'active']);
 
-        // portal.access aborts 403 (no role at any facility) before the controller's own 403.
-        $this->actingAs($stray)->get(route('portals.facility.admin.overview'))->assertStatus(403);
+        // Never a stranger's desk. Since facility.context joined this route's
+        // stack (2026-09-14, the same rule as /facility/team) a user with NO
+        // posting is sent to /select-facility — which shows them an empty
+        // list, the honest answer — before the controller's own 403 could run.
+        // Either refusal is correct; a 200 would be the bug.
+        $response = $this->actingAs($stray)->get(route('portals.facility.admin.overview'));
+        $this->assertContains($response->getStatusCode(), [302, 403]);
+        if ($response->isRedirect()) {
+            $response->assertRedirect(route('select-facility'));
+        }
     }
 }

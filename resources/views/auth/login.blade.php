@@ -145,6 +145,9 @@
                 <button class="demo-tab-btn" type="button" data-demo-tab="facility">
                     <i data-lucide="building-2"></i> Facility
                 </button>
+                <button class="demo-tab-btn" type="button" data-demo-tab="types">
+                    <i data-lucide="hospital"></i> {{ __('public.demo.tab_facility_types') }}
+                </button>
                 <button class="demo-tab-btn" type="button" data-demo-tab="patient">
                     <i data-lucide="user"></i> Patient
                 </button>
@@ -206,6 +209,29 @@
                 </div>
             </div>
 
+            {{-- One admin/manager login per facility type — DemoFacilityTypesSeeder --}}
+            <div class="demo-tab-pane" id="demo-tab-types" role="tabpanel">
+                <div class="demo-btn-grid">
+                    @foreach ([
+                        ['hospital',          'hospital_admin',   'demo.hospital.admin@opescare.test',     'hospital',      'Hôpital Central de Yaoundé'],
+                        ['clinic',            'clinic_admin',     'demo.clinic.admin@opescare.test',       'stethoscope',   'Clinique Demo Bonapriso'],
+                        ['health_center',     'facility_admin',   'demo.healthcenter.admin@opescare.test', 'heart-pulse',   'Centre de Santé Demo Nkolbisson'],
+                        ['laboratory',        'lab_manager',      'demo.lab.manager@opescare.test',        'flask-conical', 'Laboratoire Demo Akwa'],
+                        ['pharmacy',          'pharmacy_manager', 'demo.pharmacy.manager@opescare.test',   'pill',          'Pharmacy ESSEC'],
+                        ['dental',            'facility_admin',   'demo.dental.admin@opescare.test',       'smile',         'Cabinet Dentaire Demo Bastos'],
+                        ['imaging_center',    'facility_admin',   'demo.imaging.admin@opescare.test',      'scan',          "Centre d'Imagerie Demo Bonanjo"],
+                        ['eye_clinic',        'clinic_admin',     'demo.eye.admin@opescare.test',          'eye',           'Clinique Ophtalmologique Demo'],
+                        ['diagnostic_center', 'facility_admin',   'demo.diagnostic.admin@opescare.test',   'activity',      'Centre de Diagnostic Demo'],
+                        ['maternity',         'facility_admin',   'demo.maternity.admin@opescare.test',    'baby',          'Maternité Demo Essos'],
+                    ] as [$type, $role, $email, $icon, $tenant])
+                    <button type="button" class="demo-login-btn demo-btn-facility" data-demo-role="{{ $role }}" data-demo-email="{{ $email }}">
+                        <i data-lucide="{{ $icon }}"></i>
+                        <span>{{ $tenant }}</span>
+                        <small>{{ __('public.demo.type_' . $type) }}</small>
+                    </button>
+                    @endforeach
+                </div>
+            </div>
 
             <div class="demo-tab-pane" id="demo-tab-patient" role="tabpanel">
                 <div class="demo-btn-grid">

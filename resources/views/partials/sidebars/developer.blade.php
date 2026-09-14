@@ -16,8 +16,16 @@
     <a href="{{ route('portals.developer.apps') }}" class="sidebar-link {{ request()->routeIs('portals.developer.apps*') ? 'active' : '' }}">
         <i data-lucide="app-window"></i><span>{{ __('public.portal.nav_apps', [], $l) ?: 'My Apps' }}</span>
     </a>
-    <a href="{{ route('portals.developer.webhook_deliveries') }}" class="sidebar-link {{ request()->routeIs('portals.developer.webhook_deliveries*') ? 'active' : '' }}">
-        <i data-lucide="webhook"></i><span>{{ __('public.portal.nav_webhooks', [], $l) ?: 'Webhooks' }}</span>
+    {{-- portals.developer.webhook_deliveries needs a {clientId}; linking it bare threw a
+         UrlGenerationException on every developer page (docs/DEVELOPER_DASHBOARD_AUDIT.md D-1). --}}
+    <a href="{{ route('portals.developer.webhooks') }}" class="sidebar-link {{ request()->routeIs('portals.developer.webhook*') ? 'active' : '' }}">
+        <i data-lucide="webhook"></i><span>{{ __('developer_ext.nav_webhooks', [], $l) }}</span>
+    </a>
+    <a href="{{ route('portals.developer.activity') }}" class="sidebar-link {{ request()->routeIs('portals.developer.activity') ? 'active' : '' }}">
+        <i data-lucide="activity"></i><span>{{ __('developer_ext.nav_activity', [], $l) }}</span>
+    </a>
+    <a href="{{ route('portals.developer.quickstart') }}" class="sidebar-link {{ request()->routeIs('portals.developer.quickstart') ? 'active' : '' }}">
+        <i data-lucide="terminal"></i><span>{{ __('developer_ext.nav_quickstart', [], $l) }}</span>
     </a>
     <a href="{{ route('portals.developer.analytics') }}" class="sidebar-link {{ request()->routeIs('portals.developer.analytics*') ? 'active' : '' }}">
         <i data-lucide="bar-chart-3"></i><span>{{ __('public.portal.nav_analytics', [], $l) ?: 'Analytics' }}</span>

@@ -60,6 +60,35 @@ class FacilityAdminDeskController extends Controller
         ]);
     }
 
+    // ── Read-only invoices (H-4) ─────────────────────────────────────────
+
+    /**
+     * The administrator's view of the till: this facility's invoices, no
+     * action. See routes/facility_admin.php for why `capability:billing` was
+     * not widened instead.
+     */
+    public function invoices(): View
+    {
+        $facilityId = $this->facilityId();
+        $invoices   = $this->desk->invoices($facilityId);
+
+        return view('portals.facility.admin.invoices', [
+            'invoices' => $invoices,
+            'patients' => $this->desk->patientsFor($invoices->items()),
+        ]);
+    }
+
+    // ── Departments (H-5, read only) ─────────────────────────────────────
+
+    public function departments(): View
+    {
+        $facilityId = $this->facilityId();
+
+        return view('portals.facility.admin.departments', [
+            'departments' => $this->desk->departments($facilityId),
+        ]);
+    }
+
     // ── Member page ──────────────────────────────────────────────────────
 
     public function member(string $userId): View

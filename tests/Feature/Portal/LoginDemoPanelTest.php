@@ -34,6 +34,16 @@ class LoginDemoPanelTest extends TestCase
         'demo.grandmother@opescare.test',
         'demo.admin@opescare.test',
         'demo.developer@opescare.test',
+        // "Facility types" tab — one admin/manager per type (DemoFacilityTypesSeeder).
+        'demo.hospital.admin@opescare.test',
+        'demo.clinic.admin@opescare.test',
+        'demo.healthcenter.admin@opescare.test',
+        'demo.lab.manager@opescare.test',
+        'demo.dental.admin@opescare.test',
+        'demo.imaging.admin@opescare.test',
+        'demo.eye.admin@opescare.test',
+        'demo.diagnostic.admin@opescare.test',
+        'demo.maternity.admin@opescare.test',
     ];
 
     protected function setUp(): void
