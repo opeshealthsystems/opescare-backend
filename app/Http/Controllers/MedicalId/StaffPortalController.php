@@ -4,6 +4,7 @@ namespace App\Http\Controllers\MedicalId;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use App\Models\AppointmentWaitlist;
 use App\Models\Facility;
 use App\Models\Invoice;
 use App\Models\Patient;
@@ -11,6 +12,7 @@ use App\Models\QueueTicket;
 use App\Models\ReferralCase;
 use App\Modules\Appointments\Services\AppointmentService;
 use App\Modules\Search\Services\GlobalSearchService;
+use App\Services\Appointments\AppointmentWaitlistService;
 use App\Services\Portal\PortalContextService;
 use App\Services\Queue\PatientQueueService;
 use Illuminate\Http\Request;
@@ -118,7 +120,42 @@ class StaffPortalController extends Controller
         // patient enumeration, and it was not even scoped to this facility.
         $patients = collect();
 
-        return view('portals.staff.appointments_create', compact('patients'));
+        // Booking from the waitlist: the entry pre-fills the patient and type.
+        // Another facility's entry does not exist here (404, never 403).
+        $waitlistEntry = null;
+        if ($request->filled('waitlist')) {
+            $waitlistEntry = $this->facilityWaitlistQuery()
+                ->with('patient:id,health_id')
+                ->findOrFail((string) $request->query('waitlist'));
+        }
+
+        return view('portals.staff.appointments_create', compact('patients', 'waitlistEntry'));
+    }
+
+    /** The waitlist of this session's facility — never any other. */
+    private function facilityWaitlistQuery()
+    {
+        $facilityId = $this->ctx->facilityId();
+
+        return AppointmentWaitlist::query()
+            ->where('facility_id', $facilityId ?: '00000000-0000-0000-0000-000000000000');
+    }
+
+    /**
+     * Who is waiting for a slot at this facility: urgent first, then the
+     * order they joined — decided in SQL so the desk and the notifier agree.
+     */
+    public function appointmentsWaitlist(Request $request)
+    {
+        $entries = $this->facilityWaitlistQuery()
+            ->whereIn('status', ['waiting', 'notified'])
+            ->with('patient:id,health_id,first_name,last_name')
+            ->orderByRaw("CASE urgency WHEN 'urgent' THEN 0 ELSE 1 END")
+            ->orderBy('created_at')
+            ->limit(200)
+            ->get();
+
+        return view('portals.staff.appointments_waitlist', compact('entries'));
     }
 
     /**
@@ -142,13 +179,14 @@ class StaffPortalController extends Controller
         return Patient::where('health_id', $healthId)->value('id');
     }
 
-    public function appointmentsStore(Request $request, AppointmentService $svc)
+    public function appointmentsStore(Request $request, AppointmentService $svc, AppointmentWaitlistService $waitlist)
     {
         $request->validate([
             'patient_id'       => 'required|string',
             'appointment_type' => 'required|string',
             'scheduled_at'     => 'required|date',
             'reason'           => 'nullable|string|max:500',
+            'waitlist_id'      => 'nullable|uuid',
         ]);
 
         /*
@@ -189,6 +227,19 @@ class StaffPortalController extends Controller
                 'telemedicine_deferred' => true,
             ]);
 
+            // Booked off the waitlist: close the entry. Only an entry of THIS
+            // facility, for THIS patient — a foreign or mismatched id is ignored
+            // rather than trusted, and the booking itself stands either way.
+            if ($request->filled('waitlist_id')) {
+                $entry = $this->facilityWaitlistQuery()
+                    ->where('patient_id', $patientId)
+                    ->whereIn('status', ['waiting', 'notified'])
+                    ->find((string) $request->waitlist_id);
+                if ($entry) {
+                    rescue(fn () => $waitlist->bookFromWaitlist($entry->id, $appointment->id), null, false);
+                }
+            }
+
             return redirect()->route('portals.staff.appointments')
                 ->with('success', __('public.staff_portal.appointment_booked', [], app()->getLocale()) ?: 'Appointment booked successfully.');
         } catch (Throwable $e) {
@@ -216,7 +267,7 @@ class StaffPortalController extends Controller
             ->with('success', __('public.staff_portal.appointment_confirmed', [], app()->getLocale()) ?: 'Appointment confirmed.');
     }
 
-    public function appointmentsCancel(Request $request, string $id, AppointmentService $svc)
+    public function appointmentsCancel(Request $request, string $id, AppointmentService $svc, AppointmentWaitlistService $waitlist)
     {
         $request->validate(['reason' => 'required|string|min:5|max:500']);
 
@@ -224,7 +275,7 @@ class StaffPortalController extends Controller
             // Same scoping as confirm: cancelling another facility's
             // appointment silently cancels a real patient's real slot.
             $appointment = $this->ctx->scopeToFacility(Appointment::query())->findOrFail($id);
-            $svc->cancel($appointment, $request->reason, $this->ctx->actorId());
+            $cancelled   = $svc->cancel($appointment, $request->reason, $this->ctx->actorId());
 
             $this->ctx->auditPatientAccess(
                 actionType:   'staff_appointment_cancelled',
@@ -232,6 +283,10 @@ class StaffPortalController extends Controller
                 resourceId:   $appointment->id,
                 patientId:    $appointment->patient_id,
             );
+
+            // The slot is free: tell the next patient on the waitlist.
+            // Best-effort — the cancel is already committed.
+            rescue(fn () => $waitlist->announceFreedSlot($cancelled), null, false);
 
             return redirect()->route('portals.staff.appointments')
                 ->with('success', __('public.staff_portal.appointment_cancelled', [], app()->getLocale()) ?: 'Appointment cancelled.');

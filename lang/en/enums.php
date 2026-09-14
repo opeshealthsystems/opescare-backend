@@ -92,6 +92,8 @@ return [
         'revoked'                   => 'Revoked',
         'published'                 => 'Published',
         'waiting'                   => 'Waiting',
+        'notified'                  => 'Notified',
+        'booked'                    => 'Booked',
         'called'                   => 'Called',
         'in_service'                => 'In Service',
         'ready'                     => 'Ready',

@@ -28,10 +28,16 @@
             <h1>{{ __('public.portal.nav_appointments', [], $l) ?: 'My Appointments' }}</h1>
             <p class="pf-sub">{{ __('public.portal.appointments_subtitle', [], $l) ?: 'View your upcoming and past appointments.' }}</p>
         </div>
-        <a href="{{ route('portals.patient.appointments.book') }}" class="f-btn f-btn--primary">
-            @include('partials.finder.icon', ['name' => 'calendar-plus', 'size' => 18])
-            {{ __('public.appt_book_btn') }}
-        </a>
+        <div class="pf-actions">
+            <a href="{{ route('portals.patient.waitlist') }}" class="f-btn">
+                @include('partials.finder.icon', ['name' => 'list-ordered', 'size' => 18])
+                {{ __('waitlist.btn_join') }}
+            </a>
+            <a href="{{ route('portals.patient.appointments.book') }}" class="f-btn f-btn--primary">
+                @include('partials.finder.icon', ['name' => 'calendar-plus', 'size' => 18])
+                {{ __('public.appt_book_btn') }}
+            </a>
+        </div>
     </div>
 
     @if($apptCount === 0)
@@ -45,6 +51,10 @@
             <a href="{{ route('portals.patient.appointments.book') }}" class="f-btn f-btn--primary" style="min-height:48px;">
                 @include('partials.finder.icon', ['name' => 'calendar-plus', 'size' => 18])
                 {{ __('public.appt_book_btn') }}
+            </a>
+            <a href="{{ route('portals.patient.waitlist') }}" class="f-btn">
+                @include('partials.finder.icon', ['name' => 'list-ordered', 'size' => 18])
+                {{ __('waitlist.btn_join') }}
             </a>
             <a href="{{ route('public.care-map') }}" class="f-btn">
                 @include('partials.finder.icon', ['name' => 'map-pin', 'size' => 18])

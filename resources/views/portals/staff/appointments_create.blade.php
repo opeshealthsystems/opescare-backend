@@ -36,6 +36,20 @@
         <form method="POST" action="{{ route('portals.staff.appointments.store') }}">
             @csrf
 
+            @if(!empty($waitlistEntry))
+                {{-- Booking off the waitlist: the entry is closed when this saves. --}}
+                <input type="hidden" name="waitlist_id" value="{{ $waitlistEntry->id }}">
+                <div class="alert alert-info mb-4">
+                    <i data-lucide="list-ordered"></i>
+                    <div>
+                        {{ __('waitlist.booking_from', ['health_id' => $waitlistEntry->patient?->health_id ?? '—']) }}
+                        @if($waitlistEntry->notes)
+                            <div class="td-muted">{{ $waitlistEntry->notes }}</div>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
             <div class="form-group mb-4">
                 <label class="form-label">{{ __('public.stf_appt_patient_id') }}</label>
                 @if(count($patients) > 0)
@@ -49,7 +63,7 @@
                     </select>
                 @else
                     <input type="text" name="patient_id" class="form-control" required
-                        placeholder="{{ __('public.stf_appt_enter_patient_id') }}" value="{{ old('patient_id') }}">
+                        placeholder="{{ __('public.stf_appt_enter_patient_id') }}" value="{{ old('patient_id', !empty($waitlistEntry) ? ($waitlistEntry->patient?->health_id ?? $waitlistEntry->patient_id) : request('patient_id')) }}">
                 @endif
                 @error('patient_id')<p class="form-error">{{ $message }}</p>@enderror
             </div>

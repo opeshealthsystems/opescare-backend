@@ -298,6 +298,10 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'platform.adm
         Route::get('/patient/appointments/{id}/reschedule', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'rescheduleAppointmentForm'])->name('portals.patient.appointments.reschedule');
         Route::post('/patient/appointments/{id}/reschedule', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'rescheduleAppointment'])->name('portals.patient.appointments.reschedule.store');
         Route::post('/patient/appointments/{id}/cancel', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'cancelAppointment'])->name('portals.patient.appointments.cancel');
+        // Waitlist: a patient asks to be told when a slot frees up at a facility.
+        Route::get('/patient/waitlist', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'waitlist'])->name('portals.patient.waitlist');
+        Route::post('/patient/waitlist', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'joinWaitlist'])->name('portals.patient.waitlist.join');
+        Route::post('/patient/waitlist/{id}/cancel', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'cancelWaitlist'])->name('portals.patient.waitlist.cancel');
         Route::get('/patient/prescriptions', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'prescriptions'])->name('portals.patient.prescriptions');
         Route::post('/patient/prescriptions/{id}/refill', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'requestRefill'])->name('portals.patient.prescriptions.refill');
         // QR token management
@@ -343,6 +347,8 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'platform.adm
     // hold neither and are refused with 403 before the controller runs.
     Route::middleware('capability:front_desk,schedule')->group(function () {
         Route::get('/facility/appointments/create', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointmentsCreate'])->name('portals.staff.appointments.create');
+        // The facility's waitlist (waiting + notified), urgent first.
+        Route::get('/facility/appointments/waitlist', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointmentsWaitlist'])->name('portals.staff.appointments.waitlist');
         Route::post('/facility/appointments', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointmentsStore'])->name('portals.staff.appointments.store');
         Route::post('/facility/appointments/{id}/confirm', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointmentsConfirm'])->name('portals.staff.appointments.confirm');
         Route::post('/facility/appointments/{id}/cancel', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'appointmentsCancel'])->name('portals.staff.appointments.cancel');

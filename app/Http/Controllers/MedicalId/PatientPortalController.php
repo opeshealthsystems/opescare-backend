@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Middleware\GuardianAccessMiddleware;
 use App\Models\AllergyRecord;
 use App\Models\Appointment;
+use App\Models\AppointmentWaitlist;
 use App\Models\ConsentGrant;
 use App\Models\ConsentRequest;
 use App\Models\Diagnosis;
@@ -14,6 +15,7 @@ use App\Models\MedicalIdAccessEvent;
 use App\Models\OfficialDocument;
 use App\Models\Patient;
 use App\Models\Prescription;
+use App\Services\Appointments\AppointmentWaitlistService;
 use App\Services\Identity\QrTokenService;
 use App\Services\Patient\PatientDocumentService;
 use App\Services\Portal\PortalContextService;
@@ -546,8 +548,113 @@ class PatientPortalController extends Controller
             patientId:    $patient->id,
         );
 
+        // The slot is free: offer it to the next patient on the facility's
+        // waitlist. Best-effort — the cancel above must stand regardless.
+        rescue(fn () => app(AppointmentWaitlistService::class)->announceFreedSlot($appt->fresh()), null, false);
+
         return redirect()->route('portals.patient.appointments')
             ->with('success', __('flash.patient_appointment_cancelled'));
+    }
+
+    // ─── Waitlist ─────────────────────────────────────────────────
+
+    /** GET — the patient's own waitlist entries, newest first. */
+    public function waitlist(Request $request)
+    {
+        $patient = $this->resolveViewingPatient();
+        abort_if(!$patient, 403);
+
+        $entries = AppointmentWaitlist::where('patient_id', $patient->id)
+            ->with('facility:id,name')
+            ->orderByDesc('created_at')
+            ->get();
+
+        $this->ctx->auditPatientAccess(
+            actionType:   'patient_waitlist_view',
+            resourceType: 'AppointmentWaitlist',
+            resourceId:   null,
+            patientId:    $patient->id,
+        );
+
+        $facilities = \App\Models\Facility::orderBy('name')->limit(300)->get(['id', 'name']);
+
+        return view('portals.patient.waitlist', [
+            'patient'         => $patient,
+            'entries'         => $entries,
+            'facilities'      => $facilities,
+            'types'           => $this->appointmentTypes(),
+            'defaultFacility' => $patient->facility_id,
+        ]);
+    }
+
+    /** POST — join a facility's waitlist. */
+    public function joinWaitlist(Request $request, AppointmentWaitlistService $waitlist)
+    {
+        if ($this->isReadOnlyGuardian()) {
+            return $this->refuseReadOnly();
+        }
+        $patient = $this->resolveViewingPatient();
+        abort_if(!$patient, 403);
+
+        $validated = $request->validate([
+            'facility_id'             => 'required|uuid|exists:facilities,id',
+            'appointment_type'        => 'required|string|in:' . implode(',', $this->appointmentTypes()),
+            'preferred_earliest_date' => 'nullable|date|after_or_equal:today',
+            'preferred_latest_date'   => 'nullable|date|after_or_equal:today|after_or_equal:preferred_earliest_date',
+            'urgency'                 => 'required|in:routine,urgent',
+            'notes'                   => 'nullable|string|max:500',
+        ]);
+
+        $entry = $waitlist->addToWaitlist([
+            'patient_id'              => $patient->id,
+            'facility_id'             => $validated['facility_id'],
+            'appointment_type'        => $validated['appointment_type'],
+            'preferred_earliest_date' => $validated['preferred_earliest_date'] ?? null,
+            'preferred_latest_date'   => $validated['preferred_latest_date'] ?? null,
+            'urgency'                 => $validated['urgency'],
+            'notes'                   => $validated['notes'] ?? null,
+        ]);
+
+        $this->ctx->auditPatientAccess(
+            actionType:   'patient_waitlist_joined',
+            resourceType: 'AppointmentWaitlist',
+            resourceId:   $entry->id,
+            patientId:    $patient->id,
+        );
+
+        return redirect()->route('portals.patient.waitlist')
+            ->with('success', __('waitlist.flash_joined'));
+    }
+
+    /** POST — leave the waitlist. Own entry only (404 otherwise); never deleted. */
+    public function cancelWaitlist(Request $request, string $id)
+    {
+        if ($this->isReadOnlyGuardian()) {
+            return $this->refuseReadOnly();
+        }
+        $patient = $this->resolveViewingPatient();
+        abort_if(!$patient, 403);
+
+        $entry = AppointmentWaitlist::where('id', $id)
+            ->where('patient_id', $patient->id)
+            ->firstOrFail();
+
+        if (!in_array($entry->status, ['waiting', 'notified'], true)) {
+            return redirect()->route('portals.patient.waitlist')
+                ->with('error', __('waitlist.flash_not_cancellable'));
+        }
+
+        $entry->update(['status' => 'cancelled']);
+
+        $this->ctx->auditPatientAccess(
+            actionType:   'patient_waitlist_cancelled',
+            resourceType: 'AppointmentWaitlist',
+            resourceId:   $entry->id,
+            patientId:    $patient->id,
+        );
+
+        return redirect()->route('portals.patient.waitlist')
+            ->with('success', __('waitlist.flash_cancelled'));
     }
 
     /** Appointment types a patient may request. */

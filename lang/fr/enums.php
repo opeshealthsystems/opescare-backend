@@ -90,6 +90,8 @@ return [
         'revoked'                   => 'Révoqué',
         'published'                 => 'Publié',
         'waiting'                   => 'En attente',
+        'notified'                  => 'Notifié',
+        'booked'                    => 'Réservé',
         'called'                    => 'Appelé',
         'in_service'                => 'En service',
         'ready'                     => 'Prêt',

@@ -16,6 +16,9 @@
     <a href="{{ route('portals.patient.appointments') }}" class="sidebar-link {{ request()->routeIs('portals.patient.appointments*') ? 'active' : '' }}">
         <i data-lucide="calendar-check-2"></i><span>{{ __('public.portal.nav_appointments', [], $l) ?: 'Appointments' }}</span>
     </a>
+    <a href="{{ route('portals.patient.waitlist') }}" class="sidebar-link {{ request()->routeIs('portals.patient.waitlist*') ? 'active' : '' }}">
+        <i data-lucide="list-ordered"></i><span>{{ __('waitlist.nav', [], $l) }}</span>
+    </a>
     <a href="{{ route('portals.patient.prescriptions') }}" class="sidebar-link {{ request()->routeIs('portals.patient.prescriptions*') ? 'active' : '' }}">
         <i data-lucide="pill"></i><span>{{ __('public.portal.nav_prescriptions', [], $l) ?: 'Prescriptions' }}</span>
     </a>

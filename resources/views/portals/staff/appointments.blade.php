@@ -32,6 +32,10 @@
     <div>
         {{-- Mirrors the gate on portals.staff.appointments.create (routes/web.php). --}}
         @capability('front_desk', 'schedule')
+        <a href="{{ route('portals.staff.appointments.waitlist') }}" class="btn btn-ghost fs-tap">
+            <i data-lucide="list-ordered"></i>
+            {{ __('waitlist.staff_title') }}
+        </a>
         <a href="{{ route('portals.staff.appointments.create') }}" class="btn btn-primary fs-tap">
             <i data-lucide="calendar-plus"></i>
             {{ __('public.staff_portal.btn_book_appointment', [], app()->getLocale()) ?: 'Book Appointment' }}

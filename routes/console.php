@@ -54,6 +54,10 @@ Schedule::command('mpi:detect --since="2 days"')->dailyAt('03:00')->withoutOverl
 // leave a registration unscanned for good.
 Schedule::command('mpi:detect --limit=5000')->weeklyOn(0, '03:30')->withoutOverlapping();
 
+// OpesCare: appointment waitlist entries whose preferred window has passed
+// stop waiting. Nothing is deleted — the row reads `expired`.
+Schedule::command('waitlist:expire')->dailyAt('04:00')->withoutOverlapping();
+
 // OpesCare: mobile-money charges abandoned mid-flight.
 //
 // A charge still self-closes on the next poll or the patient's next attempt;
