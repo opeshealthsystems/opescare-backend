@@ -84,7 +84,7 @@ Last updated: 2026-09-14.
 | D-B6 | Pharmacy stock operations (348 facilities, one screen) | M | open | | |
 | D-B7 | Guard `portals.listing.edit` behind an approved claim | S | fixed-local | | `@if(approvedListingFor)` → "My facility listing", else → "Claim your listing" (`portals.listing.claims`), in pharmacy_manager + lab_manager |
 | D-B8 | Patient chart — `clinical_chart` gates nothing (largest gap) | L | open | | |
-| D-B9 | Blood-request creation on web (13 empty desks) | M | open | | |
+| D-B9 | Blood-request creation on web (13 empty desks) | M | **live** | hotfix | yes — `/facility/blood-requests/new` + POST via the one `BloodRequestService` writer, `blood_inventory` gate, session facility only, 8 tests. **Found:** `Notify::toFacilityStaff` was given `care_facilities.id`, which matches staff on `facilities.id` — zero recipients, no event ever, web or mobile. Fixed to the tenant bridge `care_facilities.facility_id`; the incomplete test is now a real assertion |
 | D-B10 | Billing / cashier desk | L | open | | |
 | D-B11 | Link compliance/security/privacy sidebars to their built desks | S | **live** | `1e16428` | yes — 4 sidebars rewritten (security_officer 5 links, emergency_access_reviewer 3, compliance_audit 4, privacy_officer 5). `data_steward` NOT done: not platform tier, the desks would 403 — needs a decision |
 | D-B12 | Link 12 orphan routes; fix duplicate developer links | S | **live** | `1e16428` | yes — admin nav: 3 security children + directory governance; patient: notifications + Refer & Earn; developer: webhook deliveries; dup links fixed in `c51d586`. Not done: `portals.listing.claims` (pharmacy/lab sidebars — queue agent territory) |

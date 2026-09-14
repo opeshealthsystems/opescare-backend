@@ -274,6 +274,15 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'platform.adm
     // roles that hold no mapped web surface yet. The Health-ID lookup on it is
     // gated in the view (@capability('identify_patient')).
     Route::get('/facility', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'index'])->name('portals.staff');
+    // Global search — facilities, documents, medicines, lab tests, partners and
+    // the caller's own messages. NEVER patients: the patient branch of
+    // GlobalSearchService was deleted (it was a name-prefix LIKE across the
+    // register, one flag away from live), and a query-log test holds that no
+    // search touches `patients`. The screen and its 133-line view existed,
+    // finished, with no route at all; the dashboard audit found it that way.
+    // No capability beyond the portal: nothing it returns is PHI, and the
+    // facility scope comes from the session context like every other desk.
+    Route::get('/facility/search', [\App\Http\Controllers\MedicalId\StaffPortalController::class, 'search'])->name('portals.staff.search');
     // The appointment book: front desk runs it, clinicians see their schedule.
     // `capability:` runs AFTER portal.access + facility.context in this stack,
     // so it judges the role at the facility the session has just resolved.
@@ -870,6 +879,8 @@ Route::middleware(['web', 'auth', 'platform.admin'])->group(function () {
 Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'platform.admin', 'facility.context', 'patient.profile', 'guardian.profile', 'throttle:portal'])->group(function () {
     Route::middleware('capability:blood_inventory')->group(function () {
         Route::get('/facility/blood-requests',                    [\App\Http\Controllers\MedicalId\BloodRequestDeskController::class, 'index'])->name('portals.staff.blood_requests.index');
+        Route::get('/facility/blood-requests/new',                [\App\Http\Controllers\MedicalId\BloodRequestDeskController::class, 'create'])->name('portals.staff.blood_requests.create');
+        Route::post('/facility/blood-requests',                   [\App\Http\Controllers\MedicalId\BloodRequestDeskController::class, 'store'])->name('portals.staff.blood_requests.store');
         Route::get('/facility/blood-requests/{id}',               [\App\Http\Controllers\MedicalId\BloodRequestDeskController::class, 'show'])->whereUuid('id')->name('portals.staff.blood_requests.show');
         Route::post('/facility/blood-requests/{id}/decide',       [\App\Http\Controllers\MedicalId\BloodRequestDeskController::class, 'decide'])->whereUuid('id')->name('portals.staff.blood_requests.decide');
         Route::post('/facility/blood-requests/{id}/ready',        [\App\Http\Controllers\MedicalId\BloodRequestDeskController::class, 'ready'])->whereUuid('id')->name('portals.staff.blood_requests.ready');

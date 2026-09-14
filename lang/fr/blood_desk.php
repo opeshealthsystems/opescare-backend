@@ -111,4 +111,32 @@ return [
     'urgency_urgent'          => 'Urgente',
     'urgency_emergency'       => 'Urgence vitale',
 
+    /*
+    |----------------------------------------------------------------------
+    | Déposer une demande depuis le guichet — /facility/blood-requests/new
+    |----------------------------------------------------------------------
+    */
+
+    'create_btn'                     => 'Nouvelle demande',
+    'create_title'                   => 'Nouvelle demande de sang',
+    'create_subtitle'                => 'Déposez une demande au nom d’un patient auprès de cette banque de sang. Elle suit le même chemin qu’une demande venue de l’application patient et apparaît aussitôt dans la file.',
+    'create_no_hold_notice'          => 'Déposer une demande ne réserve aucune poche. Elle invite la banque de sang à répondre ; le sang ne quitte l’étagère que lorsqu’il est délivré depuis l’écran de stock.',
+    'create_health_id_placeholder'   => 'OC-…',
+    'create_health_id_help'          => 'L’identifiant santé exact du patient, tel qu’imprimé sur sa carte. Ce guichet n’offre aucune recherche par nom.',
+    'create_lbl_listing'             => 'Fiche de la banque de sang',
+    'create_lbl_indication'          => 'Indication clinique',
+    'create_indication_placeholder'  => 'Pourquoi les poches sont nécessaires — ce que la banque de sang doit savoir avant de répondre.',
+    'create_units_help'              => 'Entre 1 et :max poches par demande.',
+    'create_submit'                  => 'Déposer la demande',
+    'create_recorded'                => 'Demande de sang :reference déposée. Elle est dans la file, en attente de la réponse de la banque de sang.',
+    'create_patient_not_found'       => 'Aucun patient ne porte cet identifiant santé. Vérifiez la carte et saisissez-le exactement.',
+    'create_err_blood_not_available' => 'Cette banque de sang ne déclare pas ce groupe et ce composant comme disponibles pour le moment ; aucune demande ne peut être déposée.',
+    'create_err_too_many_open_requests' => 'Ce patient a déjà atteint le nombre maximal de demandes de sang ouvertes.',
+    'create_err_request_already_open'   => 'Ce patient a déjà une demande ouverte pour ce groupe et ce composant auprès de cette banque de sang.',
+
+    'component_whole_blood'          => 'Sang total',
+    'component_red_cells'            => 'Concentré de globules rouges',
+    'component_platelets'            => 'Plaquettes',
+    'component_plasma'               => 'Plasma',
+
 ];

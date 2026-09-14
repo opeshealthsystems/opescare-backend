@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers\MedicalId;
 
+use App\Enums\BloodComponentType;
+use App\Enums\BloodGroup;
 use App\Enums\BloodRequestStatus;
+use App\Enums\BloodRequestUrgency;
 use App\Http\Controllers\Controller;
 use App\Models\BloodRequest;
 use App\Models\CareFacility;
+use App\Models\Patient;
 use App\Modules\CareMap\Services\BloodRequestService;
 use App\Modules\Governance\Services\AccessLogService;
 use App\Services\Portal\PortalContextService;
@@ -201,6 +205,138 @@ class BloodRequestDeskController extends Controller
     }
 
     // ══════════════════════════════════════════════════════════════════
+    // Raising — the browser's only way to file a request
+    // ══════════════════════════════════════════════════════════════════
+
+    /**
+     * GET /facility/blood-requests/new
+     *
+     * Until this screen existed the ONLY writer of `blood_requests` was the
+     * patient app (MobileBloodController::store). A clinician at the bedside
+     * had a desk to answer requests and no way to raise one, so the queue on
+     * every clinical dashboard stayed empty.
+     *
+     * The request is filed against THIS facility's own directory listing —
+     * the same listing the queue reads — so it lands on this desk. The
+     * facility is never a form field.
+     */
+    public function create(): View
+    {
+        $facilityId = $this->context->facilityId();
+        $listings   = $facilityId ? $this->listingsFor($facilityId) : collect();
+
+        return view('portals.staff.blood_requests.create', [
+            'listings'    => $listings,
+            'hasFacility' => $facilityId !== null && $facilityId !== '',
+            'hasListing'  => $listings->isNotEmpty(),
+            'maxUnits'    => BloodRequestService::MAX_UNITS,
+        ]);
+    }
+
+    /**
+     * POST /facility/blood-requests
+     *
+     * Same call, same arguments, same rules as the patient app: the request
+     * goes through BloodRequestService::request() and nothing else. There is
+     * no second write path — the service still checks that the listing reports
+     * the group/component as available, still caps units, still refuses a
+     * duplicate open request, and still raises the `blood_order_received`
+     * notification that points staff at this desk. Nothing here reserves or
+     * moves a unit.
+     *
+     * The patient is named by exact Health ID only (Patient::resolveHealthId,
+     * which also follows active aliases). No name search, no enumeration; an id
+     * that does not resolve is a validation error and creates nothing.
+     *
+     * `facility_id` in the body is ignored on purpose: the facility comes from
+     * the session context, and a `listing_id`, if posted, must belong to it.
+     */
+    public function store(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'health_id'      => ['required', 'string', 'max:64'],
+            'listing_id'     => ['nullable', 'uuid'],
+            'blood_group'    => ['required', 'string', Rule::in(BloodGroup::values())],
+            'component_type' => ['required', 'string', Rule::in(BloodComponentType::values())],
+            'quantity'       => ['required', 'integer', 'min:1', 'max:' . BloodRequestService::MAX_UNITS],
+            'urgency'        => ['required', 'string', Rule::in(BloodRequestUrgency::values())],
+            'indication'     => ['required', 'string', 'max:500'],
+            'contact_phone'  => ['nullable', 'string', 'max:32'],
+            'needed_by'      => ['nullable', 'date', 'after_or_equal:today'],
+        ]);
+
+        $facilityId = $this->context->facilityId();
+
+        if ($facilityId === null || $facilityId === '') {
+            return redirect()
+                ->route('portals.staff.blood_requests.index')
+                ->with('error', __('blood_desk.facility_required'));
+        }
+
+        $listings = $this->listingsFor($facilityId);
+        $listing  = isset($validated['listing_id'])
+            ? $listings->first(fn (CareFacility $l) => (string) $l->id === (string) $validated['listing_id'])
+            : $listings->first();
+
+        if ($listing === null) {
+            // Either this facility has no listing, or the posted one is not
+            // this facility's. Both read the same: nothing to file against.
+            return back()
+                ->withInput()
+                ->withErrors(['listing_id' => __('blood_desk.no_listing_notice')]);
+        }
+
+        $patient = Patient::resolveHealthId($validated['health_id']);
+
+        if ($patient === null) {
+            return back()
+                ->withInput()
+                ->withErrors(['health_id' => __('blood_desk.create_patient_not_found')]);
+        }
+
+        // Logged BEFORE the write, exactly as an answer is: filing a request in
+        // a patient's name is an act on that patient's record.
+        if (! $this->audit((string) $patient->id, $facilityId, 'write', null)) {
+            return back()
+                ->withInput()
+                ->with('error', __('blood_desk.audit_unavailable'));
+        }
+
+        try {
+            $bloodRequest = $this->requests->request(
+                patientId:     (string) $patient->id,
+                facility:      $listing,
+                bloodGroup:    BloodGroup::from($validated['blood_group']),
+                componentType: BloodComponentType::from($validated['component_type']),
+                quantity:      (int) $validated['quantity'],
+                urgency:       BloodRequestUrgency::from($validated['urgency']),
+                contactPhone:  $validated['contact_phone'] ?? null,
+                patientNote:   $validated['indication'],
+                neededBy:      $validated['needed_by'] ?? null,
+            );
+        } catch (RuntimeException $e) {
+            $field = match ($e->getMessage()) {
+                BloodRequestService::ERR_NOT_AVAILABLE => 'blood_group',
+                BloodRequestService::ERR_TOO_MANY_OPEN,
+                BloodRequestService::ERR_DUPLICATE     => 'health_id',
+                default                                => null,
+            };
+
+            if ($field === null) {
+                throw $e;
+            }
+
+            return back()
+                ->withInput()
+                ->withErrors([$field => __('blood_desk.create_err_' . strtolower($e->getMessage()))]);
+        }
+
+        return redirect()
+            ->route('portals.staff.blood_requests.show', $bloodRequest->id)
+            ->with('success', __('blood_desk.create_recorded', ['reference' => $bloodRequest->reference]));
+    }
+
+    // ══════════════════════════════════════════════════════════════════
     // Answering — every path lands on the same transition()
     // ══════════════════════════════════════════════════════════════════
 
@@ -311,6 +447,19 @@ class BloodRequestDeskController extends Controller
             ->pluck('id')
             ->map(static fn ($id) => (string) $id)
             ->all();
+    }
+
+    /**
+     * The same listings as models — what the create form files against.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, CareFacility>
+     */
+    private function listingsFor(string $facilityId): \Illuminate\Database\Eloquent\Collection
+    {
+        return CareFacility::query()
+            ->where('facility_id', $facilityId)
+            ->orderBy('facility_name')
+            ->get();
     }
 
     /**

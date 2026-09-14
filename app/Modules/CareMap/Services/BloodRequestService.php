@@ -147,8 +147,19 @@ class BloodRequestService
         // order, so any failure is swallowed (rescue with $report = false) and the
         // persisted request is returned regardless. roleNames is [] so every
         // active staff member at the facility is pinged.
+        //
+        // THE TENANT ID, NOT THE LISTING ID. This passed `care_facility_id` — a
+        // `care_facilities` row (the 2,728-entry public directory). Notify
+        // resolves staff through `facility_role_assignments.facility_id` and
+        // `users.primary_facility_id`, both keyed on `facilities` (the 482-entry
+        // tenant register). Different UUID spaces, so it matched nobody: no
+        // notification_events row was ever written, from the web desk or the
+        // mobile app, and the deep-link fix made earlier had no one to deliver
+        // to. `care_facilities.facility_id` is the one bridge between the two
+        // registers; a listing with no tenant behind it has no staff to tell,
+        // and an empty id is the honest input for that.
         rescue(fn () => Notify::toFacilityStaff(
-            $request->care_facility_id,
+            (string) $facility->facility_id,
             'blood_order_received',
             'blood',
             [

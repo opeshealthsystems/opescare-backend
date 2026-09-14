@@ -123,4 +123,35 @@ return [
     'urgency_urgent'          => 'Urgent',
     'urgency_emergency'       => 'Emergency',
 
+    /*
+    |----------------------------------------------------------------------
+    | Raising a request from the desk — /facility/blood-requests/new
+    |----------------------------------------------------------------------
+    |
+    | The same wording rules hold: filing a request sets nothing aside.
+    |
+    */
+
+    'create_btn'                     => 'New request',
+    'create_title'                   => 'New blood request',
+    'create_subtitle'                => 'File a request in a patient’s name against this blood bank. It goes through the same path as a request from the patient app and appears in the queue at once.',
+    'create_no_hold_notice'          => 'Filing a request holds no units. It asks the blood bank to answer; blood leaves the shelf only when it is issued on the inventory screen.',
+    'create_health_id_placeholder'   => 'OC-…',
+    'create_health_id_help'          => 'The patient’s exact Health ID as printed on their card. There is no name search on this desk.',
+    'create_lbl_listing'             => 'Blood bank listing',
+    'create_lbl_indication'          => 'Clinical indication',
+    'create_indication_placeholder'  => 'Why the units are needed — what the blood bank should know before it answers.',
+    'create_units_help'              => 'Between 1 and :max units per request.',
+    'create_submit'                  => 'File the request',
+    'create_recorded'                => 'Blood request :reference filed. It is now in the queue awaiting the blood bank’s answer.',
+    'create_patient_not_found'       => 'No patient carries that Health ID. Check the card and enter it exactly.',
+    'create_err_blood_not_available' => 'This blood bank does not currently report that group and component as available, so no request can be filed against it.',
+    'create_err_too_many_open_requests' => 'This patient already has the maximum number of open blood requests.',
+    'create_err_request_already_open'   => 'This patient already has an open request for that group and component at this blood bank.',
+
+    'component_whole_blood'          => 'Whole blood',
+    'component_red_cells'            => 'Red cells',
+    'component_platelets'            => 'Platelets',
+    'component_plasma'               => 'Plasma',
+
 ];

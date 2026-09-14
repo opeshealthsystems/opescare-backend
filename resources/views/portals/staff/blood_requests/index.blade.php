@@ -24,6 +24,10 @@
 <div class="page-head">
     <h2>{{ __('blood_desk.title') }}</h2>
     <div class="page-head__spacer"></div>
+    <a href="{{ route('portals.staff.blood_requests.create') }}" class="btn btn-primary btn-sm fs-tap">
+        <i data-lucide="plus"></i>
+        {{ __('blood_desk.create_btn') }}
+    </a>
     <a href="{{ route('portals.staff.inventory.blood') }}" class="btn btn-ghost btn-sm fs-tap">
         <i data-lucide="droplet"></i>
         {{ __('public.portal.nav_blood_inventory') }}
