@@ -104,8 +104,21 @@ return [
         // Blood bank inventory.
         'blood_inventory' => [...$doctors, ...$nurses, ...$supervisors, ...$frontDesk, ...$lab],
 
-        // Billing, payments, invoices.
+        // Billing, payments, invoices (the /facility/billing desk): raise an
+        // invoice from the facility's own catalogue, take a payment at the
+        // counter, void an invoice, ask for a refund, run a cashier session.
+        //
+        // NOTHING HERE GATES CARE. An unpaid invoice changes no queue, no
+        // triage priority, no dispensing and no result — the desk cannot even
+        // spell those tables (tests/Feature/Billing/BillingIsolationGuardTest).
         'billing' => [...$billing, ...$frontDesk],
+
+        // Sign off a refund. A refund is asked for by whoever took the money
+        // and approved by someone else: the second signature is the control,
+        // so the cashier who requests one must not be able to grant it.
+        // `refund_approver` is the role the map already names for this;
+        // `finance_manager` answers for the till.
+        'refund_approve' => ['refund_approver', 'finance_manager'],
 
         // Facility team management (the /facility/team pages).
         'facility_team' => $facilityAdmins,

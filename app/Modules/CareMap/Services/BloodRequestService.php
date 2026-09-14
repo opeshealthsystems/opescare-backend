@@ -156,10 +156,19 @@ class BloodRequestService
         // notification_events row was ever written, from the web desk or the
         // mobile app, and the deep-link fix made earlier had no one to deliver
         // to. `care_facilities.facility_id` is the one bridge between the two
-        // registers; a listing with no tenant behind it has no staff to tell,
-        // and an empty id is the honest input for that.
-        rescue(fn () => Notify::toFacilityStaff(
-            (string) $facility->facility_id,
+        // registers; a listing with no tenant behind it has no staff to tell.
+        //
+        // NOT '' for a missing tenant. The first version of this fix cast null
+        // to an empty string, and Notify then ran a uuid comparison against
+        // '': Postgres raises 22P02, rescue() swallows the exception — but a
+        // failed statement has already aborted any surrounding transaction, so
+        // every later query in it fails with 25P02. Six mobile blood tests
+        // (which run inside RefreshDatabase's transaction) turned into 500s.
+        // No tenant means nothing to notify, so nothing is queried.
+        $tenantId = (string) $facility->facility_id;
+
+        rescue(fn () => $tenantId === '' ? null : Notify::toFacilityStaff(
+            $tenantId,
             'blood_order_received',
             'blood',
             [

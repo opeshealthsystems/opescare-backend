@@ -24,6 +24,21 @@ class StockMovement extends Model
         'performed_at' => 'datetime',
     ];
 
+    /**
+     * APPEND-ONLY. A movement is a statement that a quantity changed, by whom
+     * and why, at a moment in time; correcting one is done by recording
+     * another movement, never by rewriting or removing the first. Cancelling
+     * the update and delete events makes an edit impossible through Eloquent
+     * — `$movement->update([...])` and `$movement->delete()` return false and
+     * touch nothing — so no controller, job or tinker session can quietly
+     * change the ledger's history.
+     */
+    protected static function booted(): void
+    {
+        static::updating(fn (self $movement) => false);
+        static::deleting(fn (self $movement) => false);
+    }
+
     public function item(): BelongsTo
     {
         return $this->belongsTo(InventoryItem::class, 'inventory_item_id');

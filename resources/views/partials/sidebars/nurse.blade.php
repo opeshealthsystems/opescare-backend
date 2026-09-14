@@ -19,9 +19,17 @@
         <i data-lucide="search"></i><span>{{ __('public.staff_portal.page_heading_search', [], $l) ?: 'Global Search' }}</span>
     </a>
 </div>
-@capability('queue', 'triage', 'front_desk', 'schedule', 'blood_inventory', 'messaging')
+@capability('clinical_chart', 'queue', 'triage', 'front_desk', 'schedule', 'blood_inventory', 'messaging')
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_clinical', [], $l) ?: 'Clinical' }}</div>
+    {{-- The patient chart: the read-only record behind `clinical_chart`,
+         which every clinical role held and which gated no web screen until
+         routes/chart.php. Record-level access is ClinicalRelationshipGate's. --}}
+    @capability('clinical_chart')
+    <a href="{{ route('portals.chart.index') }}" class="sidebar-link {{ request()->routeIs('portals.chart.*') ? 'active' : '' }}">
+        <i data-lucide="folder-heart"></i><span>{{ __('chart.nav', [], $l) }}</span>
+    </a>
+    @endcapability
     {{-- Triage. The first surface over the triage schema; gated by the same
          `triage` capability as its routes (config/staff_capabilities.php). --}}
     @capability('triage')

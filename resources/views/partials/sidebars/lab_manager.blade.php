@@ -2,10 +2,8 @@
 {{-- Rendered for lab_manager and lab_validator. Every capability-mapped link
      self-gates with the same @capability as its route.
 
-     No lab-results or sample-collection link, on purpose: those capabilities
-     have NO web page yet — results live only on the clinician API
-     (routes/mobile_labs.php, routes/mobile_doctor_results.php). Add the link
-     here when the page ships, never before. --}}
+     The laboratory desk (routes/lab.php) is the web page behind `lab_results`
+     and `sample_collection`; validation is taken from the order page. --}}
 <div class="sidebar-role-badge">
     <i data-lucide="flask-conical"></i>
     {{ __('portal.lab_manager_role', [], $l) ?: 'Lab Manager' }}
@@ -26,6 +24,17 @@
 
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_lab', [], $l) ?: 'Laboratory' }}</div>
+    {{-- The bench: worklist, result entry, release, validation. Same gate as routes/lab.php. --}}
+    @capability('lab_results')
+    <a href="{{ route('portals.lab.index') }}" class="sidebar-link {{ request()->routeIs('portals.lab.index', 'portals.lab.show') ? 'active' : '' }}">
+        <i data-lucide="flask-conical"></i><span>{{ __('lab_desk.nav', [], $l) }}</span>
+    </a>
+    @endcapability
+    @capability('lab_results', 'sample_collection')
+    <a href="{{ route('portals.lab.collection') }}" class="sidebar-link {{ request()->routeIs('portals.lab.collection') ? 'active' : '' }}">
+        <i data-lucide="test-tube-2"></i><span>{{ __('lab_desk.nav_collection', [], $l) }}</span>
+    </a>
+    @endcapability
     {{-- Blood Bank is NOT behind @feature('inventory_ops'). It is carved out of
          that freeze because it is the only reachable writer of the public Blood
          Finder's data — see the 'inventory_ops' block in bootstrap/app.php.

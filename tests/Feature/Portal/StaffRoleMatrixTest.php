@@ -295,6 +295,14 @@ class StaffRoleMatrixTest extends TestCase
         'messaging'           => 'portals.staff.messages',
         'facility_team'       => 'portals.facility.team',
         'service_catalogue'   => 'portals.facility.catalogue',
+        // The desks built in the dashboard pass. refund_approve is not here: it
+        // gates buttons inside the refunds page, not a landing-page link.
+        'triage'              => 'portals.triage.index',
+        'queue'               => 'portals.queue.index',
+        'lab_results'         => 'portals.lab.index',
+        'sample_collection'   => 'portals.lab.collection',
+        'clinical_chart'      => 'portals.chart.index',
+        'billing'             => 'portals.billing.index',
     ];
 
     public static function linkedRoles(): array

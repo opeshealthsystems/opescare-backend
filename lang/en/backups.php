@@ -46,6 +46,8 @@ return [
     // Instructions
     'section_steps' => 'How to add off-site backup keys',
     'steps_intro' => 'Keys are added on the server, not on this page. A web form that could write secrets into the server\'s configuration would itself be a way to take over the platform, so none exists.',
+    'step0_title' => 'Install the S3 storage driver on the server',
+    'step0_body' => 'The application ships without the S3 driver package — it is listed only as a suggestion, and a backup attempt on 5 September failed on exactly this ("PortableVisibilityConverter not found" in the log). Install it once, as the site user, before adding keys:',
     'step1_title' => 'Create a bucket and a dedicated key',
     'step1_body' => 'Use Amazon S3 or any S3-compatible provider (Backblaze B2, Cloudflare R2, Wasabi). Create a private bucket, then a key that can reach that one bucket only, with permission to list, read, write and delete objects. Delete is needed so old backups can be cleaned up. Do not reuse a key that can reach anything else.',
     'step2_title' => 'Put the keys in the server\'s .env file',

@@ -58,4 +58,23 @@
 {{-- Facility switching for clinicians posted at more than one facility.
      Self-gating: renders nothing unless this user holds more than one active
      posting (see partials/sidebars/_switch_facility.blade.php). --}}
+<div class="sidebar-nav-section">
+    {{-- records_officer holds billing (front-desk group) but had no link; the
+         role matrix caught it. Same block as the receptionist sidebar. --}}
+    @capability('billing')
+<div class="sidebar-nav-section">
+    <div class="sidebar-nav-label">{{ __('billing_desk.title', [], $l) }}</div>
+    <a href="{{ route('portals.billing.index') }}" class="sidebar-link {{ request()->routeIs('portals.billing.index', 'portals.billing.create', 'portals.billing.show', 'portals.billing.receipt') ? 'active' : '' }}">
+        <i data-lucide="receipt"></i><span>{{ __('billing_desk.nav', [], $l) }}</span>
+    </a>
+    <a href="{{ route('portals.billing.sessions') }}" class="sidebar-link {{ request()->routeIs('portals.billing.sessions*') ? 'active' : '' }}">
+        <i data-lucide="wallet"></i><span>{{ __('billing_desk.nav_sessions', [], $l) }}</span>
+    </a>
+    <a href="{{ route('portals.billing.refunds') }}" class="sidebar-link {{ request()->routeIs('portals.billing.refunds*') ? 'active' : '' }}">
+        <i data-lucide="undo-2"></i><span>{{ __('billing_desk.nav_refunds', [], $l) }}</span>
+    </a>
+</div>
+@endcapability
+</div>
+
 @include('partials.sidebars._switch_facility')

@@ -8,8 +8,8 @@
      roles hold only `billing` in config/staff_capabilities.php — no
      appointments, no blood, no messages — so every link here self-gates with
      the SAME @capability as its route. What a cashier sees is the dashboard
-     and nothing that would 403. (There is no billing page on the web yet; that
-     is a product gap, not something to link.) The prescriber-desk link that
+     and nothing that would 403 — plus the billing desk below, which is what
+     the billing roles are here for. The prescriber-desk link that
      used to be here is gone: no front-desk role holds `prescribe`. --}}
 <div class="sidebar-role-badge">
     <i data-lucide="monitor"></i>
@@ -59,6 +59,27 @@
         <i data-lucide="messages-square"></i><span>{{ __('public.portal.nav_messages', [], $l) ?: 'Messages' }}</span>
     </a>
     @endcapability
+</div>
+@endcapability
+
+{{-- The billing / cashier desk (routes/billing.php), gated by the same
+     `billing` capability as its routes. Held by cashier, billing_officer,
+     finance_manager, finance and the front desk. Refund sign-off is a
+     separate capability (`refund_approve`) and its link self-gates too.
+     Nothing on this desk gates care: an unpaid invoice changes no queue,
+     no priority, no dispensing and no result. --}}
+@capability('billing')
+<div class="sidebar-nav-section">
+    <div class="sidebar-nav-label">{{ __('billing_desk.title', [], $l) }}</div>
+    <a href="{{ route('portals.billing.index') }}" class="sidebar-link {{ request()->routeIs('portals.billing.index', 'portals.billing.create', 'portals.billing.show', 'portals.billing.receipt') ? 'active' : '' }}">
+        <i data-lucide="receipt"></i><span>{{ __('billing_desk.nav', [], $l) }}</span>
+    </a>
+    <a href="{{ route('portals.billing.sessions') }}" class="sidebar-link {{ request()->routeIs('portals.billing.sessions*') ? 'active' : '' }}">
+        <i data-lucide="wallet"></i><span>{{ __('billing_desk.nav_sessions', [], $l) }}</span>
+    </a>
+    <a href="{{ route('portals.billing.refunds') }}" class="sidebar-link {{ request()->routeIs('portals.billing.refunds*') ? 'active' : '' }}">
+        <i data-lucide="undo-2"></i><span>{{ __('billing_desk.nav_refunds', [], $l) }}</span>
+    </a>
 </div>
 @endcapability
 

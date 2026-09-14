@@ -136,6 +136,15 @@
              Values in CAPITALS after the = sign are placeholders to replace. --}}
         <ol class="bk-steps">
             <li>
+                <span class="bk-num">0</span>
+                <div>
+                    <h3>{{ __('backups.step0_title') }}</h3>
+                    <p>{{ __('backups.step0_body') }}</p>
+<div class="bk-cmd">cd /home/finder/htdocs/finder.opescare.cloud
+sudo -u finder composer require league/flysystem-aws-s3-v3 --no-interaction</div>
+                </div>
+            </li>
+            <li>
                 <span class="bk-num">1</span>
                 <div>
                     <h3>{{ __('backups.step1_title') }}</h3>

@@ -46,6 +46,8 @@ return [
     // Instructions
     'section_steps' => 'Comment ajouter les clés de sauvegarde externe',
     'steps_intro' => 'Les clés s\'ajoutent sur le serveur, pas sur cette page. Un formulaire web capable d\'écrire des secrets dans la configuration du serveur serait lui-même un moyen de prendre le contrôle de la plateforme ; il n\'en existe donc aucun.',
+    'step0_title' => 'Installer le pilote de stockage S3 sur le serveur',
+    'step0_body' => "L'application est livrée sans le paquet du pilote S3 — il n'est listé qu'en suggestion, et une tentative de sauvegarde du 5 septembre a échoué précisément pour cela (« PortableVisibilityConverter not found » dans le journal). Installez-le une fois, en tant qu'utilisateur du site, avant d'ajouter les clés :",
     'step1_title' => 'Créer un compartiment et une clé dédiée',
     'step1_body' => 'Utilisez Amazon S3 ou tout fournisseur compatible S3 (Backblaze B2, Cloudflare R2, Wasabi). Créez un compartiment privé, puis une clé qui n\'a accès qu\'à ce seul compartiment, avec le droit de lister, lire, écrire et supprimer des objets. La suppression est nécessaire pour nettoyer les anciennes sauvegardes. Ne réutilisez pas une clé qui donne accès à autre chose.',
     'step2_title' => 'Placer les clés dans le fichier .env du serveur',

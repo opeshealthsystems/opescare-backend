@@ -307,6 +307,37 @@ class AppServiceProvider extends ServiceProvider
         // `capability:queue`, is declared inside the file with the routes it gates.
         Route::group([], base_path('routes/queue.php'));
 
+        // Billing / cashier desk (web portal) — the first surface over
+        // invoices / payments / receipts / refunds / cashier_sessions, whose
+        // `billing` capability was granted to seven roles and gated nothing.
+        // Its own file, same rationale; the stack, including
+        // `capability:billing` and `capability:refund_approve`, is declared
+        // inside the file with the routes it gates. Care is never gated on
+        // payment: nothing in it is consulted by any clinical desk.
+        Route::group([], base_path('routes/billing.php'));
+
+        // Pharmacy stock operations (web portal) — batches & expiry, the
+        // append-only movement log, reorder rules and goods receipts over the
+        // supply-chain schema (stock_batches, stock_movements, goods_receipts,
+        // reorder_rules), which shipped with no screen. Its own file, same
+        // rationale; the stack, including `capability:pharmacy_stock`, is
+        // declared inside the file with the routes it gates.
+        Route::group([], base_path('routes/pharmacy_ops.php'));
+
+        // Laboratory desk (web portal) — the first web surface over lab_orders /
+        // lab_results, whose capabilities were granted and gated nothing. Its
+        // own file, same rationale; the middleware stack, including
+        // `capability:lab_results`, is declared inside the file with the routes
+        // it gates.
+        Route::group([], base_path('routes/lab.php'));
+
+        // Patient chart (web portal) — the read-only record behind
+        // `capability:clinical_chart`, which every clinical role held and
+        // which gated no web screen until this file. Its own file, same
+        // rationale; the middleware stack is declared inside it. Record-level
+        // access is ClinicalRelationshipGate's, applied by the controller.
+        Route::group([], base_path('routes/chart.php'));
+
         // FHIR R4 ingest — the door partner systems push clinical data through
         // (Observation, DiagnosticReport, Immunization, transaction Bundle).
         // Its own file rather than routes/api.php, same rationale as above.

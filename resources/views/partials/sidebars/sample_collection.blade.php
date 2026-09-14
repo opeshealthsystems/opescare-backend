@@ -1,8 +1,8 @@
 @php $l = app()->getLocale(); @endphp
 {{-- Sample collection holds identify_patient, sample_collection and messaging
-     (config/staff_capabilities.php). Only messaging has a web page today —
-     the sample-collection workflow is clinician-API only (routes/mobile_labs.php)
-     and gets a link here when its page ships. --}}
+     (config/staff_capabilities.php). The collection page (routes/lab.php,
+     /facility/lab/collection) is the one lab screen this role reaches: it
+     books a sample in and never shows a result. --}}
 <div class="sidebar-role-badge">
     <i data-lucide="test-tube-2"></i>
     {{ __('portal.sample_collection_role', [], $l) ?: 'Sample Collection' }}
@@ -21,13 +21,21 @@
     </a>
 </div>
 
-@capability('messaging')
+@capability('sample_collection', 'messaging')
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_lab', [], $l) ?: 'Laboratory' }}</div>
+    {{-- Same gate as the collection routes in routes/lab.php. --}}
+    @capability('lab_results', 'sample_collection')
+    <a href="{{ route('portals.lab.collection') }}" class="sidebar-link {{ request()->routeIs('portals.lab.collection') ? 'active' : '' }}">
+        <i data-lucide="test-tube-2"></i><span>{{ __('lab_desk.nav_collection', [], $l) }}</span>
+    </a>
+    @endcapability
+    @capability('messaging')
     <a href="{{ route('portals.staff.messages') }}" class="sidebar-link {{ request()->routeIs('portals.staff.messages*') ? 'active' : '' }}">
         <i data-lucide="messages-square"></i>
         <span>{{ __('messaging.nav', [], $l) ?: 'Messages' }}</span>
     </a>
+    @endcapability
 </div>
 @endcapability
 

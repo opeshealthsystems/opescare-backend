@@ -11,7 +11,7 @@ class InventoryItem extends Model
     use HasUuids;
 
     protected $fillable = [
-        'facility_id', 'name', 'code', 'category', 'unit',
+        'facility_id', 'medicine_id', 'name', 'code', 'category', 'unit',
         'reorder_level', 'reorder_quantity', 'track_expiry', 'track_batch',
         'unit_cost', 'status', 'description', 'created_by',
     ];
@@ -23,6 +23,12 @@ class InventoryItem extends Model
         'reorder_level'    => 'integer',
         'reorder_quantity' => 'integer',
     ];
+
+    /** The catalogue medicine this SKU is one facility's stock of — null for consumables and reagents. */
+    public function medicine(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Medicine::class, 'medicine_id');
+    }
 
     public function batches(): HasMany
     {
