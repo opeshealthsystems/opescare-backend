@@ -99,6 +99,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'portal.access'    => \App\Http\Middleware\EnsurePortalAccess::class,
             'platform.admin'   => \App\Http\Middleware\RequirePlatformAdmin::class,
             'facility.context' => \App\Http\Middleware\RequireFacilityContext::class,
+            // Applied to NO route in the Finder (M2). It is the Connect-envelope
+            // consent gate (X-Consent-Grant-Id header, JSON refusal) for the B2B
+            // /api/v1 patient endpoints, which the Finder does not ship; the FHIR
+            // partner layer enforces consent inside its controller so refusals
+            // render as OperationOutcome. Kept registered so a Connect route can
+            // be re-added without rediscovering the gate; do not read its
+            // presence here as evidence that any route is consent-gated.
             'consent.grant'    => \App\Http\Middleware\RequireConsentGrant::class,
             // 'auth.mobile' is a GROUP (declared above), not an alias: the
             // patient bearer check is followed by the act-as-dependent context

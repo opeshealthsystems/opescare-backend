@@ -40,10 +40,10 @@ Last updated: 2026-09-14.
 | # | Finding | Status | Notes |
 |---|---|---|---|
 | M1 | USSD controller + config, no route | open | Decide whether USSD ships in v1 |
-| M2 | `consent.grant` middleware registered, applied to zero routes | open | Either apply or remove; a registered-but-unused gate misleads readers |
-| M3 | `Api\V1\AppointmentController` falls back to body `facility_id` | open | Harmless only because unrouted. Remove the fallback before anyone routes it |
+| M2 | `consent.grant` middleware registered, applied to zero routes | **closed** | Neither: it is the Connect-envelope gate for B2B `/api/v1` patient routes the Finder does not ship, and FHIR enforces consent in-controller (OperationOutcome). Documented at the alias in `bootstrap/app.php` so nobody reads it as "routes are gated" |
+| M3 | `Api\V1\AppointmentController` falls back to body `facility_id` | **closed** | Already fixed in code: facility is read from `$request->attributes` only; a body value is cross-checked and refused with 403 on mismatch (lines 130–142). Still unrouted |
 | M4 | Appointment waitlist / `BackfillWaitlistJob` unreachable | open | S6 dedupe done (`AppointmentWaitlistService`); still unrouted — next Phase 3 slice |
-| M5 | `admin.roles.index` / `admin.roles.users` have no nav link | open | Route + nav rule |
+| M5 | `admin.roles.index` / `admin.roles.users` have no nav link | **closed** | Already linked: `_admin_nav` People section → `portals.admin.roles.index` (prefix group, routes/web.php:485), active on both `portals.admin.roles.*` and `admin.roles.*` |
 | M6 | Six V1 admin API controllers with no routes | open | Wire or delete |
 | M7 | `BridgeSyncController` advertised `POST /v1/bridge/sync`, declared nowhere | **live** | `46d688c` — contract fixed (accepted types = handled types, silent `default => 'skipped'` removed). **Deliberately still unrouted**: routing it would have made a facility's posted lab results return 200 and store nothing |
 
