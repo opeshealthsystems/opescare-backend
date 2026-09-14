@@ -414,6 +414,9 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'platform.adm
     Route::post('/admin/cc/maintenance',         [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'maintenanceStore'])->name('portals.admin.cc.maintenance.store');
     Route::post('/admin/cc/maintenance/{id}',    [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'maintenanceToggle'])->name('portals.admin.cc.maintenance.toggle');
     Route::get('/admin/cc/health',               [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'systemHealth'])->name('portals.admin.cc.health');
+    // Read-only: backup status plus the steps to add off-host storage keys on
+    // the server. Platform-only by RequirePlatformAdmin's /admin/* rule.
+    Route::get('/admin/cc/backups',              [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'backups'])->name('portals.admin.cc.backups');
     Route::get('/admin/cc/audit',                [\App\Http\Controllers\MedicalId\AdminControlCenterController::class, 'auditLog'])->name('portals.admin.cc.audit');
 
     // Professional qualification verification queue (platform-admin).

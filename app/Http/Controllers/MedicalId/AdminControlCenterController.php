@@ -129,6 +129,21 @@ class AdminControlCenterController extends Controller
 
     // ── System Health ─────────────────────────────────────────────
 
+    /**
+     * Backups: where they are, and how to get them off this server.
+     *
+     * Read-only on purpose. The page reports status and gives the owner the
+     * steps to add storage credentials on the server; it has no form that
+     * writes a key. A web page able to write secrets into `.env` would be a
+     * way to take over the application, so that door is not built.
+     */
+    public function backups(): View
+    {
+        $status = \App\Support\BackupStatus::read();
+
+        return view('portals.admin.control_center.backups', compact('status'));
+    }
+
     public function systemHealth(PlatformAdminService $svc): View
     {
         $health = $svc->systemHealth();

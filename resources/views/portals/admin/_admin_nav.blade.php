@@ -177,6 +177,13 @@
     <a href="{{ route('portals.admin.cc.health') }}" class="sidebar-link {{ request()->routeIs('portals.admin.cc.health*') ? 'active' : '' }}">
         <i data-lucide="activity"></i><span>{{ __('public.adm_cc_sidebar_system_health', [], $l) ?: 'System Health' }}</span>
     </a>
+    <a href="{{ route('portals.admin.cc.backups') }}" class="sidebar-link {{ request()->routeIs('portals.admin.cc.backups*') ? 'active' : '' }}">
+        <i data-lucide="hard-drive-download"></i><span>{{ __('backups.nav', [], $l) ?: 'Backups' }}</span>
+        {{-- Visible until backups leave this server: one disk holds both the
+             database and every copy of it. --}}
+        @php $backupsOnHost = rescue(fn () => ! \App\Support\BackupStatus::offHostConfigured(), false, false); @endphp
+        @if($backupsOnHost)<span class="sidebar-badge sidebar-badge--warning">!</span>@endif
+    </a>
     <a href="{{ route('portals.admin.cc.audit') }}" class="sidebar-link {{ request()->routeIs('portals.admin.cc.audit*') ? 'active' : '' }}">
         <i data-lucide="scroll-text"></i><span>{{ __('public.adm_cc_sidebar_admin_action_log', [], $l) ?: 'Audit Log' }}</span>
     </a>
