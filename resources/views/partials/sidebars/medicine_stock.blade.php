@@ -25,6 +25,11 @@
     <a href="{{ route('portals.pharmacy.controlled') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.controlled*') ? 'active' : '' }}">
         <i data-lucide="shield-alert"></i><span>{{ __('public.portal.nav_controlled', [], $l) ?: 'Controlled Substances' }}</span>
     </a>
+    @capability('pharmacy_stock')
+    <a href="{{ route('portals.pharmacy.prices.index') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.prices.*') ? 'active' : '' }}">
+        <i data-lucide="tags"></i><span>{{ __('pharmacy_prices.nav_prices', [], $l) }}</span>
+    </a>
+    @endcapability
 </div>
 
 {{-- The ledger behind the public listing: lots & expiry, the append-only

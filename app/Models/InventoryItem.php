@@ -13,13 +13,14 @@ class InventoryItem extends Model
     protected $fillable = [
         'facility_id', 'medicine_id', 'name', 'code', 'category', 'unit',
         'reorder_level', 'reorder_quantity', 'track_expiry', 'track_batch',
-        'unit_cost', 'status', 'description', 'created_by',
+        'unit_cost', 'selling_price_xaf', 'status', 'description', 'created_by',
     ];
 
     protected $casts = [
-        'track_expiry'     => 'boolean',
-        'track_batch'      => 'boolean',
-        'unit_cost'        => 'decimal:4',
+        'track_expiry'      => 'boolean',
+        'track_batch'       => 'boolean',
+        'unit_cost'         => 'decimal:4',
+        'selling_price_xaf' => 'integer',
         'reorder_level'    => 'integer',
         'reorder_quantity' => 'integer',
     ];
@@ -43,6 +44,12 @@ class InventoryItem extends Model
     public function reorderRule(): HasMany
     {
         return $this->hasMany(ReorderRule::class, 'inventory_item_id');
+    }
+
+    /** Append-only history of the selling price (whole francs). */
+    public function priceChanges(): HasMany
+    {
+        return $this->hasMany(InventoryPriceChange::class, 'inventory_item_id');
     }
 
     public function totalStock(string $facilityId): int

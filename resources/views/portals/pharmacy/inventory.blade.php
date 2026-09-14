@@ -159,7 +159,8 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="add-price">{{ __('public.pharmacy_portal.stock_col_price', [], $l) }}</label>
-                    <input type="number" name="unit_price" id="add-price" class="form-control fs-num" min="0" step="0.01" inputmode="decimal" value="{{ old('unit_price') }}">
+                    <input type="number" name="unit_price" id="add-price" class="form-control fs-num" min="0" step="1" inputmode="numeric" value="{{ old('unit_price') }}">
+                    <div class="td-muted">{{ __('pharmacy_prices.whole_francs') }}</div>
                 </div>
             </div>
             <label class="form-check">
@@ -217,8 +218,8 @@
                         <input type="text" name="pack_size" form="stock-{{ $stock->id }}" class="form-control mt-6" maxlength="60" value="{{ $stock->pack_size }}" placeholder="{{ __('public.pharmacy_portal.stock_lbl_pack_size', [], $l) }}" aria-label="{{ __('public.pharmacy_portal.stock_lbl_pack_size', [], $l) }}">
                     </td>
                     <td data-label="{{ __('public.pharmacy_portal.stock_col_price', [], $l) }}">
-                        <input type="number" name="unit_price" form="stock-{{ $stock->id }}" class="form-control fs-num" min="0" step="0.01" inputmode="decimal" value="{{ $stock->unit_price }}" aria-label="{{ __('public.pharmacy_portal.stock_col_price', [], $l) }}">
-                        <div class="td-muted">{{ $stock->currency }}</div>
+                        <input type="number" name="unit_price" form="stock-{{ $stock->id }}" class="form-control fs-num" min="0" step="1" inputmode="numeric" value="{{ $stock->unit_price !== null ? (int) round($stock->unit_price) : '' }}" aria-label="{{ __('public.pharmacy_portal.stock_col_price', [], $l) }}">
+                        <div class="td-muted">{{ $stock->currency }} · {{ __('pharmacy_prices.whole_francs') }}</div>
                     </td>
                     <td data-label="{{ __('public.pharmacy_portal.stock_col_reserve', [], $l) }}">
                         <label class="form-check">

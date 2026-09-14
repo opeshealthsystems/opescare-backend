@@ -35,6 +35,16 @@
         <i data-lucide="shield-alert"></i><span>{{ __('public.portal.nav_controlled', [], $l) ?: 'Controlled Substances' }}</span>
     </a>
     @endcapability
+    @capability('dispense')
+    <a href="{{ route('portals.pharmacy.orders.index') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.orders.*') ? 'active' : '' }}">
+        <i data-lucide="shopping-bag"></i><span>{{ __('pharmacy_orders.title', [], $l) }}</span>
+    </a>
+    @endcapability
+    @capability('pharmacy_stock')
+    <a href="{{ route('portals.pharmacy.prices.index') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.prices.*') ? 'active' : '' }}">
+        <i data-lucide="tags"></i><span>{{ __('pharmacy_prices.nav_prices', [], $l) }}</span>
+    </a>
+    @endcapability
     @capability('messaging')
     {{-- The staff inbox lives under /facility; pharmacy roles are in that
          portal bucket too (EnsurePortalAccess), so the link resolves. --}}

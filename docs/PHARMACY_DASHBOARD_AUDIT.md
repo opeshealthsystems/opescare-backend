@@ -123,6 +123,22 @@ Two is defensible (ledger vs projection); the third only misleads (P-1).
 - i18n: all pharmacy views go through `__()`; audit clean.
 - Cross-facility: batch/receipt lookups scoped to the session facility (404).
 
+## Status (2026-09-14, same day)
+
+| Gap | Status | Where |
+|---|---|---|
+| P-1 KPIs read a dead table | **fixed** | `PharmacyPortalController@dashboard`/`@controlled` read `medicine_pharmacy_stocks` + `stock_batches`; four tiles render; `PharmacyDashboardTruthTest` |
+| P-2 Orders desk | **built** | `/pharmacy/orders` (8 routes, `routes/pharmacy_orders.php`, `PharmacyOrdersController`, same `PharmacyDeskService` transitions as the mobile desk); reservation notification now reaches the tenant and links here; 7 tests |
+| P-3 Staff for pharmacies | **fixed** | `facility_team` += pharmacy_manager, lab_manager; portal bucket widened; sidebar links; matrix test updated |
+| P-4 Prices | **built** | `/pharmacy/prices` (+ history), `inventory_items.selling_price_xaf` whole francs, append-only `inventory_price_changes`, `syncFinder()` publishes the price; stock-page inputs step=1; 10 tests |
+| P-5 Settings page | **built** | `/pharmacy/settings`: identity, location with Leaflet pick mode, hours (shared `ListingHoursService`), contacts; name/address changes audited `requires_review` and drop a verified listing to `self_reported`; unlinked tenant sees what to do, nothing auto-created; 9 tests |
+| P-6 Lead → tenant | open | admin conversion action not built |
+| P-7 Catalogue link 403 | not a defect | link is on the manager sidebar only, gated by the same capability; the 403 was the pharmacist hitting it by URL |
+| P-8 No pharmacy manager | **fixed** | `demo.pharmacy.manager@opescare.test` seeded + demo panel button |
+| P-9 Three tables | reduced | nothing reads `pharmacy_inventories` any more; the table and `PharmacyInventoryService` remain for the blood console only |
+| Extra: patient names "—", stranger's queue, reservation notify wrong id space | **fixed** | see commit 037e4b1 |
+| Extra: photo/logo upload | open | not built |
+
 ## Build order (recommendation)
 1. P-1 KPI fix + P-7 + P-8 (small, immediate honesty)
 2. P-3 staff for pharmacies (small; unlocks self-service)

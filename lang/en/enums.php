@@ -103,6 +103,18 @@ return [
         'unpaid'                    => 'Unpaid',
     ],
 
+    // Pharmacy orders desk — the DESK vocabulary of MedicineReservation::deskStatus().
+    // Its own group because status.collected is the lab sense (sample collected).
+    'reservation_status' => [
+        'pending'    => 'Awaiting pharmacy',
+        'accepted'   => 'Accepted',
+        'ready'      => 'Ready for pickup',
+        'collected'  => 'Collected',
+        'dispatched' => 'Out for delivery',
+        'delivered'  => 'Delivered',
+        'cancelled'  => 'Cancelled',
+    ],
+
     'severity' => [
         'info'             => 'Info',
         'low'              => 'Low',

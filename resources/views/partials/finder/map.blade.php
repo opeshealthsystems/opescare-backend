@@ -4,11 +4,19 @@
     Optional: 'mapId', 'height', 'single'. Facilities may be models or raw rows;
     field names are normalised here (facility_name|name, facility_type|type, …).
     Self-contained: loads Leaflet + finder-map.js once, no external map app.
+
+    Pick mode (a settings form choosing ONE position instead of showing many):
+        @include('partials.finder.map', ['pick' => ['lat' => 'latitude', 'lng' => 'longitude'], 'pickType' => 'pharmacy'])
+    'pick' names the two input ids; a draggable pin writes them on every
+    click/drag and follows them when typed. 'facilities' is not needed.
 --}}
 @php
     $mapId  = $mapId  ?? 'finder-map';
     $height = $height ?? '420px';
     $single = $single ?? false;
+    $pick   = $pick   ?? null;
+    $pickType = $pickType ?? 'other';
+    $facilities = $facilities ?? [];
     $l = app()->getLocale();
 
     $points = collect($facilities)
@@ -57,7 +65,7 @@
         </script>
         <style>
             .finder-map-shell{position:relative;width:100%;height:var(--fm-h,420px);border-radius:14px;overflow:hidden;border:1px solid rgba(15,76,129,.12);background:#eef2f6}
-            .finder-map-shell [data-finder-map]{width:100%;height:100%}
+            .finder-map-shell [data-finder-map],.finder-map-shell [data-finder-pick]{width:100%;height:100%}
             .finder-map-locate{width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:#fff;color:#0F4C81;border:0;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.2);cursor:pointer}
             .finder-map-locate:hover{background:#f1f5f9}
             .finder-user-dot{width:22px;height:22px;position:relative}
@@ -71,7 +79,13 @@
     </style>
 @endonce
 
+@if($pick)
+<div class="finder-map-shell" style="--fm-h: {{ $height }}">
+    <div data-finder-pick="{{ $pick['lat'] }},{{ $pick['lng'] }}" data-finder-pick-type="{{ $pickType }}" id="{{ $mapId }}" role="application" aria-label="{{ __('finder_map.aria', [], $l) ?: 'Facility map' }}"></div>
+</div>
+@else
 <div class="finder-map-shell" style="--fm-h: {{ $height }}">
     <div data-finder-map id="{{ $mapId }}" role="application" aria-label="{{ __('finder_map.aria', [], $l) ?: 'Facility map' }}"></div>
     <script type="application/json" class="finder-map-data">@json(['single' => (bool) $single, 'facilities' => $points])</script>
 </div>
+@endif

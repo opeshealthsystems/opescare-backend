@@ -152,7 +152,7 @@ class MedicineReservationService
                     'ref'  => $reservation->reference,
                     'pack' => $reservation->pack_size !== null ? ' · ' . $reservation->pack_size : '',
                 ]),
-                'url'   => route('portals.pharmacy.dashboard'),
+                'url'   => route('portals.pharmacy.orders.index'),
             ],
             [],
             'high',

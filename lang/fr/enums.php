@@ -101,6 +101,18 @@ return [
         'unpaid'                    => 'Impayé',
     ],
 
+    // Comptoir des commandes — le vocabulaire de MedicineReservation::deskStatus().
+    // Groupe distinct : status.collected est le sens laboratoire (prélevé).
+    'reservation_status' => [
+        'pending'    => 'En attente de la pharmacie',
+        'accepted'   => 'Acceptée',
+        'ready'      => 'Prête à retirer',
+        'collected'  => 'Retirée',
+        'dispatched' => 'En cours de livraison',
+        'delivered'  => 'Livrée',
+        'cancelled'  => 'Annulée',
+    ],
+
     'severity' => [
         'info'             => 'Info',
         'low'              => 'Faible',

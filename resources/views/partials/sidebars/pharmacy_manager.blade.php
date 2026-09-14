@@ -35,6 +35,21 @@
         <i data-lucide="shield-alert"></i><span>{{ __('public.portal.nav_controlled', [], $l) ?: 'Controlled Substances' }}</span>
     </a>
     @endcapability
+    @capability('dispense')
+    <a href="{{ route('portals.pharmacy.orders.index') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.orders.*') ? 'active' : '' }}">
+        <i data-lucide="shopping-bag"></i><span>{{ __('pharmacy_orders.title', [], $l) }}</span>
+    </a>
+    @endcapability
+    @capability('pharmacy_stock')
+    <a href="{{ route('portals.pharmacy.prices.index') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.prices.*') ? 'active' : '' }}">
+        <i data-lucide="tags"></i><span>{{ __('pharmacy_prices.nav_prices', [], $l) }}</span>
+    </a>
+    @endcapability
+    @capability('service_catalogue')
+    <a href="{{ route('portals.pharmacy.settings.index') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.settings.*') ? 'active' : '' }}">
+        <i data-lucide="store"></i><span>{{ __('pharmacy_settings.nav', [], $l) }}</span>
+    </a>
+    @endcapability
     @capability('messaging')
     <a href="{{ route('portals.staff.messages') }}" class="sidebar-link {{ request()->routeIs('portals.staff.messages*') ? 'active' : '' }}">
         <i data-lucide="messages-square"></i><span>{{ __('messaging.nav', [], $l) ?: 'Messages' }}</span>

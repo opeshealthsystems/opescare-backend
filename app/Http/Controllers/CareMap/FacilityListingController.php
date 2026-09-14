@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CareFacility;
 use App\Modules\CareMap\Services\FacilityClaimService;
 use App\Modules\CareMap\Services\FacilityListingEditService;
+use App\Services\CareMap\ListingHoursService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -35,6 +36,7 @@ class FacilityListingController extends Controller
     public function __construct(
         private FacilityClaimService $claims,
         private FacilityListingEditService $editor,
+        private ListingHoursService $hours,
     ) {
     }
 
@@ -133,26 +135,9 @@ class FacilityListingController extends Controller
     {
         $listing = $this->listing();
 
-        $request->validate([
-            'hours'                => ['nullable', 'array'],
-            'hours.*.opens_at'     => ['nullable', 'date_format:H:i'],
-            'hours.*.closes_at'    => ['nullable', 'date_format:H:i'],
-        ]);
-
-        $week = [];
-
-        foreach (range(0, 6) as $day) {
-            $spec = $request->input("hours.$day", []);
-
-            $week[$day] = [
-                'is_24_hours' => (bool) ($spec['is_24_hours'] ?? false),
-                'is_closed'   => (bool) ($spec['is_closed'] ?? false),
-                'opens_at'    => $spec['opens_at'] ?? null,
-                'closes_at'   => $spec['closes_at'] ?? null,
-            ];
-        }
-
-        $count = $this->editor->replaceHours($listing, $week, Auth::id());
+        // Validation + week shaping are shared with the pharmacy settings
+        // page (ListingHoursService) so both screens write identical rows.
+        $count = $this->hours->updateFromRequest($request, $listing, Auth::id());
 
         return redirect()
             ->route('portals.listing.edit')

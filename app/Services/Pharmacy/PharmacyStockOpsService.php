@@ -530,9 +530,11 @@ class PharmacyStockOpsService
     /**
      * Republish one medicine's availability from the ledger.
      *
-     * Only the usable quantity and the status derived from it are written.
-     * Pack size, price and the reservation switch stay whatever the pharmacy
-     * last declared on the public page — the ledger does not know them.
+     * The usable quantity, the status derived from it and — when the price
+     * list has one — the selling price (whole francs, PharmacyPriceService)
+     * are written. Pack size and the reservation switch stay whatever the
+     * pharmacy last declared on the public page — the ledger does not know
+     * them — and so does the price while the price list has none.
      * A pharmacy without a linked public listing has no finder row to write,
      * and its ledger still works.
      */
@@ -578,7 +580,7 @@ class PharmacyStockOpsService
             'stock_status'        => $status,
             'packs_available'     => $usable,
             'pack_size'           => $existing?->pack_size,
-            'unit_price'          => $existing?->unit_price,
+            'unit_price'          => $item->selling_price_xaf ?? $existing?->unit_price,
             'reservation_enabled' => (bool) ($existing?->reservation_enabled ?? false),
         ], $actorId);
 

@@ -242,8 +242,93 @@
     if (inst) inst.directionsTo(id);
   });
 
-  window.FinderMap = { initAll: initAll, instances: instances };
+  // ── Pick mode ─────────────────────────────────────────────────────────
+  // A settings form that needs a position, not a list of facilities. The
+  // container carries data-finder-pick="<lat input id>,<lng input id>": one
+  // draggable pin (placed from the inputs when they hold numbers, otherwise
+  // on the first click), and every drag or click writes both inputs back.
+  // Kept separate from FinderMapInstance so no existing map changes behaviour.
+  function initPickers() {
+    if (typeof L === 'undefined') { setTimeout(initPickers, 120); return; }
+    document.querySelectorAll('[data-finder-pick]').forEach(function (el) {
+      if (el._finderPickDone) return;
+      el._finderPickDone = true;
+      var ids = (el.getAttribute('data-finder-pick') || '').split(',');
+      var latIn = document.getElementById((ids[0] || '').trim());
+      var lngIn = document.getElementById((ids[1] || '').trim());
+      if (!latIn || !lngIn) return;
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initAll);
-  else initAll();
+      function current() {
+        var lat = parseFloat(latIn.value), lng = parseFloat(lngIn.value);
+        return (isFinite(lat) && isFinite(lng)) ? [lat, lng] : null;
+      }
+      function write(latlng) {
+        latIn.value = latlng.lat.toFixed(6);
+        lngIn.value = latlng.lng.toFixed(6);
+        latIn.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+
+      var start = current() || CENTER || [5.5, 12.0];
+      var map = L.map(el, { attributionControl: true }).setView(start, current() ? 16 : 6);
+      map.attributionControl.setPrefix(false);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19,
+      }).addTo(map);
+
+      var color = TYPE_COLORS[el.getAttribute('data-finder-pick-type') || 'other'] || TYPE_COLORS.other;
+      var pin = null;
+      function place(latlng) {
+        if (!pin) {
+          pin = L.marker(latlng, { icon: markerIcon(color), draggable: true }).addTo(map);
+          pin.on('dragend', function () { write(pin.getLatLng()); });
+        } else {
+          pin.setLatLng(latlng);
+        }
+      }
+      if (current()) place(L.latLng(start[0], start[1]));
+
+      map.on('click', function (e) { place(e.latlng); write(e.latlng); });
+
+      // Typing coordinates by hand moves the pin too.
+      function fromInputs() {
+        var c = current();
+        if (!c) return;
+        place(L.latLng(c[0], c[1]));
+        map.setView(c, Math.max(map.getZoom(), 15));
+      }
+      latIn.addEventListener('input', fromInputs);
+      lngIn.addEventListener('input', fromInputs);
+
+      // Same "locate me" control as the facility map, dropping the pin there.
+      var Locate = L.Control.extend({
+        options: { position: 'topleft' },
+        onAdd: function () {
+          var btn = L.DomUtil.create('button', 'finder-map-locate');
+          btn.type = 'button';
+          btn.title = t('locate', 'Show my location');
+          btn.setAttribute('aria-label', t('locate', 'Show my location'));
+          btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>';
+          L.DomEvent.on(btn, 'click', function (e) {
+            L.DomEvent.stop(e);
+            if (!navigator.geolocation) { window.alert(t('geoDenied', 'Location unavailable. Please allow location access.')); return; }
+            navigator.geolocation.getCurrentPosition(function (pos) {
+              var ll = L.latLng(pos.coords.latitude, pos.coords.longitude);
+              place(ll); write(ll); map.setView(ll, 16);
+            }, function () { window.alert(t('geoDenied', 'Location unavailable. Please allow location access.')); },
+            { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 });
+          });
+          return btn;
+        },
+      });
+      map.addControl(new Locate());
+      setTimeout(function () { map.invalidateSize(); }, 60);
+    });
+  }
+
+  window.FinderMap = { initAll: initAll, initPickers: initPickers, instances: instances };
+
+  function boot() { initAll(); initPickers(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
 })();
