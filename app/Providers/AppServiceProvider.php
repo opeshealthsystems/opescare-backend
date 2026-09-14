@@ -331,6 +331,13 @@ class AppServiceProvider extends ServiceProvider
         Route::group([], base_path('routes/pharmacy_prices.php'));
         Route::group([], base_path('routes/pharmacy_settings.php'));
 
+        // Facility-type dashboards (docs/FACILITY_DASHBOARDS_AUDIT.md): the shared
+        // facility settings page, the laboratory manager desk, the hospital/clinic
+        // administration desk.
+        Route::group([], base_path('routes/facility_settings.php'));
+        Route::group([], base_path('routes/lab_manager.php'));
+        Route::group([], base_path('routes/facility_admin.php'));
+
         // Laboratory desk (web portal) — the first web surface over lab_orders /
         // lab_results, whose capabilities were granted and gated nothing. Its
         // own file, same rationale; the middleware stack, including
