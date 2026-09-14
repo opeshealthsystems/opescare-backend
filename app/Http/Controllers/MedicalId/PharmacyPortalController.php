@@ -325,25 +325,22 @@ class PharmacyPortalController extends Controller
     // ------------------------------------------------------------------
 
     /**
-     * Legacy path (`/portals/pharmacy/inventory`).
-     *
-     * Repointed at `medicine_pharmacy_stocks`. It used to read
-     * `pharmacy_inventories`, which no patient query has ever touched — a
-     * pharmacist updating stock here changed nothing anybody could see.
-     * `pharmacy_inventories` is untouched and still backs the dashboard
-     * counters and the controlled-substances register (expiry, recall and
-     * quarantine live there and have no equivalent on the public listing).
-     */
-    public function inventory(Request $req)
-    {
-        return $this->stock($req);
-    }
-
-    /**
      * Reported public availability for this pharmacy's directory listing.
      *
      * This is the table `MedicineFinderService` queries, so what is edited
      * here is exactly what a patient searching nearby pharmacies sees.
+     *
+     * History worth keeping: this screen used to read `pharmacy_inventories`,
+     * which no patient query has ever touched — a pharmacist updating stock
+     * changed nothing anybody could see. It was repointed at
+     * `medicine_pharmacy_stocks`. `pharmacy_inventories` is untouched and
+     * still backs the dashboard counters and the controlled-substances
+     * register (expiry, recall and quarantine live there and have no
+     * equivalent on the public listing).
+     *
+     * A legacy `inventory()` alias for the old `/portals/pharmacy/inventory`
+     * path was removed: it had no route and no caller, and a second entry
+     * point to the same screen is one more thing to keep guarded for nobody.
      */
     public function stock(Request $req)
     {

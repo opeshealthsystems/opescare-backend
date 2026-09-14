@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\MedicalId;
 
 use App\Http\Controllers\Controller;
-use App\Models\DocumentVerification;
 use App\Modules\Governance\Services\AccessLogService;
 use App\Services\Patient\DocumentVerificationService;
+use App\Services\Patient\VerifiedDocumentCard;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Log;
@@ -13,11 +13,14 @@ use Illuminate\Support\Facades\Log;
 /**
  * The page the QR code on an OpesCare Secure document lands on.
  *
- * Three answers, never a bare error: valid · revoked · invalid. A valid answer
- * shows what the document says about itself — type, reference, issue date,
- * holder, the fingerprint of the issued file — so a facility can check the
- * paper in its hand against the record. The raw token is the bearer secret
- * and is not echoed onto the page.
+ * Four answers, never a bare error: valid · revoked · expired · invalid. A
+ * valid answer shows what the document says about itself — type, reference,
+ * issue date, holder, the fingerprint of the issued file — so a facility can
+ * check the paper in its hand against the record. The raw token is the bearer
+ * secret and is not echoed onto the page.
+ *
+ * Both token families resolve here: `doc_…` (OpesCare Secure exports) and
+ * `vdt_…` (OfficialDocument tokens minted at issuance).
  */
 class DocumentVerifyController extends Controller
 {
@@ -27,11 +30,11 @@ class DocumentVerifyController extends Controller
 
     public function show(string $token)
     {
-        $record = $this->documents->verify($token);
+        ['state' => $state, 'card' => $card] = $this->documents->check($token);
 
-        if (! $record) {
+        if (! $card) {
             return view('verify.document', [
-                'state'       => $this->documents->failureState($token),
+                'state'       => $state,
                 'document'    => null,
                 'typeLabel'   => null,
                 'holder'      => null,
@@ -39,14 +42,14 @@ class DocumentVerifyController extends Controller
             ]);
         }
 
-        $patient = $record->patient;
+        $patient = $card->patient;
 
-        $this->auditSignedInCheck($record);
+        $this->auditSignedInCheck($card);
 
         return view('verify.document', [
             'state'       => 'valid',
-            'document'    => $record,
-            'typeLabel'   => $this->typeLabel($record->document_type),
+            'document'    => $card,
+            'typeLabel'   => $this->typeLabel($card->documentType),
             'holder'      => $patient ? (object) [
                 'name'      => trim($patient->first_name . ' ' . $patient->last_name),
                 'health_id' => $patient->health_id,
@@ -67,30 +70,30 @@ class DocumentVerifyController extends Controller
      * document. access_logs.actor_id is NOT NULL, so an anonymous check
      * cannot be attributed and is counted on the row instead (scan_count).
      */
-    private function auditSignedInCheck(DocumentVerification $record): void
+    private function auditSignedInCheck(VerifiedDocumentCard $card): void
     {
         $user = Auth::user();
 
-        if (! $user) {
+        if (! $user || ! $card->patientId) {
             return;
         }
 
         try {
             AccessLogService::log(
-                patientId: $record->patient_id,
+                patientId: $card->patientId,
                 actorId: $user->id,
                 actorType: 'user',
                 organizationId: null,
                 facilityId: null,
                 purpose: 'document_verification',
                 dataCategory: 'documents',
-                resourceType: 'DocumentVerification',
-                resourceId: (string) $record->id,
+                resourceType: $card->source,
+                resourceId: $card->id,
                 accessType: 'read',
             );
         } catch (\Throwable $e) {
             Log::warning('Document verification audit failed', [
-                'document' => $record->id,
+                'document' => $card->id,
                 'error'    => $e->getMessage(),
             ]);
         }

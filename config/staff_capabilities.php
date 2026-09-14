@@ -63,6 +63,23 @@ return [
         // clinical decision.
         'triage' => [...$nurses, ...$doctors, ...$supervisors],
 
+        // Run the waiting room: check a patient in, read the live queue,
+        // call / start / complete / no-show / cancel a ticket, and read the
+        // day's measured wait times (the /facility/queue desk).
+        //
+        // The front desk because check-in is their act. Nurses, doctors and
+        // supervisors because the people who call "next" are the people about
+        // to see the patient. Facility administrators because the day's wait
+        // figures are the number they answer for. Deliberately NOT lab,
+        // pharmacy or billing: their counters have their own desks, and a
+        // consultation queue is not theirs to reorder. Deliberately NOT
+        // students/interns.
+        //
+        // Note what this capability does NOT grant: a clinical priority. The
+        // desk records an ARRIVAL priority only; the moment a triage record
+        // exists for the visit, the triage acuity outranks it in the sort.
+        'queue' => [...$frontDesk, ...$nurses, ...$doctors, ...$supervisors, ...$facilityAdmins],
+
         // Dispense against prescriptions at the pharmacy counter.
         'dispense' => $pharmacy,
 

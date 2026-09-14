@@ -4,14 +4,27 @@ namespace App\Services\Documents;
 
 use App\Models\Patient;
 use App\Models\Admission;
+use App\Models\ClinicalCodeDictionary;
 use App\Models\NursingRound;
-use App\Models\VitalSign;
+use App\Models\TriageVitalSign;
 use App\Models\Prescription;
 use App\Models\ClinicalNote;
 use App\Models\AntenatalVisit;
 use App\Models\DeliveryRecord;
 use Carbon\Carbon;
 
+/**
+ * Assembles the data arrays behind the ward charts (MAR, ICU flowsheet,
+ * nursing chart, progress note, glucose log, handover, partograph, NICU and
+ * growth charts).
+ *
+ * Every human-readable string here goes through lang/{en,fr}/document.php and
+ * every date through Carbon::isoFormat(), so the document comes out in the
+ * locale the request resolved (App\Http\Middleware\SetLocale — the patient's
+ * own session or Accept-Language when they download it themselves). Clinical
+ * titles are never translated here: the one diagnosis title this class prints
+ * is read from clinical_code_dictionary in the reader's language.
+ */
 class DocumentDataAssembler
 {
     // ── Category B methods ────────────────────────────────────────────
@@ -25,19 +38,14 @@ class DocumentDataAssembler
         $admission  = $this->resolveAdmission($patientId, $admissionId);
         $latestVital = $this->latestVitalSign($patientId);
 
-        $ward       = 'Not assigned';
-        $bedNumber  = 'Not assigned';
-        if ($admission && $admission->bed) {
-            $ward      = $admission->bed->ward ?? 'Not assigned';
-            $bedNumber = $admission->bed->bed_number ?? $admission->bed_id ?? 'Not assigned';
-        }
+        [$ward, $bedNumber] = $this->wardAndBed($admission);
 
         $allergies = [];
         if ($patient) {
-            $allergies = $patient->allergies()->pluck('name')->toArray();
+            $allergies = $patient->allergies()->pluck('substance')->toArray();
         }
 
-        $weightKg = $latestVital->weight ?? 'Not recorded';
+        $weightKg = $latestVital->weight_kg ?? __('document.not_recorded');
 
         $prescriptions = Prescription::where('patient_id', $patientId)
             ->where('status', '!=', 'cancelled')
@@ -50,11 +58,11 @@ class DocumentDataAssembler
         foreach ($prescriptions as $prescription) {
             foreach ($prescription->items as $item) {
                 $medications[] = [
-                    'name'      => $item->drug_name ?? 'Not recorded',
-                    'route'     => $item->route ?? 'Not recorded',
-                    'dose'      => $item->dose ?? 'Not recorded',
-                    'frequency' => $item->frequency ?? 'Not recorded',
-                    'quantity'  => $item->quantity ?? 'Not recorded',
+                    'name'      => $item->drug_name ?? __('document.not_recorded'),
+                    'route'     => $item->route ?? __('document.not_recorded'),
+                    'dose'      => $item->dose ?? __('document.not_recorded'),
+                    'frequency' => $item->frequency ?? __('document.not_recorded'),
+                    'quantity'  => $item->quantity ?? __('document.not_recorded'),
                     'notes'     => '',
                 ];
             }
@@ -78,7 +86,7 @@ class DocumentDataAssembler
             'medications'      => $medications,
             'prn_medications'  => [],
             'date'             => Carbon::today()->toDateString(),
-            'nurse_in_charge'  => 'Assigned Nurse',
+            'nurse_in_charge'  => __('document.role_assigned_nurse'),
         ];
     }
 
@@ -89,8 +97,8 @@ class DocumentDataAssembler
     {
         $admission = $this->resolveAdmission($patientId, $admissionId);
 
-        $icuBed           = $admission->bed_id ?? 'ICU Bed';
-        $admissionDiagnosis = $admission->admission_reason ?? 'Not recorded';
+        $icuBed           = $admission->bed_id ?? __('document.icu_bed_default');
+        $admissionDiagnosis = $admission->admission_reason ?? __('document.not_recorded');
 
         $rounds = [];
         if ($admission) {
@@ -100,16 +108,18 @@ class DocumentDataAssembler
                 ->get();
         }
 
+        $na = __('document.na');
+
         $hourlyVitals = [];
         foreach ($rounds as $round) {
             $vitalSigns = $this->decodeJson($round->vital_signs);
             $hourlyVitals[] = [
                 'time'      => Carbon::parse($round->round_time)->format('H:i'),
-                'bp'        => ($vitalSigns['blood_pressure_systolic'] ?? 'N/A') . '/' . ($vitalSigns['blood_pressure_diastolic'] ?? 'N/A'),
+                'bp'        => ($vitalSigns['blood_pressure_systolic'] ?? $na) . '/' . ($vitalSigns['blood_pressure_diastolic'] ?? $na),
                 'map'       => null,
-                'hr'        => $vitalSigns['pulse'] ?? $round->pulse ?? 'N/A',
-                'temp'      => $vitalSigns['temperature'] ?? 'N/A',
-                'spo2'      => $vitalSigns['oxygen_saturation'] ?? $vitalSigns['spo2'] ?? 'N/A',
+                'hr'        => $vitalSigns['pulse'] ?? $round->pulse ?? $na,
+                'temp'      => $vitalSigns['temperature'] ?? $na,
+                'spo2'      => $vitalSigns['oxygen_saturation'] ?? $vitalSigns['spo2'] ?? $na,
                 'fio2'      => '21%',
                 'urine_ml'  => null,
                 'cvp'       => null,
@@ -120,21 +130,21 @@ class DocumentDataAssembler
             'date'                => Carbon::today()->toDateString(),
             'icu_bed'             => $icuBed,
             'admission_diagnosis' => $admissionDiagnosis,
-            'apache_ii_score'     => 'Pending',
-            'sofa_score'          => 'Pending',
+            'apache_ii_score'     => __('document.pending'),
+            'sofa_score'          => __('document.pending'),
             'ventilator_settings' => [
-                'mode'         => 'Not set',
+                'mode'         => __('document.not_set'),
                 'fio2'         => '21%',
                 'peep'         => '0',
-                'tidal_volume' => 'N/A',
+                'tidal_volume' => $na,
                 'rr_set'       => 0,
-                'pip'          => 'N/A',
+                'pip'          => $na,
             ],
             'hourly_vitals'       => $hourlyVitals,
             'infusions'           => [],
             'fluid_balance_24h'   => ['input' => 0, 'output' => 0, 'balance' => '0'],
-            'nurse_in_charge'     => 'Assigned Nurse',
-            'intensivist'         => 'Attending Physician',
+            'nurse_in_charge'     => __('document.role_assigned_nurse'),
+            'intensivist'         => __('document.role_attending_physician'),
         ];
     }
 
@@ -146,12 +156,7 @@ class DocumentDataAssembler
         $patient   = Patient::find($patientId);
         $admission = $this->resolveAdmission($patientId, $admissionId);
 
-        $ward      = 'Not assigned';
-        $bedNumber = 'Not assigned';
-        if ($admission && $admission->bed) {
-            $ward      = $admission->bed->ward ?? 'Not assigned';
-            $bedNumber = $admission->bed->bed_number ?? $admission->bed_id ?? 'Not assigned';
-        }
+        [$ward, $bedNumber] = $this->wardAndBed($admission);
 
         $roundsQuery = NursingRound::orderBy('round_time')
             ->whereDate('round_time', Carbon::today());
@@ -168,21 +173,13 @@ class DocumentDataAssembler
         foreach ($rounds as $round) {
             $roundData[] = [
                 'time'                => Carbon::parse($round->round_time)->format('H:i'),
-                'pain_level'          => $round->pain_level ?? 'Not recorded',
-                'observations'        => $round->observations ?? 'Not recorded',
+                'pain_level'          => $round->pain_level ?? __('document.not_recorded'),
+                'observations'        => $round->observations ?? __('document.not_recorded'),
                 'interventions'       => $this->decodeJson($round->interventions),
-                'patient_response'    => $round->patient_response ?? 'Not recorded',
+                'patient_response'    => $round->patient_response ?? __('document.not_recorded'),
                 'escalation_required' => $round->escalation_required ?? false,
-                'nurse_id'            => $round->nurse_id ?? 'Not recorded',
+                'nurse_id'            => $round->nurse_id ?? __('document.not_recorded'),
             ];
-        }
-
-        $patientName = 'Not recorded';
-        if ($patient) {
-            $patientName = trim(($patient->first_name ?? '') . ' ' . ($patient->last_name ?? ''));
-            if ($patientName === '') {
-                $patientName = 'Not recorded';
-            }
         }
 
         return [
@@ -190,7 +187,7 @@ class DocumentDataAssembler
             'ward'         => $ward,
             'bed_number'   => $bedNumber,
             'rounds'       => $roundData,
-            'patient_name' => $patientName,
+            'patient_name' => $this->patientName($patient),
         ];
     }
 
@@ -202,14 +199,11 @@ class DocumentDataAssembler
         $admission   = $this->resolveAdmission($patientId, $admissionId);
         $clinicalNote = $this->latestClinicalNote($patientId, $admission);
 
-        $ward      = 'Not assigned';
-        $bedNumber = 'Not assigned';
-        if ($admission && $admission->bed) {
-            $ward      = $admission->bed->ward ?? 'Not assigned';
-            $bedNumber = $admission->bed->bed_number ?? $admission->bed_id ?? 'Not assigned';
-        }
+        [$ward, $bedNumber] = $this->wardAndBed($admission);
 
-        $dayOfAdmission = 'N/A';
+        $na = __('document.na');
+
+        $dayOfAdmission = $na;
         if ($admission && $admission->admitted_at) {
             $dayOfAdmission = (int) Carbon::parse($admission->admitted_at)->diffInDays(Carbon::now()) + 1;
         }
@@ -218,12 +212,12 @@ class DocumentDataAssembler
         $vitalSignsJson = $this->decodeJson($latestRound->vital_signs ?? null);
 
         $vitalSigns = [
-            'bp'           => ($vitalSignsJson['blood_pressure_systolic'] ?? 'N/A') . '/' . ($vitalSignsJson['blood_pressure_diastolic'] ?? 'N/A'),
-            'pulse'        => $vitalSignsJson['pulse'] ?? 'N/A',
-            'temp'         => $vitalSignsJson['temperature'] ?? 'N/A',
-            'spo2'         => $vitalSignsJson['oxygen_saturation'] ?? $vitalSignsJson['spo2'] ?? 'N/A',
-            'rr'           => $vitalSignsJson['respiratory_rate'] ?? 'N/A',
-            'urine_output' => $vitalSignsJson['urine_output'] ?? 'N/A',
+            'bp'           => ($vitalSignsJson['blood_pressure_systolic'] ?? $na) . '/' . ($vitalSignsJson['blood_pressure_diastolic'] ?? $na),
+            'pulse'        => $vitalSignsJson['pulse'] ?? $na,
+            'temp'         => $vitalSignsJson['temperature'] ?? $na,
+            'spo2'         => $vitalSignsJson['oxygen_saturation'] ?? $vitalSignsJson['spo2'] ?? $na,
+            'rr'           => $vitalSignsJson['respiratory_rate'] ?? $na,
+            'urine_output' => $vitalSignsJson['urine_output'] ?? $na,
         ];
 
         return [
@@ -232,14 +226,14 @@ class DocumentDataAssembler
             'ward'                   => $ward,
             'bed_number'             => $bedNumber,
             'day_of_admission'       => $dayOfAdmission,
-            'subjective'             => $clinicalNote->history_of_present_illness ?? 'Pending documentation',
+            'subjective'             => $clinicalNote->history_of_present_illness ?? __('document.pending_documentation'),
             'vital_signs'            => $vitalSigns,
-            'objective_examination'  => $clinicalNote->examination_findings ?? 'Pending',
+            'objective_examination'  => $clinicalNote->examination_findings ?? __('document.pending'),
             'investigations_today'   => [],
-            'assessment'             => 'Pending documentation',
+            'assessment'             => __('document.pending_documentation'),
             'plan'                   => [],
-            'attending_physician'    => 'Attending Physician',
-            'resident_physician'     => 'Resident',
+            'attending_physician'    => __('document.role_attending_physician'),
+            'resident_physician'     => __('document.role_resident'),
         ];
     }
 
@@ -278,28 +272,31 @@ class DocumentDataAssembler
             }
 
             $readings[] = [
-                'date'    => $roundTime->format('d M'),
+                'date'    => $roundTime->isoFormat('DD MMM'),
                 'time'    => $roundTime->format('H:i'),
-                'reading' => $glucose ?? 'Not recorded',
+                'reading' => $glucose ?? __('document.not_recorded'),
                 'action'  => '',
             ];
         }
 
-        $monitoringPeriod = 'No records';
+        $monitoringPeriod = __('document.no_records');
         if ($firstDate && $lastDate) {
-            $monitoringPeriod = $firstDate->format('d M Y') . ' – ' . $lastDate->format('d M Y');
+            $monitoringPeriod = __('document.date_range', [
+                'from' => $firstDate->isoFormat('DD MMM YYYY'),
+                'to'   => $lastDate->isoFormat('DD MMM YYYY'),
+            ]);
         }
 
         return [
             'monitoring_period'      => $monitoringPeriod,
-            'target_range'           => 'Fasting: 4.4–7.2 mmol/L | Post-prandial: < 10.0 mmol/L',
-            'diabetes_type'          => 'Type 2 Diabetes Mellitus',
-            'current_therapy'        => 'Per prescription',
+            'target_range'           => __('document.glu_target_range'),
+            'diabetes_type'          => $this->codeTitle('ICD-10', 'E11', __('document.glu_diabetes_type_fallback')),
+            'current_therapy'        => __('document.per_prescription'),
             'readings'               => $readings,
             'hypoglycaemia_episodes' => $hypoglycaemiaCount,
-            'hba1c_on_admission'     => 'Pending',
-            'endocrinology_review'   => 'Pending',
-            'monitored_by'           => 'Nursing Team',
+            'hba1c_on_admission'     => __('document.pending'),
+            'endocrinology_review'   => __('document.pending'),
+            'monitored_by'           => __('document.role_nursing_team'),
         ];
     }
 
@@ -312,27 +309,14 @@ class DocumentDataAssembler
         $admission = $this->resolveAdmission($patientId, $admissionId);
         $latestRound = $this->latestRound($patientId, $admissionId);
 
-        $ward      = 'Not assigned';
-        $bedNumber = 'Not assigned';
-        if ($admission && $admission->bed) {
-            $ward      = $admission->bed->ward ?? 'Not assigned';
-            $bedNumber = $admission->bed->bed_number ?? $admission->bed_id ?? 'Not assigned';
-        }
-
-        $patientName = 'Not recorded';
-        if ($patient) {
-            $patientName = trim(($patient->first_name ?? '') . ' ' . ($patient->last_name ?? ''));
-            if ($patientName === '') {
-                $patientName = 'Not recorded';
-            }
-        }
+        [$ward, $bedNumber] = $this->wardAndBed($admission);
 
         $patients = [
             [
                 'bed'              => $bedNumber,
-                'name'             => $patientName,
-                'diagnosis'        => $admission->admission_reason ?? 'Not recorded',
-                'concerns'         => $latestRound->observations ?? 'None',
+                'name'             => $this->patientName($patient),
+                'diagnosis'        => $admission->admission_reason ?? __('document.not_recorded'),
+                'concerns'         => $latestRound->observations ?? __('document.none'),
                 'actions_required' => [],
             ],
         ];
@@ -340,11 +324,11 @@ class DocumentDataAssembler
         return [
             'handover_date'     => Carbon::today()->toDateString(),
             'handover_time'     => Carbon::now()->format('H:i'),
-            'handing_over'      => 'Outgoing shift',
-            'receiving'         => 'Incoming shift',
+            'handing_over'      => __('document.shift_outgoing'),
+            'receiving'         => __('document.shift_incoming'),
             'ward'              => $ward,
             'patients'          => $patients,
-            'critical_alerts'   => 'None',
+            'critical_alerts'   => __('document.none'),
             'handover_complete' => false,
         ];
     }
@@ -362,17 +346,20 @@ class DocumentDataAssembler
         $latestRound = $this->latestRound($patientId, $admissionId);
         $vitalSignsJson = $this->decodeJson($latestRound->vital_signs ?? null);
 
+        $na = __('document.na');
+
         $maternalVitals = [
-            'bp'   => ($vitalSignsJson['blood_pressure_systolic'] ?? 'N/A') . '/' . ($vitalSignsJson['blood_pressure_diastolic'] ?? 'N/A'),
-            'pulse' => $vitalSignsJson['pulse'] ?? 'N/A',
-            'temp'  => $vitalSignsJson['temperature'] ?? 'N/A',
+            'bp'   => ($vitalSignsJson['blood_pressure_systolic'] ?? $na) . '/' . ($vitalSignsJson['blood_pressure_diastolic'] ?? $na),
+            'pulse' => $vitalSignsJson['pulse'] ?? $na,
+            'temp'  => $vitalSignsJson['temperature'] ?? $na,
         ];
 
-        $gestationalAge = 'Not recorded';
+        $gestationalAge = __('document.not_recorded');
         if ($latestAntenatal) {
-            $weeks = $latestAntenatal->gestational_age_weeks ?? 0;
-            $days  = $latestAntenatal->gestational_age_days ?? 0;
-            $gestationalAge = "{$weeks}w {$days}d";
+            $gestationalAge = __('document.gestational_age', [
+                'weeks' => $latestAntenatal->gestational_age_weeks ?? 0,
+                'days'  => $latestAntenatal->gestational_age_days ?? 0,
+            ]);
         }
 
         // Extract cervical dilation and fetal heart rate records from nursing rounds
@@ -408,7 +395,7 @@ class DocumentDataAssembler
 
         return [
             'date'                     => Carbon::today()->toDateString(),
-            'admission_time'           => $admission->admitted_at ?? 'Not recorded',
+            'admission_time'           => $admission->admitted_at ?? __('document.not_recorded'),
             'gestational_age'          => $gestationalAge,
             'maternal_vitals'          => $maternalVitals,
             'cervical_dilation_records' => $cervicalDilationRecords,
@@ -417,8 +404,8 @@ class DocumentDataAssembler
             'descent_records'          => [],
             'oxytocin_records'         => [],
             'medication_records'       => [],
-            'midwife'                  => 'Assigned Midwife',
-            'obstetrician'             => 'Attending Obstetrician',
+            'midwife'                  => __('document.role_assigned_midwife'),
+            'obstetrician'             => __('document.role_attending_obstetrician'),
         ];
     }
 
@@ -430,10 +417,11 @@ class DocumentDataAssembler
         $admission      = $this->resolveAdmission($patientId, $admissionId);
         $deliveryRecord = DeliveryRecord::where('patient_id', $patientId)->latest('delivery_date')->first();
 
-        $nicuBed = $admission->bed_id ?? 'NICU Incubator';
+        $nicuBed = $admission->bed_id ?? __('document.nicu_bed_default');
 
-        $gestationalAgeAtBirth = $deliveryRecord ? 'Not recorded' : 'Not recorded';
-        $birthWeightG          = $deliveryRecord->birth_weight_grams ?? 'Not recorded';
+        // Gestational age at birth is not held on the delivery record.
+        $gestationalAgeAtBirth = __('document.not_recorded');
+        $birthWeightG          = $deliveryRecord->birth_weight_grams ?? __('document.not_recorded');
 
         $postnatalAgeDays = 0;
         if ($admission && $admission->admitted_at) {
@@ -448,16 +436,18 @@ class DocumentDataAssembler
                 ->get();
         }
 
+        $na = __('document.na');
+
         $vitalSignsMapped = [];
         foreach ($rounds as $round) {
             $vs = $this->decodeJson($round->vital_signs);
             $vitalSignsMapped[] = [
                 'time' => Carbon::parse($round->round_time)->format('H:i'),
-                'temp' => $vs['temperature'] ?? 'N/A',
-                'hr'   => $vs['pulse'] ?? 'N/A',
-                'rr'   => $vs['respiratory_rate'] ?? 'N/A',
-                'spo2' => $vs['oxygen_saturation'] ?? $vs['spo2'] ?? 'N/A',
-                'bp'   => ($vs['blood_pressure_systolic'] ?? 'N/A') . '/' . ($vs['blood_pressure_diastolic'] ?? 'N/A'),
+                'temp' => $vs['temperature'] ?? $na,
+                'hr'   => $vs['pulse'] ?? $na,
+                'rr'   => $vs['respiratory_rate'] ?? $na,
+                'spo2' => $vs['oxygen_saturation'] ?? $vs['spo2'] ?? $na,
+                'bp'   => ($vs['blood_pressure_systolic'] ?? $na) . '/' . ($vs['blood_pressure_diastolic'] ?? $na),
             ];
         }
 
@@ -467,22 +457,22 @@ class DocumentDataAssembler
             'gestational_age_at_birth' => $gestationalAgeAtBirth,
             'birth_weight_g'           => $birthWeightG,
             'postnatal_age_days'       => $postnatalAgeDays,
-            'corrected_gestational_age' => 'Pending',
-            'current_weight_g'         => 'Pending',
-            'diagnoses'                => [$admission->admission_reason ?? 'Not recorded'],
-            'respiratory_support'      => ['mode' => 'Room air'],
+            'corrected_gestational_age' => __('document.pending'),
+            'current_weight_g'         => __('document.pending'),
+            'diagnoses'                => [$admission->admission_reason ?? __('document.not_recorded')],
+            'respiratory_support'      => ['mode' => __('document.room_air')],
             'vital_signs'              => $vitalSignsMapped,
             'feeds'                    => [
-                'route'     => 'Per order',
-                'type'      => 'Per order',
-                'volume'    => 'Per order',
-                'tolerance' => 'Monitoring',
+                'route'     => __('document.per_order'),
+                'type'      => __('document.per_order'),
+                'volume'    => __('document.per_order'),
+                'tolerance' => __('document.monitoring'),
             ],
-            'medications'              => ['Per prescription'],
+            'medications'              => [__('document.per_prescription')],
             'fluid_balance_24h'        => ['iv_fluids' => 0, 'oral_feeds' => 0, 'urine' => 0, 'balance' => '0'],
-            'head_ultrasound'          => 'Pending',
-            'attending_neonatologist'  => 'Neonatologist',
-            'nurse'                    => 'Assigned Nurse',
+            'head_ultrasound'          => __('document.pending'),
+            'attending_neonatologist'  => __('document.role_neonatologist'),
+            'nurse'                    => __('document.role_assigned_nurse'),
         ];
     }
 
@@ -494,13 +484,13 @@ class DocumentDataAssembler
         $patient = Patient::find($patientId);
 
         $dob = $patient->date_of_birth ?? null;
-        $sex = $patient->sex ?? 'Not recorded';
+        $sex = $patient->sex ?? __('document.not_recorded');
 
         $vitals = [];
         if ($patient) {
             $vitals = $patient->vitals()
                 ->orderBy('created_at')
-                ->get(['weight', 'height', 'created_at']);
+                ->get(['weight_kg', 'height_cm', 'created_at']);
         }
 
         $measurements = [];
@@ -514,8 +504,8 @@ class DocumentDataAssembler
                 $ageMonths = (int) Carbon::parse($dob)->diffInMonths($createdAt);
             }
 
-            $weightKg = $vital->weight ?? null;
-            $heightCm = $vital->height ?? null;
+            $weightKg = $vital->weight_kg ?? null;
+            $heightCm = $vital->height_cm ?? null;
 
             $bmi = null;
             if ($weightKg && $heightCm && $heightCm > 0) {
@@ -526,8 +516,8 @@ class DocumentDataAssembler
             $measurements[] = [
                 'date'               => $createdAt->toDateString(),
                 'age_months'         => $ageMonths,
-                'weight_kg'          => $weightKg ?? 'Not recorded',
-                'height_cm'          => $heightCm ?? 'Not recorded',
+                'weight_kg'          => $weightKg ?? __('document.not_recorded'),
+                'height_cm'          => $heightCm ?? __('document.not_recorded'),
                 'bmi'                => $bmi,
                 'weight_for_age_z'   => null,
                 'height_for_age_z'   => null,
@@ -537,15 +527,65 @@ class DocumentDataAssembler
         }
 
         return [
-            'patient_dob'   => $dob ?? 'Not recorded',
+            'patient_dob'   => $dob ?? __('document.not_recorded'),
             'sex'           => $sex,
             'measurements'  => $measurements,
-            'who_standard'  => 'WHO Child Growth Standards 2006',
-            'last_updated'  => $lastUpdated ?? 'No records',
+            'who_standard'  => __('document.growth_who_standard'),
+            'last_updated'  => $lastUpdated ?? __('document.no_records'),
         ];
     }
 
     // ── Private helpers ───────────────────────────────────────────────
+
+    /**
+     * Ward and bed labels for an admission, or the "not assigned" placeholder.
+     *
+     * @return array{0: string, 1: string}
+     */
+    private function wardAndBed(?Admission $admission): array
+    {
+        $ward      = __('document.not_assigned');
+        $bedNumber = __('document.not_assigned');
+
+        if ($admission && $admission->bed) {
+            $ward      = $admission->bed->ward ?? __('document.not_assigned');
+            $bedNumber = $admission->bed->bed_number ?? $admission->bed_id ?? __('document.not_assigned');
+        }
+
+        return [(string) $ward, (string) $bedNumber];
+    }
+
+    private function patientName(?Patient $patient): string
+    {
+        if (! $patient) {
+            return __('document.not_recorded');
+        }
+
+        $name = trim(($patient->first_name ?? '') . ' ' . ($patient->last_name ?? ''));
+
+        return $name === '' ? __('document.not_recorded') : $name;
+    }
+
+    /**
+     * The published title of a clinical code in the reader's language.
+     *
+     * Reads clinical_code_dictionary (display / display_fr) rather than
+     * translating a diagnosis here; the caller's fallback is used only when
+     * the code is not in the dictionary.
+     */
+    private function codeTitle(string $system, string $code, string $fallback): string
+    {
+        try {
+            $row = ClinicalCodeDictionary::query()
+                ->where('system', $system)
+                ->where('code', $code)
+                ->first();
+        } catch (\Throwable) {
+            $row = null;
+        }
+
+        return $row ? $row->label : $fallback;
+    }
 
     private function resolveAdmission(string $patientId, ?string $admissionId): ?Admission
     {
@@ -560,7 +600,7 @@ class DocumentDataAssembler
             ->first();
     }
 
-    private function latestVitalSign(string $patientId): ?VitalSign
+    private function latestVitalSign(string $patientId): ?TriageVitalSign
     {
         $patient = Patient::find($patientId);
         if (!$patient) {

@@ -151,6 +151,21 @@
                 ->where('emergency_review_cases.status', '!=', 'pending'))->count(), 0, false); @endphp
         @if($unreviewedBreakGlass > 0)<span class="sidebar-badge sidebar-badge--warning">{{ $unreviewedBreakGlass }}</span>@endif
     </a>
+    {{-- Three built security desks were reachable by URL only. The overview
+         above links to them from its panels, but a page nobody can find from
+         the nav is a page nobody uses. --}}
+    <a href="{{ route('portals.admin.security.incidents') }}" class="sidebar-link sidebar-link--child {{ request()->routeIs('portals.admin.security.incidents*') ? 'active' : '' }}">
+        <i data-lucide="siren"></i><span>{{ __('security_ops.nav_incidents', [], $l) ?: 'Security incidents' }}</span>
+    </a>
+    <a href="{{ route('portals.admin.security.audit_explorer') }}" class="sidebar-link sidebar-link--child {{ request()->routeIs('portals.admin.security.audit_explorer*') ? 'active' : '' }}">
+        <i data-lucide="search-code"></i><span>{{ __('security_ops.nav_audit_explorer', [], $l) ?: 'Audit explorer' }}</span>
+    </a>
+    <a href="{{ route('portals.admin.security.emergency_access') }}" class="sidebar-link sidebar-link--child {{ request()->routeIs('portals.admin.security.emergency_access*') ? 'active' : '' }}">
+        <i data-lucide="alert-triangle"></i><span>{{ __('security_ops.nav_emergency_access', [], $l) ?: 'Emergency access reviews' }}</span>
+    </a>
+    <a href="{{ route('admin.care-map.governance') }}" class="sidebar-link {{ request()->routeIs('admin.care-map.governance*') ? 'active' : '' }}">
+        <i data-lucide="map-pinned"></i><span>{{ __('public.portal.nav_caremap_governance', [], $l) ?: 'Directory governance' }}</span>
+    </a>
 </div>
 
 {{-- Control Center --}}

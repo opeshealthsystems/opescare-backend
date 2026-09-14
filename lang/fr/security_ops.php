@@ -12,6 +12,9 @@ return [
     'action_failed' => 'Une erreur s’est produite et l’action n’a pas été effectuée. Les détails figurent dans le journal.',
     // Commun
     'nav' => 'Supervision sécurité',
+    'nav_incidents' => 'Incidents de sécurité',
+    'nav_audit_explorer' => "Explorateur d'audit",
+    'nav_emergency_access' => "Revues des accès d'urgence",
     'breadcrumb_home' => 'Admin',
     'btn_filter' => 'Filtrer',
     'btn_clear' => 'Effacer',

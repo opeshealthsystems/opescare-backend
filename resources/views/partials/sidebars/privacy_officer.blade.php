@@ -1,7 +1,9 @@
 @php $l = app()->getLocale(); @endphp
-{{-- Privacy officer is a platform-tier role landing on the admin dashboard.
-     Its historical governance surfaces were pruned from the finder, and Help
-     lives in the top bar, so the sidebar is just the dashboard. --}}
+{{-- Platform-tier role. It lands on the admin dashboard and holds the whole
+     platform console by tier, but until now its sidebar linked ONLY the
+     dashboard: the desks this role exists for were built, reachable by URL,
+     and never linked — a reviewer who did not know the address had no job
+     to do. The links below are the role's actual work. --}}
 <div class="sidebar-role-badge">
     <i data-lucide="eye-off"></i>
     {{ __('portal.privacy_officer_role', [], $l) ?: 'Privacy Officer' }}
@@ -13,3 +15,20 @@
         <i data-lucide="layout-dashboard"></i><span>{{ __('public.portal.nav_dashboard', [], $l) ?: 'Dashboard' }}</span>
     </a>
 </div>
+
+<div class="sidebar-nav-section">
+    <a href="{{ route('portals.admin.governance.index') }}" class="sidebar-link {{ request()->routeIs('portals.admin.governance.index*') ? 'active' : '' }}">
+        <i data-lucide="scale"></i><span>{{ __('governance_desk.nav', [], $l) ?: 'Patient rights' }}</span>
+    </a>
+    <a href="{{ route('portals.admin.legal.complaints') }}" class="sidebar-link {{ request()->routeIs('portals.admin.legal.complaints*') ? 'active' : '' }}">
+        <i data-lucide="message-square-warning"></i><span>{{ __('public.adm_legal_btn_complaints', [], $l) ?: 'Complaints' }}</span>
+    </a>
+    <a href="{{ route('portals.admin.legal.closures') }}" class="sidebar-link {{ request()->routeIs('portals.admin.legal.closures*') ? 'active' : '' }}">
+        <i data-lucide="archive"></i><span>{{ __('public.adm_legal_btn_closures', [], $l) ?: 'Closures' }}</span>
+    </a>
+    <a href="{{ route('portals.admin.legal.minor_transitions') }}" class="sidebar-link {{ request()->routeIs('portals.admin.legal.minor_transitions*') ? 'active' : '' }}">
+        <i data-lucide="user-round-cog"></i><span>{{ __('public.adm_legal_btn_minor_transitions', [], $l) ?: 'Minor Transitions' }}</span>
+    </a>
+</div>
+
+@include('partials.sidebars._switch_facility')

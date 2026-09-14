@@ -20,12 +20,23 @@
         <div class="stat-card__value">{{ $kpis['todays_appointments'] ?? 0 }}</div>
         <div class="stat-card__hint">{{ __('public.staff_portal.kpi_scheduled_today', [], app()->getLocale()) ?: 'Scheduled today' }}</div>
     </div>
+    {{-- The tile is the door to the queue desk for roles that hold the
+         `queue` capability (the same gate as the route); for anyone else it
+         stays a plain figure rather than a link that would 403. --}}
+    @capability('queue')
+    <a href="{{ route('portals.queue.index') }}" class="stat-card stat-card--teal">
+    @else
     <div class="stat-card stat-card--teal">
+    @endcapability
         <div class="stat-card__head"><i data-lucide="list-ordered"></i></div>
         <div class="stat-card__label">{{ __('public.staff_portal.kpi_patient_queue', [], app()->getLocale()) ?: 'Patient Queue' }}</div>
         <div class="stat-card__value">{{ $kpis['in_queue'] ?? 0 }}</div>
         <div class="stat-card__hint">{{ __('public.staff_portal.kpi_currently_waiting', [], app()->getLocale()) ?: 'Currently waiting' }}</div>
+    @capability('queue')
+    </a>
+    @else
     </div>
+    @endcapability
     <div class="stat-card stat-card--warning">
         <div class="stat-card__head"><i data-lucide="send"></i></div>
         <div class="stat-card__label">{{ __('public.staff_portal.kpi_pending_referrals', [], app()->getLocale()) ?: 'Pending Referrals' }}</div>

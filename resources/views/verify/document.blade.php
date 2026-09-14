@@ -15,8 +15,9 @@
         {{--
             The verifier for an OpesCare Secure DOCUMENT — the page the QR code
             printed on a record export, prescription or report lands on. Same
-            visual language as verify/qr (the Health ID verifier). Three states:
-            valid · revoked · invalid.
+            visual language as verify/qr (the Health ID verifier). Four states:
+            valid · revoked · expired · invalid. $document is a
+            App\Services\Patient\VerifiedDocumentCard (either token family).
         --}}
         :root {
             --navy: #0E1729; --deep: #0C3F6C; --brand: #0F4C81; --soft: #EAF1F8; --light: #3D77AC;
@@ -64,6 +65,7 @@
         .state p  { font-size: .85rem; color: var(--muted); margin-top: .2rem; }
         .state.valid h2 { color: var(--ok); }
         .state.revoked h2, .state.invalid h2 { color: var(--bad); }
+        .state.expired h2 { color: var(--warn); }
 
         .body { padding: 1.25rem 1.5rem 1.5rem; display: grid; gap: 1rem; }
 
@@ -129,16 +131,19 @@
         $glyph = match ($state) {
             'valid'   => 'indicator-verified',
             'revoked' => 'indicator-revoked',
+            'expired' => 'indicator-expired',
             default   => 'indicator-invalid',
         };
         $stateTitle = match ($state) {
             'valid'   => __('verify.doc_valid_title'),
             'revoked' => __('verify.doc_revoked_title'),
+            'expired' => __('verify.doc_expired_title'),
             default   => __('verify.doc_invalid_title'),
         };
         $stateBody = match ($state) {
             'valid'   => __('verify.doc_valid_body'),
             'revoked' => __('verify.doc_revoked_body'),
+            'expired' => __('verify.doc_expired_body'),
             default   => __('verify.doc_invalid_body'),
         };
     @endphp
@@ -182,7 +187,7 @@
                     </div>
                     <div>
                         <div class="label"><i data-lucide="calendar"></i>{{ __('verify.doc_issued') }}</div>
-                        <div class="value">{{ $document->issued_at->translatedFormat('d M Y, H:i') }}</div>
+                        <div class="value">{{ $document->issuedAt?->translatedFormat('d M Y, H:i') ?? '—' }}</div>
                     </div>
                 </div>
 
@@ -191,7 +196,9 @@
                     <div><dt><i data-lucide="fingerprint"></i>{{ __('verify.doc_fingerprint') }}</dt><dd class="mono">{{ $document->shortFingerprint() }}</dd></div>
                     @endif
                     <div><dt><i data-lucide="clock"></i>{{ __('verify.meta_verified_at') }}</dt><dd>{{ $verified_at->translatedFormat('d M Y, H:i') }}</dd></div>
-                    <div><dt><i data-lucide="scan-line"></i>{{ __('verify.doc_scans') }}</dt><dd>{{ $document->scan_count }}</dd></div>
+                    @if($document->scanCount !== null)
+                    <div><dt><i data-lucide="scan-line"></i>{{ __('verify.doc_scans') }}</dt><dd>{{ $document->scanCount }}</dd></div>
+                    @endif
                 </dl>
 
                 <div class="note"><i data-lucide="lock"></i><span>{{ __('verify.doc_note') }}</span></div>

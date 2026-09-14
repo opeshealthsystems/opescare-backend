@@ -31,6 +31,14 @@
 
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_account', [], $l) ?: 'Account' }}</div>
+    {{-- Both pages were built and reachable by URL only. Notification
+         preferences live inside the notifications page. --}}
+    <a href="{{ route('portals.patient.notifications') }}" class="sidebar-link {{ request()->routeIs('portals.patient.notifications*') ? 'active' : '' }}">
+        <i data-lucide="bell"></i><span>{{ __('public.portal.nav_notifications', [], $l) ?: 'Notifications' }}</span>
+    </a>
+    <a href="{{ route('portals.patient.refer') }}" class="sidebar-link {{ request()->routeIs('portals.patient.refer*') ? 'active' : '' }}">
+        <i data-lucide="gift"></i><span>{{ __('referral.title', [], $l) ?: 'Refer & Earn' }}</span>
+    </a>
     <a href="{{ route('portals.patient.settings') }}" class="sidebar-link {{ request()->routeIs('portals.patient.settings') ? 'active' : '' }}">
         <i data-lucide="settings"></i><span>{{ __('public.portal.nav_settings', [], $l) ?: 'Settings' }}</span>
     </a>

@@ -4,6 +4,7 @@ namespace App\Services\Patient;
 
 use App\Models\DocumentVerification;
 use App\Models\Patient;
+use App\Services\Documents\OfficialDocumentTokenService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -16,13 +17,56 @@ use Illuminate\Support\Str;
  * row cannot be turned back into a scannable code. The human reference
  * (OC-DOC-XXXX-XXXX) is what a facility reads out over the phone; it uses an
  * alphabet without 0/O/1/I so it survives being read aloud.
+ *
+ * The verifier page (check()) also accepts the older `vdt_…` tokens that
+ * DocumentIssuanceService mints for every OfficialDocument, by delegating to
+ * OfficialDocumentTokenService. A genuine token must never read as a forgery
+ * just because it came from the other token store.
  */
 class DocumentVerificationService
 {
     public const TYPE_MEDICAL_RECORD = 'medical_record';
 
+    public const STATE_VALID   = 'valid';
+    public const STATE_REVOKED = 'revoked';
+    public const STATE_EXPIRED = 'expired';
+    public const STATE_INVALID = 'invalid';
+
     /** Reference alphabet: no 0/O, no 1/I. */
     private const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+    public function __construct(private readonly OfficialDocumentTokenService $officialTokens)
+    {
+    }
+
+    /**
+     * The one answer the /verify/doc page needs, for either token family:
+     * a state (valid · revoked · expired · invalid) and, when valid, the card
+     * describing the document. Counts the check on the row it names.
+     *
+     * @return array{state: string, card: VerifiedDocumentCard|null}
+     */
+    public function check(string $rawToken): array
+    {
+        if (OfficialDocumentTokenService::looksLikeToken($rawToken)) {
+            $resolved = $this->officialTokens->resolve($rawToken);
+
+            return [
+                'state' => $resolved['state'],
+                'card'  => $resolved['state'] === self::STATE_VALID && $resolved['document']
+                    ? VerifiedDocumentCard::fromOfficialDocument($resolved['document'])
+                    : null,
+            ];
+        }
+
+        $record = $this->verify($rawToken);
+
+        if ($record) {
+            return ['state' => self::STATE_VALID, 'card' => VerifiedDocumentCard::fromVerification($record)];
+        }
+
+        return ['state' => $this->failureState($rawToken), 'card' => null];
+    }
 
     /**
      * Create the verification row BEFORE the document is rendered — the QR

@@ -5,7 +5,7 @@ use App\Models\AppointmentWaitlist;
 use App\Models\Facility;
 use App\Models\Patient;
 use App\Models\User;
-use App\Services\Appointments\WaitlistService;
+use App\Services\Appointments\AppointmentWaitlistService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -14,7 +14,7 @@ class WaitlistTest extends TestCase
 {
     use RefreshDatabase;
 
-    private WaitlistService $service;
+    private AppointmentWaitlistService $service;
     private Patient $patient;
     private Facility $facility;
     private User $provider;
@@ -22,7 +22,7 @@ class WaitlistTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service  = app(WaitlistService::class);
+        $this->service  = app(AppointmentWaitlistService::class);
         $this->patient  = Patient::factory()->create();
         $this->facility = Facility::factory()->create();
         $this->provider = User::factory()->create();

@@ -12,6 +12,9 @@ return [
     'action_failed' => 'Something went wrong and the action was not carried out. The details are in the log.',
     // Shared
     'nav' => 'Security oversight',
+    'nav_incidents' => 'Security incidents',
+    'nav_audit_explorer' => 'Audit explorer',
+    'nav_emergency_access' => 'Emergency access reviews',
     'breadcrumb_home' => 'Admin',
     'btn_filter' => 'Filter',
     'btn_clear' => 'Clear',

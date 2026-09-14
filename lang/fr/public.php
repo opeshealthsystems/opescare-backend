@@ -234,6 +234,7 @@ return [
         'nav_team'                => 'Équipe',
         'nav_messages'            => 'Messages',
         'nav_notifications'       => 'Notifications',
+        'nav_caremap_governance'  => "Gouvernance de l'annuaire",
         'nav_settings'            => 'Paramètres',
         'nav_blood_inventory'     => 'Stock de sang',
         'nav_production_requests' => 'Demandes de production',

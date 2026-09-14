@@ -9,30 +9,37 @@ use Illuminate\Support\Facades\DB;
 
 class SurveyService
 {
+    /**
+     * Question templates. `key` and `type` are the stored contract
+     * (survey_responses.question_key / response_type) and must never change;
+     * the wording lives in lang/{en,fr}/surveys.php under
+     * surveys.<template>.<key> and is resolved in the request locale by
+     * getTemplate(), so a French-speaking patient is asked in French.
+     */
     private const TEMPLATES = [
         'post_visit' => [
-            ['key' => 'overall_experience',     'text' => 'How would you rate your overall experience?',          'type' => 'rating_5'],
-            ['key' => 'wait_time',               'text' => 'How would you rate the wait time?',                    'type' => 'rating_5'],
-            ['key' => 'provider_communication',  'text' => 'How well did the provider communicate with you?',      'type' => 'rating_5'],
-            ['key' => 'would_recommend',         'text' => 'Would you recommend this facility to others?',         'type' => 'yes_no'],
-            ['key' => 'comments',                'text' => 'Any additional comments?',                             'type' => 'text'],
+            ['key' => 'overall_experience',     'type' => 'rating_5'],
+            ['key' => 'wait_time',               'type' => 'rating_5'],
+            ['key' => 'provider_communication',  'type' => 'rating_5'],
+            ['key' => 'would_recommend',         'type' => 'yes_no'],
+            ['key' => 'comments',                'type' => 'text'],
         ],
         'discharge' => [
-            ['key' => 'care_quality',            'text' => 'How would you rate the quality of care received?',     'type' => 'rating_5'],
-            ['key' => 'discharge_instructions',  'text' => 'Were your discharge instructions clearly explained?',  'type' => 'yes_no'],
-            ['key' => 'follow_up_clarity',       'text' => 'How clear were your follow-up instructions?',          'type' => 'rating_5'],
-            ['key' => 'comments',                'text' => 'Any additional comments?',                             'type' => 'text'],
+            ['key' => 'care_quality',            'type' => 'rating_5'],
+            ['key' => 'discharge_instructions',  'type' => 'yes_no'],
+            ['key' => 'follow_up_clarity',       'type' => 'rating_5'],
+            ['key' => 'comments',                'type' => 'text'],
         ],
         'telemedicine' => [
-            ['key' => 'connection_quality',      'text' => 'How was the video/audio connection quality?',          'type' => 'rating_5'],
-            ['key' => 'overall_experience',      'text' => 'How would you rate your telemedicine experience?',     'type' => 'rating_5'],
-            ['key' => 'would_recommend',         'text' => 'Would you use telemedicine again?',                    'type' => 'yes_no'],
-            ['key' => 'comments',                'text' => 'Any additional comments?',                             'type' => 'text'],
+            ['key' => 'connection_quality',      'type' => 'rating_5'],
+            ['key' => 'overall_experience',      'type' => 'rating_5'],
+            ['key' => 'would_recommend',         'type' => 'yes_no'],
+            ['key' => 'comments',                'type' => 'text'],
         ],
         'general' => [
-            ['key' => 'overall_experience',      'text' => 'How would you rate your overall experience?',          'type' => 'rating_5'],
-            ['key' => 'would_recommend',         'text' => 'Would you recommend us to others?',                    'type' => 'yes_no'],
-            ['key' => 'comments',                'text' => 'Any additional comments?',                             'type' => 'text'],
+            ['key' => 'overall_experience',      'type' => 'rating_5'],
+            ['key' => 'would_recommend',         'type' => 'yes_no'],
+            ['key' => 'comments',                'type' => 'text'],
         ],
     ];
 
@@ -43,7 +50,7 @@ class SurveyService
         ?string $visitId = null
     ): PatientSurvey {
         if (! isset(self::TEMPLATES[$templateKey])) {
-            throw new \InvalidArgumentException("Unknown survey template: {$templateKey}");
+            throw new \InvalidArgumentException(__('surveys.unknown_template', ['template' => $templateKey]));
         }
 
         $survey = PatientSurvey::create([
@@ -64,14 +71,16 @@ class SurveyService
         $survey = PatientSurvey::findOrFail($surveyId);
 
         if ($survey->status === 'expired') {
-            throw new \RuntimeException('Survey has expired.');
+            throw new \RuntimeException(__('surveys.expired'));
         }
 
         if ($survey->status === 'completed') {
-            throw new \RuntimeException('Survey already completed.');
+            throw new \RuntimeException(__('surveys.already_completed'));
         }
 
-        $template = self::TEMPLATES[$survey->template_key] ?? [];
+        // question_text is stored as the patient saw it, in their locale.
+        // Rows already stored keep whatever wording they were answered under.
+        $template = $this->getTemplate($survey->template_key);
 
         DB::transaction(function () use ($survey, $responses, $template) {
             foreach ($template as $question) {
@@ -125,8 +134,19 @@ class SurveyService
             ->update(['status' => 'expired']);
     }
 
+    /**
+     * The questions of a template with `text` resolved in the current locale.
+     *
+     * @return list<array{key: string, text: string, type: string}>
+     */
     public function getTemplate(string $templateKey): array
     {
-        return self::TEMPLATES[$templateKey] ?? [];
+        $questions = self::TEMPLATES[$templateKey] ?? [];
+
+        return array_map(fn (array $q) => [
+            'key'  => $q['key'],
+            'text' => __("surveys.{$templateKey}.{$q['key']}"),
+            'type' => $q['type'],
+        ], $questions);
     }
 }

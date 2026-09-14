@@ -42,4 +42,30 @@ class QueueTicket extends Model
     {
         return $this->belongsTo(Patient::class);
     }
+
+    public function facility()
+    {
+        return $this->belongsTo(Facility::class);
+    }
+
+    public function visit()
+    {
+        return $this->belongsTo(Visit::class);
+    }
+
+    public function appointment()
+    {
+        return $this->belongsTo(Appointment::class);
+    }
+
+    public function assignedTo()
+    {
+        return $this->belongsTo(User::class, 'assigned_to_id');
+    }
+
+    /** Append-only, oldest first: the ticket's life as it was recorded. */
+    public function histories()
+    {
+        return $this->hasMany(QueueStatusHistory::class)->orderBy('changed_at')->orderBy('created_at');
+    }
 }

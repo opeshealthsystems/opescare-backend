@@ -170,6 +170,8 @@ return [
     'doc_valid_body'                => 'Issued by OpesCare and still standing. Check the reference and holder against the paper in your hand.',
     'doc_revoked_title'             => 'Document withdrawn',
     'doc_revoked_body'              => 'This document was withdrawn after it was issued — it may have been reissued with corrections. Do not rely on it.',
+    'doc_expired_title'             => 'Document expired',
+    'doc_expired_body'              => 'This document was issued by OpesCare but its validity period has ended. Ask the holder for a current one.',
     'doc_invalid_title'             => 'Not a recognised document',
     'doc_invalid_body'              => 'This code does not match any document OpesCare issued. It may have been altered or copied from another document.',
     'doc_holder'                    => 'Holder',

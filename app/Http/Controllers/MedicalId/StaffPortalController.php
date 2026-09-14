@@ -12,6 +12,7 @@ use App\Models\ReferralCase;
 use App\Modules\Appointments\Services\AppointmentService;
 use App\Modules\Search\Services\GlobalSearchService;
 use App\Services\Portal\PortalContextService;
+use App\Services\Queue\PatientQueueService;
 use Illuminate\Http\Request;
 use Throwable;
 
@@ -27,7 +28,12 @@ class StaffPortalController extends Controller
         $todayEnd   = now()->endOfDay();
 
         $apptQuery    = Appointment::whereBetween('scheduled_at', [$todayStart, $todayEnd]);
-        $queueQuery   = QueueTicket::whereIn('status', ['waiting', 'called', 'service_started']);
+        // "In queue" = still in the room TODAY. The status list is the one
+        // PatientQueueService owns, so the tile and the desk can never count
+        // different things; the day bound stops a ticket nobody closed last
+        // week from sitting on the dashboard forever.
+        $queueQuery   = QueueTicket::whereIn('status', PatientQueueService::ACTIVE_STATUSES)
+            ->whereBetween('checked_in_at', [$todayStart, $todayEnd]);
         $invoiceQuery = Invoice::where('status', 'issued');
 
         $this->ctx->scopeToFacility($apptQuery);
@@ -267,10 +273,13 @@ class StaffPortalController extends Controller
     {
         $query = trim($request->input('q', ''));
 
+        // No `include_sensitive` flag: GlobalSearchService no longer has a
+        // patient branch to switch on. The flag used to be the only thing
+        // between this screen and a name-prefix search of the patient
+        // register, so the branch was deleted rather than left off.
         $context = [
-            'actor_id'          => $this->ctx->actorId(),
-            'facility_id'       => $this->ctx->facilityId(),
-            'include_sensitive' => false,
+            'actor_id'    => $this->ctx->actorId(),
+            'facility_id' => $this->ctx->facilityId(),
         ];
 
         $data = $query !== '' ? $svc->search($query, $context) : ['query' => '', 'results' => [], 'counts' => []];

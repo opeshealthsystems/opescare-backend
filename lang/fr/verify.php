@@ -170,6 +170,8 @@ return [
     'doc_valid_body'                => 'Émis par OpesCare et toujours valable. Comparez la référence et le titulaire avec le document que vous tenez.',
     'doc_revoked_title'             => 'Document retiré',
     'doc_revoked_body'              => 'Ce document a été retiré après son émission — il a peut-être été réémis avec des corrections. Ne vous y fiez pas.',
+    'doc_expired_title'             => 'Document expiré',
+    'doc_expired_body'              => 'Ce document a bien été émis par OpesCare, mais sa période de validité est terminée. Demandez au titulaire un document à jour.',
     'doc_invalid_title'             => 'Document non reconnu',
     'doc_invalid_body'              => 'Ce code ne correspond à aucun document émis par OpesCare. Il a peut-être été altéré ou copié depuis un autre document.',
     'doc_holder'                    => 'Titulaire',

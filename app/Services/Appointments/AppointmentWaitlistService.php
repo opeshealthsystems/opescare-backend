@@ -4,7 +4,14 @@ namespace App\Services\Appointments;
 use App\Models\AppointmentWaitlist;
 use Carbon\Carbon;
 
-class WaitlistService
+/**
+ * Waitlist backed by `appointment_waitlists` (App\Models\AppointmentWaitlist).
+ *
+ * Not to be confused with App\Modules\Appointments\Services\WaitlistService,
+ * which writes `waitlist_entries` and serves the /api/v1 appointment routes.
+ * The two tables are different and are deliberately not merged.
+ */
+class AppointmentWaitlistService
 {
     public function addToWaitlist(array $data): AppointmentWaitlist
     {

@@ -16,6 +16,9 @@
     <a href="{{ route('portals.developer.apps') }}" class="sidebar-link {{ request()->routeIs('portals.developer.apps*') ? 'active' : '' }}">
         <i data-lucide="app-window"></i><span>{{ __('public.portal.nav_apps', [], $l) ?: 'My Apps' }}</span>
     </a>
+    <a href="{{ route('portals.developer.webhook_deliveries') }}" class="sidebar-link {{ request()->routeIs('portals.developer.webhook_deliveries*') ? 'active' : '' }}">
+        <i data-lucide="webhook"></i><span>{{ __('public.portal.nav_webhooks', [], $l) ?: 'Webhooks' }}</span>
+    </a>
     <a href="{{ route('portals.developer.analytics') }}" class="sidebar-link {{ request()->routeIs('portals.developer.analytics*') ? 'active' : '' }}">
         <i data-lucide="bar-chart-3"></i><span>{{ __('public.portal.nav_analytics', [], $l) ?: 'Analytics' }}</span>
     </a>

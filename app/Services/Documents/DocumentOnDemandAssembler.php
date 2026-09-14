@@ -5,11 +5,21 @@ namespace App\Services\Documents;
 use App\Models\Patient;
 use App\Models\Admission;
 use App\Models\NursingRound;
-use App\Models\VitalSign;
 use App\Models\Prescription;
 use App\Models\ClinicalNote;
 use Carbon\Carbon;
 
+/**
+ * Assembles the data behind the on-demand ward forms (surgical safety
+ * checklist, nursing admission assessment, investigation request, fall risk,
+ * pressure ulcer risk, wound care chart).
+ *
+ * Every human-readable string goes through lang/{en,fr}/document.php and every
+ * date through Carbon::isoFormat(), so the form comes out in the locale the
+ * request resolved (App\Http\Middleware\SetLocale). Instrument names and
+ * subscale labels (Morse, Braden) are kept to their published wording; where a
+ * French form was not verified the lang file says so and keeps the English.
+ */
 class DocumentOnDemandAssembler
 {
     /**
@@ -32,6 +42,13 @@ class DocumentOnDemandAssembler
                 ->first();
     }
 
+    private function patientName(?Patient $patient): string
+    {
+        return $patient
+            ? trim(($patient->first_name ?? '') . ' ' . ($patient->last_name ?? ''))
+            : __('document.unknown_patient');
+    }
+
     /**
      * Method 1: Surgical Safety Checklist
      */
@@ -40,30 +57,28 @@ class DocumentOnDemandAssembler
         $patient   = Patient::find($patientId);
         $admission = $this->resolveAdmission($patientId, $admissionId);
 
-        $patientName = $patient
-            ? trim(($patient->first_name ?? '') . ' ' . ($patient->last_name ?? ''))
-            : 'Unknown Patient';
+        $patientName = $this->patientName($patient);
 
-        $healthId = $patient->health_id ?? 'N/A';
+        $healthId = $patient->health_id ?? __('document.na');
 
-        $allergiesKnown = 'None known';
+        $allergiesKnown = __('document.none_known');
         if ($patient) {
             try {
-                $allergyNames = $patient->allergies()->pluck('name')->filter()->implode(', ');
+                $allergyNames = $patient->allergies()->pluck('substance')->filter()->implode(', ');
                 if ($allergyNames) {
                     $allergiesKnown = $allergyNames;
                 }
             } catch (\Throwable $e) {
-                $allergiesKnown = 'None known';
+                $allergiesKnown = __('document.none_known');
             }
         }
 
         return [
-            'procedure'      => $admission->admission_reason ?? 'Scheduled procedure',
-            'scheduled_time' => Carbon::now()->format('d M Y, H:i'),
-            'surgeon'        => 'Attending Surgeon',
-            'anaesthetist'   => 'Anaesthetist',
-            'scrub_nurse'    => 'Scrub Nurse',
+            'procedure'      => $admission->admission_reason ?? __('document.ssc_scheduled_procedure'),
+            'scheduled_time' => Carbon::now()->isoFormat('DD MMM YYYY, HH:mm'),
+            'surgeon'        => __('document.role_attending_surgeon'),
+            'anaesthetist'   => __('document.role_anaesthetist'),
+            'scrub_nurse'    => __('document.role_scrub_nurse'),
             'sign_in'        => [
                 'identity_confirmed' => false,
                 'site_marked'        => false,
@@ -73,22 +88,22 @@ class DocumentOnDemandAssembler
                 'allergies_known'    => $allergiesKnown,
                 'difficult_airway'   => false,
                 'aspiration_risk'    => false,
-                'blood_loss_risk'    => 'Unknown',
+                'blood_loss_risk'    => __('document.unknown'),
             ],
             'time_out'       => [
                 'team_introduced'   => false,
                 'patient_identity'  => $patientName . ' — ' . $healthId,
                 'procedure_confirmed' => false,
                 'site_confirmed'    => '',
-                'antibiotics_given' => 'Pending',
+                'antibiotics_given' => __('document.pending'),
                 'imaging_displayed' => false,
                 'critical_steps_shared' => '',
             ],
             'sign_out'       => [
                 'procedure_recorded'  => false,
                 'instrument_count_ok' => false,
-                'specimen_labelled'   => 'None',
-                'equipment_issues'    => 'None',
+                'specimen_labelled'   => __('document.none'),
+                'equipment_issues'    => __('document.none'),
                 'recovery_concerns'   => '',
             ],
             'completed_at'   => null,
@@ -104,39 +119,40 @@ class DocumentOnDemandAssembler
         $admission = $this->resolveAdmission($patientId, $admissionId);
 
         // Admission date
-        $admissionDate = Carbon::today()->format('d M Y');
+        $admissionDate = Carbon::today()->isoFormat('DD MMM YYYY');
         if ($admission && $admission->admitted_at) {
             try {
-                $admissionDate = Carbon::parse($admission->admitted_at)->format('d M Y, H:i');
+                $admissionDate = Carbon::parse($admission->admitted_at)->isoFormat('DD MMM YYYY, HH:mm');
             } catch (\Throwable $e) {
                 // keep default
             }
         }
 
         // Vital signs
+        $notRecorded = __('document.not_recorded');
         $vitalSigns = [
-            'bp'     => 'Not recorded',
-            'pulse'  => 'Not recorded',
-            'temp'   => 'Not recorded',
-            'rr'     => 'Not recorded',
-            'spo2'   => 'Not recorded',
-            'weight' => 'Not recorded',
-            'height' => 'Not recorded',
-            'bmi'    => 'Not recorded',
+            'bp'     => $notRecorded,
+            'pulse'  => $notRecorded,
+            'temp'   => $notRecorded,
+            'rr'     => $notRecorded,
+            'spo2'   => $notRecorded,
+            'weight' => $notRecorded,
+            'height' => $notRecorded,
+            'bmi'    => $notRecorded,
         ];
 
         if ($patient) {
             try {
-                /** @var VitalSign|null $latestVital */
+                /** @var \App\Models\TriageVitalSign|null $latestVital */
                 $latestVital = $patient->vitals()->latest()->first();
                 if ($latestVital) {
-                    $systolic  = $latestVital->blood_pressure_systolic;
-                    $diastolic = $latestVital->blood_pressure_diastolic;
+                    $systolic  = $latestVital->systolic_bp;
+                    $diastolic = $latestVital->diastolic_bp;
                     if ($systolic !== null && $diastolic !== null) {
                         $vitalSigns['bp'] = $systolic . '/' . $diastolic . ' mmHg';
                     }
-                    if ($latestVital->pulse !== null) {
-                        $vitalSigns['pulse'] = $latestVital->pulse . ' bpm';
+                    if ($latestVital->pulse_rate !== null) {
+                        $vitalSigns['pulse'] = $latestVital->pulse_rate . ' bpm';
                     }
                     if ($latestVital->temperature !== null) {
                         $vitalSigns['temp'] = $latestVital->temperature . '°C';
@@ -147,16 +163,16 @@ class DocumentOnDemandAssembler
                     if ($latestVital->oxygen_saturation !== null) {
                         $vitalSigns['spo2'] = $latestVital->oxygen_saturation . '%';
                     }
-                    if ($latestVital->weight !== null) {
-                        $vitalSigns['weight'] = $latestVital->weight . ' kg';
+                    if ($latestVital->weight_kg !== null) {
+                        $vitalSigns['weight'] = $latestVital->weight_kg . ' kg';
                     }
-                    if ($latestVital->height !== null) {
-                        $vitalSigns['height'] = $latestVital->height . ' cm';
+                    if ($latestVital->height_cm !== null) {
+                        $vitalSigns['height'] = $latestVital->height_cm . ' cm';
                     }
                     // BMI calculation
-                    if ($latestVital->weight !== null && $latestVital->height !== null && (float) $latestVital->height > 0) {
-                        $heightM = (float) $latestVital->height / 100;
-                        $bmi     = round((float) $latestVital->weight / ($heightM * $heightM), 1);
+                    if ($latestVital->weight_kg !== null && $latestVital->height_cm !== null && (float) $latestVital->height_cm > 0) {
+                        $heightM = (float) $latestVital->height_cm / 100;
+                        $bmi     = round((float) $latestVital->weight_kg / ($heightM * $heightM), 1);
                         $vitalSigns['bmi'] = (string) $bmi;
                     }
                 }
@@ -171,10 +187,10 @@ class DocumentOnDemandAssembler
             try {
                 foreach ($patient->allergies()->get() as $allergy) {
                     $allergies[] = [
-                        'allergen'    => $allergy->name ?? 'Unknown',
-                        'reaction'    => 'Reaction',
-                        'severity'    => 'Unknown',
-                        'recorded_by' => 'Staff',
+                        'allergen'    => $allergy->substance ?? __('document.unknown'),
+                        'reaction'    => __('document.naa_reaction'),
+                        'severity'    => __('document.unknown'),
+                        'recorded_by' => __('document.staff'),
                     ];
                 }
             } catch (\Throwable $e) {
@@ -192,11 +208,11 @@ class DocumentOnDemandAssembler
                 if ($latestPrescription) {
                     foreach ($latestPrescription->items()->get() as $item) {
                         $currentMedications[] = [
-                            'drug_name'     => $item->drug_name    ?? 'Unknown',
+                            'drug_name'     => $item->drug_name    ?? __('document.unknown'),
                             'drug_code'     => $item->drug_code    ?? '',
-                            'dose'          => $item->dose         ?? 'Not specified',
-                            'frequency'     => $item->frequency    ?? 'Not specified',
-                            'route'         => $item->route        ?? 'Not specified',
+                            'dose'          => $item->dose         ?? __('document.not_specified'),
+                            'frequency'     => $item->frequency    ?? __('document.not_specified'),
+                            'route'         => $item->route        ?? __('document.not_specified'),
                             'duration_days' => $item->duration_days ?? null,
                         ];
                     }
@@ -208,33 +224,33 @@ class DocumentOnDemandAssembler
 
         return [
             'admission_date'        => $admissionDate,
-            'admission_mode'        => $admission->admission_reason ?? 'Emergency',
-            'ward'                  => 'Ward',
-            'bed_number'            => $admission->bed_id ?? 'Not assigned',
-            'chief_complaint'       => $admission->admission_reason ?? 'Not documented',
+            'admission_mode'        => $admission->admission_reason ?? __('document.naa_admission_mode_emergency'),
+            'ward'                  => __('document.ward'),
+            'bed_number'            => $admission->bed_id ?? __('document.not_assigned'),
+            'chief_complaint'       => $admission->admission_reason ?? __('document.not_documented'),
             'vital_signs_on_admission' => $vitalSigns,
             'allergies'             => $allergies,
-            'past_medical_history'  => 'Not documented',
+            'past_medical_history'  => __('document.not_documented'),
             'current_medications'   => $currentMedications,
             'pain_score'            => null,
             'pain_location'         => '',
             'nutritional_screen'    => [
                 'must_score'        => 0,
-                'nutritional_risk'  => 'Pending assessment',
-                'diet_on_admission' => 'Normal',
+                'nutritional_risk'  => __('document.pending_assessment'),
+                'diet_on_admission' => __('document.diet_normal'),
             ],
             'fall_risk'             => [
                 'morse_score'   => 0,
-                'risk_level'    => 'Pending assessment',
+                'risk_level'    => __('document.pending_assessment'),
                 'interventions' => [],
             ],
             'pressure_ulcer_risk'   => [
                 'braden_score'   => 0,
-                'risk_level'     => 'Pending assessment',
-                'skin_condition' => 'Intact',
+                'risk_level'     => __('document.pending_assessment'),
+                'skin_condition' => __('document.skin_intact'),
             ],
-            'social_history'        => 'Not documented',
-            'admitting_nurse'       => 'Admitting Nurse',
+            'social_history'        => __('document.not_documented'),
+            'admitting_nurse'       => __('document.role_admitting_nurse'),
         ];
     }
 
@@ -253,9 +269,9 @@ class DocumentOnDemandAssembler
                 $labOrders = \App\Models\LabOrder::where('patient_id', $patientId)->get();
                 foreach ($labOrders as $order) {
                     $investigations[] = [
-                        'department'           => 'Laboratory',
-                        'test'                 => $order->test_name ?? 'Test',
-                        'tube'                 => 'As required',
+                        'department'           => __('document.laboratory'),
+                        'test'                 => $order->test_name ?? __('document.inv_test_default'),
+                        'tube'                 => __('document.inv_tube_as_required'),
                         'fasting'              => false,
                         'special_instructions' => '',
                     ];
@@ -266,13 +282,13 @@ class DocumentOnDemandAssembler
         }
 
         return [
-            'urgency'              => 'ROUTINE',
-            'requesting_ward'      => $admission->bed_id ?? 'Ward',
-            'clinical_indication'  => $admission->admission_reason ?? 'As per clinical assessment',
+            'urgency'              => __('document.urgency_routine'),
+            'requesting_ward'      => $admission->bed_id ?? __('document.ward'),
+            'clinical_indication'  => $admission->admission_reason ?? __('document.inv_indication_default'),
             'investigations'       => $investigations,
-            'sample_taken_by'      => 'Requesting Clinician',
-            'sample_taken_at'      => Carbon::now()->format('d M Y, H:i'),
-            'expected_turnaround'  => 'As per laboratory protocol',
+            'sample_taken_by'      => __('document.role_requesting_clinician'),
+            'sample_taken_at'      => Carbon::now()->isoFormat('DD MMM YYYY, HH:mm'),
+            'expected_turnaround'  => __('document.inv_turnaround_default'),
         ];
     }
 
@@ -299,21 +315,21 @@ class DocumentOnDemandAssembler
         }
 
         return [
-            'assessment_date'  => Carbon::today()->format('d M Y'),
-            'assessment_tool'  => 'Morse Fall Scale',
+            'assessment_date'  => Carbon::today()->isoFormat('DD MMM YYYY'),
+            'assessment_tool'  => __('document.fall_tool'),
             'morse_items'      => [
-                ['item' => 'History of falling (immediate or within 3 months)', 'score' => 0],
-                ['item' => 'Secondary diagnosis',                                'score' => 0],
-                ['item' => 'Ambulatory aid',                                     'score' => 0],
-                ['item' => 'IV / Heparin lock',                                  'score' => 0],
-                ['item' => 'Gait / Transferring',                                'score' => 0],
-                ['item' => 'Mental status',                                      'score' => 0],
+                ['item' => __('document.fall_item_history'),      'score' => 0],
+                ['item' => __('document.fall_item_secondary_dx'), 'score' => 0],
+                ['item' => __('document.fall_item_aid'),          'score' => 0],
+                ['item' => __('document.fall_item_iv'),           'score' => 0],
+                ['item' => __('document.fall_item_gait'),         'score' => 0],
+                ['item' => __('document.fall_item_mental'),       'score' => 0],
             ],
             'total_morse_score' => $morseScore,
-            'risk_level'        => 'Pending Assessment',
-            'interventions'     => ['Fall risk assessment pending — complete on admission'],
-            'reassessment_due'  => Carbon::tomorrow()->format('d M Y'),
-            'assessed_by'       => 'Nursing Staff',
+            'risk_level'        => __('document.pending_assessment'),
+            'interventions'     => [__('document.fall_pending_intervention')],
+            'reassessment_due'  => Carbon::tomorrow()->isoFormat('DD MMM YYYY'),
+            'assessed_by'       => __('document.role_nursing_staff'),
         ];
     }
 
@@ -327,28 +343,30 @@ class DocumentOnDemandAssembler
             ->latest('round_time')
             ->first();
 
+        $pending = __('document.pending');
+
         return [
-            'assessment_date'  => Carbon::today()->format('d M Y'),
-            'assessment_tool'  => 'Braden Scale',
+            'assessment_date'  => Carbon::today()->isoFormat('DD MMM YYYY'),
+            'assessment_tool'  => __('document.braden_tool'),
             'braden_items'     => [
-                ['subscale' => 'Sensory Perception', 'score' => null, 'descriptor' => 'Pending'],
-                ['subscale' => 'Moisture',           'score' => null, 'descriptor' => 'Pending'],
-                ['subscale' => 'Activity',           'score' => null, 'descriptor' => 'Pending'],
-                ['subscale' => 'Mobility',           'score' => null, 'descriptor' => 'Pending'],
-                ['subscale' => 'Nutrition',          'score' => null, 'descriptor' => 'Pending'],
-                ['subscale' => 'Friction & Shear',   'score' => null, 'descriptor' => 'Pending'],
+                ['subscale' => __('document.braden_sensory'),   'score' => null, 'descriptor' => $pending],
+                ['subscale' => __('document.braden_moisture'),  'score' => null, 'descriptor' => $pending],
+                ['subscale' => __('document.braden_activity'),  'score' => null, 'descriptor' => $pending],
+                ['subscale' => __('document.braden_mobility'),  'score' => null, 'descriptor' => $pending],
+                ['subscale' => __('document.braden_nutrition'), 'score' => null, 'descriptor' => $pending],
+                ['subscale' => __('document.braden_friction'),  'score' => null, 'descriptor' => $pending],
             ],
             'total_braden_score' => null,
-            'risk_level'         => 'Pending Assessment',
+            'risk_level'         => __('document.pending_assessment'),
             'skin_inspection'    => [
-                'Sacrum' => 'Pending',
-                'Heels'  => 'Pending',
-                'Elbows' => 'Pending',
+                __('document.braden_site_sacrum') => $pending,
+                __('document.braden_site_heels')  => $pending,
+                __('document.braden_site_elbows') => $pending,
             ],
-            'existing_wounds'   => 'None documented',
-            'prevention_plan'   => ['Assessment pending — complete at admission'],
-            'reassessment_due'  => Carbon::tomorrow()->format('d M Y'),
-            'assessed_by'       => 'Nursing Staff',
+            'existing_wounds'   => __('document.none_documented'),
+            'prevention_plan'   => [__('document.braden_pending_plan')],
+            'reassessment_due'  => Carbon::tomorrow()->isoFormat('DD MMM YYYY'),
+            'assessed_by'       => __('document.role_nursing_staff'),
         ];
     }
 
@@ -360,15 +378,15 @@ class DocumentOnDemandAssembler
         $patient   = Patient::find($patientId);
         $admission = $this->resolveAdmission($patientId, $admissionId);
 
-        $patientName = $patient
-            ? trim(($patient->first_name ?? '') . ' ' . ($patient->last_name ?? ''))
-            : 'Unknown Patient';
+        $patientName = $this->patientName($patient);
 
         $admissionDate = $admission->admitted_at ?? null;
 
         $rounds = NursingRound::where('patient_id', $patientId)
             ->orderBy('round_time')
             ->get();
+
+        $notRecorded = __('document.not_recorded');
 
         $woundAssessments = [];
         foreach ($rounds as $round) {
@@ -385,15 +403,15 @@ class DocumentOnDemandAssembler
 
                 $woundAssessments[] = [
                     'date'        => $round->round_time,
-                    'wound_site'  => $wc['wound_site']  ?? 'Not specified',
-                    'size'        => $wc['size']         ?? 'Not recorded',
-                    'depth'       => $wc['depth']        ?? 'Not recorded',
-                    'tissue_type' => $wc['tissue_type']  ?? 'Not recorded',
-                    'exudate'     => $wc['exudate']      ?? 'Not recorded',
-                    'odour'       => $wc['odour']        ?? 'Not recorded',
-                    'peri_wound'  => $wc['peri_wound']   ?? 'Not recorded',
-                    'dressing_used' => $wc['dressing_used'] ?? 'Not recorded',
-                    'by'          => $round->nurse_id    ?? 'Staff',
+                    'wound_site'  => $wc['wound_site']  ?? __('document.not_specified'),
+                    'size'        => $wc['size']         ?? $notRecorded,
+                    'depth'       => $wc['depth']        ?? $notRecorded,
+                    'tissue_type' => $wc['tissue_type']  ?? $notRecorded,
+                    'exudate'     => $wc['exudate']      ?? $notRecorded,
+                    'odour'       => $wc['odour']        ?? $notRecorded,
+                    'peri_wound'  => $wc['peri_wound']   ?? $notRecorded,
+                    'dressing_used' => $wc['dressing_used'] ?? $notRecorded,
+                    'by'          => $round->nurse_id    ?? __('document.staff'),
                 ];
             } catch (\Throwable $e) {
                 // skip malformed round
@@ -404,8 +422,8 @@ class DocumentOnDemandAssembler
             'patient_name'       => $patientName,
             'admission_date'     => $admissionDate,
             'wound_assessments'  => $woundAssessments,
-            'next_assessment_due' => Carbon::tomorrow()->format('d M Y'),
-            'wound_care_nurse'   => 'Wound Care Nurse',
+            'next_assessment_due' => Carbon::tomorrow()->isoFormat('DD MMM YYYY'),
+            'wound_care_nurse'   => __('document.role_wound_care_nurse'),
         ];
     }
 }

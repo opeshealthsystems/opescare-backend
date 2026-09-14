@@ -23,9 +23,16 @@
     </a>
 </div>
 
-@capability('front_desk', 'schedule', 'blood_inventory', 'messaging')
+@capability('queue', 'front_desk', 'schedule', 'blood_inventory', 'messaging')
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_operations', [], $l) ?: 'Operations' }}</div>
+    {{-- The patient queue: the waiting room, gated by the same `queue`
+         capability as its routes (config/staff_capabilities.php). --}}
+    @capability('queue')
+    <a href="{{ route('portals.queue.index') }}" class="sidebar-link {{ request()->routeIs('portals.queue.*') ? 'active' : '' }}">
+        <i data-lucide="list-ordered"></i><span>{{ __('queue_desk.nav', [], $l) }}</span>
+    </a>
+    @endcapability
     @capability('front_desk', 'schedule')
     <a href="{{ route('portals.staff.appointments') }}" class="sidebar-link {{ request()->routeIs('portals.staff.appointments*') ? 'active' : '' }}">
         <i data-lucide="calendar-check-2"></i><span>{{ __('public.portal.nav_appointments', [], $l) ?: 'Appointments' }}</span>

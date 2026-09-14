@@ -234,6 +234,7 @@ return [
         'nav_team'                => 'Team',
         'nav_messages'            => 'Messages',
         'nav_notifications'       => 'Notifications',
+        'nav_caremap_governance'  => 'Directory governance',
         'nav_settings'            => 'Settings',
         'nav_blood_inventory'     => 'Blood Inventory',
         'nav_production_requests' => 'Production Requests',

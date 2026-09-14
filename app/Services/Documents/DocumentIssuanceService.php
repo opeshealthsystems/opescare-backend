@@ -13,7 +13,7 @@ class DocumentIssuanceService
 {
     public function __construct(
         private DocumentNumberService $numberService,
-        private DocumentVerificationService $verificationService,
+        private OfficialDocumentTokenService $verificationService,
     ) {}
 
     /**

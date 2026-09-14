@@ -300,6 +300,13 @@ class AppServiceProvider extends ServiceProvider
         // inside the file with the routes it gates.
         Route::group([], base_path('routes/triage.php'));
 
+        // Patient queue desk (web portal) — the first surface over the queue
+        // schema (queue_tickets, queue_status_histories, appointment_check_ins),
+        // which shipped with the operational MVP and had no route and no
+        // screen. Its own file, same rationale; the middleware stack, including
+        // `capability:queue`, is declared inside the file with the routes it gates.
+        Route::group([], base_path('routes/queue.php'));
+
         // FHIR R4 ingest — the door partner systems push clinical data through
         // (Observation, DiagnosticReport, Immunization, transaction Bundle).
         // Its own file rather than routes/api.php, same rationale as above.

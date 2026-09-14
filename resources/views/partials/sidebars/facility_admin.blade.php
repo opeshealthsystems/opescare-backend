@@ -29,6 +29,14 @@
         <i data-lucide="clipboard-list"></i><span>{{ __('catalogue.nav', [], $l) }}</span>
     </a>
     @endcapability
+    {{-- The patient queue: today's measured wait times are the number a
+         facility administrator answers for. Gated by the same `queue`
+         capability as its routes (config/staff_capabilities.php). --}}
+    @capability('queue')
+    <a href="{{ route('portals.queue.index') }}" class="sidebar-link {{ request()->routeIs('portals.queue.*') ? 'active' : '' }}">
+        <i data-lucide="list-ordered"></i><span>{{ __('queue_desk.nav', [], $l) }}</span>
+    </a>
+    @endcapability
 </div>
 
 

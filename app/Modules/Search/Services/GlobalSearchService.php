@@ -2,12 +2,10 @@
 
 namespace App\Modules\Search\Services;
 
-use App\Models\AuditEvent;
 use App\Models\CareFacility;
 use App\Models\Facility;
 use App\Models\LabTestAvailability;
 use App\Models\OfficialDocument;
-use App\Models\Patient;
 use App\Models\PharmacyStockAvailability;
 use App\Modules\Messaging\Models\Message;
 use App\Modules\Partners\Models\Partner;
@@ -32,49 +30,17 @@ class GlobalSearchService
             ->merge($this->partnerResults($query))
             ->merge($this->messageResults($query, $context));
 
-        if ($context['include_sensitive'] ?? false) {
-            $patientResults = $this->patientResults($query, $context);
-            $results = $patientResults->merge($results);
-        }
+        // Patients are deliberately NOT searchable here. Global search must never
+        // enumerate patient identities by name or partial Health ID (platform law:
+        // no patient LIKE / enumeration search). Patient lookup is exact Health ID
+        // only, via Patient::resolveHealthId() behind a consent gate, on the desks
+        // that need it. Guarded by tests/Feature/Search/GlobalSearchNeverEnumeratesPatientsTest.php.
 
         return [
             'query' => $query,
             'results' => $results->values()->all(),
             'counts' => $results->groupBy('type')->map->count()->all(),
         ];
-    }
-
-    private function patientResults(string $query, array $context): Collection
-    {
-        $like = $this->likeTerm($query);
-
-        return Patient::whereRaw('LOWER(health_id) LIKE ?', [$like])
-            ->orWhereRaw('LOWER(first_name) LIKE ?', [$like])
-            ->orWhereRaw('LOWER(last_name) LIKE ?', [$like])
-            ->limit(10)
-            ->get()
-            ->map(function (Patient $patient) use ($context, $query) {
-                AuditEvent::create([
-                    'actor_id' => $context['actor_id'] ?? null,
-                    'patient_id' => $patient->id,
-                    'action_type' => 'search_patient',
-                    'resource_type' => 'global_search',
-                    'resource_id' => $patient->id,
-                    'reason' => $context['purpose'] ?? 'global_search',
-                    'after_state' => ['query' => $query],
-                ]);
-
-                return [
-                    'type' => 'patient',
-                    'title' => trim($patient->first_name.' '.substr((string) $patient->last_name, 0, 1).'.'),
-                    'subtitle' => 'Patient identity match',
-                    'metadata' => [
-                        'id' => $patient->id,
-                        'health_id' => $patient->health_id,
-                        'sex' => $patient->sex,
-                    ],
-                ];
-            });
     }
 
     private function facilityResults(string $query): Collection
