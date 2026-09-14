@@ -6,7 +6,10 @@
 <div class="sidebar-spacer"></div>
 
 <div class="sidebar-nav-section">
-    <a href="{{ route('portals.admin') }}" class="sidebar-link {{ request()->routeIs('portals.admin') ? 'active' : '' }}">
+    {{-- Developer-tier roles live under /developer. This pointed at /admin, which
+         EnsurePortalAccess silently redirected back to /developer — a Dashboard
+         link that never showed a dashboard. --}}
+    <a href="{{ route('portals.developer.dashboard') }}" class="sidebar-link {{ request()->routeIs('portals.developer.dashboard') ? 'active' : '' }}">
         <i data-lucide="layout-dashboard"></i><span>{{ __('public.portal.nav_dashboard', [], $l) ?: 'Dashboard' }}</span>
     </a>
 </div>
@@ -16,7 +19,7 @@
     <a href="{{ route('portals.developer.apps') }}" class="sidebar-link {{ request()->routeIs('portals.developer.apps*') ? 'active' : '' }}">
         <i data-lucide="terminal"></i><span>{{ __('public.portal.nav_apps', [], $l) ?: 'My Apps' }}</span>
     </a>
-    <a href="{{ route('portals.developer.apps') }}" class="sidebar-link">
+    <a href="{{ route('portals.developer.webhook_deliveries') }}" class="sidebar-link {{ request()->routeIs('portals.developer.webhook_deliveries*') ? 'active' : '' }}">
         <i data-lucide="webhook"></i><span>{{ __('public.portal.nav_webhooks', [], $l) ?: 'Webhooks' }}</span>
     </a>
     <a href="{{ route('portals.developer.production_requests') }}" class="sidebar-link {{ request()->routeIs('portals.developer.production_requests*') ? 'active' : '' }}">

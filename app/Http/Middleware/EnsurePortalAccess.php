@@ -79,6 +79,25 @@ class EnsurePortalAccess
             'cashier', 'billing_officer', 'finance_manager', 'refund_approver', 'wallet_ops',
             'data_steward', 'reconciliation_officer', 'data_import_officer', 'data_quality_reviewer',
         ],
+        // The patient queue (/facility/queue). Same shape and same reasoning as
+        // 'facility/catalogue' above: the waiting room is run from inside the
+        // operations desk, but the day's measured wait times are the number a
+        // facility administrator answers for, and administrators are closed out
+        // of the desk. This key admits both; `capability:queue` (the one map in
+        // config/staff_capabilities.php) decides who may act, and a refusal is
+        // a 403 that names the reason — never a redirect elsewhere.
+        'facility/queue' => [
+            'facility_admin', 'clinic_admin', 'hospital_admin', 'facility_ceo', 'branch_admin',
+            'department_manager',
+            'doctor', 'multi_doctor', 'specialist', 'consultant', 'resident', 'visiting_doctor',
+            'nurse', 'triage_nurse', 'ward_nurse', 'midwife', 'nurse_supervisor',
+            'student_doctor', 'student_nurse', 'intern', 'medical_supervisor',
+            'receptionist', 'front_desk', 'appointment_coordinator', 'queue_manager', 'records_officer',
+            'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection',
+            'pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'medicine_stock', 'dispensing_officer',
+            'cashier', 'billing_officer', 'finance_manager', 'refund_approver', 'wallet_ops',
+            'data_steward', 'reconciliation_officer', 'data_import_officer', 'data_quality_reviewer',
+        ],
         // Operations desk (was /portals/staff, now /facility).
         'facility' => [
             // Clinical providers
@@ -93,8 +112,11 @@ class EnsurePortalAccess
             'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection',
             // Pharmacy
             'pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'medicine_stock', 'dispensing_officer',
-            // Billing
-            'cashier', 'billing_officer', 'finance_manager', 'refund_approver', 'wallet_ops',
+            // Billing. 'finance' sat under 'admin' only, yet it renders the
+            // receptionist sidebar, whose every link points here — so a finance
+            // officer was bounced to /admin by their own navigation. Its
+            // capability is billing; it belongs on the operations desk.
+            'cashier', 'billing_officer', 'finance_manager', 'refund_approver', 'wallet_ops', 'finance',
             // Data quality
             'data_steward', 'reconciliation_officer', 'data_import_officer', 'data_quality_reviewer',
         ],
@@ -119,10 +141,19 @@ class EnsurePortalAccess
             'implementation_lead', 'training_support',
             // Partner governance
             'partner_admin', 'partner_reviewer', 'partner_compliance', 'partner_technical',
+            // bridge_admin was in no list at all, so signing in ended on /login.
+            // Admitted to the /admin landing only: everything beneath /admin/* is
+            // platform tier, and RequirePlatformAdmin still refuses it there.
+            'bridge_admin',
         ],
         'developer' => [
             'developer', 'developer_org_admin', 'api_partner', 'api_technical',
             'webhook_manager', 'sandbox_developer',
+            // Both render the developer sidebar (dashboard_profile_key =
+            // developer). partner_technical was under 'admin' only, so every
+            // link on its own sidebar redirected it away; public_health_api was
+            // in no list and landed on /login after signing in.
+            'partner_technical', 'public_health_api',
         ],
         // Phantom portal (module removed) — see 'insurance' note above.
         'lite' => [
@@ -238,9 +269,26 @@ class EnsurePortalAccess
             in_array($role, self::PORTAL_ROLES['facility'])   => '/facility',
             in_array($role, self::PORTAL_ROLES['developer'])  => '/developer',
             in_array($role, self::PORTAL_ROLES['admin'])      => '/admin',
+            // Roles whose portal was REMOVED from this product (insurance, lite,
+            // healthorg — 'lab' roles all live on /facility and never reach
+            // here). They used to fall through to /login: an insurance reviewer
+            // signed in successfully and was shown the login page again, with
+            // no explanation. That is a dead end dressed as a bug.
+            //
+            // Sent to the "portal unavailable" page directly rather than via
+            // correctPortalFor()'s pathIsFrozen() check, because in Finder the
+            // frozen-path map is EMPTY (see bootstrap/app.php) — those modules
+            // were deleted, not frozen — so pathIsFrozen() can never return
+            // true and the generic check would have redirected to a 404.
+            in_array($role, self::PORTAL_ROLES['insurance'])
+                || in_array($role, self::PORTAL_ROLES['lite'])
+                || in_array($role, self::PORTAL_ROLES['healthorg'])
+                                                                       => route('portal.unavailable', absolute: false),
             // Unknown/unassigned role must NOT default into the admin portal.
-            // Roles whose portals do not exist in this product (insurance, lab,
-            // lite, healthorg) fall through here too — same default deny.
+            // Device roles (kiosk, bridge_agent, facility_device,
+            // integration_device) are deliberately here too: they are
+            // credentials for machines, not people, and admitting them to a
+            // portal would hand a device key the clinical desk. Denied.
             default                                                    => '/login',
         };
     }

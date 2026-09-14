@@ -69,9 +69,29 @@ Last updated: 2026-09-14.
 3. **Null MX record at Hostinger** — blocks all outbound email, including the notifications the new queue worker now delivers.
 4. **Five terminology defects** need a human decision each on `/admin/terminology/gaps` (`L01XX14`, `10^9/L`/`x10^9/L`, `IM`/`intramuscular`, `Td`/`TD`, four group-level ATC codes).
 
+## Dashboards (from DASHBOARD_COMPLETENESS_AUDIT.md, 2026-09-14)
+
+| # | Item | Size | Status | Commit | Live |
+|---|---|---|---|---|---|
+| D-B1 | 10 roles bounced by `EnsurePortalAccess::PORTAL_ROLES` (dead dashboards) | S | **live** | see git | yes — 4 human roles refiled, 3 removed-module portals land on `portal.unavailable`, device roles stay denied on purpose |
+| D-B2 | Route the finished patient-search screen (`identify_patient`, 30+ roles) | S | open | | |
+| D-B3 | Dead `PatientPortalController` methods with missing views | S | open | | |
+| D-B4 | Lab desk — `lab_results` capability gates nothing | L | open | | |
+| D-B5 | Sample-collection worklist | M | open | | |
+| D-B6 | Pharmacy stock operations (348 facilities, one screen) | M | open | | |
+| D-B7 | Guard `portals.listing.edit` behind an approved claim | S | open | | |
+| D-B8 | Patient chart — `clinical_chart` gates nothing (largest gap) | L | open | | |
+| D-B9 | Blood-request creation on web (13 empty desks) | M | open | | |
+| D-B10 | Billing / cashier desk | L | open | | |
+| D-B11 | Link compliance/security/privacy sidebars to their built desks | S | open | | |
+| D-B12 | Link 12 orphan routes; fix duplicate developer links | S | open | | |
+| D-B13 | Delete orphan `demo_access` sidebar; bijection test | S | open | | |
+| D-B14 | `@capability` guard on `multi_facility_admin` team link | S | open | | |
+| D-B15 | Insurance + NGO: build or land on `portal.unavailable` | decision | open | | |
+
 ## Phase plan
 
 - **Phase 1** (in-flight work) — done.
 - **Phase 2** (audit blockers + ops) — done except S3, which is `owner`.
-- **Phase 3** — queue system (S8, M4), fill empty tables (catalogue, partner, decisions above), S5–S7, S9.
-- **Phase 4** — dashboards, email template design, final deploy.
+- **Phase 3** — queue system (S8), S5–S7, S9 — agents dispatched 2026-09-14. M4 waitlist after S6 dedupe.
+- **Phase 4** — email template design, then every dashboard D-B1..D-B15, then final deploy.
