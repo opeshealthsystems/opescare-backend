@@ -4,7 +4,9 @@ namespace App\Notifications;
 use App\Models\FamilyLink;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
+use App\Mail\ComposedMail;
+use App\Mail\Support\EmailContent;
+use App\Mail\Support\RecipientLocale;
 use Illuminate\Notifications\Notification;
 
 class FamilyInviteNotification extends Notification implements ShouldQueue
@@ -21,22 +23,38 @@ class FamilyInviteNotification extends Notification implements ShouldQueue
         return ['mail'];
     }
 
-    public function toMail(object $notifiable): MailMessage
+    public function toMail(object $notifiable): ComposedMail
     {
-        $guardian   = $this->link->guardianUser?->name ?? $this->link->guardianUser?->email ?? 'Someone';
-        $patient    = $this->link->dependentPatient?->first_name ?? 'you';
-        $acceptUrl  = route('portals.patient.family.invite.accept', $this->rawToken);
-        $ttlHours   = config('family.invite_ttl_hours', 48);
+        $locale = RecipientLocale::for($notifiable, $this->locale);
 
-        return (new MailMessage)
-            ->subject("OpesCare: Family Access Request")
-            ->greeting("Hello,")
-            ->line("{$guardian} is requesting guardian access to {$patient}'s OpesCare health record.")
-            ->line("Access level: " . ($this->link->access_level === 'full' ? 'Full access' : 'Read only'))
-            ->line("Relationship: " . ucfirst(str_replace('_', ' ', $this->link->relationship)))
-            ->action('Review & Accept', $acceptUrl)
-            ->line("This invite expires in {$ttlHours} hours.")
-            ->line("If you did not expect this request, you can safely ignore this email.");
+        return ComposedMail::inLocale($locale, function () {
+            $guardian  = trim((string) ($this->link->guardianUser?->name ?? $this->link->guardianUser?->email ?? ''));
+            $guardian  = $guardian !== '' ? $guardian : __('mail.family_invite.someone');
+            $patient   = trim((string) ($this->link->dependentPatient?->first_name ?? ''));
+            $acceptUrl = route('portals.patient.family.invite.accept', $this->rawToken);
+            $ttlHours  = (int) config('family.invite_ttl_hours', 48);
+
+            $relationship = (string) $this->link->relationship;
+            $relationshipLabel = \Illuminate\Support\Facades\Lang::has("family.relationship.{$relationship}")
+                ? __("family.relationship.{$relationship}")
+                : ucfirst(str_replace('_', ' ', $relationship));
+
+            return EmailContent::make(__('mail.family_invite.subject'), __('mail.family_invite.title'))
+                ->preheader(__('mail.family_invite.preheader', ['guardian' => $guardian]))
+                ->eyebrow(__('mail.family_invite.eyebrow'))
+                ->greeting(__('mail.common.greeting'))
+                ->paragraph($patient !== ''
+                    ? __('mail.family_invite.intro', ['guardian' => $guardian, 'patient' => $patient])
+                    : __('mail.family_invite.intro_self', ['guardian' => $guardian]))
+                ->fact(__('mail.family_invite.fact_access'), $this->link->access_level === 'full'
+                    ? __('mail.family_invite.access_full')
+                    : __('mail.family_invite.access_read_only'))
+                ->fact(__('mail.family_invite.fact_relationship'), $relationshipLabel)
+                ->button(__('mail.family_invite.action'), $acceptUrl)
+                ->footnote(__('mail.family_invite.expiry', ['hours' => $ttlHours]))
+                ->footnote(__('mail.family_invite.ignore'))
+                ->signature(__('mail.chrome.signature'));
+        })->forNotifiable($notifiable, $this);
     }
 
     public function toArray(object $notifiable): array

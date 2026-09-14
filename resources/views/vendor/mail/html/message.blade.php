@@ -21,7 +21,9 @@
 {{-- Footer --}}
 <x-slot:footer>
 <x-mail::footer>
-© {{ date('Y') }} {{ config('app.name') }}. {{ __('All rights reserved.') }}
+{{ trim((string) config('opescare.support_email')) !== '' ? __('mail.chrome.no_reply', ['email' => trim((string) config('opescare.support_email'))]) : __('mail.chrome.no_reply_plain') }}
+
+{{ __('mail.chrome.copyright', ['year' => date('Y')]) }}
 </x-mail::footer>
 </x-slot:footer>
 </x-mail::layout>

@@ -41,10 +41,22 @@
     </a>
     @endcapability
     {{-- The listing is claim-based (FacilityListingController), not capability-gated. --}}
-    <a href="{{ route('portals.listing.edit') }}" class="sidebar-link {{ request()->routeIs('portals.listing.*') ? 'active' : '' }}">
+    {{-- "My listing" only means something once this user holds an APPROVED
+         claim on a directory listing. Without one, portals.listing.edit renders
+         the empty claims state — and nearly every one of the 348 pharmacy
+         managers has no claim yet, so the old link dead-ended for almost all
+         of them. Say what the next step actually is. --}}
+    @if(app(\App\Modules\CareMap\Services\FacilityClaimService::class)->approvedListingFor(auth()->id()))
+    <a href="{{ route('portals.listing.edit') }}" class="sidebar-link {{ request()->routeIs('portals.listing.edit') ? 'active' : '' }}">
         <i data-lucide="map-pin"></i>
         <span>{{ __('caremap_claim.nav_my_listing', [], $l) }}</span>
     </a>
+    @else
+    <a href="{{ route('portals.listing.claims') }}" class="sidebar-link {{ request()->routeIs('portals.listing.*') ? 'active' : '' }}">
+        <i data-lucide="map-pin-plus"></i>
+        <span>{{ __('caremap_claim.nav_claim_listing', [], $l) ?: 'Claim your listing' }}</span>
+    </a>
+    @endif
     {{-- "What we offer": the facility's own service list, drawn from the
          institutional code dictionary. Self-gates on the same capability the
          route does, so a role without it sees no dead link. --}}

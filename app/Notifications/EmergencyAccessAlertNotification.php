@@ -4,7 +4,9 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
+use App\Mail\ComposedMail;
+use App\Mail\Support\EmailContent;
+use App\Mail\Support\RecipientLocale;
 use Illuminate\Notifications\Notification;
 
 /**
@@ -57,17 +59,38 @@ class EmergencyAccessAlertNotification extends Notification implements ShouldQue
         ];
     }
 
-    public function toMail(object $notifiable): MailMessage
+    /**
+     * Branded, bilingual, multipart. Composed in the PATIENT's language
+     * (RecipientLocale), not the clinician's session. The subject deliberately
+     * carries no Health ID — it used to; the ID stays in the body, where the
+     * previous email already placed it. The old link pointed at
+     * /portals/patient/logs, a path that no longer exists.
+     */
+    public function toMail(object $notifiable): ComposedMail
     {
-        return (new MailMessage)
-            ->subject('[OpesCare] Emergency Access Alert — ' . $this->patientHealthId)
-            ->greeting('Health Record Access Alert')
-            ->line("Your health record was accessed under emergency protocols.")
-            ->line("**Health ID:** {$this->patientHealthId}")
-            ->line("**Accessed at:** {$this->accessedAt}")
-            ->line("**Emergency reason stated:** {$this->emergencyReason}")
-            ->line("This access has been logged and audited. If you believe this was unauthorised, contact our support team immediately.")
-            ->action('View Your Access Logs', url('/portals/patient/logs'))
-            ->line('OpesCare — Protecting your health identity under Cameroon Law No. 2010/012.');
+        $locale = RecipientLocale::for($notifiable, $this->locale);
+
+        return ComposedMail::inLocale($locale, fn () => EmailContent::make(
+            __('mail.emergency.subject'),
+            __('mail.emergency.title'),
+        )
+            ->preheader(__('mail.emergency.preheader'))
+            ->eyebrow(__('mail.emergency.eyebrow'), 'urgent')
+            ->greeting(trim($this->patientName) !== ''
+                ? __('mail.common.greeting_named', ['name' => trim($this->patientName)])
+                : __('mail.common.greeting'))
+            ->paragraph(__('mail.emergency.intro'))
+            ->fact(__('mail.emergency.fact_health_id'), $this->patientHealthId)
+            ->fact(__('mail.emergency.fact_when'), $this->accessedAt)
+            ->fact(__('mail.emergency.fact_reason'), $this->emergencyReason)
+            ->paragraph(__('mail.emergency.logged'))
+            ->button(__('mail.emergency.action'), route('portals.patient.access-logs'))
+            ->panel(__('mail.emergency.panel_title'), [
+                __('mail.emergency.panel_1'),
+                __('mail.emergency.panel_2'),
+            ])
+            ->footnote(__('mail.emergency.legal'))
+            ->signature(__('mail.chrome.signature'))
+            ->preferences(route('portals.patient.notifications.preferences')))->forNotifiable($notifiable, $this);
     }
 }

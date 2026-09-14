@@ -22,5 +22,9 @@ return [
     'support_phone' => env('OPESCARE_SUPPORT_PHONE', ''),
 
     // Admin / operations support email
-    'support_email' => env('OPESCARE_SUPPORT_EMAIL', env('MAIL_FROM_ADDRESS', '')),
+    // No fallback to MAIL_FROM_ADDRESS. That address is a no-reply mailbox, and
+    // the email footer used this value in "for help, write to :email" — so an
+    // unconfigured support address told every patient to write to a bin. Empty
+    // means the sentence is omitted; the owner sets OPESCARE_SUPPORT_EMAIL.
+    'support_email' => env('OPESCARE_SUPPORT_EMAIL', ''),
 ];

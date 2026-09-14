@@ -4,7 +4,9 @@ namespace App\Notifications;
 use App\Models\FamilyLink;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
+use App\Mail\ComposedMail;
+use App\Mail\Support\EmailContent;
+use App\Mail\Support\RecipientLocale;
 use Illuminate\Notifications\Notification;
 
 class FamilyEventNotification extends Notification implements ShouldQueue
@@ -30,13 +32,31 @@ class FamilyEventNotification extends Notification implements ShouldQueue
         return $channels ?: ['database'];
     }
 
-    public function toMail(object $notifiable): MailMessage
+    /**
+     * The subject no longer names the dependent — a child's name in a subject
+     * line is visible on a locked phone and in every inbox preview. The name
+     * moves into the title; the event description stays in the body as the
+     * caller wrote it.
+     */
+    public function toMail(object $notifiable): ComposedMail
     {
-        $name = $this->link->dependentPatient?->first_name ?? 'your dependent';
-        return (new MailMessage)
-            ->subject("OpesCare: Update for {$name}")
-            ->line($this->eventDescription)
-            ->action('View in Portal', route('portals.patient.family'));
+        $locale = RecipientLocale::for($notifiable, $this->locale);
+
+        return ComposedMail::inLocale($locale, function () {
+            $name = trim((string) ($this->link->dependentPatient?->first_name ?? ''));
+            $name = $name !== '' ? $name : __('mail.family_event.dependent_fallback');
+
+            return EmailContent::make(__('mail.family_event.subject'), __('mail.family_event.title', ['name' => $name]))
+                ->preheader(__('mail.family_event.preheader'))
+                ->eyebrow(__('mail.family_event.eyebrow'))
+                ->greeting(__('mail.common.greeting'))
+                ->paragraph(__('mail.family_event.intro'))
+                ->paragraph($this->eventDescription)
+                ->button(__('mail.family_event.action'), route('portals.patient.family'))
+                ->footnote(__('mail.family_event.note'))
+                ->signature(__('mail.chrome.signature'))
+                ->preferences(route('portals.patient.notifications.preferences'));
+        })->forNotifiable($notifiable, $this);
     }
 
     public function toDatabase(object $notifiable): array

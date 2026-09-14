@@ -15,6 +15,7 @@ return [
 
     // ── Navigation ─────────────────────────────────────────────────────────
     'nav_my_listing'        => 'My facility listing',
+    'nav_claim_listing'     => 'Claim your listing',
     'nav_directory_review'  => 'Directory review',
 
     // ── Public claim flow ──────────────────────────────────────────────────

@@ -13,6 +13,12 @@
     <a href="{{ route('portals.staff') }}" class="sidebar-link {{ request()->routeIs('portals.staff') && !request()->routeIs('portals.staff.*') ? 'active' : '' }}">
         <i data-lucide="layout-dashboard"></i><span>{{ __('public.portal.nav_dashboard', [], $l) ?: 'Dashboard' }}</span>
     </a>
+    {{-- Global search (facilities, documents, medicines, lab tests, partners,
+         messages — never patients). The screen existed, complete, with no
+         route: the audit called it unreachable. --}}
+    <a href="{{ route('portals.staff.search') }}" class="sidebar-link {{ request()->routeIs('portals.staff.search') ? 'active' : '' }}">
+        <i data-lucide="search"></i><span>{{ __('public.staff_portal.page_heading_search', [], $l) ?: 'Global Search' }}</span>
+    </a>
 </div>
 
 @capability('queue', 'front_desk', 'schedule', 'blood_inventory', 'messaging')

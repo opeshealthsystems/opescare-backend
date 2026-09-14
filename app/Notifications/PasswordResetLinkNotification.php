@@ -4,7 +4,9 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
+use App\Mail\ComposedMail;
+use App\Mail\Support\EmailContent;
+use App\Mail\Support\RecipientLocale;
 use Illuminate\Notifications\Notification;
 
 /**
@@ -37,7 +39,7 @@ class PasswordResetLinkNotification extends Notification implements ShouldQueue
         return ['mail'];
     }
 
-    public function toMail(object $notifiable): MailMessage
+    public function toMail(object $notifiable): ComposedMail
     {
         $email = method_exists($notifiable, 'getEmailForPasswordReset')
             ? $notifiable->getEmailForPasswordReset()
@@ -51,14 +53,20 @@ class PasswordResetLinkNotification extends Notification implements ShouldQueue
             'email' => $email,
         ]);
 
-        return (new MailMessage)
-            ->subject(__('passwords.mail.subject'))
+        $locale = RecipientLocale::for($notifiable, $this->locale);
+
+        return ComposedMail::inLocale($locale, fn () => EmailContent::make(
+            __('passwords.mail.subject'),
+            __('passwords.mail.subject'),
+        )
+            ->preheader(__('mail.reset_link.preheader', ['minutes' => $this->expiryMinutes]))
+            ->eyebrow(__('mail.reset_link.eyebrow'))
             ->greeting(__('passwords.mail.greeting'))
-            ->line(__('passwords.mail.intro'))
-            ->action(__('passwords.mail.action'), $url)
-            ->line(__('passwords.mail.expiry', ['minutes' => $this->expiryMinutes]))
-            ->line(__('passwords.mail.ignore'))
-            ->salutation(__('passwords.mail.salutation'));
+            ->paragraph(__('passwords.mail.intro'))
+            ->button(__('passwords.mail.action'), $url, withLinkFallback: true)
+            ->footnote(__('passwords.mail.expiry', ['minutes' => $this->expiryMinutes]))
+            ->footnote(__('passwords.mail.ignore'))
+            ->signature(__('passwords.mail.salutation')))->forNotifiable($notifiable, $this);
     }
 
     /** @return array<string, mixed> */

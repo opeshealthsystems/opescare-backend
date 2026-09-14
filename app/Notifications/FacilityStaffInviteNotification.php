@@ -3,7 +3,9 @@
 namespace App\Notifications;
 
 use App\Models\FacilityStaffInvite;
-use Illuminate\Notifications\Messages\MailMessage;
+use App\Mail\ComposedMail;
+use App\Mail\Support\EmailContent;
+use App\Mail\Support\RecipientLocale;
 use Illuminate\Notifications\Notification;
 
 /**
@@ -46,32 +48,44 @@ class FacilityStaffInviteNotification extends Notification
         return ['mail'];
     }
 
-    public function toMail(object $notifiable): MailMessage
+    public function toMail(object $notifiable): ComposedMail
     {
         // The raw token exists in this object and in the mail body only; the row
         // keeps a sha256 of it. Same contract as the password-reset link.
         $url = route('invite.accept', $this->rawToken);
 
-        $message = (new MailMessage)
-            ->subject(__('team.mail.subject', ['facility' => $this->facilityName]))
-            ->greeting(__('team.mail.greeting'))
-            ->line(__('team.mail.intro', [
-                'facility' => $this->facilityName,
-                'role'     => $this->roleLabel,
-            ]));
+        // An invitee has no account yet, so there is no stored preference to
+        // read: the language is the one the inviter chose (->locale()) or the
+        // one the issuing page was in.
+        $locale = RecipientLocale::for($notifiable, $this->locale);
 
-        if ($this->inviterName !== null && $this->inviterName !== '') {
-            $message->line(__('team.mail.invited_by', ['name' => $this->inviterName]));
-        }
+        return ComposedMail::inLocale($locale, function () use ($url, $locale) {
+            $content = EmailContent::make(
+                __('team.mail.subject', ['facility' => $this->facilityName]),
+                __('team.mail.subject', ['facility' => $this->facilityName]),
+            )
+                ->preheader(__('mail.staff_invite.preheader', ['facility' => $this->facilityName]))
+                ->eyebrow(__('mail.staff_invite.eyebrow'))
+                ->greeting(__('team.mail.greeting'))
+                ->paragraph(__('team.mail.intro', [
+                    'facility' => $this->facilityName,
+                    'role'     => $this->roleLabel,
+                ]))
+                ->fact(__('mail.staff_invite.facility'), $this->facilityName)
+                ->fact(__('mail.staff_invite.role'), $this->roleLabel);
 
-        return $message
-            ->action(__('team.mail.action'), $url)
-            ->line(__('team.mail.expiry', [
-                'date' => optional($this->invite->expires_at)->isoFormat('LLL') ?? '',
-            ]))
-            ->line(__('team.mail.link_fallback', ['url' => $url]))
-            ->line(__('team.mail.ignore'))
-            ->salutation(__('team.mail.salutation'));
+            if ($this->inviterName !== null && $this->inviterName !== '') {
+                $content->paragraph(__('team.mail.invited_by', ['name' => $this->inviterName]));
+            }
+
+            $expires = $this->invite->expires_at?->copy()->locale($locale)->isoFormat('LLL') ?? '';
+
+            return $content
+                ->button(__('team.mail.action'), $url, withLinkFallback: true)
+                ->footnote(__('team.mail.expiry', ['date' => $expires]))
+                ->footnote(__('team.mail.ignore'))
+                ->signature(__('team.mail.salutation'));
+        })->forNotifiable($notifiable, $this);
     }
 
     /** @return array<string, mixed> */

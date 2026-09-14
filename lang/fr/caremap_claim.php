@@ -15,6 +15,7 @@ return [
 
     // ── Navigation ─────────────────────────────────────────────────────────
     'nav_my_listing'        => 'Ma fiche d\'établissement',
+    'nav_claim_listing'     => 'Revendiquer votre fiche',
     'nav_directory_review'  => 'Révision de l\'annuaire',
 
     // ── Parcours public de revendication ───────────────────────────────────

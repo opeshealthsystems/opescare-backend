@@ -29,11 +29,11 @@ Last updated: 2026-09-14.
 | S2 | Horizon supervises `redis`, shipped default `database` | **live** (reframed) | — server only | yes | Audit premise was wrong: prod already used redis. The real defect: **no worker ran for Finder at all** — the only Horizon was the main platform's. `finder-queue.service` installed 2026-09-14; drained 9 stuck jobs; 0 failed. Horizon deliberately not used (no `demo` supervisor; `imports`/`webhooks` queues unlisted) |
 | S3 | Backups on the same disk as the database | **owner** | pending | pending | `/admin/cc/backups` page shows status + exact server steps. Needs S3 key + secret from owner; `AWS_ACCESS_KEY_ID`/`SECRET` empty on prod, `BACKUP_S3_ENABLED=false` |
 | S4 | Client secrets bcrypt not Argon2id; unsalted SHA-256 still written | **live** | `46d688c` | yes | `ClientSecretHasher` dispatches on prefix; new rows genuinely Argon2id; legacy column set to a non-hex sentinel |
-| S5 | Two document-verification systems; 9 orphan tokens no verifier accepts | **fixed-local** | pending | pending | Audit was wrong that the second system was orphaned: `DocumentIssuanceService` still mints `vdt_` tokens on every issue. Renamed to `OfficialDocumentTokenService`; the live verifier now answers BOTH token families (valid/withdrawn/expired/unknown). 9 rows untouched |
-| S6 | Six duplicate class names across namespaces | **fixed-local** | pending | pending | 4 orphans deleted (evidence per pair in agent report), 2 renamed (`AppointmentWaitlistService`, `OfficialDocumentTokenService` — different tables, not merged). `NoDuplicateClassBasenamesTest` guards it. Leftover: `Reports\ProviderPerformanceService` and `DocumentVerificationEvent` model have no caller |
-| S7 | Patient name-prefix enumeration in `GlobalSearchService` (dead, one flag from live) | **fixed-local** | pending | pending | `patientResults()` and the flag deleted outright; test proves a search issues no query against `patients`. `StaffPortalController` still passes the now-inert `include_sensitive` key (queue agent owns that file) |
-| S8 | Staff dashboard "waiting" tile structurally always zero | **fixed-local** | pending | pending | Queue desk built at `/facility/queue` (9 routes, `queue` capability, 12 sidebars): check-in by Health ID or booking, call/start/complete/no-show/cancel, append-only history, SQL ranking by triage priority then wait, measured median wait. Tile now counts today's active tickets and links to the desk. Stations/transfers/priority rules/display deliberately unbuilt |
-| S9 | Patient-facing PDFs hardcode English (`DocumentDataAssembler` 49, `DocumentOnDemandAssembler` 32, `SurveyService`) | **fixed-local** (latent) | pending | pending | 0→73 / 0→70 / 0→4 `__()` calls; clinical French sourced from published forms (HAS Braden, WHO growth) or `display_fr`, Morse items deliberately left English. **Finding:** nothing in Finder calls these assemblers, and 3 schema mismatches meant they could never have run. Fix is real but latent; a tokeniser test blocks new literals |
+| S5 | Two document-verification systems; 9 orphan tokens no verifier accepts | **live** | `1e16428` | yes | Audit was wrong that the second system was orphaned: `DocumentIssuanceService` still mints `vdt_` tokens on every issue. Renamed to `OfficialDocumentTokenService`; the live verifier now answers BOTH token families (valid/withdrawn/expired/unknown). 9 rows untouched |
+| S6 | Six duplicate class names across namespaces | **live** | `1e16428` | yes | 4 orphans deleted (evidence per pair in agent report), 2 renamed (`AppointmentWaitlistService`, `OfficialDocumentTokenService` — different tables, not merged). `NoDuplicateClassBasenamesTest` guards it. Leftover: `Reports\ProviderPerformanceService` and `DocumentVerificationEvent` model have no caller |
+| S7 | Patient name-prefix enumeration in `GlobalSearchService` (dead, one flag from live) | **live** | `1e16428` | yes | `patientResults()` and the flag deleted outright; test proves a search issues no query against `patients`. `StaffPortalController` still passes the now-inert `include_sensitive` key (queue agent owns that file) |
+| S8 | Staff dashboard "waiting" tile structurally always zero | **live** | `1e16428` | yes | Queue desk built at `/facility/queue` (9 routes, `queue` capability, 12 sidebars): check-in by Health ID or booking, call/start/complete/no-show/cancel, append-only history, SQL ranking by triage priority then wait, measured median wait. Tile now counts today's active tickets and links to the desk. Stations/transfers/priority rules/display deliberately unbuilt |
+| S9 | Patient-facing PDFs hardcode English (`DocumentDataAssembler` 49, `DocumentOnDemandAssembler` 32, `SurveyService`) | **live** (latent) | `1e16428` | yes | 0→73 / 0→70 / 0→4 `__()` calls; clinical French sourced from published forms (HAS Braden, WHO growth) or `display_fr`, Morse items deliberately left English. **Finding:** nothing in Finder calls these assemblers, and 3 schema mismatches meant they could never have run. Fix is real but latent; a tokeniser test blocks new literals |
 
 ## Minor
 
@@ -69,31 +69,46 @@ Last updated: 2026-09-14.
 3. **Null MX record at Hostinger** — blocks all outbound email, including the notifications the new queue worker now delivers.
 4. **`data_steward` tier** — its sidebar cannot link MPI/terminology/data-import desks because the role is not platform tier and would 403. Decide: promote the three data-quality roles to `RequirePlatformAdmin::PLATFORM_ROLES`, or build facility-scoped equivalents.
 5. **16 seeded `dashboard_profiles` no role uses** (`appointment_coordinator`, `queue_manager`, `cashier`, `billing_officer`, `finance_manager`, `department_manager`, `public_health_officer`, `public_health_admin`, `disease_surveillance`, `support_agent`, `support_manager`, `implementation_lead`, `data_import`, `partner_admin`, `partner_review`, `country_regional_admin`) — seeder cleanup; harmless today.
-6. **Five terminology defects** need a human decision each on `/admin/terminology/gaps` (`L01XX14`, `10^9/L`/`x10^9/L`, `IM`/`intramuscular`, `Td`/`TD`, four group-level ATC codes).
+6. **Set `OPESCARE_SUPPORT_EMAIL` on production** — unset today, and the old fallback pointed every email footer at the no-reply mailbox. Footers now omit the "write to" sentence until a real address is set.
+7. **Five terminology defects** need a human decision each on `/admin/terminology/gaps` (`L01XX14`, `10^9/L`/`x10^9/L`, `IM`/`intramuscular`, `Td`/`TD`, four group-level ATC codes).
 
 ## Dashboards (from DASHBOARD_COMPLETENESS_AUDIT.md, 2026-09-14)
 
 | # | Item | Size | Status | Commit | Live |
 |---|---|---|---|---|---|
 | D-B1 | 10 roles bounced by `EnsurePortalAccess::PORTAL_ROLES` (dead dashboards) | S | **live** | see git | yes — 4 human roles refiled, 3 removed-module portals land on `portal.unavailable`, device roles stay denied on purpose |
-| D-B2 | Route the finished patient-search screen (`identify_patient`, 30+ roles) | S | open | | |
-| D-B3 | Dead `PatientPortalController` methods with missing views | S | partial | | `PharmacyPortalController@inventory` (unrouted alias of `stock()`) removed. `PatientPortalController` `referrals()`/`surveys()`/`reportLostCard()` still pending — need views + routes in `routes/web.php`, which the queue agent holds |
+| D-B2 | Route the finished patient-search screen (`identify_patient`, 30+ roles) | S | fixed-local | | Routed at `/facility/search`, linked in 16 human sidebars (not device_kiosk/lite/demo_access). **Audit mislabel corrected:** it is a general staff search — facilities, documents, medicines, lab tests, partners, messages; the patient branch was deleted in S7 — so no `identify_patient` gate. That lookup already lives on the `/facility` landing |
+| D-B3 | Dead `PatientPortalController` methods with missing views | S | partial (live) | `1e16428` | `PharmacyPortalController@inventory` (unrouted alias of `stock()`) removed. `PatientPortalController` `referrals()`/`surveys()`/`reportLostCard()` still pending — need views + routes in `routes/web.php`, which the queue agent holds |
 | D-B4 | Lab desk — `lab_results` capability gates nothing | L | open | | |
 | D-B5 | Sample-collection worklist | M | open | | |
 | D-B6 | Pharmacy stock operations (348 facilities, one screen) | M | open | | |
-| D-B7 | Guard `portals.listing.edit` behind an approved claim | S | open | | |
+| D-B7 | Guard `portals.listing.edit` behind an approved claim | S | fixed-local | | `@if(approvedListingFor)` → "My facility listing", else → "Claim your listing" (`portals.listing.claims`), in pharmacy_manager + lab_manager |
 | D-B8 | Patient chart — `clinical_chart` gates nothing (largest gap) | L | open | | |
 | D-B9 | Blood-request creation on web (13 empty desks) | M | open | | |
 | D-B10 | Billing / cashier desk | L | open | | |
-| D-B11 | Link compliance/security/privacy sidebars to their built desks | S | fixed-local | | 4 sidebars rewritten (security_officer 5 links, emergency_access_reviewer 3, compliance_audit 4, privacy_officer 5). `data_steward` NOT done: not platform tier, the desks would 403 — needs a decision |
-| D-B12 | Link 12 orphan routes; fix duplicate developer links | S | fixed-local | | admin nav: 3 security children + directory governance; patient: notifications + Refer & Earn; developer: webhook deliveries; dup links fixed in `c51d586`. Not done: `portals.listing.claims` (pharmacy/lab sidebars — queue agent territory) |
-| D-B13 | Delete orphan `demo_access` sidebar; bijection test | S | fixed-local | | `demo_access` KEPT — it is a seeded profile. `SidebarProfilesAreCompleteTest` guards role→partial (the silent-blank case). Found: 16 seeded `dashboard_profiles` no role uses — seeder cleanup, not dashboards |
-| D-B14 | `@capability` guard on `multi_facility_admin` team link | S | fixed-local | | wrapped in `@capability('facility_team')` |
+| D-B11 | Link compliance/security/privacy sidebars to their built desks | S | **live** | `1e16428` | yes — 4 sidebars rewritten (security_officer 5 links, emergency_access_reviewer 3, compliance_audit 4, privacy_officer 5). `data_steward` NOT done: not platform tier, the desks would 403 — needs a decision |
+| D-B12 | Link 12 orphan routes; fix duplicate developer links | S | **live** | `1e16428` | yes — admin nav: 3 security children + directory governance; patient: notifications + Refer & Earn; developer: webhook deliveries; dup links fixed in `c51d586`. Not done: `portals.listing.claims` (pharmacy/lab sidebars — queue agent territory) |
+| D-B13 | Delete orphan `demo_access` sidebar; bijection test | S | **live** | `1e16428` | yes — `demo_access` KEPT — it is a seeded profile. `SidebarProfilesAreCompleteTest` guards role→partial (the silent-blank case). Found: 16 seeded `dashboard_profiles` no role uses — seeder cleanup, not dashboards |
+| D-B14 | `@capability` guard on `multi_facility_admin` team link | S | **live** | `1e16428` | yes — wrapped in `@capability('facility_team')` |
 | D-B15 | Insurance + NGO: build or land on `portal.unavailable` | decision | **resolved by D-B1** | `c51d586` | yes — insurance, lite and healthorg roles now land on `portal.unavailable` explicitly instead of `/login`. Building those modules remains out of v1 scope (frozen by decision, see V1 launch scope) |
+
+## Email templates (Phase 4, 2026-09-14)
+
+| Item | Status | Commit | Live | Evidence |
+|---|---|---|---|---|
+| One branded email design system for all 10 senders (3 mailables + 7 notifications), multipart HTML+text, EN/FR by recipient locale | fixed-local | | | `#0F4C81` brand bar + wordmark, VML button, light-only colour scheme; `TransactionalEmailDesignTest` renders every sender ×2 locales through the array transport (23 tests, 914 assertions); previews in `storage/app/private/email-previews/` |
+| `OpesCareNotificationMail` was TEXT-ONLY (no HTML body at all) | fixed-local | | | now the shared layout, multipart |
+| Off-brand `emails/base.blade.php` (emerald/sky on slate) | fixed-local | | | adapter onto the new layout; old otp/reset/notification views deleted |
+| Hardcoded English in all 7 `toMail()` bodies | fixed-local | | | `lang/{en,fr}/mail.php`; `RecipientLocale` = stored `preferred_language` → `HasLocalePreference` → explicit → app; break-glass raised from an EN session lands in FR (tested) |
+| Broken links: `/portals/patient/health-id` (no such page), `/portals/patient/logs` | fixed-local | | | all links `route()`; test asserts no `/portals/` and all `https://` |
+| PHI in subjects (Health ID in emergency alert; child's name in family event) | fixed-local | | | subjects scrubbed; test asserts no Health-ID pattern / diagnosis / result / medication |
+| **Found on review — migrated notifications sent with NO recipient** | fixed-local | | | MailChannel sends a returned Mailable as-is; every `notify()` threw `An email must have a "To"`. Agent tests missed it (they used `Mail::to()`). `ComposedMail::forNotifiable()` + `NotificationsReachTheirRecipientTest` through the REAL channel; 5 family/invite tests that failed now pass |
+| **Found on review — footer told patients to write to the no-reply mailbox** | fixed-local | | | `support_email` fell back to `MAIL_FROM_ADDRESS` (`noreply@opescare.cloud` on prod, support unset). Fallback removed in config + 3 templates; sentence omitted until `OPESCARE_SUPPORT_EMAIL` is set (owner action #6) |
+| Not verifiable here | — | — | — | Outlook/Gmail rendering (no client available); logo image only resolves after deploy; `OpesCareNotificationMail` callers still pass English bodies (chrome bilingual, body not) |
 
 ## Phase plan
 
 - **Phase 1** (in-flight work) — done.
 - **Phase 2** (audit blockers + ops) — done except S3, which is `owner`.
 - **Phase 3** — queue system (S8), S5–S7, S9 — agents dispatched 2026-09-14. M4 waitlist after S6 dedupe.
-- **Phase 4** — email template design, then every dashboard D-B1..D-B15, then final deploy.
+- **Phase 4** — email templates DONE (pending gate). Remaining dashboards: D-B4 lab desk (L), D-B5 sample collection (M), D-B6 pharmacy stock ops (M), D-B8 patient chart (L), D-B9 blood-request creation (M), D-B10 billing (L), D-B3 rest (S), M4 waitlist, then final deploy.
