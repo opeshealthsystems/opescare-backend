@@ -21,6 +21,9 @@
     <a href="{{ route('portals.patient.care-plans') }}" class="sidebar-link {{ request()->routeIs('portals.patient.care-plans') ? 'active' : '' }}">
         <i data-lucide="clipboard-list"></i><span>{{ __('family.nav_care_plans', [], $l) }}</span>
     </a>
+    <a href="{{ route('portals.patient.referrals') }}" class="sidebar-link {{ request()->routeIs('portals.patient.referrals') ? 'active' : '' }}">
+        <i data-lucide="arrow-right-left"></i><span>{{ __('public.pat_nav_referrals', [], $l) }}</span>
+    </a>
     <a href="{{ route('portals.patient.access-logs') }}" class="sidebar-link {{ request()->routeIs('portals.patient.access-logs') ? 'active' : '' }}">
         <i data-lucide="history"></i><span>{{ __('family.nav_access_logs', [], $l) }}</span>
     </a>

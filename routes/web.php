@@ -307,6 +307,11 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'platform.adm
         Route::post('/patient/profile', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'updateProfile'])->name('portals.patient.profile.update');
         Route::get('/patient/settings',   [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'settings'])->name('portals.patient.settings');
         Route::post('/patient/settings',  [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'updateSettings'])->name('portals.patient.settings.update');
+        // Both controller methods existed for months with no route (D-B3).
+        // Referrals are read-only for the patient; the lost-card report is a
+        // POST from Settings that revokes every active QR token.
+        Route::get('/patient/referrals',  [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'referrals'])->name('portals.patient.referrals');
+        Route::post('/patient/lost-card', [\App\Http\Controllers\MedicalId\PatientPortalController::class, 'reportLostCard'])->name('portals.patient.lost-card');
 
         // Notifications centre + channel preferences
         Route::get('/patient/notifications', [\App\Http\Controllers\MedicalId\PatientNotificationController::class, 'index'])->name('portals.patient.notifications');

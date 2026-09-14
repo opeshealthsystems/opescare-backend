@@ -91,6 +91,26 @@
             <span class="f-small f-muted">{{ __('public.pat_settings_save_hint', [], $l) }}</span>
         </div>
     </form>
+
+    {{-- Lost or stolen card. One POST revokes every active QR token; the Health
+         ID number itself stays valid, so nothing here can lock a patient out. --}}
+    <form method="POST" action="{{ route('portals.patient.lost-card') }}" class="f-card" style="margin-bottom:16px;">
+        @csrf
+        <h2 class="pf-card-head">
+            @include('partials.finder.icon', ['name' => 'shield-alert', 'size' => 18])
+            {{ __('public.pat_lost_card_title', [], $l) }}
+        </h2>
+        <p class="f-muted" style="margin:0 0 12px;">{{ __('public.pat_lost_card_desc', [], $l) }}</p>
+        <div class="f-field">
+            <label class="f-label" for="report_reason">{{ __('public.pat_lost_card_reason', [], $l) }}</label>
+            <textarea id="report_reason" name="report_reason" class="f-input" rows="2" maxlength="500" required>{{ old('report_reason') }}</textarea>
+            @error('report_reason')<p class="f-small" style="color:#b42318;margin:6px 0 0;">{{ $message }}</p>@enderror
+        </div>
+        <button type="submit" class="f-btn f-btn--danger" onclick="return confirm(@json(__('public.pat_lost_card_confirm', [], $l)))">
+            @include('partials.finder.icon', ['name' => 'shield-alert', 'size' => 18])
+            {{ __('public.pat_lost_card_btn', [], $l) }}
+        </button>
+    </form>
     @endif
 </div>
 

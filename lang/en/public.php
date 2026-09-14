@@ -6286,22 +6286,17 @@ return [
     'pat_referral_unknown'      => 'Unknown',
 
     // ── Patient portal: Surveys ───────────────────────────────────────────────
-    'pat_survey_title'          => 'Surveys',
-    'pat_survey_subtitle'       => 'Questionnaires shared with you by your care team.',
-    'pat_survey_breadcrumb'     => 'Surveys',
-    'pat_survey_empty_title'    => 'No Surveys',
-    'pat_survey_empty_desc'     => 'You have no surveys assigned at this time.',
-    'pat_survey_col_name'       => 'Survey',
-    'pat_survey_col_facility'   => 'From',
-    'pat_survey_col_sent'       => 'Sent',
-    'pat_survey_col_status'     => 'Status',
-    'pat_survey_status_note'    => 'Survey completion is available in the OpesCare mobile app.',
 
     // ── Patient portal: Settings / Notifications ──────────────────────────────
     'pat_settings_title'        => 'Settings & Notifications',
     'pat_settings_subtitle'     => 'Choose which alerts you receive and your preferred app theme.',
     'pat_settings_breadcrumb'   => 'Settings',
     'pat_settings_notif_title'  => 'Notification Preferences',
+    'pat_lost_card_title' => 'Lost or stolen card',
+    'pat_lost_card_desc' => 'If your Health ID card or phone is lost, report it here. Every active QR code is cancelled at once so nobody can present your card. Your Health ID number stays valid and you can generate a new QR code at any time.',
+    'pat_lost_card_reason' => 'What happened?',
+    'pat_lost_card_confirm' => 'Cancel every active QR code now? You can generate a new one afterwards.',
+    'pat_lost_card_btn' => 'Report lost card',
     'pat_settings_appearance_title' => 'Appearance',
     'pat_settings_appointments' => 'Appointment reminders',
     'pat_settings_lab_results'  => 'Lab result alerts',
@@ -6320,7 +6315,6 @@ return [
     'pat_nav_timeline'   => 'Health Timeline',
     'pat_nav_care_plans' => 'Care Plans',
     'pat_nav_referrals'  => 'Referrals',
-    'pat_nav_surveys'    => 'Surveys',
     'pat_nav_settings'   => 'Settings',
     'pat_nav_account'    => 'Account',
 

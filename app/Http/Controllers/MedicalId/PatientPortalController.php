@@ -1117,35 +1117,6 @@ class PatientPortalController extends Controller
     }
 
     /**
-     * Surveys — questionnaires assigned to the patient (read-only list).
-     *
-     * Mirrors Api/Mobile/MobileSurveyController@index but lists all of the
-     * patient's surveys (not only 'sent') so completed history is visible too.
-     */
-    public function surveys(Request $request)
-    {
-        $patient = $this->resolveViewingPatient();
-
-        $surveys = $patient
-            ? \App\Models\PatientSurvey::where('patient_id', $patient->id)
-                ->with(['facility:id,name', 'responses'])
-                ->orderByDesc('sent_at')
-                ->get()
-            : collect();
-
-        if ($patient) {
-            $this->ctx->auditPatientAccess(
-                actionType:   'patient_surveys_view',
-                resourceType: 'PatientSurvey',
-                resourceId:   null,
-                patientId:    $patient->id,
-            );
-        }
-
-        return view('portals.patient.surveys', compact('patient', 'surveys'));
-    }
-
-    /**
      * Settings / Notifications — read notification & app preferences.
      *
      * Mirrors Api/Mobile/MobileSettingsController: MobileAppSetting::forPatient()

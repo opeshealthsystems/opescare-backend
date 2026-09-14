@@ -6309,22 +6309,17 @@ return [
     'pat_referral_unknown'      => 'Inconnu',
 
     // ── Patient portal: Surveys ───────────────────────────────────────────────
-    'pat_survey_title'          => 'Questionnaires',
-    'pat_survey_subtitle'       => 'Questionnaires partagés avec vous par votre équipe soignante.',
-    'pat_survey_breadcrumb'     => 'Questionnaires',
-    'pat_survey_empty_title'    => 'Aucun questionnaire',
-    'pat_survey_empty_desc'     => 'Aucun questionnaire ne vous est attribué pour le moment.',
-    'pat_survey_col_name'       => 'Questionnaire',
-    'pat_survey_col_facility'   => 'De',
-    'pat_survey_col_sent'       => 'Envoyé',
-    'pat_survey_col_status'     => 'Statut',
-    'pat_survey_status_note'    => 'La saisie des questionnaires est disponible dans l\'application mobile OpesCare.',
 
     // ── Patient portal: Settings / Notifications ──────────────────────────────
     'pat_settings_title'        => 'Paramètres et notifications',
     'pat_settings_subtitle'     => 'Choisissez les alertes que vous recevez et le thème de l\'application.',
     'pat_settings_breadcrumb'   => 'Paramètres',
     'pat_settings_notif_title'  => 'Préférences de notification',
+    'pat_lost_card_title' => 'Carte perdue ou volée',
+    'pat_lost_card_desc' => 'Si votre carte d\'identifiant santé ou votre téléphone est perdu, déclarez-le ici. Tous les codes QR actifs sont annulés immédiatement afin que personne ne puisse présenter votre carte. Votre numéro d\'identifiant santé reste valide et vous pouvez générer un nouveau code QR à tout moment.',
+    'pat_lost_card_reason' => 'Que s\'est-il passé ?',
+    'pat_lost_card_confirm' => 'Annuler tous les codes QR actifs maintenant ? Vous pourrez en générer un nouveau ensuite.',
+    'pat_lost_card_btn' => 'Déclarer la carte perdue',
     'pat_settings_appearance_title' => 'Apparence',
     'pat_settings_appointments' => 'Rappels de rendez-vous',
     'pat_settings_lab_results'  => 'Alertes de résultats de laboratoire',
@@ -6343,7 +6338,6 @@ return [
     'pat_nav_timeline'   => 'Parcours de santé',
     'pat_nav_care_plans' => 'Plans de soins',
     'pat_nav_referrals'  => 'Orientations',
-    'pat_nav_surveys'    => 'Questionnaires',
     'pat_nav_settings'   => 'Paramètres',
     'pat_nav_account'    => 'Compte',
 
