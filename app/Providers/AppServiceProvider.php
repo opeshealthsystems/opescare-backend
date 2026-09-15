@@ -347,6 +347,13 @@ class AppServiceProvider extends ServiceProvider
         // Public imaging-exam finder (docs/audits/IMAGING_DASHBOARD_AUDIT_2.md, I-1).
         Route::middleware('web')->group(base_path('routes/imaging_finder.php'));
 
+        // Code imported from the platform (docs/PLATFORM_IMPORTS.md), one route file per group.
+        Route::group([], base_path('routes/imports_files.php'));
+        Route::group([], base_path('routes/imports_tasks.php'));
+        Route::group([], base_path('routes/imports_clinical.php'));
+        Route::group([], base_path('routes/imports_ops.php'));
+        Route::group([], base_path('routes/imports_dhis2.php'));
+
         // Laboratory desk (web portal) — the first web surface over lab_orders /
         // lab_results, whose capabilities were granted and gated nothing. Its
         // own file, same rationale; the middleware stack, including
