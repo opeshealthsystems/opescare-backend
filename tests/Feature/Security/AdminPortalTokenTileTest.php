@@ -26,6 +26,9 @@ class AdminPortalTokenTileTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        // Platform admins must pass MFA (User::ALWAYS_MFA_ROLES); act as one who has.
+        $this->withSession(['mfa.verified' => true]);
         config(['demo.enabled' => false]);
         $this->seed(\Database\Seeders\AccountCategoriesSeeder::class);
         $this->seed(\Database\Seeders\DashboardProfilesSeeder::class);

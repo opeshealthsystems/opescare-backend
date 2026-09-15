@@ -52,10 +52,21 @@ class User extends Authenticatable
         return ! is_null($this->two_factor_secret) && ! is_null($this->two_factor_confirmed_at);
     }
 
-    /** True if this user's role requires MFA per config/mfa.php. */
+    /**
+     * Roles that always require MFA, whatever MFA_REQUIRED_ROLES says. The env
+     * list can add roles but never remove these: the full god-mode tier ran
+     * without a second factor because the production env listed only
+     * super_admin,admin (security scan 2026-09-15, item 3).
+     */
+    public const ALWAYS_MFA_ROLES = ['super_admin', 'platform_admin', 'system_admin'];
+
+    /** True if this user's role requires MFA per config/mfa.php or ALWAYS_MFA_ROLES. */
     public function requiresTwoFactor(): bool
     {
-        return in_array($this->roleName(), (array) config('mfa.required_roles', []), true);
+        $role = $this->roleName();
+
+        return in_array($role, self::ALWAYS_MFA_ROLES, true)
+            || in_array($role, (array) config('mfa.required_roles', []), true);
     }
 
     public function patient(): \Illuminate\Database\Eloquent\Relations\BelongsTo

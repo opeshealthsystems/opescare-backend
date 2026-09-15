@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Route;
  * POST /admin/security/incidents/{id} already exists and would swallow
  * /admin/security/incidents/breaches.
  */
-Route::middleware(['web', 'auth', 'platform.admin'])->group(function () {
+Route::middleware(['web', 'auth', 'mfa.verified', 'platform.admin'])->group(function () {
     // Onboarding portal
     Route::get('/admin/onboarding', [OnboardingPortalController::class, 'index'])->name('portals.admin.onboarding');
     Route::get('/admin/onboarding/{facility}', [OnboardingPortalController::class, 'show'])->name('portals.admin.onboarding.show');

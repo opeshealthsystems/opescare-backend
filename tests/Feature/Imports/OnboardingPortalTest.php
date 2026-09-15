@@ -19,6 +19,9 @@ class OnboardingPortalTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        // Platform admins must pass MFA (User::ALWAYS_MFA_ROLES); act as one who has.
+        $this->withSession(['mfa.verified' => true]);
         $this->seed(\Database\Seeders\AccountCategoriesSeeder::class);
         $this->seed(\Database\Seeders\DashboardProfilesSeeder::class);
         $this->seed(\Database\Seeders\RolesSeeder::class);

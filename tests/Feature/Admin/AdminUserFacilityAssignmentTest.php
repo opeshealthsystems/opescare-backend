@@ -40,6 +40,9 @@ class AdminUserFacilityAssignmentTest extends TestCase
     {
         parent::setUp();
 
+        // Platform admins must pass MFA (User::ALWAYS_MFA_ROLES); act as one who has.
+        $this->withSession(['mfa.verified' => true]);
+
         $this->seed(AccountCategoriesSeeder::class);
         $this->seed(DashboardProfilesSeeder::class);
         $this->seed(RolesSeeder::class);
