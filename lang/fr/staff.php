@@ -80,4 +80,24 @@ return [
         'unavailable' => 'Indisponible',
         'note'        => 'La disponibilité du personnel est indicative uniquement et peut changer.',
     ],
+
+    // ── Le bureau des opérations (/facility) ─────────────────────────────
+    'desk' => [
+        'health_id_placeholder'   => 'ex. CM-HID-7KQ9-MP42-X8D1',
+        'no_facility_for_booking' => "Aucun établissement n'est sélectionné pour cette session ; impossible de savoir à quel établissement ce rendez-vous appartient. Sélectionnez d'abord un établissement.",
+        'filter_any_clinician'    => 'Tout clinicien',
+        'filter_any_status'       => 'Tout statut',
+        'col_clinician'           => 'Clinicien',
+        'unassigned'              => 'Non attribué',
+        'btn_check_in'            => 'Enregistrer l\'arrivée',
+        'showing_page'            => 'Page :page sur :last — :total rendez-vous',
+        'search_types' => [
+            'facility' => 'Établissements',
+            'document' => 'Documents',
+            'medicine' => 'Médicaments',
+            'lab_test' => 'Analyses',
+            'partner'  => 'Partenaires',
+            'message'  => 'Messages',
+        ],
+    ],
 ];

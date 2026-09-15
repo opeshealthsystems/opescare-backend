@@ -39,6 +39,67 @@
 
 @if(session('success'))<div class="alert alert-success mb-6"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
 @if(session('error'))<div class="alert alert-danger mb-6"><i data-lucide="alert-circle"></i><div>{{ session('error') }}</div></div>@endif
+@if($errors->any())<div class="alert alert-danger mb-6"><i data-lucide="alert-circle"></i><div>{{ $errors->first() }}</div></div>@endif
+
+{{-- ── First run: a lab that has never received an order or a request ───── --}}
+@unless($hasAnyWork)
+<div class="panel mb-4">
+    <div class="panel-header">
+        <h2 class="panel-title"><i data-lucide="compass"></i> {{ __('lab_manager.first_run_title') }}</h2>
+    </div>
+    <div class="panel-body">
+        <p class="page-subtitle">{{ __('lab_manager.first_run_body') }}</p>
+        <ul class="form-hint" style="margin:0.5rem 0 0 1.1rem;line-height:1.7;">
+            <li>{{ __('lab_manager.first_run_step_catalogue') }}</li>
+            <li>{{ __('lab_manager.first_run_step_requests') }}</li>
+            <li>{{ __('lab_manager.first_run_step_walkin') }}</li>
+        </ul>
+    </div>
+</div>
+@endunless
+
+{{-- ── What the public lab finder shows for this laboratory ─────────────── --}}
+<div class="panel mb-4" id="publication">
+    <div class="panel-header">
+        <h2 class="panel-title"><i data-lucide="globe"></i> {{ __('lab_manager.pub_title') }}</h2>
+    </div>
+    <div class="panel-body">
+        @if(! $publication['linked'])
+            <div class="alert alert-warning"><i data-lucide="link-2-off"></i><div>{{ __('lab_manager.pub_unlinked') }}</div></div>
+        @else
+            @unless($publication['listing_active'])
+                <div class="alert alert-warning"><i data-lucide="eye-off"></i><div>{{ __('lab_manager.pub_listing_inactive', ['listing' => $publication['listing_name']]) }}</div></div>
+            @endunless
+            <div class="form-grid">
+                <div class="form-group">
+                    <div class="form-label">{{ __('lab_manager.pub_listing') }}</div>
+                    <div class="td-strong">{{ $publication['listing_name'] }}</div>
+                </div>
+                <div class="form-group">
+                    <div class="form-label">{{ __('lab_manager.pub_published') }}</div>
+                    <div class="td-strong">{{ $publication['published'] }}</div>
+                </div>
+                <div class="form-group">
+                    <div class="form-label">{{ __('lab_manager.pub_catalogue_tests') }}</div>
+                    <div class="td-strong">{{ $publication['catalogue_tests'] }}</div>
+                </div>
+                <div class="form-group">
+                    <div class="form-label">{{ __('lab_manager.pub_last') }}</div>
+                    <div class="td-strong">{{ $publication['last_published_at'] ? $publication['last_published_at']->format('d M Y H:i') : __('lab_manager.pub_never') }}</div>
+                </div>
+            </div>
+            @if($publication['catalogue_tests'] === 0)
+                <p class="form-hint">{{ __('lab_manager.pub_no_tests') }}</p>
+            @endif
+        @endif
+        <div class="row-actions-inline" style="margin-top:0.75rem;">
+            @if($canCatalogue)
+                <a href="{{ route('portals.facility.catalogue') }}" class="btn btn-secondary btn-sm"><i data-lucide="clipboard-list"></i> {{ __('lab_manager.pub_open_catalogue') }}</a>
+            @endif
+            <a href="{{ route('public.network.lab-test-finder') }}" class="btn btn-secondary btn-sm" target="_blank" rel="noopener"><i data-lucide="external-link"></i> {{ __('lab_manager.pub_open_finder') }}</a>
+        </div>
+    </div>
+</div>
 
 {{-- ── The bench, one tile per column ───────────────────────────────────── --}}
 <div class="stat-grid">
@@ -186,6 +247,18 @@
                             @if($order)
                             <a href="{{ route('portals.lab.show', $order->id) }}" class="btn btn-secondary btn-sm"><i data-lucide="eye"></i> {{ __('lab_manager.open_order') }}</a>
                             @endif
+                            <details style="margin-top:0.4rem;">
+                                <summary class="btn btn-secondary btn-sm"><i data-lucide="phone-call"></i> {{ __('lab_manager.callback') }}</summary>
+                                <form method="POST" action="{{ route('portals.lab_manager.critical_callback', $alert->id) }}" style="margin-top:0.5rem;">
+                                    @csrf
+                                    <label class="form-label" for="informed-{{ $alert->id }}">{{ __('lab_manager.callback_informed') }}</label>
+                                    <input class="form-control" id="informed-{{ $alert->id }}" name="informed" required minlength="2" maxlength="160" placeholder="{{ __('lab_manager.callback_informed_placeholder') }}">
+                                    <label class="form-label" for="note-{{ $alert->id }}">{{ __('lab_manager.callback_note') }}</label>
+                                    <input class="form-control" id="note-{{ $alert->id }}" name="note" maxlength="500">
+                                    <p class="form-hint">{{ __('lab_manager.callback_hint') }}</p>
+                                    <button type="submit" class="btn btn-primary btn-sm"><i data-lucide="check"></i> {{ __('lab_manager.callback_submit') }}</button>
+                                </form>
+                            </details>
                         </td>
                     </tr>
                 @endforeach

@@ -51,4 +51,6 @@
     'action' => route('portals.facility.settings.hours'),
 ])
 
+@include('portals.facility.settings._services')
+
 @endsection

@@ -353,6 +353,9 @@ class LabDeskService
 
         $this->notifyReleased($released, $userId);
 
+        // Partner webhooks (lab_result.released) — queued, signed, never fatal.
+        \App\Modules\Connect\Services\WebhookEventPublisher::labResultReleased($released);
+
         return $released;
     }
 

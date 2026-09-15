@@ -10,6 +10,7 @@ use App\Services\Lab\LabDeskWebService;
 use App\Services\Lab\LabManagerDeskService;
 use App\Services\Patient\PatientDocumentService;
 use App\Services\Portal\PortalContextService;
+use App\Support\StaffCapabilities;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -48,8 +49,40 @@ class LabManagerDeskController extends Controller
         ]);
 
         return view('portals.lab.dashboard', $this->desk->dashboard($facilityId) + [
-            'statuses' => LabDeskWebService::STATUSES,
+            'statuses'     => LabDeskWebService::STATUSES,
+            'publication'  => $this->desk->publication($facilityId),
+            'hasAnyWork'   => $this->desk->hasAnyWork($facilityId),
+            'canCatalogue' => StaffCapabilities::canAt(auth()->user(), $facilityId, 'service_catalogue'),
         ]);
+    }
+
+    /**
+     * Record the laboratory's telephone call-back of a critical value to a
+     * named person. Closes the alert once; never re-stamps it.
+     */
+    public function criticalCallback(Request $request, string $id): RedirectResponse
+    {
+        $facilityId = $this->facilityId();
+
+        $alert = $this->desk->findCriticalAlert($facilityId, $id)
+            ?? abort(404, __('lab_manager.err.alert_not_found'));
+
+        $validated = $request->validate([
+            'informed' => ['required', 'string', 'min:2', 'max:160'],
+            'note'     => ['nullable', 'string', 'max:500'],
+        ]);
+
+        try {
+            $this->desk->recordCriticalCallback($alert, (string) auth()->id(), $validated['informed'], (string) ($validated['note'] ?? ''));
+        } catch (HttpResponseException $e) {
+            return $this->refused($e);
+        }
+
+        $this->context->auditPatientAccess('lab_manager_critical_callback', 'CriticalValueAlert', $alert->id, $alert->patient_id, [
+            'facility_id' => $facilityId,
+        ]);
+
+        return redirect()->route('portals.lab_manager.dashboard')->with('success', __('lab_manager.callback_recorded'));
     }
 
     /** Requests the patients of this facility have sent it. */

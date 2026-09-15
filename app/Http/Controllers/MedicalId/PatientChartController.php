@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Patient;
 use App\Services\Chart\PatientChartAccess;
 use App\Services\Chart\PatientChartService;
+use App\Services\Portal\DeskFacilityContext;
 use App\Services\Portal\PortalContextService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -187,7 +188,9 @@ class PatientChartController extends Controller
      */
     private function facilityId(): string
     {
-        $facilityId = $this->context->facilityId();
+        // DeskFacilityContext: the session's active facility, else the user's
+        // ONE real posting; two postings → /select-facility, as on /facility/*.
+        $facilityId = app(DeskFacilityContext::class)->resolve();
 
         if (! $facilityId) {
             abort(403, __('chart.no_facility_context'));

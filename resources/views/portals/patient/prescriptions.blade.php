@@ -63,6 +63,15 @@
                 {{ $rx->facility->name }}
             </p>
             @endif
+            {{-- The code any OpesCare pharmacy looks this prescription up by —
+                 the patient needs it when the paper is left at home. --}}
+            @if(filled($rx->reference))
+            <p class="f-small" style="margin:-4px 0 10px;display:flex;align-items:center;gap:5px;" title="{{ __('prescriber.rx_code_hint') }}">
+                @include('partials.finder.icon', ['name' => 'qr-code', 'size' => 14])
+                {{ __('prescriber.rx_code') }}: <strong data-rx-code>{{ $rx->reference }}</strong>
+            </p>
+            <p class="f-small f-muted" style="margin:-6px 0 10px;">{{ __('prescriber.rx_code_hint') }}</p>
+            @endif
 
             @if($rx->items->isNotEmpty())
             <div style="display:grid;gap:8px;">

@@ -37,12 +37,22 @@
     @else
     </div>
     @endcapability
+    {{-- The door to the referral desk's received tab for roles holding
+         `clinical_chart` (the route's gate); a plain figure for anyone else. --}}
+    @capability('clinical_chart')
+    <a href="{{ route('portals.referrals.index', ['tab' => 'received']) }}" class="stat-card stat-card--warning">
+    @else
     <div class="stat-card stat-card--warning">
+    @endcapability
         <div class="stat-card__head"><i data-lucide="send"></i></div>
         <div class="stat-card__label">{{ __('public.staff_portal.kpi_pending_referrals', [], app()->getLocale()) ?: 'Pending Referrals' }}</div>
         <div class="stat-card__value">{{ $kpis['pending_referrals'] ?? 0 }}</div>
         <div class="stat-card__hint">{{ __('public.staff_portal.kpi_awaiting_action', [], app()->getLocale()) ?: 'Awaiting action' }}</div>
+    @capability('clinical_chart')
+    </a>
+    @else
     </div>
+    @endcapability
     <div class="stat-card stat-card--primary">
         <div class="stat-card__head"><i data-lucide="receipt"></i></div>
         <div class="stat-card__label">{{ __('public.staff_portal.kpi_open_invoices', [], app()->getLocale()) ?: 'Open Invoices' }}</div>
@@ -84,7 +94,7 @@
                             id="health_id"
                             name="health_id"
                             class="form-control mono"
-                            placeholder="e.g. CM-HID-7KQ9-MP42-X8D1"
+                            placeholder="{{ __('staff.desk.health_id_placeholder') }}"
                             value="{{ request('health_id') }}"
                         >
                     </div>

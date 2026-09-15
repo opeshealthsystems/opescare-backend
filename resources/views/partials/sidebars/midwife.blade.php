@@ -30,6 +30,11 @@
         <i data-lucide="folder-heart"></i><span>{{ __('chart.nav', [], $l) }}</span>
     </a>
     @endcapability
+    @capability('clinical_chart')
+    <a href="{{ route('portals.referrals.index') }}" class="sidebar-link {{ request()->routeIs('portals.referrals.*') ? 'active' : '' }}">
+        <i data-lucide="arrow-right-left"></i><span>{{ __('referral_desk.nav', [], $l) }}</span>
+    </a>
+    @endcapability
     {{-- Triage. The first surface over the triage schema; gated by the same
          `triage` capability as its routes (config/staff_capabilities.php). --}}
     @capability('triage')

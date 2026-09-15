@@ -1,6 +1,11 @@
 <div class="panel mb-4">
     <div class="panel-header">
         <h2 class="panel-title"><i data-lucide="syringe"></i> {{ __('chart.tabs.immunizations') }}</h2>
+        {{-- The web immunisation desk (routes/immunisation_desk.php): same
+             capability and the same relationship gate as this chart. --}}
+        <a href="{{ route('portals.immunisations.index', $patient->id) }}" class="btn btn-primary">
+            <i data-lucide="plus"></i> {{ __('immunisation_desk.open_desk') }}
+        </a>
     </div>
     <div class="panel-body">
         @if($immunizations->isEmpty())

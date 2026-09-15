@@ -131,6 +131,13 @@ return [
     'print_security_altered'   => 'Void if altered. Any erasure, overwriting or correction on this sheet voids it in full.',
     'print_security_withdrawn' => 'A prescription withdrawn after printing stops verifying. Paper already handed over is not proof that it is still valid.',
 
+    // Facility scope + the RX code a patient takes to any pharmacy
+    'no_facility'     => 'Your account is not posted at any facility, so there is no prescriber desk to open. Ask your facility administrator to add you to their team.',
+    'notify_issued_title' => 'Prescription issued',
+    'notify_issued_body'  => 'Your prescription :reference is ready. Show this code at any pharmacy on OpesCare.',
+    'rx_code'         => 'Prescription code',
+    'rx_code_hint'    => 'Any OpesCare pharmacy can find this prescription by this code or by the patient\'s Health ID.',
+
     // Nav
     'nav'             => 'Prescriptions',
 ];

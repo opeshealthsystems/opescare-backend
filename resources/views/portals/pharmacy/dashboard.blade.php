@@ -18,6 +18,9 @@
          medicine_stock opens this dashboard for the stock alerts and must not be
          offered a queue its role cannot open (the routes 403 it). --}}
     @capability('dispense')
+    <a href="{{ route('portals.pharmacy.orders.index') }}" class="btn btn-secondary btn-sm" data-pending-orders="{{ $pendingOrders ?? 0 }}">
+        <i data-lucide="shopping-bag"></i> {{ trans_choice('pharmacy_orders.dashboard_pending', $pendingOrders ?? 0, ['count' => $pendingOrders ?? 0]) }}
+    </a>
     <a href="{{ route('portals.pharmacy.prescriptions') }}" class="btn btn-primary btn-sm">
         <i data-lucide="clipboard-list"></i> {{ __('public.pharmacy_portal.btn_view_queue', [], app()->getLocale()) ?: 'View full queue' }}
     </a>

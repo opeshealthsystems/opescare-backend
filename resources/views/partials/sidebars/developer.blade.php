@@ -24,6 +24,9 @@
     <a href="{{ route('portals.developer.activity') }}" class="sidebar-link {{ request()->routeIs('portals.developer.activity') ? 'active' : '' }}">
         <i data-lucide="activity"></i><span>{{ __('developer_ext.nav_activity', [], $l) }}</span>
     </a>
+    <a href="{{ route('portals.developer.consents') }}" class="sidebar-link {{ request()->routeIs('portals.developer.consents') ? 'active' : '' }}">
+        <i data-lucide="shield-check"></i><span>{{ __('developer_ext.nav_consents', [], $l) }}</span>
+    </a>
     <a href="{{ route('portals.developer.quickstart') }}" class="sidebar-link {{ request()->routeIs('portals.developer.quickstart') ? 'active' : '' }}">
         <i data-lucide="terminal"></i><span>{{ __('developer_ext.nav_quickstart', [], $l) }}</span>
     </a>

@@ -194,7 +194,7 @@ class CareMapController extends Controller
             'data' => $results,
             'meta' => array_merge(
                 $this->availabilityFreshness($results, 'lab'),
-                ['disclaimer' => 'Some tests may require a clinician’s request. Confirm requirements with the lab before booking.']
+                ['disclaimer' => __('lab_manager.api_test_disclaimer')]
             )
         ]);
     }

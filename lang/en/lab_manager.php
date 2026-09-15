@@ -36,7 +36,7 @@ return [
     'kpi_hint_column'          => 'Worklist column',
     'kpi_hint_today'           => 'Since midnight',
     'kpi_hint_validated'       => 'Orders whose last change today was the validation signature',
-    'kpi_hint_critical'        => 'Raised by the bench; the ordering clinician acknowledges from their inbox',
+    'kpi_hint_critical'        => 'Raised by the bench; closed here once the laboratory records the call-back',
     'kpi_hint_requests'        => 'Sent by patients from the app, waiting for a decision',
 
     'tat_title'        => 'Turnaround time',
@@ -50,7 +50,7 @@ return [
     'tat_days'         => ':days d :hours h',
 
     'critical_title'    => 'Critical values awaiting acknowledgement',
-    'critical_subtitle' => 'Oldest first. The clinician who ordered the test acknowledges from their results inbox; until then the value shows here.',
+    'critical_subtitle' => 'Oldest first. Telephone the value to the ordering clinician (or the patient, for a patient-requested test) and record the call-back; until then the value shows here.',
     'critical_empty'    => 'No critical value is waiting for acknowledgement.',
     'col_raised'        => 'Raised',
     'col_patient'       => 'Patient',
@@ -110,6 +110,54 @@ return [
         'rejected_clinician_body'  => ':facility rejected the sample for :test. Reason: :reason. A new sample is needed.',
     ],
 
+    // ── First run ─────────────────────────────────────────────────────────
+    'first_run_title'          => 'No order or request has reached this laboratory yet',
+    'first_run_body'           => 'The figures below are zero because nothing has been sent here, not because the day is quiet. Work reaches a laboratory in three ways:',
+    'first_run_step_catalogue' => 'Patients find you on the public lab-test finder once your tests and prices are in the catalogue and published (see below).',
+    'first_run_step_requests'  => 'Patients send a test request from the app; it appears under Patient requests for you to approve or decline.',
+    'first_run_step_walkin'    => 'Clinicians at this facility order tests from the clinician app; they land on the worklist.',
+
+    // ── Public finder publication ─────────────────────────────────────────
+    'pub_title'            => 'On the public lab-test finder',
+    'pub_unlinked'         => 'This laboratory is not linked to a public directory listing, so none of its tests can appear on the finder. Claim your listing, or ask an OpesCare administrator to link it.',
+    'pub_listing_inactive' => 'The listing “:listing” is not active, so the finder does not show it even though tests are published.',
+    'pub_listing'          => 'Public listing',
+    'pub_published'        => 'Tests offered on the finder',
+    'pub_catalogue_tests'  => 'Active laboratory tests (LOINC) in the catalogue',
+    'pub_last'             => 'Last published',
+    'pub_never'            => 'Never',
+    'pub_no_tests'         => 'The catalogue holds no active LOINC laboratory test, so there is nothing to publish.',
+    'pub_open_catalogue'   => 'Open the catalogue',
+    'pub_open_finder'      => 'View the public finder',
+
+    // ── Critical value call-back ──────────────────────────────────────────
+    'callback'                      => 'Record call-back',
+    'callback_informed'             => 'Person informed (name and role)',
+    'callback_informed_placeholder' => 'e.g. Dr Mbarga, ordering physician',
+    'callback_note'                 => 'Note (optional)',
+    'callback_hint'                 => 'Record this only once the value has been read back by the person named. The alert closes and cannot be reopened; the result is not changed.',
+    'callback_submit'               => 'Close the alert',
+    'callback_recorded'             => 'Call-back recorded. The alert is closed.',
+
+    // ── Public lab-test finder page ───────────────────────────────────────
+    'finder' => [
+        'title'              => 'Find a lab test',
+        'meta_description'   => 'Search the laboratory tests and prices that laboratories have published to the OpesCare network.',
+        'badge'              => 'Laboratory tests',
+        'intro'              => 'Search tests that laboratories have published, with their own prices. OpesCare does not set prices or check the bench — every result is the laboratory’s own publication.',
+        'search_label'       => 'Which test do you need?',
+        'search_placeholder' => 'e.g. Haemoglobin, Glucose, 718-7…',
+        'results_count'      => '{1} :count laboratory has published this test.|[2,*] :count laboratories have published this test.',
+        'published_line'     => 'Published by the laboratory · :time',
+        'price_fcfa'         => ':price FCFA',
+        'no_price'           => 'No price published',
+        'turnaround'         => 'Turnaround: :time',
+        'before_you_travel'  => 'Some tests need a clinician’s request. Call the laboratory to confirm requirements and price before travelling.',
+        'empty_title'        => 'No laboratory has published this test yet.',
+        'empty_body'         => 'That does not mean no laboratory performs it — only that none on the network has published it. Call a nearby laboratory directly.',
+        'empty_cta'          => 'Find nearby laboratories',
+    ],
+
     // ── Refusals ──────────────────────────────────────────────────────────
     'err' => [
         'request_not_found'  => 'That request was not sent to this laboratory.',
@@ -117,5 +165,11 @@ return [
         'reason_required'    => 'Give the reason.',
         'reject_released'    => 'This order has been released and cannot be rejected. Retract it through the clinical record instead.',
         'reject_has_results' => 'A result has already been entered on this order. It can be corrected, not rejected.',
+        'alert_not_found'    => 'That critical value was not raised at this laboratory.',
+        'informed_required'  => 'Name the person the value was read back to.',
+        'callback_already'   => 'This alert is already closed.',
     ],
+
+    // Public lab-test search API disclaimer (CareMapController::searchTests).
+    'api_test_disclaimer' => 'Some tests may require a clinician\'s request. Confirm requirements with the lab before booking.',
 ];

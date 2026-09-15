@@ -121,12 +121,14 @@ class StaffAppointmentBookScopeTest extends TestCase
 
     public function test_check_in_and_no_show_cannot_touch_another_facilitys_appointment(): void
     {
-        // check-in wraps its work in try/catch and reports the miss as a flash
-        // (302 back); no-show has no such wrapper and 404s. Either way nothing
-        // at the other facility changes and no visit is opened there.
+        // Both refuse another facility's appointment with 404: the lookup is
+        // scoped to this facility before any work happens. Check-in used to do
+        // the lookup inside its try/catch and answered 302 with the raw
+        // "No query results" text as a flash (docs/audits/HOSPITAL_DASHBOARD_AUDIT_2.md).
+        // Either way nothing at the other facility changes and no visit is opened.
         $this->asReceptionist()
             ->post(route('portals.staff.appointments.check-in', $this->theirsAppt->id))
-            ->assertRedirect();
+            ->assertNotFound();
         $this->asReceptionist()
             ->post(route('portals.staff.appointments.no-show', $this->theirsAppt->id))
             ->assertNotFound();

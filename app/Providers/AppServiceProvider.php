@@ -339,6 +339,13 @@ class AppServiceProvider extends ServiceProvider
         Route::group([], base_path('routes/facility_admin.php'));
         // Developer dashboard completion (docs/DEVELOPER_DASHBOARD_AUDIT.md).
         Route::group([], base_path('routes/developer_ext.php'));
+        // Web referral and immunisation desks — both existed only in the clinician
+        // mobile API (docs/audits/{CLINIC,HOSPITAL,HEALTH_CENTRE}_DASHBOARD_AUDIT_2.md).
+        Route::group([], base_path('routes/referral_desk.php'));
+        Route::group([], base_path('routes/immunisation_desk.php'));
+
+        // Public imaging-exam finder (docs/audits/IMAGING_DASHBOARD_AUDIT_2.md, I-1).
+        Route::middleware('web')->group(base_path('routes/imaging_finder.php'));
 
         // Laboratory desk (web portal) — the first web surface over lab_orders /
         // lab_results, whose capabilities were granted and gated nothing. Its

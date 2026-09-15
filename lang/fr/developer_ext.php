@@ -70,7 +70,7 @@ return [
     'act_col_endpoint'     => "Point de terminaison",
     'act_col_status_code'  => "Statut",
     'act_col_latency'      => "Latence",
-    'act_note_attribution' => "Les requêtes API sont attribuées d'après l'en-tête X-Integration-Client-Id envoyé par votre client. Les événements d'ingestion FHIR sont attribués d'après le jeton porteur.",
+    'act_note_attribution' => "Les requêtes API et les événements d'ingestion FHIR sont tous deux attribués d'après le jeton porteur avec lequel votre client s'est authentifié. Aucun en-tête n'est jamais pris en compte pour l'attribution.",
     'act_identifier_note'  => "Les identifiants santé ne sont jamais stockés dans ce journal — seulement une empreinte à sens unique.",
 
     // Quickstart
@@ -103,8 +103,66 @@ return [
     'qs_copy'              => "Copier",
     'copied'               => "Copié",
 
+    // Rejeu de webhook
+    'wh_btn_replay'        => "Rejouer",
+    'wh_btn_replay_help'   => "Remettre cette livraison en file vers le même point de terminaison avec la même charge signée.",
+
+    // Analytique (api_usage_logs uniquement — la seule table d'usage que la plateforme écrit)
+    'nav_consents'         => "Consentements",
+    'an_page_title'        => "Analytique API",
+    'an_subtitle'          => "Volume de requêtes, taux d'erreur et latence de vos propres applications sur les 30 derniers jours, comptés à partir des requêtes réellement faites avec vos jetons.",
+    'an_stat_requests'     => "Requêtes",
+    'an_stat_error_rate'   => "Taux d'erreur",
+    'an_stat_errors_sub'   => ":errors erreurs (4xx/5xx), dont :server côté serveur",
+    'an_stat_p50'          => "Latence médiane (p50)",
+    'an_stat_p95'          => "Latence de queue (p95)",
+    'an_stat_latency_sub'  => "temps serveur par requête, 30 derniers jours",
+    'an_chart_title'       => "Requêtes par jour",
+    'an_chart_range'       => ":from – :to",
+    'an_chart_legend'      => "Bleu : requêtes. Rouge : part des requêtes du jour répondues 4xx/5xx.",
+    'an_empty'             => "Aucun appel pour l'instant.",
+    'an_empty_hint'        => "Les chiffres apparaissent après votre première requête authentifiée. Faites-en une depuis le",
+    'an_top_endpoints'     => "Principaux points de terminaison",
+    'an_col_requests'      => "Requêtes",
+    'an_col_errors'        => "Erreurs",
+    'an_col_avg_ms'        => "Moy. ms",
+    'an_by_app'            => "Par application",
+    'an_no_calls_app'      => "aucun appel pour l'instant",
+
+    // Consentements
+    'cs_page_title'        => "Consentements",
+    'cs_subtitle'          => "Les consentements que les patients tiennent actuellement ouverts pour l'établissement au nom duquel agit chacune de vos applications en production.",
+    'cs_explainer_title'   => "Comment une application partenaire obtient un consentement",
+    'cs_explainer_p1'      => "Sur OpesCare, le consentement est accordé par le patient à un ÉTABLISSEMENT, jamais à une application. Une application en production est liée à exactement un établissement lors de l'approbation et agit en son nom : le consentement du patient envers l'établissement est ce qui permet à votre application de lire ou d'écrire son dossier.",
+    'cs_explainer_p2'      => "Pour demander un consentement à un patient, votre application appelle les points de terminaison de consentement de l'API : vérifiez d'abord le statut du patient par Health ID, puis soumettez une demande de consentement. Le patient approuve ou refuse dans l'application OpesCare ; l'approbation déclenche le webhook consent.granted si vous y êtes abonné.",
+    'cs_explainer_p3'      => "Cette page ne liste jamais de patients. Elle n'affiche que les consentements qui existent déjà pour votre établissement, identifiés par Health ID.",
+    'cs_lnk_docs_consent'  => "Points de terminaison de consentement (référence API)",
+    'cs_lnk_docs_webhooks' => "Webhook consent.granted",
+    'cs_facilityless_title'=> "Application bac à sable — non liée à un établissement",
+    'cs_facilityless_body' => "Le consentement est limité à un établissement, et cette application n'en a aucun : aucun consentement ne peut donc exister pour elle. Les applications bac à sable ne lisent que des données de démonstration. Demandez l'accès en production ; l'établissement est rattaché lors de l'approbation.",
+    'cs_acts_for'          => "Agit pour : :facility",
+    'cs_no_grants'         => "Aucun consentement actif pour cet établissement.",
+    'cs_col_health_id'     => "Health ID",
+    'cs_col_scope'         => "Portée",
+    'cs_col_granted'       => "Accordé le",
+    'cs_col_expires'       => "Expire le",
+    'cs_col_status'        => "Statut",
+    'cs_no_expiry'         => "sans expiration",
+    'cs_privacy_note'      => "Les patients ne sont affichés que par Health ID, résolu exactement depuis chaque consentement. Rien au-delà des consentements existants n'est listé.",
+
+    // Approbation admin (D-5 : une application en production est liée à un établissement)
+    'adm_approve_lbl_facility'  => "Établissement au nom duquel agit l'application",
+    'adm_approve_ph_facility'   => "Nom exact de l'établissement",
+    'adm_approve_help_facility' => "Obligatoire. Le nom exact de l'établissement dans le registre ; les jetons de l'application porteront ce facility_id et chaque écriture FHIR et chaque vérification de consentement y seront limitées.",
+    'adm_approve_help_scopes'   => "Les :count portée(s) demandée(s) sont accordées telles quelles.",
+
     // Flash
     'flash_webhook_registered' => "Point de terminaison enregistré. Copiez le secret de signature maintenant — il n'est affiché qu'une seule fois.",
     'flash_webhook_paused'     => "Point de terminaison suspendu. Aucune livraison ne sera tentée tant qu'il n'est pas repris.",
     'flash_webhook_resumed'    => "Point de terminaison repris.",
+    'flash_replay_queued'      => "Livraison remise en file. Elle sera retentée avec la même charge signée.",
+    'flash_replay_not_failed'  => "Seule une livraison échouée peut être rejouée.",
+    'flash_replay_paused'      => "Ce point de terminaison est suspendu. Reprenez-le avant de rejouer.",
+    'flash_approve_facility_not_found' => "Aucun établissement ne porte exactement ce nom. L'approbation exige l'établissement au nom duquel l'application agira.",
+    'flash_approve_facility_ambiguous' => "Plusieurs établissements portent ce nom. Renommez-en un dans le registre, puis approuvez.",
 ];

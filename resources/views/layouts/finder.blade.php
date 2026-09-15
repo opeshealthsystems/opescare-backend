@@ -51,6 +51,8 @@
 
             <nav class="f-nav" aria-label="{{ __('finder_shell.a11y.main_navigation') }}">
                 <a href="{{ route('public.network.medicine-finder') }}">{{ __('finder_shell.nav.find_medicine') }}</a>
+                <a href="{{ route('public.network.lab-test-finder') }}">{{ __('lab_manager.finder.title') }}</a>
+                <a href="{{ route('public.network.imaging-finder') }}">{{ __('imaging_finder.title') }}</a>
                 <a href="{{ route('public.network.blood-finder') }}">{{ __('finder_shell.nav.find_blood') }}</a>
                 {{-- Booking has no dedicated public route yet; the directory is
                      today's booking entry point (facility profile → book).
@@ -82,6 +84,14 @@
     <nav class="f-nav-panel" id="f-nav-panel" aria-label="{{ __('finder_shell.a11y.main_navigation') }}">
         <a href="{{ route('public.network.medicine-finder') }}">
             <span class="f-nav-panel__label">@include('partials.finder.icon', ['name' => 'pill', 'size' => 22]){{ __('finder_shell.nav.find_medicine') }}</span>
+            <span class="f-nav-panel__go">@include('partials.finder.icon', ['name' => 'chevron-right', 'size' => 20])</span>
+        </a>
+        <a href="{{ route('public.network.lab-test-finder') }}">
+            <span class="f-nav-panel__label">@include('partials.finder.icon', ['name' => 'search', 'size' => 22]){{ __('lab_manager.finder.title') }}</span>
+            <span class="f-nav-panel__go">@include('partials.finder.icon', ['name' => 'chevron-right', 'size' => 20])</span>
+        </a>
+        <a href="{{ route('public.network.imaging-finder') }}">
+            <span class="f-nav-panel__label">@include('partials.finder.icon', ['name' => 'eye', 'size' => 22]){{ __('imaging_finder.title') }}</span>
             <span class="f-nav-panel__go">@include('partials.finder.icon', ['name' => 'chevron-right', 'size' => 20])</span>
         </a>
         <a href="{{ route('public.network.blood-finder') }}">
@@ -126,6 +136,8 @@
                     <h2 class="f-footer__title">{{ __('finder_shell.footer.col_services') }}</h2>
                     <ul>
                         <li><a class="f-footer__link" href="{{ route('public.network.medicine-finder') }}">{{ __('finder_shell.nav.find_medicine') }}</a></li>
+                        <li><a class="f-footer__link" href="{{ route('public.network.lab-test-finder') }}">{{ __('lab_manager.finder.title') }}</a></li>
+                        <li><a class="f-footer__link" href="{{ route('public.network.imaging-finder') }}">{{ __('imaging_finder.title') }}</a></li>
                         <li><a class="f-footer__link" href="{{ route('public.network.blood-finder') }}">{{ __('finder_shell.nav.find_blood') }}</a></li>
                         <li><a class="f-footer__link" href="{{ route('public.care-map') }}">{{ __('finder_shell.nav.book_appointment') }}</a></li>
                         <li><a class="f-footer__link" href="{{ route('public.care-map') }}">{{ __('finder_shell.nav.directory') }}</a></li>

@@ -17,7 +17,41 @@ class PharmacyPortalController extends Controller
 {
     public function __construct(
         private readonly PharmacyStockReportService $stockReports,
+        private readonly ?\App\Services\Pharmacy\PharmacyDeskService $desk = null,
+        private readonly ?\App\Services\Pharmacy\PharmacyStockOpsService $ops = null,
     ) {
+    }
+
+    private function desk(): \App\Services\Pharmacy\PharmacyDeskService
+    {
+        return $this->desk ?? app(\App\Services\Pharmacy\PharmacyDeskService::class);
+    }
+
+    private function ops(): \App\Services\Pharmacy\PharmacyStockOpsService
+    {
+        return $this->ops ?? app(\App\Services\Pharmacy\PharmacyStockOpsService::class);
+    }
+
+    /**
+     * Scripts this counter works on: written here, OR routed here.
+     *
+     * The web worklist and the dashboard tiles used to read only
+     * `facility_id` — the ISSUING facility. A pharmacy issues nothing, so its
+     * queue was empty and "dispensed today" stayed at 0 for ever, while the
+     * mobile desk (PharmacyDeskService::queue) scopes by pharmacy_route_id.
+     * Both are honoured now; the issuing-facility half keeps an in-house
+     * hospital pharmacy working as before.
+     */
+    private function counterScripts(?string $facilityId): \Illuminate\Database\Eloquent\Builder
+    {
+        $routeIds = $facilityId ? $this->desk()->routeIds($facilityId) : [];
+
+        return Prescription::query()->where(function ($w) use ($facilityId, $routeIds) {
+            $w->where('facility_id', $facilityId ?? '00000000-0000-0000-0000-000000000000');
+            if ($routeIds !== []) {
+                $w->orWhereIn('pharmacy_route_id', $routeIds);
+            }
+        });
     }
 
     /**
@@ -76,26 +110,24 @@ class PharmacyPortalController extends Controller
             ->where('care_facility_id', $listing?->id ?? '00000000-0000-0000-0000-000000000000');
 
         $stats = [
-            'pending_rx'     => Prescription::where('facility_id', $facilityId)
+            'pending_rx'     => $this->counterScripts($facilityId)
                                     ->whereIn('status', ['active', 'partially_dispensed'])
                                     ->count(),
-            'dispensed_today' => Prescription::where('facility_id', $facilityId)
+            'dispensed_today' => $this->counterScripts($facilityId)
                                     ->where('status', 'dispensed')
                                     ->whereDate('dispensed_at', today())
                                     ->count(),
             'total_drugs'    => (clone $published)->count(),
             'low_stock'      => (clone $published)->where('stock_status', PharmacyStockStatus::LowStock->value)->count(),
             'out_of_stock'   => (clone $published)->where('stock_status', PharmacyStockStatus::OutOfStock->value)->count(),
-            'expired'        => \App\Models\StockBatch::query()
-                                    ->where('facility_id', $facilityId ?? '00000000-0000-0000-0000-000000000000')
-                                    ->whereNotNull('expiry_date')
-                                    ->whereDate('expiry_date', '<', today())
-                                    ->whereRaw('(quantity_in - quantity_out + quantity_adjusted) > 0')
-                                    ->count(),
+            // The SAME query the batches page lists under "expired"
+            // (PharmacyStockOpsService::expiredCount), so the tile and the page
+            // it links to can never disagree — the old inline copy also counted
+            // lots with no medicine behind them, which the page never shows.
+            'expired'        => $this->ops()->expiredCount($facilityId ?? '00000000-0000-0000-0000-000000000000'),
         ];
 
-        $pendingRx = Prescription::with(['patient', 'items'])
-            ->where('facility_id', $facilityId)
+        $pendingRx = $this->counterScripts($facilityId)->with(['patient', 'items'])
             ->whereIn('status', ['active', 'partially_dispensed'])
             ->orderByDesc('created_at')
             ->limit(8)
@@ -109,7 +141,17 @@ class PharmacyPortalController extends Controller
             ->limit(6)
             ->get();
 
-        return view('portals.pharmacy.dashboard', compact('stats', 'pendingRx', 'alerts'));
+        // Patient reservations waiting for a hand at the counter. The orders
+        // desk shipped as its own slice and the landing page never mentioned
+        // it: a pharmacy opened /pharmacy and had no sign an order was waiting.
+        $pendingOrders = $facilityId
+            ? \App\Models\MedicineReservation::query()
+                ->whereIn('care_facility_id', $this->desk()->listingIds($facilityId))
+                ->deskStatus(\App\Models\MedicineReservation::DESK_PENDING)
+                ->count()
+            : 0;
+
+        return view('portals.pharmacy.dashboard', compact('stats', 'pendingRx', 'alerts', 'pendingOrders'));
     }
 
     // ------------------------------------------------------------------
@@ -120,8 +162,7 @@ class PharmacyPortalController extends Controller
     {
         $facilityId = $this->facilityId();
 
-        $q = Prescription::with(['patient', 'items'])
-            ->where('facility_id', $facilityId);
+        $q = $this->counterScripts($facilityId)->with(['patient', 'items']);
 
         if ($status = $req->input('status')) {
             $q->where('status', $status);
@@ -316,8 +357,39 @@ class PharmacyPortalController extends Controller
         // are holding (see prescriptionLookup) — ids are not guessable.
         $rx = Prescription::findOrFail($id);
 
+        // THE SAME PATH AS THE MOBILE COUNTER. This called
+        // PrescriptionService::dispense() directly, which (a) filled a script
+        // already ROUTED TO ANOTHER PHARMACY — the mobile desk answers that
+        // with a 404 — (b) never claimed the script for this counter nor moved
+        // its routing status to `dispensed`, so the script stayed "incoming"
+        // on the app's bench after it was handed over, (c) never told the
+        // patient, and (d) could only hand over the whole script: a web
+        // counter could not record a partial fill. PharmacyDeskService::dispense
+        // does all four; `item_ids[]` (optional) names the lines handed over.
+        $facility = $this->desk()->facility($facilityId);
+
+        if (! $facility) {
+            return redirect()->route('portals.pharmacy.prescriptions')
+                ->with('error', __('flash.prescription_not_dispensable'));
+        }
+
+        $itemIds = array_values(array_filter((array) $req->input('item_ids', []), 'is_string'));
+
         try {
-            $prescriptions->dispense($rx, auth()->id(), ['notes' => $req->input('dispense_notes')]);
+            $this->desk()->dispense(
+                $facility,
+                $rx,
+                (string) auth()->id(),
+                array_map(fn (string $itemId) => ['id' => $itemId], $itemIds),
+                $req->input('dispense_notes'),
+            );
+        } catch (\App\Services\Pharmacy\PharmacyDeskException $e) {
+            if ($e->status === 404) {
+                abort(404);
+            }
+
+            return redirect()->route('portals.pharmacy.prescriptions')
+                ->with('error', __('flash.prescription_not_dispensable'));
         } catch (\Throwable $e) {
             return redirect()->route('portals.pharmacy.prescriptions')
                 ->with('error', __('flash.prescription_not_dispensable'));

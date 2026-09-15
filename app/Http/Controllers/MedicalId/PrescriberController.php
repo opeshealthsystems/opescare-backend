@@ -8,6 +8,7 @@ use App\Models\Medicine;
 use App\Models\Patient;
 use App\Models\Prescription;
 use App\Services\Clinical\PrescriptionService;
+use App\Services\Portal\DeskFacilityContext;
 use App\Support\ClinicalRelationshipGate;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -164,10 +165,17 @@ class PrescriberController extends Controller
      * The facility this prescriber is writing for. Mirrors the pharmacy portal's
      * resolution so both halves of the module agree on scope.
      */
-    private function facilityId(): ?string
+    private function facilityId(): string
     {
-        return session('active_facility_id')
-            ?? auth()->user()?->primary_facility_id
-            ?? Facility::value('id');
+        // DeskFacilityContext applies the portal's posting rule (session, then
+        // the one posting, else the selector). The previous last resort was
+        // Facility::value('id') — the FIRST facility in the table — so an
+        // account with no posting listed, and wrote scripts for, a facility it
+        // does not work at. No posting now closes the desk with a named 403.
+        $id = app(DeskFacilityContext::class)->resolve();
+
+        abort_if($id === null || $id === '', 403, __('prescriber.no_facility'));
+
+        return (string) $id;
     }
 }

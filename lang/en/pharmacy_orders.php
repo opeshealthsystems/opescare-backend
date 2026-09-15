@@ -96,4 +96,13 @@ return [
     'flash_dispatch'  => 'Order :reference is out for delivery — the patient has been told.',
     'flash_delivered' => 'Order :reference delivered.',
     'flash_cancel'    => 'Order :reference cancelled.',
+    // ── Second pass: orders ↔ stock ledger seam, unlinked pharmacy ─────
+    'flash_stock_not_recorded' => "The stock ledger was not changed: this pharmacy keeps no batches for this medicine, or too few usable packs. Record the movement by hand.",
+    'lbl_stock_ledger' => "Stock ledger",
+    'stock_recorded' => ":count pack(s) taken off the batch ledger.",
+    'stock_view_log' => "View movements",
+    'stock_not_recorded' => "Not recorded on the batch ledger.",
+    'stock_record_by_hand' => "Record a movement",
+    'no_listing' => "This pharmacy is not linked to a public directory listing, so patients cannot find it or reserve medicines here. An empty desk does not mean nobody tried.",
+    'dashboard_pending' => "{0} Orders: none waiting|{1} Orders: :count waiting|[2,*] Orders: :count waiting",
 ];

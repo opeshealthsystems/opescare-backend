@@ -32,6 +32,13 @@
     <p class="page-subtitle">{{ __('pharmacy_orders.subtitle') }}</p>
 </div>
 
+@if(isset($hasListing) && ! $hasListing)
+<div class="banner banner--warning" role="status">
+    <i data-lucide="link-2-off"></i>
+    <div>{{ __('pharmacy_orders.no_listing') }}</div>
+</div>
+@endif
+
 <nav class="po-tabs" aria-label="{{ __('pharmacy_orders.title') }}">
     @foreach($tabs as $t)
         <a href="{{ route('portals.pharmacy.orders.index', ['tab' => $t]) }}" class="po-tab {{ $t === $tab ? 'po-tab--active' : '' }}" @if($t === $tab) aria-current="page" @endif>

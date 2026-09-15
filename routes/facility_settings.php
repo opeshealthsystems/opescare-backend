@@ -50,6 +50,15 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'capability:service_catalogue'
         ->name('portals.facility.settings.hours');
     Route::post('/facility/settings/photo', [FacilitySettingsController::class, 'updatePhoto'])
         ->name('portals.facility.settings.photo');
+    // Public services (care_facility_services) — what the Finder profile
+    // lists. Before this, a facility admin could only publish services
+    // through /portals/listing, which needs an approved claim and has no
+    // sidebar link: a health centre could not say "vaccination / ANC".
+    Route::post('/facility/settings/services', [FacilitySettingsController::class, 'storeService'])
+        ->name('portals.facility.settings.services.store');
+    Route::delete('/facility/settings/services/{service}', [FacilitySettingsController::class, 'destroyService'])
+        ->whereUuid('service')
+        ->name('portals.facility.settings.services.destroy');
 });
 
 /*

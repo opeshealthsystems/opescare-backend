@@ -24,6 +24,9 @@
     <a href="{{ route('portals.developer.webhooks') }}" class="sidebar-link {{ request()->routeIs('portals.developer.webhook*') ? 'active' : '' }}">
         <i data-lucide="webhook"></i><span>{{ __('public.portal.nav_webhooks', [], $l) ?: 'Webhooks' }}</span>
     </a>
+    <a href="{{ route('portals.developer.consents') }}" class="sidebar-link {{ request()->routeIs('portals.developer.consents') ? 'active' : '' }}">
+        <i data-lucide="shield-check"></i><span>{{ __('developer_ext.nav_consents', [], $l) }}</span>
+    </a>
     <a href="{{ route('portals.developer.production_requests') }}" class="sidebar-link {{ request()->routeIs('portals.developer.production_requests*') ? 'active' : '' }}">
         <i data-lucide="send"></i><span>{{ __('public.portal.nav_production_req', [], $l) ?: 'Production Requests' }}</span>
     </a>

@@ -152,7 +152,8 @@ class MedicineReservationService
                     'ref'  => $reservation->reference,
                     'pack' => $reservation->pack_size !== null ? ' · ' . $reservation->pack_size : '',
                 ]),
-                'url'   => route('portals.pharmacy.orders.index'),
+                // The order itself, not the list it sits in.
+                'url'   => route('portals.pharmacy.orders.show', $reservation->id),
             ],
             [],
             'high',

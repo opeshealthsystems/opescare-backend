@@ -68,6 +68,9 @@ class PharmacyOrdersController extends Controller
             'tabs'         => array_keys(self::TABS),
             'counts'       => $counts,
             'reservations' => $this->rowsFor($facilityId, self::TABS[$tab]),
+            // No linked directory listing = patients cannot find this pharmacy,
+            // so an empty desk is not "no orders yet" — the view says why.
+            'hasListing'   => $this->desk->listingIds($facilityId) !== [],
         ]);
     }
 
@@ -78,6 +81,7 @@ class PharmacyOrdersController extends Controller
         return view('portals.pharmacy.orders.show', [
             'reservation' => $reservation,
             'desk'        => $reservation->deskStatus(),
+            'stockRecorded' => $this->desk->stockRecordedFor($reservation),
         ]);
     }
 
@@ -165,8 +169,17 @@ class PharmacyOrdersController extends Controller
                 ->with('error', $e->getMessage());
         }
 
-        return redirect()->route('portals.pharmacy.orders.show', $reservation->id)
+        $redirect = redirect()->route('portals.pharmacy.orders.show', $reservation->id)
             ->with('success', __('pharmacy_orders.flash_' . $action, ['reference' => $reservation->reference]));
+
+        // The hand-over stands either way; if the ledger could not take the
+        // packs off (no ledger item, too few usable packs) the counter is told
+        // plainly instead of the finder silently over-promising.
+        if (in_array($action, ['collected', 'delivered'], true) && $this->desk->stockRecordedFor($reservation) === 0) {
+            $redirect->with('warning', __('pharmacy_orders.flash_stock_not_recorded'));
+        }
+
+        return $redirect;
     }
 
     private function facilityId(): string

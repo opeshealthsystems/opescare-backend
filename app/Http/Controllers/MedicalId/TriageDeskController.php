@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PatientRecordedVital;
 use App\Models\Patient;
 use App\Models\TriageRecord;
+use App\Services\Portal\DeskFacilityContext;
 use App\Services\Portal\PortalContextService;
 use App\Services\Triage\TriageDeskService;
 use App\Support\StaffCapabilities;
@@ -342,7 +343,9 @@ class TriageDeskController extends Controller
      */
     private function facilityId(): string
     {
-        $facilityId = $this->context->facilityId();
+        // DeskFacilityContext: the session's active facility, else the user's
+        // ONE real posting; two postings → /select-facility, as on /facility/*.
+        $facilityId = app(DeskFacilityContext::class)->resolve();
 
         if (! $facilityId) {
             abort(403, __('triage.no_facility_context'));
@@ -356,7 +359,7 @@ class TriageDeskController extends Controller
     {
         $user = auth()->user();
 
-        return $user ? StaffCapabilities::roleFor($user, $this->context->facilityId()) : null;
+        return $user ? StaffCapabilities::roleFor($user, $this->facilityId()) : null;
     }
 
     /**

@@ -159,4 +159,6 @@ return [
     'notify_medicine_fallback'  => 'Medicine',
     'notify_reservation_title'  => 'New medicine reservation: :medicine × :qty',
     'notify_reservation_body'   => 'Ref :ref:pack',
+    // Web counter: partial hand-over (PharmacyPortalController@dispense).
+    'dispense_lines_hint' => 'Handing over only some medicines? Tick them. Leave every box empty to hand over the whole prescription.',
 ];

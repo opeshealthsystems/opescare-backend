@@ -13,6 +13,10 @@ Route::middleware(['web', 'auth', 'portal.access'])->group(function () {
     Route::get('/developer/webhooks',                        [DeveloperExtController::class, 'webhooks'])->name('portals.developer.webhooks');
     Route::post('/developer/webhooks',                       [DeveloperExtController::class, 'storeWebhook'])->name('portals.developer.webhooks.store');
     Route::post('/developer/webhooks/{subscription}/toggle', [DeveloperExtController::class, 'toggleWebhook'])->name('portals.developer.webhooks.toggle');
+    Route::post('/developer/webhooks/deliveries/{delivery}/replay', [DeveloperExtController::class, 'replayDelivery'])->name('portals.developer.webhooks.replay');
+
+    // Consents — active grants to the facility each facility-bound app acts for (D-9; D-5 resolved)
+    Route::get('/developer/consents',                        [DeveloperExtController::class, 'consents'])->name('portals.developer.consents');
 
     // Activity — the partner's own fhir_ingest_events + api_usage_logs (D-3)
     Route::get('/developer/activity',                        [DeveloperExtController::class, 'activity'])->name('portals.developer.activity');

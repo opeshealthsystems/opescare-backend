@@ -16,6 +16,13 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/pricing', [PricingController::class, 'index'])->name('public.pricing');
 
+// ── Public lab-test finder ─────────────────────────────────────────────────
+// The web page over GET /api/v1/care-map/labs/test-search (same service, same
+// provenance gates). Beside /network/medicine-finder and /network/blood-finder
+// in routes/web.php, declared here so it does not touch that shared file.
+Route::get('/network/lab-test-finder', \App\Http\Controllers\CareMap\LabTestFinderController::class)
+    ->name('public.network.lab-test-finder');
+
 // ── Patient "Refer & Earn" growth page ─────────────────────────────────────
 // Distinct from the clinical referrals feature (portals.patient.referrals).
 // Wrapped inline in the patient-portal middleware stack so it does not need to

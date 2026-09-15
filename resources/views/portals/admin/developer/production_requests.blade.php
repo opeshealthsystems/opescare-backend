@@ -120,7 +120,17 @@
             <h3 class="modal__title" id="approve-{{ $req->id }}-title"><i data-lucide="check-circle"></i> {{ __('public.adm_dev_prod_modal_approve_title') }}</h3>
             <form method="POST" action="{{ route('portals.admin.developer.production_requests.approve', $req->id) }}">
                 @csrf
-                <div class="modal__body"><p>{{ __('public.adm_dev_prod_modal_approve_body') }}</p></div>
+                <div class="modal__body">
+                    <p>{{ __('public.adm_dev_prod_modal_approve_body') }}</p>
+                    {{-- D-5: a production app is always facility-bound. Exact facility name, resolved server-side. --}}
+                    <label class="form-label" for="facility-{{ $req->id }}">{{ __('developer_ext.adm_approve_lbl_facility') }}</label>
+                    <input id="facility-{{ $req->id }}" type="text" name="facility_name" required maxlength="255" class="form-control" value="{{ old('facility_name') }}" placeholder="{{ __('developer_ext.adm_approve_ph_facility') }}" autocomplete="off">
+                    <p class="td-muted">{{ __('developer_ext.adm_approve_help_facility') }}</p>
+                    <p class="td-muted">{{ __('developer_ext.adm_approve_help_scopes', ['count' => count((array) $req->requested_scopes)]) }}</p>
+                    @foreach((array) $req->requested_scopes as $scope)
+                        <input type="hidden" name="approved_scopes[]" value="{{ $scope }}">
+                    @endforeach
+                </div>
                 <div class="modal__footer">
                     <button type="button" class="btn btn-ghost" onclick="opCloseModal('approve-{{ $req->id }}')">{{ __('public.adm_dev_prod_modal_btn_cancel') }}</button>
                     <button type="submit" class="btn btn-success">{{ __('public.adm_dev_prod_btn_approve') }}</button>

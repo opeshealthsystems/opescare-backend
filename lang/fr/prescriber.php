@@ -131,6 +131,13 @@ return [
     'print_security_altered'   => 'Nulle en cas de modification. Toute rature, surcharge ou correction sur cette feuille l’annule intégralement.',
     'print_security_withdrawn' => 'Une ordonnance retirée après impression cesse d’être vérifiable. Le papier déjà remis ne prouve pas qu’elle est encore valable.',
 
-    // Nav
+    // Portée établissement + le code RX que le patient présente en pharmacie
+    'no_facility'     => 'Votre compte n\'est rattaché à aucun établissement : il n\'y a donc pas de bureau de prescription à ouvrir. Demandez à l\'administrateur de votre établissement de vous ajouter à son équipe.',
+    'notify_issued_title' => 'Ordonnance émise',
+    'notify_issued_body'  => 'Votre ordonnance :reference est prête. Présentez ce code dans n\'importe quelle pharmacie OpesCare.',
+    'rx_code'         => 'Code de l\'ordonnance',
+    'rx_code_hint'    => 'Toute pharmacie OpesCare peut retrouver cette ordonnance grâce à ce code ou à l\'identifiant santé du patient.',
+
+    // Navigation
     'nav'             => 'Ordonnances',
 ];

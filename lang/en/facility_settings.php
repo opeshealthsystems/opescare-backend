@@ -91,6 +91,8 @@ return [
     'section_hours'  => "Opening hours",
     'hours_intro'    => "A day with no time, not marked open all day and not marked closed, is left unstated.",
     'btn_save_hours' => "Save hours",
+    // ── Public services ───────────────────────────────────────────────────
+    'services_intro' => "The services patients see on this facility's public card in the Finder — for example child immunisation, antenatal care, malaria rapid test or family planning. The priced list of coded services is kept separately under Our services.",
     // ── Photo / logo ──────────────────────────────────────────────────────
     'section_photo'      => "Photo or logo",
     'label_photo'        => "Picture",

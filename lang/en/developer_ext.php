@@ -70,7 +70,7 @@ return [
     'act_col_endpoint'     => "Endpoint",
     'act_col_status_code'  => "Status",
     'act_col_latency'      => "Latency",
-    'act_note_attribution' => "API requests are attributed by the X-Integration-Client-Id header your client sends. FHIR ingest events are attributed from the bearer token.",
+    'act_note_attribution' => "API requests and FHIR ingest events are both attributed from the bearer token your client authenticated with. Headers are never trusted for attribution.",
     'act_identifier_note'  => "Health IDs are never stored in this log — only a one-way hash.",
 
     // Quickstart
@@ -103,8 +103,66 @@ return [
     'qs_copy'              => "Copy",
     'copied'               => "Copied",
 
+    // Webhook replay
+    'wh_btn_replay'        => "Replay",
+    'wh_btn_replay_help'   => "Re-queue this delivery to the same endpoint with the same signed payload.",
+
+    // Analytics (api_usage_logs only — the one usage table this platform writes)
+    'nav_consents'         => "Consents",
+    'an_page_title'        => "API analytics",
+    'an_subtitle'          => "Request volume, error rate and latency of your own apps over the last 30 days, counted from the requests your bearer tokens actually made.",
+    'an_stat_requests'     => "Requests",
+    'an_stat_error_rate'   => "Error rate",
+    'an_stat_errors_sub'   => ":errors errors (4xx/5xx), :server of them server-side",
+    'an_stat_p50'          => "Median latency (p50)",
+    'an_stat_p95'          => "Tail latency (p95)",
+    'an_stat_latency_sub'  => "server time per request, last 30 days",
+    'an_chart_title'       => "Requests per day",
+    'an_chart_range'       => ":from – :to",
+    'an_chart_legend'      => "Blue: requests. Red: the share of that day's requests answered 4xx/5xx.",
+    'an_empty'             => "No calls yet.",
+    'an_empty_hint'        => "Numbers appear here after your first authenticated request. Make one from the",
+    'an_top_endpoints'     => "Top endpoints",
+    'an_col_requests'      => "Requests",
+    'an_col_errors'        => "Errors",
+    'an_col_avg_ms'        => "Avg ms",
+    'an_by_app'            => "By app",
+    'an_no_calls_app'      => "no calls yet",
+
+    // Consents
+    'cs_page_title'        => "Consents",
+    'cs_subtitle'          => "The consent grants patients currently hold open for the facility each of your production apps acts for.",
+    'cs_explainer_title'   => "How a partner app gets consent",
+    'cs_explainer_p1'      => "Consent on OpesCare is granted by the patient to a FACILITY, never to an app. A production app is bound to exactly one facility at approval, and acts for that facility: a patient's grant to the facility is what lets your app read or write that patient's record.",
+    'cs_explainer_p2'      => "To ask a patient for consent, your app calls the consent endpoints of the API: check the patient's current status by Health ID, then submit a consent request. The patient approves or refuses in the OpesCare app; approval fires the consent.granted webhook if you subscribed to it.",
+    'cs_explainer_p3'      => "This page never lists patients. It shows only the grants that already exist for your facility, identified by Health ID.",
+    'cs_lnk_docs_consent'  => "Consent endpoints (API reference)",
+    'cs_lnk_docs_webhooks' => "consent.granted webhook",
+    'cs_facilityless_title'=> "Sandbox app — not bound to a facility",
+    'cs_facilityless_body' => "Consent is facility-scoped, and this app has no facility, so no grant can exist for it. Sandbox apps can only read sandbox fixtures. Request production access; the facility is attached when the request is approved.",
+    'cs_acts_for'          => "Acts for: :facility",
+    'cs_no_grants'         => "No active consent grants for this facility.",
+    'cs_col_health_id'     => "Health ID",
+    'cs_col_scope'         => "Scope",
+    'cs_col_granted'       => "Granted",
+    'cs_col_expires'       => "Expires",
+    'cs_col_status'        => "Status",
+    'cs_no_expiry'         => "no expiry",
+    'cs_privacy_note'      => "Patients are shown by Health ID only, resolved exactly from each grant. Nothing beyond the grants that exist is listed.",
+
+    // Admin approval (D-5: production apps are facility-bound)
+    'adm_approve_lbl_facility'  => "Facility this app acts for",
+    'adm_approve_ph_facility'   => "Exact facility name",
+    'adm_approve_help_facility' => "Required. The exact name of the facility from the facility register; the app's tokens will carry this facility_id and every FHIR write and consent check will be scoped to it.",
+    'adm_approve_help_scopes'   => "The :count requested scope(s) are granted as requested.",
+
     // Flash
     'flash_webhook_registered' => "Endpoint registered. Copy the signing secret now — it is shown only once.",
     'flash_webhook_paused'     => "Endpoint paused. No deliveries will be attempted until it is resumed.",
     'flash_webhook_resumed'    => "Endpoint resumed.",
+    'flash_replay_queued'      => "Delivery re-queued. It will be retried with the same signed payload.",
+    'flash_replay_not_failed'  => "Only a failed delivery can be replayed.",
+    'flash_replay_paused'      => "This endpoint is paused. Resume it before replaying.",
+    'flash_approve_facility_not_found' => "No facility has exactly that name. Approval needs the facility the app will act for.",
+    'flash_approve_facility_ambiguous' => "More than one facility has that name. Rename one in the facility register, then approve.",
 ];

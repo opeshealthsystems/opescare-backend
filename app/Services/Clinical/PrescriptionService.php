@@ -103,6 +103,36 @@ class PrescriptionService
             'reason' => 'Prescription issued with ' . count($items) . ' item(s)',
         ]);
 
+        // Partner webhooks (prescription.issued) — queued, signed, never fatal.
+        \App\Modules\Connect\Services\WebhookEventPublisher::prescriptionIssued($prescription);
+
+        // The patient is told, with the code. The code already reached the
+        // printed sheet and the patient portal; without a notification a
+        // patient who left without the paper had no prompt to look for it.
+        // Best effort: a notification failure never undoes the prescription.
+        rescue(function () use ($prescription, $actorId) {
+            $userId = \App\Models\User::withoutGlobalScopes()
+                ->where('patient_id', $prescription->patient_id)
+                ->value('id');
+
+            if ($userId) {
+                \App\Support\Notify::toUser(
+                    (string) $userId,
+                    'prescription_issued',
+                    'prescription',
+                    [
+                        'title' => __('prescriber.notify_issued_title'),
+                        'body'  => __('prescriber.notify_issued_body', ['reference' => (string) $prescription->reference]),
+                        'url'   => route('portals.patient.prescriptions'),
+                    ],
+                    'normal',
+                    $actorId,
+                    'Prescription',
+                    (string) $prescription->getKey(),
+                );
+            }
+        }, null, false);
+
         return $prescription->load('items');
     }
 

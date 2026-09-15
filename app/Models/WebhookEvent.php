@@ -25,6 +25,8 @@ class WebhookEvent extends Model
         'payload',
         'signature',    // HMAC of payload for consumer verification
         'is_sensitive',
+        'facility_id',  // originating facility — WebhookService::dispatch scopes delivery by it
+        'client_id',    // originating integration client (optional, narrows delivery further)
     ];
 
     protected $casts = [

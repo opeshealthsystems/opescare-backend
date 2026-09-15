@@ -69,6 +69,10 @@
             @if($rx->prescribed_at)
             <span class="td-muted text-sm">{{ $rx->prescribed_at->format('d M Y H:i') }}</span>
             @endif
+            {{-- The code the pharmacy counter looks the script up by. --}}
+            @if(filled($rx->reference))
+            <span class="text-sm" title="{{ __('prescriber.rx_code_hint') }}">{{ __('prescriber.rx_code') }}: <strong class="kv-strong" data-rx-code>{{ $rx->reference }}</strong></span>
+            @endif
         </div>
     </div>
     <div class="entity-head__spacer"></div>

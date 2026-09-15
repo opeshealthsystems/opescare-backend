@@ -7,6 +7,7 @@ use App\Models\Appointment;
 use App\Models\Patient;
 use App\Models\QueueTicket;
 use App\Services\FrontDesk\FrontDeskService;
+use App\Services\Portal\DeskFacilityContext;
 use App\Services\Portal\PortalContextService;
 use App\Services\Queue\PatientQueueService;
 use App\Services\Queue\QueueRefusal;
@@ -288,12 +289,15 @@ class QueueDeskController extends Controller
     }
 
     /**
-     * The facility this desk is working for — PortalContextService only.
+     * The facility this desk is working for — the session's active facility,
+     * else the user's ONE real posting (DeskFacilityContext applies the same
+     * rule RequireFacilityContext applies on /facility/*: a clinician posted
+     * at two facilities is sent to /select-facility, never pinned silently).
      * Never a header, never the body, never a "first facility" fallback.
      */
     private function facilityId(): string
     {
-        $facilityId = $this->context->facilityId();
+        $facilityId = app(DeskFacilityContext::class)->resolve();
 
         if (! $facilityId) {
             abort(403, __('queue_desk.no_facility_context'));

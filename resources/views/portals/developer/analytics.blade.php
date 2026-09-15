@@ -1,158 +1,177 @@
 @extends('layouts.portal')
-@section('title', __('public.developer_portal.page_analytics', [], app()->getLocale()) ?: 'API Usage Analytics')
+@section('title', __('developer_ext.an_page_title'))
 @php $l = app()->getLocale(); @endphp
 
 @section('content')
 
-<div class="page-head">
-    <h2>{{ __('public.developer_portal.nav_analytics', [], $l) ?: 'API Analytics' }}</h2>
-    <p class="portal-page-subtitle">{{ __('public.developer_portal.analytics_subtitle', [], $l) ?: 'Request volume, error rates, and response times across your apps — last 30 days.' }}</p>
-    <div class="page-head__spacer"></div>
-    <form method="GET" class="filter-bar filter-bar--flush">
-        <select name="period" class="filter-select" aria-label="{{ __('public.developer_portal.period_aria', [], $l) ?: 'Period' }}" onchange="this.form.submit()">
-            <option value="daily" {{ $period === 'daily' ? 'selected' : '' }}>{{ __('public.developer_portal.period_daily', [], $l) ?: 'Daily' }}</option>
-            <option value="hourly" {{ $period === 'hourly' ? 'selected' : '' }}>{{ __('public.developer_portal.period_hourly', [], $l) ?: 'Hourly' }}</option>
-            <option value="monthly" {{ $period === 'monthly' ? 'selected' : '' }}>{{ __('public.developer_portal.period_monthly', [], $l) ?: 'Monthly' }}</option>
-        </select>
-    </form>
-</div>
+    <style>
+    .an-chart{display:flex;align-items:flex-end;gap:3px;height:160px;padding:8px 0 4px;border-bottom:1px solid #e5e7eb}
+    .an-chart__col{flex:1 1 0;display:flex;flex-direction:column;justify-content:flex-end;height:100%;min-width:0}
+    .an-chart__bar{position:relative;width:100%;background:#0F4C81;border-radius:2px 2px 0 0;min-height:0;overflow:hidden}
+    .an-chart__err{position:absolute;left:0;right:0;bottom:0;background:#b91c1c}
+    .an-chart__lbl{font-size:10px;text-align:center;color:#6b7280;margin-top:4px;overflow:hidden}
+    @media (max-width:640px){.an-chart__lbl{display:none}}
+    </style>
 
-{{-- Totals --}}
-<div class="stat-grid mb-6">
-    <div class="stat-card stat-card--primary">
-        <div class="stat-card__label">{{ __('public.developer_portal.stat_total_requests', [], $l) ?: 'Total requests' }}</div>
-        <div class="stat-card__value">{{ number_format($totals['requests']) }}</div>
-    </div>
-    <div class="stat-card stat-card--danger">
-        <div class="stat-card__label">{{ __('public.developer_portal.stat_total_errors', [], $l) ?: 'Total errors' }}</div>
-        <div class="stat-card__value">{{ number_format($totals['errors']) }}</div>
-    </div>
-    <div class="stat-card stat-card--success">
-        <div class="stat-card__label">{{ __('public.developer_portal.stat_error_rate', [], $l) ?: 'Error rate' }}</div>
-        <div class="stat-card__value">{{ $totals['requests'] > 0 ? round(($totals['errors'] / $totals['requests']) * 100, 1) : 0 }}%</div>
-    </div>
-    <div class="stat-card stat-card--warning">
-        <div class="stat-card__label">{{ __('public.developer_portal.stat_avg_response', [], $l) ?: 'Avg response' }}</div>
-        <div class="stat-card__value">{{ round($totals['avg_ms']) }}ms</div>
-    </div>
-    <div class="stat-card stat-card--teal">
-        <div class="stat-card__label">{{ __('public.developer_portal.stat_active_apps', [], $l) ?: 'Active apps' }}</div>
-        <div class="stat-card__value">{{ $clients->count() }}</div>
-    </div>
-</div>
-
-@if($metrics->isEmpty())
-<div class="alert alert-info mb-6">
-    <i data-lucide="info"></i>
-    <div>{{ __('public.developer_portal.analytics_no_data', [], $l) ?: 'No usage data yet for the selected period. Make your first API call to see metrics here.' }}</div>
-</div>
-@endif
-
-<div class="field-grid mb-6">
-
-    {{-- Top Endpoints --}}
-    <div class="panel">
-        <div class="panel-header"><h3 class="panel-title"><i data-lucide="list"></i> {{ __('public.developer_portal.analytics_top_endpoints', [], $l) ?: 'Top endpoints' }}</h3></div>
-        <div class="table-wrapper">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>{{ __('public.developer_portal.col_endpoint', [], $l) ?: 'Endpoint' }}</th>
-                        <th>{{ __('public.developer_portal.col_requests', [], $l) ?: 'Requests' }}</th>
-                        <th>{{ __('public.developer_portal.col_errors', [], $l) ?: 'Errors' }}</th>
-                        <th>{{ __('public.developer_portal.col_avg_ms', [], $l) ?: 'Avg ms' }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($byEndpoint as $row)
-                    <tr>
-                        <td data-label="{{ __('public.developer_portal.col_endpoint', [], $l) ?: 'Endpoint' }}" class="mono">{{ $row['endpoint'] }}</td>
-                        <td data-label="{{ __('public.developer_portal.col_requests', [], $l) ?: 'Requests' }}" class="td-strong">{{ number_format($row['requests']) }}</td>
-                        <td data-label="{{ __('public.developer_portal.col_errors', [], $l) ?: 'Errors' }}">
-                            @if($row['errors'] > 0)<span class="badge badge-danger">{{ number_format($row['errors']) }}</span>
-                            @else<span class="td-muted">0</span>@endif
-                        </td>
-                        <td data-label="{{ __('public.developer_portal.col_avg_ms', [], $l) ?: 'Avg ms' }}" class="td-muted">{{ $row['avg_ms'] }}ms</td>
-                    </tr>
-                    @empty
-                    <tr><td colspan="4" class="td-muted empty-cell">{{ __('public.developer_portal.analytics_no_data_cell', [], $l) ?: 'No data yet.' }}</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+    <div class="breadcrumb">
+        <a href="{{ route('portals.developer.dashboard') }}">{{ __('public.developer_portal.page_heading', [], $l) }}</a>
+        <i data-lucide="chevron-right"></i>
+        <span>{{ __('developer_ext.an_page_title') }}</span>
     </div>
 
-    {{-- Your Apps --}}
-    <div class="panel">
-        <div class="panel-header">
-            <h3 class="panel-title"><i data-lucide="cpu"></i> {{ __('public.developer_portal.analytics_your_apps', [], $l) ?: 'Your apps' }}</h3>
-            <a href="{{ route('portals.developer.apps') }}" class="btn btn-secondary btn-sm">{{ __('public.developer_portal.btn_manage', [], $l) ?: 'Manage' }}</a>
-        </div>
-        @if($clients->isEmpty())
-        <div class="panel-body empty-state">
-            <p>{{ __('public.developer_portal.analytics_no_apps', [], $l) ?: 'No apps yet.' }} <a href="{{ route('portals.developer.apps.create') }}">{{ __('public.developer_portal.lnk_create_first_app', [], $l) ?: 'Create your first app' }}</a>.</p>
-        </div>
-        @else
-        <div class="table-wrapper">
-            <table class="data-table">
-                <thead><tr>
-                    <th>{{ __('public.developer_portal.col_app', [], $l) ?: 'App' }}</th>
-                    <th>{{ __('public.portal.col_status', [], $l) ?: 'Status' }}</th>
-                </tr></thead>
-                <tbody>
-                @foreach($clients as $client)
-                <tr>
-                    <td data-label="{{ __('public.developer_portal.col_app', [], $l) ?: 'App' }}">
-                        <span class="td-strong">{{ $client->name }}</span>
-                        <div class="mono">{{ $client->client_id }}</div>
-                    </td>
-                    <td data-label="{{ __('public.portal.col_status', [], $l) ?: 'Status' }}">
-                        <span class="badge badge-{{ $client->status === 'active' ? 'success' : ($client->status === 'pending' ? 'warning' : 'neutral') }}">@enum($client->status)</span>
-                    </td>
-                </tr>
+    <div class="page-head">
+        <h2>{{ __('developer_ext.an_page_title') }}</h2>
+        <p class="portal-page-subtitle">{{ __('developer_ext.an_subtitle') }}</p>
+        <div class="page-head__spacer"></div>
+        @if($clients->count() > 1)
+        <form method="GET" class="filter-bar filter-bar--flush">
+            <select name="app" class="filter-select" aria-label="{{ __('developer_ext.act_filter_aria') }}" onchange="this.form.submit()">
+                <option value="">{{ __('developer_ext.act_filter_all') }}</option>
+                @foreach($clients as $c)
+                    <option value="{{ $c->id }}" {{ $selected && $selected->id === $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
                 @endforeach
-                </tbody>
-            </table>
-        </div>
+            </select>
+        </form>
         @endif
     </div>
 
-</div>
-
-{{-- Recent metrics table --}}
-@if($metrics->isNotEmpty())
-<div class="panel">
-    <div class="panel-header"><h3 class="panel-title"><i data-lucide="history"></i> {{ __('public.developer_portal.analytics_recent_metrics', [], $l) ?: 'Recent metric records' }}</h3></div>
-    <div class="table-wrapper">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>{{ __('public.developer_portal.col_endpoint', [], $l) ?: 'Endpoint' }}</th>
-                    <th>{{ __('public.developer_portal.col_method', [], $l) ?: 'Method' }}</th>
-                    <th>{{ __('public.developer_portal.col_period_start', [], $l) ?: 'Period start' }}</th>
-                    <th>{{ __('public.developer_portal.col_requests', [], $l) ?: 'Requests' }}</th>
-                    <th>{{ __('public.developer_portal.col_errors', [], $l) ?: 'Errors' }}</th>
-                    <th>{{ __('public.developer_portal.col_avg_ms', [], $l) ?: 'Avg ms' }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($metrics->take(20) as $m)
-                <tr>
-                    <td data-label="{{ __('public.developer_portal.col_endpoint', [], $l) ?: 'Endpoint' }}" class="mono">{{ $m->endpoint }}</td>
-                    <td data-label="{{ __('public.developer_portal.col_method', [], $l) ?: 'Method' }}"><span class="badge badge-neutral">{{ $m->method }}</span></td>
-                    <td data-label="{{ __('public.developer_portal.col_period_start', [], $l) ?: 'Period start' }}" class="td-muted">{{ $m->period_start?->format('d M Y H:i') }}</td>
-                    <td data-label="{{ __('public.developer_portal.col_requests', [], $l) ?: 'Requests' }}">{{ number_format($m->request_count) }}</td>
-                    <td data-label="{{ __('public.developer_portal.col_errors', [], $l) ?: 'Errors' }}">
-                        @if($m->error_count > 0)<span class="badge badge-danger">{{ $m->error_count }}</span>
-                        @else<span class="td-muted">0</span>@endif
-                    </td>
-                    <td data-label="{{ __('public.developer_portal.col_avg_ms', [], $l) ?: 'Avg ms' }}" class="td-muted">{{ round($m->avg_response_ms) }}ms</td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+    {{-- Every figure below is a count over api_usage_logs for this developer's own
+         client_ids, attributed from the bearer token. Nothing is estimated. --}}
+    <div class="stat-grid mb-6">
+        <div class="stat-card stat-card--primary">
+            <div class="stat-card__label">{{ __('developer_ext.an_stat_requests') }}</div>
+            <div class="stat-card__value">{{ number_format($totals['requests']) }}</div>
+            <div class="stat-card__sub">{{ __('developer_ext.act_since_30d') }}</div>
+        </div>
+        <div class="stat-card stat-card--danger">
+            <div class="stat-card__label">{{ __('developer_ext.an_stat_error_rate') }}</div>
+            <div class="stat-card__value">{{ $totals['error_rate'] === null ? '—' : $totals['error_rate'] . '%' }}</div>
+            <div class="stat-card__sub">{{ __('developer_ext.an_stat_errors_sub', ['errors' => number_format($totals['errors']), 'server' => number_format($totals['server_errors'])]) }}</div>
+        </div>
+        <div class="stat-card stat-card--success">
+            <div class="stat-card__label">{{ __('developer_ext.an_stat_p50') }}</div>
+            <div class="stat-card__value">{{ $totals['p50_ms'] === null ? '—' : $totals['p50_ms'] . ' ms' }}</div>
+            <div class="stat-card__sub">{{ __('developer_ext.an_stat_latency_sub') }}</div>
+        </div>
+        <div class="stat-card stat-card--warning">
+            <div class="stat-card__label">{{ __('developer_ext.an_stat_p95') }}</div>
+            <div class="stat-card__value">{{ $totals['p95_ms'] === null ? '—' : $totals['p95_ms'] . ' ms' }}</div>
+            <div class="stat-card__sub">{{ __('developer_ext.an_stat_latency_sub') }}</div>
+        </div>
     </div>
-</div>
-@endif
+
+    {{-- Requests per day --}}
+    <div class="panel mb-6">
+        <div class="panel-header">
+            <h3 class="panel-title"><i data-lucide="bar-chart-3"></i> {{ __('developer_ext.an_chart_title') }}</h3>
+            <span class="td-muted">{{ __('developer_ext.an_chart_range', ['from' => $since->format('d M'), 'to' => now()->format('d M Y')]) }}</span>
+        </div>
+        @if($totals['requests'] === 0)
+            <div class="panel-body empty-state">
+                <div class="empty-state-icon"><i data-lucide="bar-chart-3"></i></div>
+                <p>{{ __('developer_ext.an_empty') }}</p>
+                <p class="td-muted">{{ __('developer_ext.an_empty_hint') }} <a href="{{ route('portals.developer.quickstart') }}">{{ __('developer_ext.nav_quickstart') }}</a></p>
+            </div>
+        @else
+            <div class="panel-body">
+                <div class="an-chart" role="img" aria-label="{{ __('developer_ext.an_chart_title') }}">
+                    @foreach($perDay as $d)
+                        @php $h = $d['requests'] > 0 ? max(2, (int) round($d['requests'] / $maxPerDay * 100)) : 0; @endphp
+                        <div class="an-chart__col" title="{{ $d['day'] }}: {{ number_format($d['requests']) }} / {{ number_format($d['errors']) }}">
+                            <div class="an-chart__bar" style="height: {{ $h }}%">
+                                @if($d['requests'] > 0 && $d['errors'] > 0)
+                                    <div class="an-chart__err" style="height: {{ (int) round($d['errors'] / $d['requests'] * 100) }}%"></div>
+                                @endif
+                            </div>
+                            <div class="an-chart__lbl">{{ \Carbon\Carbon::parse($d['day'])->format('d') }}</div>
+                        </div>
+                    @endforeach
+                </div>
+                <div class="td-muted">{{ __('developer_ext.an_chart_legend') }}</div>
+            </div>
+        @endif
+    </div>
+
+    <div class="field-grid mb-6">
+
+        {{-- Top endpoints --}}
+        <div class="panel">
+            <div class="panel-header"><h3 class="panel-title"><i data-lucide="list"></i> {{ __('developer_ext.an_top_endpoints') }}</h3></div>
+            @if($byEndpoint->isEmpty())
+                <div class="panel-body empty-state"><p>{{ __('developer_ext.an_empty') }}</p></div>
+            @else
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead><tr>
+                        <th>{{ __('developer_ext.act_col_method') }}</th>
+                        <th>{{ __('developer_ext.act_col_endpoint') }}</th>
+                        <th>{{ __('developer_ext.an_col_requests') }}</th>
+                        <th>{{ __('developer_ext.an_col_errors') }}</th>
+                        <th>{{ __('developer_ext.an_col_avg_ms') }}</th>
+                    </tr></thead>
+                    <tbody>
+                    @foreach($byEndpoint as $row)
+                        <tr>
+                            <td data-label="{{ __('developer_ext.act_col_method') }}"><span class="badge badge-neutral">{{ $row['method'] }}</span></td>
+                            <td data-label="{{ __('developer_ext.act_col_endpoint') }}" class="mono">/{{ ltrim($row['endpoint'], '/') }}</td>
+                            <td data-label="{{ __('developer_ext.an_col_requests') }}" class="td-strong">{{ number_format($row['requests']) }}</td>
+                            <td data-label="{{ __('developer_ext.an_col_errors') }}">
+                                @if($row['errors'] > 0)<span class="badge badge-danger">{{ number_format($row['errors']) }}</span>@else<span class="td-muted">0</span>@endif
+                            </td>
+                            <td data-label="{{ __('developer_ext.an_col_avg_ms') }}" class="td-muted">{{ $row['avg_ms'] === null ? '—' : $row['avg_ms'] . ' ms' }}</td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+            @endif
+        </div>
+
+        {{-- Per app --}}
+        <div class="panel">
+            <div class="panel-header">
+                <h3 class="panel-title"><i data-lucide="cpu"></i> {{ __('developer_ext.an_by_app') }}</h3>
+                <a href="{{ route('portals.developer.apps') }}" class="btn btn-secondary btn-sm">{{ __('public.developer_portal.btn_manage', [], $l) }}</a>
+            </div>
+            @if($clients->isEmpty())
+                <div class="panel-body empty-state">
+                    <p>{{ __('developer_ext.qs_no_apps') }} <a href="{{ route('portals.developer.apps.create') }}">{{ __('developer_ext.qs_btn_create_app') }}</a></p>
+                </div>
+            @else
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead><tr>
+                        <th>{{ __('developer_ext.wh_col_app') }}</th>
+                        <th>{{ __('developer_ext.wh_col_status') }}</th>
+                        <th>{{ __('developer_ext.an_col_requests') }}</th>
+                    </tr></thead>
+                    <tbody>
+                    @foreach($clients as $client)
+                        <tr>
+                            <td data-label="{{ __('developer_ext.wh_col_app') }}">
+                                <span class="td-strong">{{ $client->name }}</span>
+                                <div class="mono">{{ $client->client_id }}</div>
+                            </td>
+                            <td data-label="{{ __('developer_ext.wh_col_status') }}">
+                                <span class="badge badge-{{ $client->status === 'active' ? 'success' : ($client->status === 'pending' ? 'warning' : 'neutral') }}">@enum($client->status)</span>
+                            </td>
+                            <td data-label="{{ __('developer_ext.an_col_requests') }}">
+                                @if(($byApp[$client->client_id] ?? 0) > 0)
+                                    <a href="{{ route('portals.developer.analytics', ['app' => $client->id]) }}">{{ number_format($byApp[$client->client_id]) }}</a>
+                                @else
+                                    <span class="td-muted">{{ __('developer_ext.an_no_calls_app') }}</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+            @endif
+        </div>
+
+    </div>
+
+    <p class="td-muted"><i data-lucide="info"></i> {{ __('developer_ext.act_note_attribution') }}</p>
 
 @endsection

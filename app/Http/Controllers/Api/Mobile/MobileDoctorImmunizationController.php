@@ -8,6 +8,7 @@ use App\Models\ImmunizationRecord;
 use App\Models\Patient;
 use App\Models\VaccinationSchedule;
 use App\Modules\Governance\Services\AccessLogService;
+use App\Services\Immunisation\ImmunisationRecordService;
 use App\Support\ClinicalRelationshipGate;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -92,6 +93,10 @@ use Illuminate\Validation\Rule;
  */
 class MobileDoctorImmunizationController extends Controller
 {
+    public function __construct(private readonly ImmunisationRecordService $doses)
+    {
+    }
+
     /**
      * What a dose may be at the moment it is WRITTEN.
      *
@@ -348,16 +353,12 @@ class MobileDoctorImmunizationController extends Controller
         // busy clinic double-tapping "record" must not silently inflate a
         // child's coverage.
         if (! ($validated['confirm_duplicate'] ?? false)) {
-            $existing = ImmunizationRecord::query()
-                ->where('patient_id', $patient->id)
-                ->where('vaccine_code', $validated['vaccine_code'])
-                ->where('status', '!=', 'entered_in_error')
-                ->whereDate('administered_at', $administeredAt->toDateString())
-                ->when(
-                    isset($validated['dose_number']),
-                    fn ($q) => $q->where('dose_number', $validated['dose_number'])
-                )
-                ->first();
+            $existing = $this->doses->findDuplicate(
+                $patient->id,
+                $validated['vaccine_code'],
+                $administeredAt,
+                isset($validated['dose_number']) ? (int) $validated['dose_number'] : null,
+            );
 
             if ($existing) {
                 return response()->json([
@@ -375,60 +376,8 @@ class MobileDoctorImmunizationController extends Controller
             return $this->auditUnavailable();
         }
 
-        $record = DB::transaction(function () use ($validated, $patient, $clinicianId, $facilityId, $status, $isHistorical, $administeredAt) {
-            $row = ImmunizationRecord::create([
-                'patient_id'  => $patient->id,
-                // From the token. Never from the body — this is the whole
-                // reason this surface exists rather than a port of the
-                // partner-API controller.
-                'facility_id' => $facilityId,
-                // A transcribed paper card does NOT name the clinician typing
-                // it as the one who gave the vaccine. Unknown stays unknown;
-                // the transcriber is in the access log.
-                'administered_by_id' => $isHistorical ? null : $clinicianId,
-                'encounter_id'       => $validated['encounter_id'] ?? null,
-                'vaccine_code'       => $validated['vaccine_code'],
-                'vaccine_system'     => $validated['vaccine_system'] ?? 'WHO-EPI',
-                'vaccine_name'       => $validated['vaccine_name'],
-                'lot_number'         => $validated['lot_number'] ?? null,
-                'manufacturer'       => $validated['manufacturer'] ?? null,
-                'administered_at'    => $administeredAt,
-                // Absent means absent. No dose number is assumed to be 1.
-                'dose_number'        => $validated['dose_number'] ?? null,
-                'dose_sequence'      => $validated['dose_sequence'] ?? null,
-                'route'              => $validated['route'] ?? null,
-                'site'               => $validated['site'] ?? null,
-                'dose_quantity'      => $validated['dose_quantity'] ?? null,
-                'dose_unit'          => $validated['dose_unit'] ?? null,
-                'expiry_date'        => $validated['expiry_date'] ?? null,
-                'status'             => $status,
-                'not_done_reason'    => $status === 'not_done' ? $validated['not_done_reason'] : null,
-                // Only a dose this facility gave itself is `verified`. A
-                // transcription is a claim about somebody else's act.
-                'verification_status' => $isHistorical ? 'unverified' : 'verified',
-                'is_historical'       => $isHistorical,
-                'source_document_id'  => $validated['source_document_id'] ?? null,
-            ]);
-
-            // Close the matching line on the forward course, if there is one.
-            // Only an EXACT vaccine_code + dose_number match on a still-open
-            // line is closed — anything looser would be this controller
-            // deciding which scheduled dose the clinician meant.
-            if ($status === 'completed' && isset($validated['dose_number'])) {
-                VaccinationSchedule::query()
-                    ->where('patient_id', $patient->id)
-                    ->where('vaccine_code', $validated['vaccine_code'])
-                    ->where('dose_number', $validated['dose_number'])
-                    ->whereIn('status', ['due', 'overdue'])
-                    ->update([
-                        'status'                       => 'completed',
-                        'completed_by_immunization_id' => $row->id,
-                        'updated_at'                   => now(),
-                    ]);
-            }
-
-            return $row;
-        });
+        // The write itself is shared with the web desk (ImmunisationRecordService).
+        $record = $this->doses->record($patient, $facilityId, $clinicianId, $validated, $status, $isHistorical, $administeredAt);
 
         $record->load(['facility:id,name', 'adverseReactions']);
 
@@ -510,24 +459,8 @@ class MobileDoctorImmunizationController extends Controller
             return $this->auditUnavailable();
         }
 
-        DB::transaction(function () use ($record, $validated) {
-            $record->fill([
-                'status'          => 'entered_in_error',
-                'not_done_reason' => $validated['reason'],
-            ])->save();
-
-            // A course line closed by a dose that never happened must reopen,
-            // or the child reads as covered on the strength of a retraction.
-            // It goes back to `due`; whether it is overdue is a question of
-            // the date, which isOverdue() answers on read.
-            VaccinationSchedule::query()
-                ->where('completed_by_immunization_id', $record->id)
-                ->update([
-                    'status'                       => 'due',
-                    'completed_by_immunization_id' => null,
-                    'updated_at'                   => now(),
-                ]);
-        });
+        // A closed course line reopens inside the shared service.
+        $this->doses->void($record, $validated['reason']);
 
         $record->refresh()->load(['facility:id,name', 'adverseReactions']);
 

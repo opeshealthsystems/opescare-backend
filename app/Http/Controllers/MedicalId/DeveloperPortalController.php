@@ -497,12 +497,37 @@ class DeveloperPortalController extends Controller
     public function adminApproveProductionRequest(Request $request, ProductionAccessRequest $prodRequest)
     {
         $request->validate([
-            'review_notes' => ['nullable', 'string', 'max:1000'],
+            'review_notes'      => ['nullable', 'string', 'max:1000'],
+            'approved_scopes'   => ['nullable', 'array'],
+            'approved_scopes.*' => ['string', 'max:100'],
+            // D-5 resolution: a production app is ALWAYS facility-bound. The admin
+            // names the facility the app acts for — exact name, no search.
+            'facility_name'     => ['required', 'string', 'max:255'],
         ]);
 
         $actor = $this->demoActorId();
-        // Default: approve with the exact scopes the developer requested
-        $approvedScopes = $request->input('approved_scopes', $prodRequest->requested_scopes ?? []);
+
+        // Exact-name resolution among facilities. Ambiguity (two facilities with
+        // the same name) is refused rather than guessed.
+        $matches = \App\Models\Facility::where('name', trim($request->input('facility_name')))->limit(2)->get();
+        if ($matches->count() !== 1) {
+            return back()->withInput()->with('error', $matches->isEmpty()
+                ? __('developer_ext.flash_approve_facility_not_found')
+                : __('developer_ext.flash_approve_facility_ambiguous'));
+        }
+        $facility = $matches->first();
+
+        // Default: approve with the exact scopes the developer requested. The
+        // previous version read approved_scopes a second time for the client row
+        // and wrote json_encode(null) — the literal string "null" — into scopes
+        // whenever the admin form omitted it (docs/DEVELOPER_DASHBOARD_AUDIT.md).
+        $approvedScopes = array_values(array_filter(
+            (array) $request->input('approved_scopes', []),
+            fn ($s) => is_string($s) && $s !== ''
+        ));
+        if ($approvedScopes === []) {
+            $approvedScopes = array_values((array) ($prodRequest->requested_scopes ?? []));
+        }
 
         $prodRequest->approve(
             $actor,
@@ -510,18 +535,31 @@ class DeveloperPortalController extends Controller
             $request->input('review_notes')
         );
 
-        // Promote the integration_client to production environment
+        // Promote the integration_client to production AND bind it to the
+        // facility. The token endpoint copies integration_clients.facility_id
+        // into the JWT, and FhirIngestGuard::facilityId() reads it from there —
+        // this is what stops `no_facility_in_token`.
         if ($prodRequest->integration_client_id) {
             IntegrationClient::where('client_id', $prodRequest->integration_client_id)
                 ->update([
                     'environment'  => 'production',
-                    'scopes'       => json_encode($request->input('approved_scopes')),
+                    'scopes'       => json_encode($approvedScopes),
+                    'facility_id'  => $facility->id,
                     'approved_at'  => now(),
                     'approved_by'  => $actor,
                 ]);
+
+            // Webhook subscriptions registered while the app was facility-less
+            // follow the app into its facility, so facility-scoped events reach them.
+            WebhookSubscription::where('client_id', $prodRequest->integration_client_id)
+                ->whereNull('facility_id')
+                ->update(['facility_id' => $facility->id]);
         }
 
-        AuditLogger::log($request, 'production_access_approved', 'production_access_request', $prodRequest->id);
+        AuditLogger::log($request, 'production_access_approved', 'production_access_request', $prodRequest->id, afterState: [
+            'facility_id'     => $facility->id,
+            'approved_scopes' => $approvedScopes,
+        ]);
 
         return back()->with('success', __('flash.developer_prod_access_approved'));
     }
@@ -577,36 +615,94 @@ class DeveloperPortalController extends Controller
             return redirect()->route('portals.developer.dashboard');
         }
 
-        $clientIds = IntegrationClient::where('created_by', $developer->email)->pluck('id');
-
-        // 30-day totals
-        $period = $request->input('period', 'daily');
-        $since  = now()->subDays(30);
-
-        $metrics = \App\Models\ApiUsageMetric::whereIn('api_credential_id', function ($q) use ($clientIds) {
-                $q->select('id')->from('api_credentials')->whereIn('client_id', $clientIds);
-            })
-            ->where('period', $period)
-            ->where('period_start', '>=', $since)
-            ->orderByDesc('period_start')
-            ->limit(200)
+        // Every number on this page comes from api_usage_logs — the one usage
+        // table this platform actually writes (LogApiUsage, attributed from the
+        // bearer token). api_usage_metrics / api_credentials / api_usage_snapshots
+        // are written by nothing and are not read here any more (D-7).
+        $clients = IntegrationClient::where('created_by', $developer->email)
+            ->orderByDesc('created_at')
             ->get();
 
+        $selected = null;
+        if (($app = $request->query('app')) !== null && $app !== '') {
+            $selected = $clients->firstWhere('id', (string) $app) ?? abort(404);
+        }
+
+        $clientIds = ($selected ? collect([$selected]) : $clients)->pluck('client_id')->all();
+        $since     = now()->subDays(30)->startOfDay();
+
+        $base = fn () => \App\Models\ApiUsageLog::query()
+            ->whereIn('integration_client_id', $clientIds ?: ['__none__'])
+            ->where('logged_at', '>=', $since);
+
+        // Requests per day, last 30 days — every day present, zero when silent.
+        $perDayRows = $base()
+            ->selectRaw("TO_CHAR(logged_at, 'YYYY-MM-DD') AS day, COUNT(*) AS requests")
+            ->groupBy('day')
+            ->pluck('requests', 'day');
+        $perDayErr = $base()
+            ->selectRaw("TO_CHAR(logged_at, 'YYYY-MM-DD') AS day, SUM(CASE WHEN response_status >= 400 THEN 1 ELSE 0 END) AS errors")
+            ->groupBy('day')
+            ->pluck('errors', 'day');
+
+        $perDay = [];
+        for ($d = $since->copy(); $d <= now()->endOfDay(); $d = $d->addDay()) {
+            $key = $d->format('Y-m-d');
+            $perDay[] = [
+                'day'      => $key,
+                'requests' => (int) ($perDayRows[$key] ?? 0),
+                'errors'   => (int) ($perDayErr[$key] ?? 0),
+            ];
+        }
+
+        $totalsRow = $base()
+            ->selectRaw("COUNT(*) AS requests, SUM(CASE WHEN response_status >= 400 THEN 1 ELSE 0 END) AS errors, SUM(CASE WHEN response_status >= 500 THEN 1 ELSE 0 END) AS server_errors")
+            ->first();
+
+        // p50 / p95 latency — Postgres percentile_cont over response_time_ms.
+        $latency = $base()
+            ->whereNotNull('response_time_ms')
+            ->selectRaw('percentile_cont(0.5) WITHIN GROUP (ORDER BY response_time_ms) AS p50, percentile_cont(0.95) WITHIN GROUP (ORDER BY response_time_ms) AS p95')
+            ->first();
+
         $totals = [
-            'requests' => $metrics->sum('request_count'),
-            'errors'   => $metrics->sum('error_count'),
-            'avg_ms'   => $metrics->avg('avg_response_ms') ?? 0,
+            'requests'      => (int) ($totalsRow->requests ?? 0),
+            'errors'        => (int) ($totalsRow->errors ?? 0),
+            'server_errors' => (int) ($totalsRow->server_errors ?? 0),
+            'p50_ms'        => $latency && $latency->p50 !== null ? (int) round((float) $latency->p50) : null,
+            'p95_ms'        => $latency && $latency->p95 !== null ? (int) round((float) $latency->p95) : null,
         ];
+        $totals['error_rate'] = $totals['requests'] > 0 ? round($totals['errors'] / $totals['requests'] * 100, 1) : null;
 
-        $byEndpoint = $metrics->groupBy('endpoint')->map(fn($rows) => [
-            'endpoint'  => $rows->first()->endpoint,
-            'requests'  => $rows->sum('request_count'),
-            'errors'    => $rows->sum('error_count'),
-            'avg_ms'    => round($rows->avg('avg_response_ms'), 1),
-        ])->sortByDesc('requests')->take(15)->values();
+        $byEndpoint = $base()
+            ->selectRaw("method, endpoint, COUNT(*) AS requests, SUM(CASE WHEN response_status >= 400 THEN 1 ELSE 0 END) AS errors, AVG(response_time_ms) AS avg_ms")
+            ->groupBy('method', 'endpoint')
+            ->orderByDesc('requests')
+            ->limit(15)
+            ->get()
+            ->map(fn ($r) => [
+                'method'   => $r->method,
+                'endpoint' => $r->endpoint,
+                'requests' => (int) $r->requests,
+                'errors'   => (int) $r->errors,
+                'avg_ms'   => $r->avg_ms !== null ? (int) round((float) $r->avg_ms) : null,
+            ]);
 
-        $clients = IntegrationClient::whereIn('id', $clientIds)->get();
+        $byApp = $base()
+            ->selectRaw('integration_client_id, COUNT(*) AS requests')
+            ->groupBy('integration_client_id')
+            ->pluck('requests', 'integration_client_id');
 
-        return view('portals.developer.analytics', compact('developer', 'clients', 'metrics', 'totals', 'byEndpoint', 'period'));
+        return view('portals.developer.analytics', [
+            'developer'  => $developer,
+            'clients'    => $clients,
+            'selected'   => $selected,
+            'since'      => $since,
+            'perDay'     => $perDay,
+            'maxPerDay'  => max(1, max(array_column($perDay, 'requests') ?: [0])),
+            'totals'     => $totals,
+            'byEndpoint' => $byEndpoint,
+            'byApp'      => $byApp,
+        ]);
     }
 }

@@ -1,0 +1,122 @@
+<?php
+
+return [
+    'nav'      => 'Referrals',
+    'title'    => 'Referrals',
+    'subtitle' => 'Patients this facility refers out, and referrals addressed to it.',
+
+    'tab_sent'     => 'Sent by us',
+    'tab_received' => 'Received by us',
+    'all_statuses' => 'All statuses',
+    'filter'       => 'Filter',
+    'new'          => 'New referral',
+    'none'         => 'No referrals here yet.',
+    'back'         => 'Back to referrals',
+
+    'col_created'  => 'Created',
+    'col_patient'  => 'Health ID',
+    'col_from'     => 'From',
+    'col_to'       => 'To',
+    'col_urgency'  => 'Urgency',
+    'col_status'   => 'Status',
+    'open'         => 'Open',
+
+    'urgency' => [
+        'routine'   => 'Routine',
+        'urgent'    => 'Urgent',
+        'emergency' => 'Emergency',
+    ],
+
+    'record_types' => [
+        'patient.summary'  => 'Patient summary',
+        'allergies.read'   => 'Allergies',
+        'problems.read'    => 'Problems',
+        'encounters.read'  => 'Encounters',
+        'vitals.read'      => 'Vital signs',
+        'medications.read' => 'Medications',
+        'diagnoses.read'   => 'Diagnoses',
+        'orders.read'      => 'Orders',
+    ],
+
+    // Create
+    'create_title'              => 'Refer a patient',
+    'create_subtitle'           => 'A referral is saved as a draft. Nothing is shared until you send it.',
+    'health_id'                 => 'Health ID',
+    'health_id_hint'            => 'The exact Health ID. There is no name search.',
+    'receiving_facility_name'   => 'Receiving facility',
+    'receiving_facility_hint'   => 'The exact registered name. Leave empty for a facility not on the platform and name a specialty or clinician instead.',
+    'receiving_specialty'       => 'Specialty',
+    'receiving_provider_name'   => 'Receiving clinician',
+    'urgency_label'             => 'Urgency',
+    'reason'                    => 'Reason for referral',
+    'clinical_summary'          => 'Clinical summary',
+    'included_record_types'     => 'Records to include',
+    'included_record_types_hint' => 'Only what the patient has consented to share with the receiving facility is sent. Without consent the referral goes with no records.',
+    'save_draft'                => 'Save draft',
+
+    // Show
+    'show_title'          => 'Referral',
+    'direction_sent'      => 'Sent by this facility',
+    'direction_received'  => 'Received by this facility',
+    'patient'             => 'Patient',
+    'from'                => 'From',
+    'to'                  => 'To',
+    'expires_at'          => 'Expires',
+    'records_included'    => 'Records included',
+    'records_none'        => 'None',
+    'accepted_at'         => 'Accepted',
+    'rejected_at'         => 'Rejected',
+    'rejection_reason'    => 'Rejection reason',
+    'completed_at'        => 'Completed',
+    'feedback'            => 'Feedback',
+    'cancelled_at'        => 'Cancelled',
+    'cancellation_reason' => 'Cancellation reason',
+    'not_recorded'        => 'Not recorded',
+    'actions'             => 'Actions',
+    'no_actions'          => 'There is nothing this facility can do on this referral now.',
+    'expires_in_days'     => 'Expires in (days)',
+    'reason_required_hint' => 'A reason is required.',
+
+    'action' => [
+        'send'     => 'Send',
+        'accept'   => 'Accept',
+        'reject'   => 'Reject',
+        'complete' => 'Complete',
+        'cancel'   => 'Cancel referral',
+    ],
+
+    'moved' => [
+        'sent'      => 'Referral sent.',
+        'accepted'  => 'Referral accepted.',
+        'rejected'  => 'Referral rejected.',
+        'completed' => 'Referral completed.',
+        'cancelled' => 'Referral cancelled.',
+    ],
+
+    // Messages
+    'created'                      => 'Draft referral saved.',
+    'patient_not_found'            => 'No patient you can refer was found for that Health ID.',
+    'consent_required'             => 'This patient keeps their full record behind consent. A consent grant to this facility is needed before referring.',
+    'destination_required'         => 'Name a receiving facility, a specialty or a clinician.',
+    'receiving_facility_not_found' => 'No registered facility has exactly that name.',
+    'receiving_facility_ambiguous' => 'More than one registered facility has that name. Contact support to refer to it.',
+    'self_referral'                => 'A facility cannot refer a patient to itself.',
+    'wrong_party'                  => 'The other facility on this referral makes this move.',
+    'illegal_transition'           => 'This referral can no longer make that move.',
+    'records_shared'               => 'The receiving facility can read the consented records.',
+    'records_not_shared'           => 'No records were shared: the patient has not consented to share them with the receiving facility.',
+    'audit_unavailable'            => 'This action could not be recorded in the access log, so it was not carried out.',
+    'no_facility_context'          => 'Select a facility to use the referral desk.',
+
+    // Patient notifications
+    'notify' => [
+        'sent_title'      => 'You have been referred',
+        'sent_body'       => ':from has referred you to :to.',
+        'accepted_title'  => 'Referral accepted',
+        'accepted_body'   => ':to has accepted your referral from :from.',
+        'rejected_title'  => 'Referral not accepted',
+        'rejected_body'   => ':to could not accept your referral from :from.',
+        'completed_title' => 'Referral completed',
+        'completed_body'  => ':to has completed your referral from :from.',
+    ],
+];

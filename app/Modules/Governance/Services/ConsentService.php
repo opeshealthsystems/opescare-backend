@@ -191,6 +191,10 @@ class ConsentService
             grantId: $grant->id,
         );
 
+        // Partner webhooks (consent.granted) — queued, signed, and never able to
+        // fail the grant: the publisher wraps dispatch in rescue().
+        \App\Modules\Connect\Services\WebhookEventPublisher::consentGranted($grant);
+
         return $grant;
     }
 

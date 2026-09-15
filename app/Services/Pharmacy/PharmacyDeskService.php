@@ -662,10 +662,13 @@ class PharmacyDeskService
                     throw PharmacyDeskException::collectIsForPickup();
                 }
                 $this->requireFrom($from, [MedicineReservation::DESK_READY]);
-                $reservation->fill([
-                    'status'       => MedicineReservation::STATUS_COLLECTED,
-                    'collected_at' => $now,
-                ])->save();
+                DB::transaction(function () use ($reservation, $now) {
+                    $reservation->fill([
+                        'status'       => MedicineReservation::STATUS_COLLECTED,
+                        'collected_at' => $now,
+                    ])->save();
+                    $this->takeReservationOffLedger($reservation);
+                });
                 break;
 
             case 'dispatch':
@@ -682,12 +685,15 @@ class PharmacyDeskService
 
             case 'delivered':
                 $this->requireFrom($from, [MedicineReservation::DESK_DISPATCHED]);
-                $reservation->fill([
-                    'status'          => MedicineReservation::STATUS_COLLECTED,
-                    'delivery_status' => MedicineReservation::DELIVERY_DELIVERED,
-                    'delivered_at'    => $now,
-                    'collected_at'    => $now,
-                ])->save();
+                DB::transaction(function () use ($reservation, $now) {
+                    $reservation->fill([
+                        'status'          => MedicineReservation::STATUS_COLLECTED,
+                        'delivery_status' => MedicineReservation::DELIVERY_DELIVERED,
+                        'delivered_at'    => $now,
+                        'collected_at'    => $now,
+                    ])->save();
+                    $this->takeReservationOffLedger($reservation);
+                });
                 $this->notifyReservation($reservation, 'reservation_delivered', 'pharmacy_reservation_delivered', $pharmacyName);
                 break;
 
@@ -710,6 +716,51 @@ class PharmacyDeskService
         }
 
         return $reservation->refresh()->load(['medicine', 'patient']);
+    }
+
+    /**
+     * THE SEAM BETWEEN THE ORDERS DESK AND THE STOCK LEDGER.
+     *
+     * Collecting (or delivering) a hold used to change only the reservation:
+     * the packs left the shelf, the batch ledger still counted them and the
+     * public finder row went on promising them to the next patient. Now the
+     * packs come off the ledger FEFO (PharmacyStockOpsService::
+     * takeOutForReservation), which republishes the finder row.
+     *
+     * Best effort and never a gate: a pharmacy without a ledger item for the
+     * medicine, or whose lots hold too few packs, records nothing here — the
+     * hand-over itself always stands (stockRecordedFor() says 0 and the desk
+     * tells the counter to record the movement by hand). Nothing is guessed.
+     */
+    private function takeReservationOffLedger(MedicineReservation $reservation): void
+    {
+        $tenantId = $reservation->careFacility?->facility_id
+            ?? CareFacility::query()->whereKey($reservation->care_facility_id)->value('facility_id');
+
+        if (! $tenantId || ! $reservation->medicine_id) {
+            return;
+        }
+
+        try {
+            DB::transaction(fn () => app(PharmacyStockOpsService::class)->takeOutForReservation(
+                (string) $tenantId,
+                (string) $reservation->medicine_id,
+                (int) $reservation->quantity,
+                (string) $reservation->id,
+                auth()->id() ? (string) auth()->id() : null,
+            ));
+        } catch (\InvalidArgumentException) {
+            // A lot changed under us; the savepoint rolled back, the hand-over stands.
+        }
+    }
+
+    /** Packs the ledger recorded as handed over against this reservation (0 = not recorded). */
+    public function stockRecordedFor(MedicineReservation $reservation): int
+    {
+        return (int) -StockMovement::query()
+            ->where('reference_type', PharmacyStockOpsService::REFERENCE_RESERVATION)
+            ->where('reference_id', $reservation->id)
+            ->sum('quantity');
     }
 
     /**

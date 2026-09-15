@@ -164,6 +164,9 @@ class FacilityCatalogueController extends Controller
             // An unlinked tenant's lab tests reach no patient. Said on the
             // page, never fixed here: linking is an admin decision.
             'unlinked'   => ! $this->isLinked($facilityId),
+            // Diagnostic centre audit 2: lab tests and imaging exams share this
+            // list; say which public finder each one reaches.
+            'mix'        => app(\App\Services\DiagnosticCentre\ServiceMix::class)->forFacility($facilityId),
         ]);
     }
 
@@ -309,7 +312,18 @@ class FacilityCatalogueController extends Controller
             'price_xaf'  => ['nullable', 'integer', 'min:0', 'max:99999999'],
             'turnaround' => ['nullable', 'string', 'max:120'],
             'notes'      => ['nullable', 'string', 'max:2000'],
+            'seen_updated_at' => ['nullable', 'string', 'max:40'],
         ]);
+
+        // Two roles answer for one catalogue (facility_admin and lab_manager at
+        // a diagnostic centre). A form opened before the other one saved must not
+        // silently overwrite that save — this update clears every field it does
+        // not receive. Only enforced when the form sends what it saw.
+        $seen = $data['seen_updated_at'] ?? null;
+        if ($seen !== null && $item->updated_at !== null
+            && $seen !== (string) $item->updated_at->getTimestamp()) {
+            return back()->with('error', __('catalogue.flash_stale_edit'));
+        }
 
         // Absent is not zero, and here it is not "unchanged" either: a manager
         // who clears the price field is saying "we no longer publish a price",

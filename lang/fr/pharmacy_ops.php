@@ -159,4 +159,6 @@ return [
     'notify_medicine_fallback'  => 'Médicament',
     'notify_reservation_title'  => 'Nouvelle réservation de médicament : :medicine × :qty',
     'notify_reservation_body'   => 'Réf :ref:pack',
+    // Web counter: partial hand-over (PharmacyPortalController@dispense).
+    'dispense_lines_hint' => "Vous ne remettez qu'une partie des médicaments ? Cochez-les. Laissez toutes les cases vides pour remettre toute l'ordonnance.",
 ];

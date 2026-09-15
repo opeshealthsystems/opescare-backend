@@ -11,6 +11,7 @@ use App\Models\PatientReferralRequest;
 use App\Models\ReferralAccessGrant;
 use App\Models\ReferralCase;
 use App\Modules\Governance\Services\AccessLogService;
+use App\Services\Referral\ReferralDeskService;
 use App\Support\ClinicalRelationshipGate;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -80,40 +81,20 @@ use Illuminate\Validation\Rule;
  */
 class MobileDoctorReferralController extends Controller
 {
-    /** Legal status moves. Anything not listed here is refused with 409. */
-    private const TRANSITIONS = [
-        'draft'     => ['sent', 'cancelled'],
-        'sent'      => ['accepted', 'rejected', 'cancelled', 'expired'],
-        'accepted'  => ['completed', 'cancelled'],
-        'rejected'  => [],
-        'completed' => [],
-        'cancelled' => [],
-        'expired'   => [],
-    ];
-
-    private const URGENCIES = ['routine', 'urgent', 'emergency'];
+    public function __construct(private readonly ReferralDeskService $referrals)
+    {
+    }
 
     /**
-     * The record package vocabulary. Deliberately the SAME list
-     * MobileConsentRequestController::SCOPES uses, because what a referral may
-     * include and what a patient may consent to have to be the same words — a
-     * package named in a vocabulary the consent ledger does not speak could
-     * never be checked against a grant.
+     * The lifecycle rules live in App\Services\Referral\ReferralDeskService,
+     * shared with the web referral desk. These aliases keep the validation
+     * below reading exactly as it did.
      */
-    private const RECORD_TYPES = [
-        'patient.summary',
-        'allergies.read',
-        'problems.read',
-        'encounters.read',
-        'vitals.read',
-        'medications.read',
-        'diagnoses.read',
-        'orders.read',
-    ];
-
-    /** Default / maximum life of a sent referral, in days. */
-    private const DEFAULT_EXPIRY_DAYS = 30;
-    private const MAX_EXPIRY_DAYS     = 180;
+    private const TRANSITIONS         = ReferralDeskService::TRANSITIONS;
+    private const URGENCIES           = ReferralDeskService::URGENCIES;
+    private const RECORD_TYPES        = ReferralDeskService::RECORD_TYPES;
+    private const DEFAULT_EXPIRY_DAYS = ReferralDeskService::DEFAULT_EXPIRY_DAYS;
+    private const MAX_EXPIRY_DAYS     = ReferralDeskService::MAX_EXPIRY_DAYS;
 
     /** Hard ceiling on any list this controller returns. */
     private const LIST_LIMIT     = 50;
@@ -355,41 +336,7 @@ class MobileDoctorReferralController extends Controller
             return $this->auditUnavailable();
         }
 
-        $referral = DB::transaction(function () use ($validated, $patient, $clinicianId, $facilityId, $receivingFacilityId, $patientRequest) {
-            $case = ReferralCase::create([
-                'patient_id'              => $patient->id,
-                // From the token. Never from the body — this is the whole
-                // reason this surface exists rather than a port of the
-                // partner-API controller.
-                'referring_facility_id'   => $facilityId,
-                'referring_provider_id'   => $clinicianId,
-                'receiving_facility_id'   => $receivingFacilityId,
-                'receiving_specialty'     => $validated['receiving_specialty'] ?? null,
-                'receiving_provider_name' => $validated['receiving_provider_name'] ?? null,
-                'urgency'                 => $validated['urgency'] ?? 'routine',
-                'status'                  => 'draft',
-                'reason'                  => $validated['reason'],
-                'clinical_summary'        => $validated['clinical_summary'] ?? null,
-                // What the clinician WANTS to include. Nothing is disclosed by
-                // recording an intention; send() decides what may actually go.
-                'included_record_types'   => array_values(array_unique($validated['included_record_types'] ?? [])),
-                'consent_grant_id'        => null,
-                'expires_at'              => null,
-                'created_by_id'           => $clinicianId,
-            ]);
-
-            if ($patientRequest) {
-                // The CHECK constraint permits a case link only on `accepted`,
-                // so both columns move together or neither does.
-                $patientRequest->status           = PatientReferralRequestStatus::Accepted;
-                $patientRequest->referral_case_id = $case->id;
-                $patientRequest->reviewed_at      = now();
-                $patientRequest->reviewed_by_id   = $clinicianId;
-                $patientRequest->save();
-            }
-
-            return $case;
-        });
+        $referral = $this->referrals->createDraft($patient, $facilityId, $clinicianId, $receivingFacilityId, $validated, $patientRequest);
 
         return response()->json([
             'data' => $this->serialize($referral, $facilityId, withDetail: true),
@@ -409,22 +356,7 @@ class MobileDoctorReferralController extends Controller
                 'expires_in_days' => ['nullable', 'integer', 'min:1', 'max:' . self::MAX_EXPIRY_DAYS],
             ]);
 
-            $expiresAt = Carbon::now()->addDays($validated['expires_in_days'] ?? self::DEFAULT_EXPIRY_DAYS);
-
-            $consent = $this->sendConsent($referral, $expiresAt, $clinicianId);
-
-            DB::transaction(function () use ($referral, $expiresAt, $consent) {
-                $referral->fill([
-                    'status'                => 'sent',
-                    'expires_at'            => $expiresAt,
-                    'consent_grant_id'      => $consent['grant_id'],
-                    'included_record_types' => $consent['record_types'],
-                ])->save();
-
-                if ($consent['access_grant']) {
-                    ReferralAccessGrant::create($consent['access_grant']);
-                }
-            });
+            $consent = $this->referrals->send($referral, isset($validated['expires_in_days']) ? (int) $validated['expires_in_days'] : null, $clinicianId);
 
             return $consent;
         });
@@ -437,11 +369,7 @@ class MobileDoctorReferralController extends Controller
     public function accept(Request $request, string $id): JsonResponse
     {
         return $this->transition($request, $id, 'accepted', 'receiving', function (ReferralCase $referral, Request $request, ?string $clinicianId) {
-            $referral->fill([
-                'status'         => 'accepted',
-                'accepted_at'    => now(),
-                'accepted_by_id' => $clinicianId,
-            ])->save();
+            $this->referrals->accept($referral, $clinicianId);
 
             return null;
         });
@@ -453,16 +381,7 @@ class MobileDoctorReferralController extends Controller
         return $this->transition($request, $id, 'rejected', 'receiving', function (ReferralCase $referral, Request $request) {
             $validated = $request->validate(['reason' => ['required', 'string', 'max:2000']]);
 
-            $referral->fill([
-                'status'           => 'rejected',
-                'rejected_at'      => now(),
-                'rejection_reason' => $validated['reason'],
-            ])->save();
-
-            // A refused referral must not leave a live key to the record
-            // behind it. Revoked, not deleted: the grant is the evidence that
-            // access was once opened.
-            $this->revokeAccessGrants($referral, 'referral_rejected');
+            $this->referrals->reject($referral, $validated['reason']);
 
             return null;
         });
@@ -477,13 +396,7 @@ class MobileDoctorReferralController extends Controller
         return $this->transition($request, $id, 'completed', 'receiving', function (ReferralCase $referral, Request $request) {
             $validated = $request->validate(['feedback' => ['nullable', 'string', 'max:8000']]);
 
-            $referral->fill([
-                'status'       => 'completed',
-                'completed_at' => now(),
-                'feedback'     => $validated['feedback'] ?? $referral->feedback,
-            ])->save();
-
-            $this->revokeAccessGrants($referral, 'referral_completed');
+            $this->referrals->complete($referral, $validated['feedback'] ?? null);
 
             return null;
         });
@@ -499,130 +412,13 @@ class MobileDoctorReferralController extends Controller
         return $this->transition($request, $id, 'cancelled', 'referring', function (ReferralCase $referral, Request $request) {
             $validated = $request->validate(['reason' => ['required', 'string', 'max:2000']]);
 
-            $referral->fill([
-                'status'              => 'cancelled',
-                'cancelled_at'        => now(),
-                'cancellation_reason' => $validated['reason'],
-            ])->save();
-
-            $this->revokeAccessGrants($referral, 'referral_cancelled');
+            $this->referrals->cancel($referral, $validated['reason']);
 
             return null;
         });
     }
 
-    // ══════════════════════════════════════════════════════════════════
-    // Consent — the part that decides whether records travel
-    // ══════════════════════════════════════════════════════════════════
-
-    /**
-     * What may the RECEIVING facility actually read?
-     *
-     * The rule, in full:
-     *
-     *   • No receiving facility on this platform (an external referral, named
-     *     only by specialty) → no record access. There is no party to hold a
-     *     grant, so there is nothing to check and nothing to open.
-     *
-     *   • A receiving facility, but NO active ConsentGrant held by THAT
-     *     facility → the referral is still sent, and carries an empty package.
-     *     A grant naming the referring facility is not reused: it authorises
-     *     the facility it names. A clinician cannot consent on a patient's
-     *     behalf, so the alternative to an empty package would be
-     *     manufacturing consent — and care is never blocked to force that
-     *     choice, so the patient still gets referred.
-     *
-     *   • An active grant → the package is the INTERSECTION of what the
-     *     clinician asked to include and what the patient actually granted.
-     *     Never the union, and never the clinician's list unchecked.
-     *
-     * The caller reports the outcome to the client verbatim, so a clinician is
-     * told the receiving facility has no record access rather than discovering
-     * it at the other end.
-     *
-     * @return array{grant_id: ?string, record_types: array<int,string>, access_grant: ?array<string,mixed>, basis: string}
-     */
-    private function sendConsent(ReferralCase $referral, Carbon $expiresAt, ?string $clinicianId): array
-    {
-        $requested = array_values(array_unique((array) ($referral->included_record_types ?? [])));
-
-        if (! $referral->receiving_facility_id || $requested === []) {
-            return [
-                'grant_id'     => null,
-                'record_types' => [],
-                'access_grant' => null,
-                'basis'        => $referral->receiving_facility_id ? 'none_requested' : 'external_destination',
-            ];
-        }
-
-        $grant = ConsentGrant::query()
-            ->where('patient_id', $referral->patient_id)
-            // The RECEIVING facility. This line is the whole control.
-            ->where('facility_id', $referral->receiving_facility_id)
-            ->where('status', 'active')
-            ->where('expires_at', '>=', Carbon::now())
-            ->orderByDesc('expires_at')
-            ->first();
-
-        if (! $grant) {
-            return [
-                'grant_id'     => null,
-                'record_types' => [],
-                'access_grant' => null,
-                'basis'        => 'no_consent',
-            ];
-        }
-
-        $granted = array_values(array_unique((array) ($grant->scope ?? [])));
-        $allowed = array_values(array_intersect($requested, $granted));
-
-        if ($allowed === []) {
-            return [
-                'grant_id'     => $grant->id,
-                'record_types' => [],
-                'access_grant' => null,
-                'basis'        => 'consent_scope_excludes_package',
-            ];
-        }
-
-        // The access grant may not outlive the consent behind it.
-        $grantExpiry = $grant->expires_at && $grant->expires_at->lt($expiresAt)
-            ? $grant->expires_at
-            : $expiresAt;
-
-        return [
-            'grant_id'     => $grant->id,
-            'record_types' => $allowed,
-            'basis'        => 'consent_grant',
-            'access_grant' => [
-                'referral_case_id'       => $referral->id,
-                'patient_id'             => $referral->patient_id,
-                'granted_to_facility_id' => $referral->receiving_facility_id,
-                'granted_by_id'          => $clinicianId,
-                'token'                  => hash('sha256', Str::uuid()->toString() . bin2hex(random_bytes(32))),
-                'allowed_scopes'         => $allowed,
-                'status'                 => 'active',
-                'expires_at'             => $grantExpiry,
-            ],
-        ];
-    }
-
-    /**
-     * Close every live key this referral opened. Status only; the rows stay,
-     * because a revoked grant is the record that access once existed.
-     */
-    private function revokeAccessGrants(ReferralCase $referral, string $reason): void
-    {
-        ReferralAccessGrant::query()
-            ->where('referral_case_id', $referral->id)
-            ->where('status', 'active')
-            ->update([
-                'status'            => 'revoked',
-                'revoked_at'        => now(),
-                'revocation_reason' => $reason,
-                'updated_at'        => now(),
-            ]);
-    }
+    // Consent (sendConsent) and grant revocation live in ReferralDeskService.
 
     // ══════════════════════════════════════════════════════════════════
     // The state machine
@@ -652,33 +448,24 @@ class MobileDoctorReferralController extends Controller
             return $this->notFound();
         }
 
-        // Wrong party. 403 rather than 404: this facility IS a party to the
-        // referral and already knows it exists — it is simply the other side.
-        $partyFacility = $side === 'referring'
-            ? $referral->referring_facility_id
-            : $referral->receiving_facility_id;
+        // Wrong party (403) or an illegal move (409) — decided by the shared
+        // service. Expiry is a state: a sent referral past its date is expired.
+        $refusal = $this->referrals->refusal($referral, $facilityId, $target, $side);
 
-        if ($partyFacility !== $facilityId) {
+        if ($refusal !== null && $refusal['error'] === 'WRONG_PARTY') {
             return response()->json([
                 'message'    => __('doctor_referrals.wrong_party'),
                 'error_code' => 'WRONG_PARTY',
             ], 403);
         }
 
-        // Expiry is a state, not a job that may or may not have run. A sent
-        // referral past its date is treated as expired here and now, so a late
-        // accept cannot open a record package whose window has closed.
-        $current = ($referral->status === 'sent' && $referral->isExpired())
-            ? 'expired'
-            : (string) $referral->status;
-
-        if (! in_array($target, self::TRANSITIONS[$current] ?? [], true)) {
+        if ($refusal !== null) {
             return response()->json([
                 'message'        => __('doctor_referrals.illegal_transition'),
                 'error_code'     => 'ILLEGAL_TRANSITION',
-                'current_status' => $current,
+                'current_status' => $refusal['current_status'],
                 'attempted'      => $target,
-                'allowed'        => array_values(self::TRANSITIONS[$current] ?? []),
+                'allowed'        => $refusal['allowed'],
             ], 409);
         }
 
@@ -797,17 +584,7 @@ class MobileDoctorReferralController extends Controller
     /** A referral this facility is a party to, or null. */
     private function findForFacility(string $id, string $facilityId): ?ReferralCase
     {
-        if (! Str::isUuid($id)) {
-            return null;
-        }
-
-        return ReferralCase::query()
-            ->whereKey($id)
-            ->where(function ($q) use ($facilityId) {
-                $q->where('referring_facility_id', $facilityId)
-                  ->orWhere('receiving_facility_id', $facilityId);
-            })
-            ->first();
+        return $this->referrals->findForFacility($id, $facilityId);
     }
 
     /**

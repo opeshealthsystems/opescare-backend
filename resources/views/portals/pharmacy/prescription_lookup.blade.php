@@ -208,6 +208,18 @@
                             <form method="POST" action="{{ route('portals.pharmacy.dispense', $rx->id) }}"
                                   style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap">
                                 @csrf
+                                @php $owed = $rx->items->filter(fn ($it) => $it->isOutstanding()); @endphp
+                                @if($owed->count() > 1)
+                                    <fieldset style="flex-basis:100%;border:0;padding:0;margin:0">
+                                        <legend class="form-hint">{{ __('pharmacy_ops.dispense_lines_hint') }}</legend>
+                                        @foreach($owed as $it)
+                                            <label style="display:inline-flex;gap:6px;align-items:center;margin-right:12px;min-height:44px">
+                                                <input type="checkbox" name="item_ids[]" value="{{ $it->id }}">
+                                                <span>{{ $it->drug_name ?: '—' }}</span>
+                                            </label>
+                                        @endforeach
+                                    </fieldset>
+                                @endif
                                 <input type="text" name="dispense_notes" class="form-control" style="min-width:180px"
                                        placeholder="{{ __('prescriber.counter_notes', [], $l) ?: 'Dispense notes' }}">
                                 <button type="submit" class="btn btn-primary">

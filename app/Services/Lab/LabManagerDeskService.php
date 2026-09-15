@@ -2,10 +2,15 @@
 
 namespace App\Services\Lab;
 
+use App\Models\CareFacility;
 use App\Models\CriticalValueAlert;
+use App\Models\FacilityCatalogueItem;
 use App\Models\LabOrder;
 use App\Models\LabResult;
+use App\Models\LabTestAvailability;
 use App\Models\LabTestRequest;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -50,6 +55,9 @@ class LabManagerDeskService
 
     /** How a rejection names itself inside `notes`. */
     public const REJECTED_TAG = '[rejected]';
+
+    /** How a laboratory call-back names itself inside `acknowledgement_note`. */
+    public const CALLBACK_TAG = '[lab_callback]';
 
     public function __construct(
         private readonly LabDeskService $desk,
@@ -172,6 +180,123 @@ class LabManagerDeskService
             'median_minutes'  => (int) round(((float) $row->median_s) / 60),
             'window_days'     => self::TURNAROUND_WINDOW_DAYS,
         ];
+    }
+
+    // ──────────────────────────────────────────────────────────────────
+    // First run, public finder publication, critical call-back
+    // ──────────────────────────────────────────────────────────────────
+
+    /**
+     * Whether this laboratory has ever had an order or a patient request.
+     * A lab with neither sees a "how work reaches you" panel instead of a
+     * wall of zeros that reads like a quiet day.
+     */
+    public function hasAnyWork(string $facilityId): bool
+    {
+        return LabOrder::query()->where('facility_id', $facilityId)->exists()
+            || LabTestRequest::query()->where('facility_id', $facilityId)->exists();
+    }
+
+    /**
+     * What the public lab finder currently shows for this laboratory — read
+     * from the projection itself (`lab_test_availability`), never inferred
+     * from the catalogue. `linked` false means nothing CAN be published until
+     * the tenant is linked to a directory listing (an admin decision).
+     *
+     * @return array{linked: bool, listing_name: string|null, listing_active: bool, catalogue_tests: int, published: int, last_published_at: Carbon|null}
+     */
+    public function publication(string $facilityId): array
+    {
+        $catalogueTests = FacilityCatalogueItem::query()
+            ->where('facility_id', $facilityId)
+            ->where('system', LabCatalogueProjector::LAB_TEST_SYSTEM)
+            ->where('is_active', true)
+            ->count();
+
+        $listing = CareFacility::query()->where('facility_id', $facilityId)->first();
+
+        if (! $listing) {
+            return [
+                'linked'            => false,
+                'listing_name'      => null,
+                'listing_active'    => false,
+                'catalogue_tests'   => $catalogueTests,
+                'published'         => 0,
+                'last_published_at' => null,
+            ];
+        }
+
+        $rows = LabTestAvailability::query()
+            ->where('facility_id', $listing->id)
+            ->where('source_system', LabTestAvailability::SOURCE_PORTAL);
+
+        $last = (clone $rows)->max('last_published_at');
+
+        return [
+            'linked'            => true,
+            'listing_name'      => (string) $listing->facility_name,
+            'listing_active'    => $listing->listing_status === 'active',
+            'catalogue_tests'   => $catalogueTests,
+            'published'         => (clone $rows)->where('availability_status', LabTestAvailability::STATUS_AVAILABLE)->count(),
+            'last_published_at' => $last ? Carbon::parse($last) : null,
+        ];
+    }
+
+    /** One critical alert raised on THIS facility's orders, or null. */
+    public function findCriticalAlert(string $facilityId, string $id): ?CriticalValueAlert
+    {
+        if (! Str::isUuid($id)) {
+            return null;
+        }
+
+        return CriticalValueAlert::query()
+            ->whereKey($id)
+            ->whereIn('critical_value_alerts.lab_result_id', function ($q) use ($facilityId) {
+                $q->select('lab_results.id')
+                    ->from('lab_results')
+                    ->join('lab_orders', 'lab_orders.id', '=', 'lab_results.lab_order_id')
+                    ->where('lab_orders.facility_id', $facilityId);
+            })
+            ->first();
+    }
+
+    /**
+     * Record that the laboratory TELEPHONED the critical value to a named
+     * person (the standard laboratory call-back), which closes the alert.
+     *
+     * Nothing else in the application ever set `acknowledged` on a
+     * `critical_value_alerts` row — the clinician inbox acknowledges a
+     * notification event, not the alert — so without this the dashboard's
+     * "not yet acknowledged" figure could only ever grow. One-way latch: an
+     * alert already closed is refused, never re-stamped; the value, the
+     * threshold and the result are untouched.
+     */
+    public function recordCriticalCallback(CriticalValueAlert $alert, string $userId, string $informed, string $note): CriticalValueAlert
+    {
+        $informed = trim($informed);
+        $note     = trim($note);
+
+        if ($informed === '') {
+            $this->refuse('informed_required', 422, __('lab_manager.err.informed_required'));
+        }
+
+        DB::transaction(function () use ($alert, $userId, $informed, $note) {
+            /** @var CriticalValueAlert $locked */
+            $locked = CriticalValueAlert::query()->whereKey($alert->getKey())->lockForUpdate()->firstOrFail();
+
+            if ($locked->acknowledged) {
+                $this->refuse('already_acknowledged', 409, __('lab_manager.err.callback_already'));
+            }
+
+            $locked->forceFill([
+                'acknowledged'         => true,
+                'acknowledged_by'      => $userId,
+                'acknowledged_at'      => now(),
+                'acknowledgement_note' => trim(self::CALLBACK_TAG . ' ' . $informed . ($note !== '' ? ' — ' . $note : '')),
+            ])->save();
+        });
+
+        return $alert->refresh();
     }
 
     // ──────────────────────────────────────────────────────────────────

@@ -84,4 +84,12 @@ return [
     // Publication vers le moteur public de recherche d'analyses
     'unlinked_title' => 'Votre fiche publique n\'est pas encore reliée — les analyses de cette liste ne sont pas visibles des patients',
     'unlinked_body'  => 'Les analyses de laboratoire et leurs tarifs sont publiés dans le moteur public de recherche d\'analyses via votre fiche de l\'annuaire public. Ce compte n\'est relié à aucune fiche : rien de cette liste n\'atteint encore un patient. Le rattachement est effectué par un administrateur OpesCare, jamais automatiquement : retrouvez et revendiquez votre établissement dans l\'annuaire.',
+    // Centre de diagnostic : une liste, deux moteurs publics
+    'mix_title'         => 'Cette liste est publiée dans deux moteurs de recherche publics',
+    'mix_lab'           => 'Analyses de laboratoire : :catalogue sur votre liste, :published publiées dans le moteur d\'analyses.',
+    'mix_imaging'       => 'Examens d\'imagerie : :catalogue sur votre liste, :published publiés dans le moteur d\'imagerie.',
+    'mix_view_finder'   => 'Voir le moteur',
+    'mix_badge_lab'     => 'Moteur d\'analyses',
+    'mix_badge_imaging' => 'Moteur d\'imagerie',
+    'flash_stale_edit'  => 'Non enregistré : une autre personne de votre établissement a modifié cette entrée après son ouverture. Vérifiez les nouvelles valeurs et enregistrez à nouveau.',
 ];

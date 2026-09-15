@@ -61,7 +61,7 @@
             <strong class="kv-strong">"{{ $query }}"</strong>
         </span>
         @foreach($counts as $type => $cnt)
-            <span class="badge badge-neutral badge-sm">{{ ucfirst(str_replace('_',' ',$type)) }}: {{ $cnt }}</span>
+            <span class="badge badge-neutral badge-sm">{{ \Illuminate\Support\Facades\Lang::has('staff.desk.search_types.' . $type) ? __('staff.desk.search_types.' . $type) : ucfirst(str_replace('_',' ',$type)) }}: {{ $cnt }}</span>
         @endforeach
     </div>
 
@@ -91,7 +91,7 @@
         <div class="panel-header">
             <h3 class="panel-title">
                 <i data-lucide="{{ $typeIcon[$type] ?? 'circle' }}"></i>
-                {{ ucfirst($type) }}
+                {{ \Illuminate\Support\Facades\Lang::has('staff.desk.search_types.' . $type) ? __('staff.desk.search_types.' . $type) : ucfirst(str_replace('_', ' ', $type)) }}
                 <span class="badge badge-neutral badge-sm">{{ $items->count() }}</span>
             </h3>
         </div>

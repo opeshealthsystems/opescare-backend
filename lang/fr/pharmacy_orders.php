@@ -96,4 +96,13 @@ return [
     'flash_dispatch'  => 'Commande :reference en cours de livraison — le patient a été informé.',
     'flash_delivered' => 'Commande :reference livrée.',
     'flash_cancel'    => 'Commande :reference annulée.',
+    // ── Second pass: orders ↔ stock ledger seam, unlinked pharmacy ─────
+    'flash_stock_not_recorded' => "Le registre de stock n'a pas été modifié : cette pharmacie ne suit aucun lot pour ce médicament, ou trop peu de boîtes utilisables. Enregistrez le mouvement à la main.",
+    'lbl_stock_ledger' => "Registre de stock",
+    'stock_recorded' => ":count boîte(s) retirée(s) du registre des lots.",
+    'stock_view_log' => "Voir les mouvements",
+    'stock_not_recorded' => "Non enregistré dans le registre des lots.",
+    'stock_record_by_hand' => "Enregistrer un mouvement",
+    'no_listing' => "Cette pharmacie n'est liée à aucune fiche publique de l'annuaire : les patients ne peuvent ni la trouver ni y réserver de médicaments. Un bureau vide ne signifie pas que personne n'a essayé.",
+    'dashboard_pending' => "{0} Commandes : aucune en attente|{1} Commandes : :count en attente|[2,*] Commandes : :count en attente",
 ];

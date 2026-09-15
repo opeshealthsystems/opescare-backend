@@ -44,6 +44,10 @@
 @endphp
 
 @section('content')
+@if(session('warning'))
+<div class="banner banner--warning" role="status"><i data-lucide="alert-triangle"></i><div>{{ session('warning') }}</div></div>
+@endif
+
 
 <div class="page-head">
     <h2>{{ __('pharmacy_orders.show_title', ['reference' => $reservation->reference]) }}
@@ -65,6 +69,10 @@
                     <div class="td-muted">{{ $reservation->medicine?->strength }} {{ $reservation->medicine?->form }}</div></dd>
                 <dt>{{ __('pharmacy_orders.col_qty') }}</dt>
                 <dd class="fs-mono">{{ $reservation->quantity }}</dd>
+                @if(in_array($desk, [\App\Models\MedicineReservation::DESK_COLLECTED, \App\Models\MedicineReservation::DESK_DELIVERED], true))
+                <dt>{{ __('pharmacy_orders.lbl_stock_ledger') }}</dt>
+                <dd>@if(($stockRecorded ?? 0) > 0){{ __('pharmacy_orders.stock_recorded', ['count' => $stockRecorded]) }} <a href="{{ route('portals.pharmacy.stock.adjustments') }}">{{ __('pharmacy_orders.stock_view_log') }}</a>@else<span class="td-muted">{{ __('pharmacy_orders.stock_not_recorded') }}</span> <a href="{{ route('portals.pharmacy.stock.adjustments') }}">{{ __('pharmacy_orders.stock_record_by_hand') }}</a>@endif</dd>
+                @endif
                 <dt>{{ __('pharmacy_orders.col_pack') }}</dt>
                 <dd>{{ $reservation->pack_size ?? '—' }}</dd>
                 <dt>{{ __('pharmacy_orders.lbl_unit_price') }}</dt>
@@ -77,7 +85,7 @@
                 <dd>{{ $reservation->expires_at?->format('d M Y H:i') ?? __('pharmacy_orders.no_expiry') }}</dd>
                 @if($reservation->prescription_id)
                 <dt>{{ __('pharmacy_orders.lbl_prescription') }}</dt>
-                <dd class="fs-mono">{{ $reservation->prescription?->prescription_number ?? $reservation->prescription_id }}</dd>
+                <dd class="fs-mono">{{ $reservation->prescription?->reference ?? '—' }}</dd>
                 @endif
                 <dt>{{ __('pharmacy_orders.lbl_patient_note') }}</dt>
                 <dd>{{ $reservation->patient_note ?: __('pharmacy_orders.not_provided') }}</dd>

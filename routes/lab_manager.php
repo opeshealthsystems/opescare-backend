@@ -53,6 +53,11 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access'])->group(funct
         Route::post('/facility/lab/requests/{id}/decline', [LabManagerDeskController::class, 'declineRequest'])
             ->name('portals.lab_manager.requests.decline');
 
+        // The laboratory telephoned a critical value to a named person.
+        // Closes the alert once (a one-way latch); nothing else ever did.
+        Route::post('/facility/lab/alerts/{id}/callback', [LabManagerDeskController::class, 'criticalCallback'])
+            ->name('portals.lab_manager.critical_callback');
+
         // Generated now, never stored — the patient's own Secure sheet.
         Route::get('/facility/lab/orders/{id}/report', [LabManagerDeskController::class, 'report'])
             ->name('portals.lab_manager.report');

@@ -83,4 +83,12 @@ return [
     // Publication to the public lab finder
     'unlinked_title' => 'Your public listing is not linked yet — lab tests on this list are not visible to patients',
     'unlinked_body'  => 'Laboratory tests and their prices are published to the public lab finder through your public directory listing. This account is not connected to one, so nothing on this list reaches a patient yet. Linking is done by an OpesCare administrator, never automatically: find and claim your facility in the directory.',
+    // Diagnostic centre: one list, two public finders
+    'mix_title'         => 'This list publishes to two public finders',
+    'mix_lab'           => 'Laboratory tests: :catalogue on your list, :published published on the lab-test finder.',
+    'mix_imaging'       => 'Imaging exams: :catalogue on your list, :published published on the imaging finder.',
+    'mix_view_finder'   => 'View the finder',
+    'mix_badge_lab'     => 'Lab-test finder',
+    'mix_badge_imaging' => 'Imaging finder',
+    'flash_stale_edit'  => 'Not saved: someone else at your facility changed this entry after you opened it. Check the new values and save again.',
 ];

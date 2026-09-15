@@ -72,11 +72,21 @@ class CareMapSearchService
 
         // 6. Full-text query across name / type / city / description
         if ($queryText !== '') {
-            $builder->where(function ($q) use ($queryText) {
+            // Case-insensitive (Postgres LIKE is not: "dentaire" missed every
+            // "Cabinet Dentaire"), and a word that names a KIND of place in
+            // EN/FR ("dentist", "dentiste") also matches that facility_type.
+            $needle      = '%' . mb_strtolower($queryText) . '%';
+            $synonymType = self::typeForQuery($queryText);
+            $builder->where(function ($q) use ($queryText, $needle, $synonymType) {
                 $q->where('facility_name', 'like', "%{$queryText}%")
                   ->orWhere('facility_type', 'like', "%{$queryText}%")
                   ->orWhere('city',          'like', "%{$queryText}%")
-                  ->orWhere('description',   'like', "%{$queryText}%");
+                  ->orWhere('description',   'like', "%{$queryText}%")
+                  ->orWhereRaw('LOWER(facility_name) LIKE ?', [$needle])
+                  ->orWhereRaw('LOWER(city) LIKE ?', [$needle]);
+                if ($synonymType !== null) {
+                    $q->orWhere('facility_type', $synonymType);
+                }
             });
         }
 
@@ -118,6 +128,36 @@ class CareMapSearchService
         }
 
         return $builder->with(['services', 'hours', 'insurances'])->get();
+    }
+
+    /**
+     * Words a patient types for a kind of place, EN and FR, mapped to the
+     * directory facility_type. Only whole-query matches; never a guess.
+     */
+    public const TYPE_SYNONYMS = [
+        'dental' => ['dental', 'dentist', 'dentists', 'dentistry', 'dentiste', 'dentistes', 'dentaire', 'cabinet dentaire', 'clinique dentaire', 'dental clinic', 'dental practice'],
+        'maternity' => ['maternity', 'maternities', 'maternity clinic', 'maternity home', 'midwife', 'midwives', 'birth centre', 'birth center', 'birthing centre', 'maternité', 'maternite', 'maternités', 'sage-femme', 'sage femme', 'sages-femmes', 'accouchement', 'accouchements', 'clinique maternité', 'centre mère-enfant', 'centre mere enfant'],
+        // Kept in one place with its rationale (opticians and conditions excluded).
+        'eye_clinic' => \App\Support\EyeCare\EyeCareSearchTerms::WORDS,
+        'laboratory' => ['lab', 'labs', 'laboratory', 'laboratories', 'laboratoire', 'laboratoires', 'medical lab', 'laboratoire d\'analyses', 'analyses médicales'],
+        'imaging_center' => ['imaging', 'imaging centre', 'imaging center', 'radiology', 'x-ray', 'xray', 'ultrasound', 'scanner', 'imagerie', 'imagerie médicale', 'radiologie', 'échographie', 'echographie', 'radiographie'],
+        'pharmacy' => ['pharmacy', 'pharmacies', 'chemist', 'drugstore', 'pharmacie', 'pharmacies de garde'],
+        'health_center' => ['health centre', 'health center', 'health centres', 'health centers', 'centre de santé', 'centre de sante', 'csi', 'centre de santé intégré'],
+        'hospital' => ['hospital', 'hospitals', 'hôpital', 'hopital', 'hôpitaux', 'hopitaux'],
+        'diagnostic_center' => ['diagnostic centre', 'diagnostic center', 'centre de diagnostic', 'centre diagnostique'],
+        'clinic' => ['clinic', 'clinics', 'clinique', 'cliniques', 'cabinet médical', 'cabinet medical'],
+    ];
+
+    public static function typeForQuery(string $query): ?string
+    {
+        $q = mb_strtolower(trim($query));
+        foreach (self::TYPE_SYNONYMS as $type => $words) {
+            if (in_array($q, $words, true)) {
+                return $type;
+            }
+        }
+
+        return null;
     }
 
     private function calculatePhpDistance($lat1, $lon1, $lat2, $lon2)

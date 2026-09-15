@@ -149,6 +149,18 @@ class PharmacyStockOpsService
             ->get();
     }
 
+    /**
+     * How many lots expired() would list — the dashboard tile reads this so
+     * the number on the landing page is the length of the list it links to.
+     */
+    public function expiredCount(string $facilityId): int
+    {
+        return $this->batchQuery($facilityId)
+            ->where('quantity_available', '>', 0)
+            ->whereDate('expiry_date', '<', Carbon::today())
+            ->count();
+    }
+
     /** @return Collection<int, StockBatch> open lots nobody has dated */
     public function expiryUnknown(string $facilityId): Collection
     {
@@ -281,7 +293,7 @@ class PharmacyStockOpsService
      *
      * @throws InvalidArgumentException on an unknown reason or a negative result
      */
-    public function adjust(StockBatch $batch, string $reason, int $quantity, ?string $note, ?string $actorId): StockMovement
+    public function adjust(StockBatch $batch, string $reason, int $quantity, ?string $note, ?string $actorId, ?string $referenceType = null, ?string $referenceId = null): StockMovement
     {
         if (! isset(self::REASONS[$reason])) {
             throw new InvalidArgumentException("Unknown stock movement reason: {$reason}");
@@ -289,7 +301,7 @@ class PharmacyStockOpsService
 
         $rule = self::REASONS[$reason];
 
-        return DB::transaction(function () use ($batch, $reason, $rule, $quantity, $note, $actorId) {
+        return DB::transaction(function () use ($batch, $reason, $rule, $quantity, $note, $actorId, $referenceType, $referenceId) {
             /** @var StockBatch $locked */
             $locked = StockBatch::query()->whereKey($batch->id)->lockForUpdate()->firstOrFail();
 
@@ -329,8 +341,8 @@ class PharmacyStockOpsService
                 'movement_type'     => $rule['type'],
                 'quantity'          => $delta,
                 'unit_cost'         => $locked->unit_cost,
-                'reference_type'    => self::REFERENCE_ADJUSTMENT,
-                'reference_id'      => null,
+                'reference_type'    => $referenceType ?? self::REFERENCE_ADJUSTMENT,
+                'reference_id'      => $referenceId,
                 'reason'            => self::encodeReason($reason, $note),
                 'performed_by'      => $actorId,
                 'performed_at'      => now(),
@@ -340,6 +352,59 @@ class PharmacyStockOpsService
 
             return $movement;
         });
+    }
+
+    /** `stock_movements.reference_type` for packs handed over against a patient reservation. */
+    public const REFERENCE_RESERVATION = 'medicine_reservation';
+
+    /**
+     * Take the packs of a collected/delivered reservation off the ledger,
+     * earliest-expiring usable lot first (FEFO), one `dispensed` movement per
+     * lot, each pointing at the reservation. Returns the packs recorded.
+     *
+     * All or nothing, and never a guess: if this pharmacy keeps no ledger
+     * item for the medicine, or its usable lots hold fewer packs than were
+     * handed over, NOTHING is written and 0 is returned — the counter is told
+     * to record the movement by hand. Called inside the caller's transaction.
+     */
+    public function takeOutForReservation(string $facilityId, string $medicineId, int $packs, string $reservationId, ?string $actorId): int
+    {
+        if ($packs <= 0) {
+            return 0;
+        }
+
+        $item = InventoryItem::query()
+            ->where('facility_id', $facilityId)
+            ->where('medicine_id', $medicineId)
+            ->first();
+
+        if (! $item) {
+            return 0;
+        }
+
+        $lots = $this->scopeUsable($item->batches()->getQuery())
+            ->where('stock_batches.quantity_available', '>', 0)
+            ->orderByRaw('stock_batches.expiry_date IS NULL')
+            ->orderBy('stock_batches.expiry_date')
+            ->orderBy('stock_batches.created_at')
+            ->lockForUpdate()
+            ->get();
+
+        if ((int) $lots->sum('quantity_available') < $packs) {
+            return 0;
+        }
+
+        $left = $packs;
+        foreach ($lots as $lot) {
+            if ($left <= 0) {
+                break;
+            }
+            $take = min($left, (int) $lot->quantity_available);
+            $this->adjust($lot, 'dispensed', $take, null, $actorId, self::REFERENCE_RESERVATION, $reservationId);
+            $left -= $take;
+        }
+
+        return $packs;
     }
 
     /**

@@ -155,7 +155,7 @@ class FamilyController extends Controller
         $data = $request->validate([
             'first_name'   => 'required|string|max:100',
             'last_name'    => 'required|string|max:100',
-            'date_of_birth'=> 'required|date|before:today',
+            'date_of_birth'=> 'required|date|before_or_equal:today', // a baby born today needs a Health ID for its birth doses
             'sex'          => 'required|in:male,female',
             'relationship' => 'required|in:' . implode(',', self::RELATIONSHIPS),
             'access_level' => 'required|in:' . implode(',', self::ACCESS_LEVELS),

@@ -71,13 +71,21 @@
     </div>
     {{-- No facility filter: the facility a desk acts for is the session's
          active facility (RequireFacilityContext), never a typed id. --}}
-    <input
-        type="text"
-        name="provider_id"
-        class="form-control"
-        placeholder="{{ __('public.staff_portal.filter_provider', [], app()->getLocale()) ?: 'Provider ID…' }}"
-        value="{{ request('provider_id') }}"
-    >
+    {{-- The clinicians posted here, by name. A clerk cannot know a uuid, and
+         the controller still filters on the exact id it sends. --}}
+    <select name="provider_id" class="form-control" aria-label="{{ __('staff.desk.col_clinician') }}">
+        <option value="">{{ __('staff.desk.filter_any_clinician') }}</option>
+        @foreach($clinicians ?? [] as $clinician)
+            <option value="{{ $clinician->id }}" @selected(request('provider_id') === (string) $clinician->id)>{{ $clinician->name }}</option>
+        @endforeach
+    </select>
+    {{-- The controller always honoured ?status=…; the form never offered it. --}}
+    <select name="status" class="form-control" aria-label="{{ __('public.staff_portal.col_status', [], app()->getLocale()) ?: 'Status' }}">
+        <option value="">{{ __('staff.desk.filter_any_status') }}</option>
+        @foreach($statuses ?? [] as $s)
+            <option value="{{ $s }}" @selected(request('status') === $s)>@enum($s)</option>
+        @endforeach
+    </select>
     <input
         type="date"
         name="date"
@@ -116,7 +124,7 @@
     @if($todayAppointments->isEmpty())
         <p class="page-subtitle mb-6">{{ __('finder_supply.appt_today_empty') }}</p>
     @else
-        @include('portals.staff._appointments_table', ['rows' => $todayAppointments, 'timeOnly' => true])
+        @include('portals.staff._appointments_table', ['rows' => $todayAppointments, 'timeOnly' => true, 'facilityName' => $facilityName ?? null])
     @endif
 
     @if($otherAppointments->isNotEmpty())
@@ -125,7 +133,14 @@
             {{ __('finder_supply.appt_other') }}
             <span class="fs-day-count">{{ $otherAppointments->count() }}</span>
         </div>
-        @include('portals.staff._appointments_table', ['rows' => $otherAppointments, 'timeOnly' => false])
+        @include('portals.staff._appointments_table', ['rows' => $otherAppointments, 'timeOnly' => false, 'facilityName' => $facilityName ?? null])
+    @endif
+
+    {{-- 50 per page: the book of a hospital is thousands of rows, and the
+         previous limit(100) simply dropped the rest with no page 2. --}}
+    @if(method_exists($appointments, 'hasPages') && $appointments->hasPages())
+        <p class="td-muted mb-2">{{ __('staff.desk.showing_page', ['page' => $appointments->currentPage(), 'last' => $appointments->lastPage(), 'total' => $appointments->total()]) }}</p>
+        <div class="mb-6">{{ $appointments->links() }}</div>
     @endif
 
 @endif

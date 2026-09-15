@@ -98,6 +98,9 @@
                         <option value="pharmacy" {{ old('appointment_type') === 'pharmacy' ? 'selected' : '' }}>
                             {{ __('public.staff_portal.type_pharmacy', [], app()->getLocale()) ?: 'Pharmacy' }}
                         </option>
+                        <option value="dental" {{ old('appointment_type') === 'dental' ? 'selected' : '' }}>
+                            {{ __('public.appt_type_dental') }}
+                        </option>
                         <option value="emergency" {{ old('appointment_type') === 'emergency' ? 'selected' : '' }}>
                             {{ __('public.staff_portal.type_emergency', [], app()->getLocale()) ?: 'Emergency' }}
                         </option>

@@ -102,6 +102,9 @@ return [
     'flash_photo_saved'  => "Image mise à jour.",
 
 
+    // ── Services publics ──────────────────────────────────────────────────
+    'services_intro' => "Les services que les patients voient sur la fiche publique de cet établissement dans le Finder — par exemple la vaccination des enfants, la consultation prénatale, le test de diagnostic rapide du paludisme ou la planification familiale. La liste codée et tarifée des services se gère à part, dans Nos services.",
+
     // ── Messages ──────────────────────────────────────────────────────────
     'flash_saved'       => ":count champ(s) mis à jour.",
     'flash_no_changes'  => "Aucun changement.",

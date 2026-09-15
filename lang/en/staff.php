@@ -80,4 +80,24 @@ return [
         'unavailable' => 'Unavailable',
         'note'        => 'Staff availability is indicative only and subject to change.',
     ],
+
+    // ── The operations desk (/facility) ──────────────────────────────────
+    'desk' => [
+        'health_id_placeholder'   => 'e.g. CM-HID-7KQ9-MP42-X8D1',
+        'no_facility_for_booking' => 'No facility is selected for this session, so there is no way to tell which facility this appointment belongs to. Select a facility first.',
+        'filter_any_clinician'    => 'Any clinician',
+        'filter_any_status'       => 'Any status',
+        'col_clinician'           => 'Clinician',
+        'unassigned'              => 'Not assigned',
+        'btn_check_in'            => 'Check in',
+        'showing_page'            => 'Page :page of :last — :total appointments',
+        'search_types' => [
+            'facility' => 'Facilities',
+            'document' => 'Documents',
+            'medicine' => 'Medicines',
+            'lab_test' => 'Lab tests',
+            'partner'  => 'Partners',
+            'message'  => 'Messages',
+        ],
+    ],
 ];

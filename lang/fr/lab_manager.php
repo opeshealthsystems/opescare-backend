@@ -37,7 +37,7 @@ return [
     'kpi_hint_column'          => 'Colonne de la liste de travail',
     'kpi_hint_today'           => 'Depuis minuit',
     'kpi_hint_validated'       => 'Commandes dont la dernière modification aujourd’hui est la signature de validation',
-    'kpi_hint_critical'        => 'Levées par la paillasse ; le clinicien prescripteur acquitte depuis sa boîte de résultats',
+    'kpi_hint_critical'        => 'Levées par la paillasse ; clôturées ici quand le laboratoire consigne l’appel',
     'kpi_hint_requests'        => 'Envoyées par les patients depuis l’application, en attente de décision',
 
     'tat_title'        => 'Délai de rendu',
@@ -51,7 +51,7 @@ return [
     'tat_days'         => ':days j :hours h',
 
     'critical_title'    => 'Valeurs critiques en attente d’acquittement',
-    'critical_subtitle' => 'Les plus anciennes d’abord. Le clinicien qui a prescrit l’examen acquitte depuis sa boîte de résultats ; d’ici là, la valeur apparaît ici.',
+    'critical_subtitle' => 'Les plus anciennes d’abord. Téléphonez la valeur au clinicien prescripteur (ou au patient, pour un examen demandé par le patient) et consignez l’appel ; d’ici là, la valeur apparaît ici.',
     'critical_empty'    => 'Aucune valeur critique n’attend d’acquittement.',
     'col_raised'        => 'Levée le',
     'col_patient'       => 'Patient',
@@ -111,6 +111,54 @@ return [
         'rejected_clinician_body'  => ':facility a rejeté l’échantillon pour :test. Motif : :reason. Un nouvel échantillon est nécessaire.',
     ],
 
+    // ── Premier usage ─────────────────────────────────────────────────────
+    'first_run_title'          => 'Aucune commande ni demande n’est encore parvenue à ce laboratoire',
+    'first_run_body'           => 'Les chiffres ci-dessous sont à zéro parce que rien n’a été envoyé ici, et non parce que la journée est calme. Le travail arrive à un laboratoire de trois façons :',
+    'first_run_step_catalogue' => 'Les patients vous trouvent sur le moteur public d’examens de laboratoire une fois vos examens et tarifs saisis au catalogue et publiés (voir ci-dessous).',
+    'first_run_step_requests'  => 'Les patients envoient une demande d’examen depuis l’application ; elle apparaît dans Demandes des patients pour que vous l’approuviez ou la refusiez.',
+    'first_run_step_walkin'    => 'Les cliniciens de cet établissement prescrivent des examens depuis l’application clinicien ; ils arrivent sur la liste de travail.',
+
+    // ── Publication sur le moteur public ──────────────────────────────────
+    'pub_title'            => 'Sur le moteur public d’examens de laboratoire',
+    'pub_unlinked'         => 'Ce laboratoire n’est lié à aucune fiche publique de l’annuaire : aucun de ses examens ne peut apparaître sur le moteur. Revendiquez votre fiche ou demandez à un administrateur OpesCare de la lier.',
+    'pub_listing_inactive' => 'La fiche « :listing » n’est pas active : le moteur ne l’affiche pas, même si des examens sont publiés.',
+    'pub_listing'          => 'Fiche publique',
+    'pub_published'        => 'Examens proposés sur le moteur',
+    'pub_catalogue_tests'  => 'Examens de laboratoire (LOINC) actifs au catalogue',
+    'pub_last'             => 'Dernière publication',
+    'pub_never'            => 'Jamais',
+    'pub_no_tests'         => 'Le catalogue ne contient aucun examen de laboratoire LOINC actif : il n’y a rien à publier.',
+    'pub_open_catalogue'   => 'Ouvrir le catalogue',
+    'pub_open_finder'      => 'Voir le moteur public',
+
+    // ── Rappel d’une valeur critique ──────────────────────────────────────
+    'callback'                      => 'Consigner l’appel',
+    'callback_informed'             => 'Personne informée (nom et fonction)',
+    'callback_informed_placeholder' => 'ex. Dr Mbarga, médecin prescripteur',
+    'callback_note'                 => 'Note (facultative)',
+    'callback_hint'                 => 'À consigner uniquement après relecture de la valeur par la personne nommée. L’alerte est clôturée et ne peut pas être rouverte ; le résultat n’est pas modifié.',
+    'callback_submit'               => 'Clôturer l’alerte',
+    'callback_recorded'             => 'Appel consigné. L’alerte est clôturée.',
+
+    // ── Page publique de recherche d’examens ──────────────────────────────
+    'finder' => [
+        'title'              => 'Trouver un examen de laboratoire',
+        'meta_description'   => 'Recherchez les examens de laboratoire et les tarifs que les laboratoires ont publiés sur le réseau OpesCare.',
+        'badge'              => 'Examens de laboratoire',
+        'intro'              => 'Recherchez les examens que les laboratoires ont publiés, avec leurs propres tarifs. OpesCare ne fixe pas les prix et ne vérifie pas la paillasse — chaque résultat est la publication du laboratoire lui-même.',
+        'search_label'       => 'Quel examen vous faut-il ?',
+        'search_placeholder' => 'ex. Hémoglobine, Glycémie, 718-7…',
+        'results_count'      => '{1} :count laboratoire a publié cet examen.|[2,*] :count laboratoires ont publié cet examen.',
+        'published_line'     => 'Publié par le laboratoire · :time',
+        'price_fcfa'         => ':price FCFA',
+        'no_price'           => 'Aucun tarif publié',
+        'turnaround'         => 'Délai : :time',
+        'before_you_travel'  => 'Certains examens exigent une prescription. Appelez le laboratoire pour confirmer les conditions et le tarif avant de vous déplacer.',
+        'empty_title'        => 'Aucun laboratoire n’a encore publié cet examen.',
+        'empty_body'         => 'Cela ne veut pas dire qu’aucun laboratoire ne le réalise — seulement qu’aucun sur le réseau ne l’a publié. Appelez directement un laboratoire proche.',
+        'empty_cta'          => 'Trouver des laboratoires proches',
+    ],
+
     // ── Refus ─────────────────────────────────────────────────────────────
     'err' => [
         'request_not_found'  => 'Cette demande n’a pas été adressée à ce laboratoire.',
@@ -118,5 +166,11 @@ return [
         'reason_required'    => 'Indiquez le motif.',
         'reject_released'    => 'Cette commande a été libérée et ne peut pas être rejetée. Rétractez-la via le dossier clinique.',
         'reject_has_results' => 'Un résultat a déjà été saisi sur cette commande. Il peut être corrigé, pas rejeté.',
+        'alert_not_found'    => 'Cette valeur critique n’a pas été levée dans ce laboratoire.',
+        'informed_required'  => 'Indiquez la personne à qui la valeur a été relue.',
+        'callback_already'   => 'Cette alerte est déjà clôturée.',
     ],
+
+    // Public lab-test search API disclaimer (CareMapController::searchTests).
+    'api_test_disclaimer' => 'Certains examens nécessitent une prescription médicale. Confirmez les conditions auprès du laboratoire avant de vous déplacer.',
 ];

@@ -4,11 +4,16 @@ namespace App\Http\Controllers\MedicalId;
 
 use App\Http\Controllers\Api\Fhir\FhirIngestController;
 use App\Http\Controllers\Controller;
+use App\Jobs\SendWebhookJob;
 use App\Models\ApiUsageLog;
+use App\Models\ConsentGrant;
 use App\Models\DeveloperAccount;
+use App\Models\Facility;
 use App\Models\FhirIngestEvent;
 use App\Models\IntegrationClient;
+use App\Models\Patient;
 use App\Models\WebhookDeliveryLog;
+use App\Models\WebhookReplay;
 use App\Models\WebhookSubscription;
 use App\Services\AuditLogger;
 use App\Support\Fhir\FhirOutcome;
@@ -23,6 +28,8 @@ use Illuminate\Support\Str;
  *   - /developer/webhooks    register an endpoint, pause/resume it, recent deliveries
  *   - /developer/activity    the partner's own fhir_ingest_events + api_usage_logs
  *   - /developer/quickstart  a first call with the partner's own sandbox client_id
+ *   - /developer/consents    active consent grants to the facility each app acts for (D-9)
+ *   - POST /developer/webhooks/deliveries/{delivery}/replay  re-queue a failed delivery
  *
  * Scope rule, applied on every read: a client is visible only when
  * integration_clients.created_by is the signed-in developer's e-mail. An id
@@ -170,6 +177,114 @@ class DeveloperExtController extends Controller
 
         return redirect()->route('portals.developer.webhooks')
             ->with('success', __($pausing ? 'developer_ext.flash_webhook_paused' : 'developer_ext.flash_webhook_resumed'));
+    }
+
+    /**
+     * Replay a failed delivery: re-queue the SAME payload (same event_id) to the
+     * SAME subscription. SendWebhookJob finds the existing webhook_delivery_logs
+     * row by (event_id, subscription), signs afresh and continues the attempt
+     * count, so the replay shows up on the row the partner clicked, not as a new
+     * one. Only the developer's own subscriptions; anything else is a 404.
+     */
+    public function replayDelivery(Request $request, string $delivery)
+    {
+        $developer = $this->currentDeveloper();
+        if (! $developer) {
+            return redirect()->route('portals.developer.dashboard');
+        }
+
+        $clientIds = $this->ownClients($developer)->pluck('client_id');
+
+        // webhook_delivery_logs.webhook_subscription_id is varchar while
+        // webhook_subscriptions.id is uuid — compare as strings, not via subquery.
+        $ownSubscriptionIds = WebhookSubscription::whereIn('client_id', $clientIds)->pluck('id')->map(fn ($id) => (string) $id)->all();
+
+        $log = WebhookDeliveryLog::where('id', $delivery)
+            ->whereIn('webhook_subscription_id', $ownSubscriptionIds ?: ['__none__'])
+            ->firstOrFail();
+
+        if (! $log->isFailed()) {
+            return redirect()->route('portals.developer.webhooks')
+                ->with('error', __('developer_ext.flash_replay_not_failed'));
+        }
+
+        $subscription = WebhookSubscription::findOrFail($log->webhook_subscription_id);
+        if ($subscription->status !== 'active') {
+            return redirect()->route('portals.developer.webhooks')
+                ->with('error', __('developer_ext.flash_replay_paused'));
+        }
+
+        $payload = (array) $log->payload;
+        $payload['event_id']   = $payload['event_id']   ?? $log->event_id;
+        $payload['event_type'] = $payload['event_type'] ?? $log->event_type;
+
+        // The replay record — which event, to which endpoint, on whose behalf.
+        rescue(fn () => WebhookReplay::create([
+            'webhook_event_id'    => $log->event_id,
+            'webhook_endpoint_id' => $subscription->id,
+            'replayed_by'         => $subscription->client_id,
+            'status'              => 'pending',
+        ]), report: false);
+
+        $log->update(['status' => 'pending']);
+
+        SendWebhookJob::dispatch($subscription->id, $payload)->onQueue('webhooks');
+
+        AuditLogger::log($request, 'developer_webhook_replayed', 'webhook_delivery_log', $log->id);
+
+        return redirect()->route('portals.developer.webhooks')
+            ->with('success', __('developer_ext.flash_replay_queued'));
+    }
+
+    // ── Consents: what the partner's facility-bound apps may touch ─────────
+
+    /**
+     * For each app bound to a facility, the ConsentGrant rows patients hold open
+     * for that facility. Patients appear as Health ID ONLY, resolved by primary
+     * key from the grant row — no names, no search, nothing beyond the grants
+     * that exist. A facility-less app has no grants by construction and gets the
+     * explainer only (D-5 resolution / D-9).
+     */
+    public function consents(Request $request)
+    {
+        $developer = $this->currentDeveloper();
+        if (! $developer) {
+            return redirect()->route('portals.developer.dashboard');
+        }
+
+        $clients  = $this->ownClients($developer);
+        $selected = $this->selectedClient($request, $clients);
+        $shown    = $selected ? $clients->where('id', $selected->id)->values() : $clients;
+
+        $facilityIds = $shown->pluck('facility_id')->filter()->unique()->values();
+
+        $grants = $facilityIds->isEmpty()
+            ? collect()
+            : ConsentGrant::whereIn('facility_id', $facilityIds)
+                ->where('status', 'active')
+                ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+                ->orderByDesc('created_at')
+                ->limit(200)
+                ->get();
+
+        // Exact resolution by id → Health ID. Nothing else about the patient leaves the DB.
+        $healthIds = $grants->isEmpty()
+            ? collect()
+            : Patient::whereIn('id', $grants->pluck('patient_id')->unique())->pluck('health_id', 'id');
+
+        $facilityNames = $facilityIds->isEmpty()
+            ? collect()
+            : Facility::whereIn('id', $facilityIds)->pluck('name', 'id');
+
+        return view('portals.developer.consents', [
+            'developer'     => $developer,
+            'clients'       => $clients,
+            'selected'      => $selected,
+            'shown'         => $shown,
+            'grants'        => $grants->groupBy('facility_id'),
+            'healthIds'     => $healthIds,
+            'facilityNames' => $facilityNames,
+        ]);
     }
 
     // ── Activity: what the partner's calls actually did ────────────────────

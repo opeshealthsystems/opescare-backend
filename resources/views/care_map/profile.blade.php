@@ -312,6 +312,30 @@
   </section>
   @endif
 
+  {{-- ── Published prices (facility service catalogue, non-lab) ───────── --}}
+  @php
+    $priceList = app(\App\Modules\CareMap\Services\FacilityPriceListService::class)->forListing($facility);
+  @endphp
+  @if($priceList->isNotEmpty())
+  <section class="f-card" id="price-list">
+    <h2 class="p-card-title">
+      @include('partials.finder.icon', ['name' => 'list-ordered', 'size' => 14])
+      {{ __('finder_directory.price_list_heading') }}
+    </h2>
+    @foreach($priceList as $row)
+      <div class="p-svc">
+        <span>{{ $row['name'] }}</span>
+        @if($row['price_xaf'] !== null)
+          <span class="f-badge">{{ __('finder_directory.price_xaf', ['amount' => number_format($row['price_xaf'], 0, ',', ' ')]) }}</span>
+        @else
+          <span class="f-small f-muted">{{ __('finder_directory.price_not_published') }}</span>
+        @endif
+      </div>
+    @endforeach
+    <p class="f-small f-muted" style="margin:8px 0 0; line-height:1.6;">{{ __('finder_directory.price_list_note') }}</p>
+  </section>
+  @endif
+
   {{-- ── Reported availability — rendered ONLY from reported rows ─────── --}}
   <section class="f-card">
     <h2 class="p-card-title">

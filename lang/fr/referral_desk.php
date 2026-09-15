@@ -1,0 +1,122 @@
+<?php
+
+return [
+    'nav'      => 'Références',
+    'title'    => 'Références',
+    'subtitle' => 'Les patients que cet établissement réfère, et les références qui lui sont adressées.',
+
+    'tab_sent'     => 'Envoyées par nous',
+    'tab_received' => 'Reçues par nous',
+    'all_statuses' => 'Tous les statuts',
+    'filter'       => 'Filtrer',
+    'new'          => 'Nouvelle référence',
+    'none'         => 'Aucune référence ici pour le moment.',
+    'back'         => 'Retour aux références',
+
+    'col_created'  => 'Créée le',
+    'col_patient'  => 'Health ID',
+    'col_from'     => 'De',
+    'col_to'       => 'Vers',
+    'col_urgency'  => 'Urgence',
+    'col_status'   => 'Statut',
+    'open'         => 'Ouvrir',
+
+    'urgency' => [
+        'routine'   => 'Routine',
+        'urgent'    => 'Urgente',
+        'emergency' => 'Urgence vitale',
+    ],
+
+    'record_types' => [
+        'patient.summary'  => 'Résumé du patient',
+        'allergies.read'   => 'Allergies',
+        'problems.read'    => 'Problèmes',
+        'encounters.read'  => 'Consultations',
+        'vitals.read'      => 'Signes vitaux',
+        'medications.read' => 'Médicaments',
+        'diagnoses.read'   => 'Diagnostics',
+        'orders.read'      => 'Prescriptions d’examens',
+    ],
+
+    // Create
+    'create_title'              => 'Référer un patient',
+    'create_subtitle'           => 'La référence est enregistrée comme brouillon. Rien n’est partagé avant l’envoi.',
+    'health_id'                 => 'Health ID',
+    'health_id_hint'            => 'Le Health ID exact. Il n’y a pas de recherche par nom.',
+    'receiving_facility_name'   => 'Établissement destinataire',
+    'receiving_facility_hint'   => 'Le nom enregistré exact. Laissez vide pour un établissement absent de la plateforme et indiquez une spécialité ou un clinicien.',
+    'receiving_specialty'       => 'Spécialité',
+    'receiving_provider_name'   => 'Clinicien destinataire',
+    'urgency_label'             => 'Urgence',
+    'reason'                    => 'Motif de la référence',
+    'clinical_summary'          => 'Résumé clinique',
+    'included_record_types'     => 'Dossiers à inclure',
+    'included_record_types_hint' => 'Seul ce que le patient a consenti à partager avec l’établissement destinataire est envoyé. Sans consentement, la référence part sans dossier.',
+    'save_draft'                => 'Enregistrer le brouillon',
+
+    // Show
+    'show_title'          => 'Référence',
+    'direction_sent'      => 'Envoyée par cet établissement',
+    'direction_received'  => 'Reçue par cet établissement',
+    'patient'             => 'Patient',
+    'from'                => 'De',
+    'to'                  => 'Vers',
+    'expires_at'          => 'Expire le',
+    'records_included'    => 'Dossiers inclus',
+    'records_none'        => 'Aucun',
+    'accepted_at'         => 'Acceptée le',
+    'rejected_at'         => 'Refusée le',
+    'rejection_reason'    => 'Motif du refus',
+    'completed_at'        => 'Terminée le',
+    'feedback'            => 'Retour',
+    'cancelled_at'        => 'Annulée le',
+    'cancellation_reason' => 'Motif de l’annulation',
+    'not_recorded'        => 'Non renseigné',
+    'actions'             => 'Actions',
+    'no_actions'          => 'Cet établissement ne peut rien faire sur cette référence pour le moment.',
+    'expires_in_days'     => 'Expire dans (jours)',
+    'reason_required_hint' => 'Un motif est obligatoire.',
+
+    'action' => [
+        'send'     => 'Envoyer',
+        'accept'   => 'Accepter',
+        'reject'   => 'Refuser',
+        'complete' => 'Terminer',
+        'cancel'   => 'Annuler la référence',
+    ],
+
+    'moved' => [
+        'sent'      => 'Référence envoyée.',
+        'accepted'  => 'Référence acceptée.',
+        'rejected'  => 'Référence refusée.',
+        'completed' => 'Référence terminée.',
+        'cancelled' => 'Référence annulée.',
+    ],
+
+    // Messages
+    'created'                      => 'Brouillon de référence enregistré.',
+    'patient_not_found'            => 'Aucun patient que vous pouvez référer n’a été trouvé pour ce Health ID.',
+    'consent_required'             => 'Ce patient garde son dossier complet sous consentement. Un consentement accordé à cet établissement est nécessaire avant de le référer.',
+    'destination_required'         => 'Indiquez un établissement destinataire, une spécialité ou un clinicien.',
+    'receiving_facility_not_found' => 'Aucun établissement enregistré ne porte exactement ce nom.',
+    'receiving_facility_ambiguous' => 'Plusieurs établissements enregistrés portent ce nom. Contactez le support pour y référer.',
+    'self_referral'                => 'Un établissement ne peut pas se référer un patient à lui-même.',
+    'wrong_party'                  => 'C’est l’autre établissement de cette référence qui effectue cette action.',
+    'illegal_transition'           => 'Cette référence ne permet plus cette action.',
+    'records_shared'               => 'L’établissement destinataire peut lire les dossiers consentis.',
+    'records_not_shared'           => 'Aucun dossier n’a été partagé : le patient n’a pas consenti au partage avec l’établissement destinataire.',
+    'audit_unavailable'            => 'Cette action n’a pas pu être inscrite au journal d’accès ; elle n’a donc pas été effectuée.',
+    'no_facility_context'          => 'Sélectionnez un établissement pour utiliser le bureau des références.',
+
+    // Patient notifications
+    'notify' => [
+        'sent_title'      => 'Vous avez été référé',
+        'sent_body'       => ':from vous a référé vers :to.',
+        'accepted_title'  => 'Référence acceptée',
+        'accepted_body'   => ':to a accepté votre référence de :from.',
+        'rejected_title'  => 'Référence non acceptée',
+        'rejected_body'   => ':to n’a pas pu accepter votre référence de :from.',
+        'completed_title' => 'Référence terminée',
+        'completed_body'  => ':to a terminé votre référence de :from.',
+    ],
+];

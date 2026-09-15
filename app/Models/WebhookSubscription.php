@@ -11,6 +11,10 @@ class WebhookSubscription extends Model
 
     protected $fillable = [
         'client_id',
+        // Subscribing facility (the app's facility at registration / approval).
+        // WebhookService::dispatch scopes patient-data events by this column, so
+        // a subscription without it never receives a facility-scoped event.
+        'facility_id',
         'callback_url',
         'webhook_secret',
         'subscribed_events',

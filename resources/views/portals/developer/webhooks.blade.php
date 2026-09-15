@@ -144,6 +144,7 @@
                         <th>{{ __('developer_ext.wh_col_http') }}</th>
                         <th>{{ __('developer_ext.wh_col_status') }}</th>
                         <th>{{ __('developer_ext.wh_col_delivered_at') }}</th>
+                        <th class="row-actions"></th>
                     </tr></thead>
                     <tbody>
                     @foreach($deliveries as $log)
@@ -156,6 +157,14 @@
                                 <span class="badge {{ $log->status === 'delivered' ? 'badge-success' : ($log->status === 'pending' ? 'badge-info' : 'badge-danger') }}">{{ $deliveryLabel($log->status) }}</span>
                             </td>
                             <td data-label="{{ __('developer_ext.wh_col_delivered_at') }}" class="td-muted">{{ $log->delivered_at?->format('d M Y H:i') ?? '—' }}</td>
+                            <td class="row-actions">
+                                @if($log->isFailed())
+                                    <form method="POST" action="{{ route('portals.developer.webhooks.replay', $log->id) }}">
+                                        @csrf
+                                        <button type="submit" class="btn btn-secondary btn-sm" title="{{ __('developer_ext.wh_btn_replay_help') }}"><i data-lucide="rotate-ccw"></i> {{ __('developer_ext.wh_btn_replay') }}</button>
+                                    </form>
+                                @endif
+                            </td>
                         </tr>
                     @endforeach
                     </tbody>

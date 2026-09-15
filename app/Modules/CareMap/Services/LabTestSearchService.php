@@ -48,6 +48,17 @@ class LabTestSearchService
         $query = LabTestAvailability::query()
             ->reportedByRealSource()
             ->available()
+            // Imaging exams publish through the same table but belong on the
+            // imaging finder (docs/audits/IMAGING_DASHBOARD_AUDIT_2.md I-2,
+            // DIAGNOSTIC_CENTRE D-1). Same rule as ImagingExamSearch: the
+            // dictionary tags them, never a guess from the title.
+            ->where(function ($q) {
+                $q->whereNull('loinc_code')
+                    ->orWhereNotIn('loinc_code', \Illuminate\Support\Facades\DB::table('clinical_code_dictionary')
+                        ->select('code')
+                        ->where('system', 'LOINC')
+                        ->where('common_reason', 'like', \App\Services\Imaging\ImagingExamSearch::IMAGING_REASON_PREFIX . '%'));
+            })
             ->where(function ($q) use ($like) {
                 $q->where('test_name', 'ilike', $like)
                     ->orWhere('loinc_code', 'ilike', $like);

@@ -161,7 +161,94 @@ Webhooks → `portals.developer.webhooks` and gain Activity (+ Quickstart on the
 developer sidebar); `api_partner_admin.blade.php` only had its Webhooks link
 repointed.
 
-## Deliberately not built
+## Pass 2 (2026-09-14) — closed: D-3 attribution, D-5, D-7, D-9, D-10, webhook dispatch + replay
+
+Tests: `tests/Feature/Developer/DeveloperCompletionPass2Test.php`.
+
+### D-5 resolution — a production app is always facility-bound
+Decision: **an app acts for exactly one facility, and that facility is attached
+by the platform admin at production approval.** Consent on this platform is a
+grant from a patient to a *facility* (`consent_grants.facility_id`), never to a
+client, and `FhirIngestGuard::facilityId()` reads the facility from the token —
+so the only way a partner app can hold a consent basis or make a FHIR write is
+to carry a facility in its token. That facility is `integration_clients.facility_id`,
+which `AuthController::issueToken` copies into the JWT claim.
+
+* **Sandbox apps stay facility-less.** `storeApp` still writes `facility_id = NULL`;
+  their tokens carry `facility_id: null`; every FHIR write is refused
+  `no_facility_in_token` and no consent can be scoped to them. They can only read
+  sandbox fixtures. The quickstart and the consents page say so.
+* **Approval attaches the facility.** `adminApproveProductionRequest` now requires
+  `facility_name` — the *exact* name of one row in `facilities` (no search, no
+  partial match; zero or several matches are refused with a flash) — and writes
+  `facility_id` on the client row alongside `environment = production`. Webhook
+  subscriptions the app registered while facility-less get the same
+  `facility_id`, so facility-scoped events reach them.
+* **`approved_scopes` null-write fixed.** The handler used to read
+  `approved_scopes` a second time for the client update and wrote
+  `json_encode(null)` (the string `null`) into `scopes` whenever the form omitted
+  it. It now resolves the list once — the admin's list if given, otherwise the
+  requested scopes — and writes that to both the request and the client. The
+  admin modal posts the requested scopes as hidden fields.
+
+### D-3 — attribution at the source
+`LogApiUsage` no longer reads `X-Integration-Client-Id` / `X-Facility-Id`. It
+takes `integration_client_id` and `facility_id` from `$request->attributes`, which
+only `VerifyBearerToken` (JWT claims) and `VerifyIntegrationClient` (client-secret
+auth) populate. The middleware is global and logs after `$next()`, so the route
+middleware has already set them. Unauthenticated requests are not logged (there is
+no client to charge them to). A spoofed header is pinned as ignored by test.
+
+### D-7 — analytics on the one table that is written
+`DeveloperPortalController@analytics` reads `api_usage_logs` only, for the
+developer's own `integration_clients.client_id` values, last 30 days: requests
+per day (bar chart, red share = 4xx/5xx), request count, error rate, p50/p95 of
+`response_time_ms` (`percentile_cont`), top endpoints, per-app counts, `?app=`
+filter (foreign id → 404). Empty state reads "No calls yet." `api_usage_metrics`,
+`api_credentials` and `api_usage_snapshots` are no longer read; the tables are
+left in place (no migration).
+
+### Webhooks — dispatch wired, replay added
+`app/Modules/Connect/Services/WebhookEventPublisher.php` is the single caller of
+`WebhookService::dispatch`. Every publisher runs inside `rescue()` and can never
+fail the domain write.
+
+| Event | Fires from | Payload (`resource`) |
+|---|---|---|
+| `consent.granted` | `ConsentService::approveConsent` | grant_id, health_id, facility_id, scope, status, granted_at, expires_at |
+| `lab_result.released` | `LabDeskService::release` (also reached via `LabDeskWebService::release`) | lab_order_id, health_id, facility_id, test_code, test_name, status, released_at |
+| `prescription.issued` | `PrescriptionService::issue` | prescription_id, reference, health_id, facility_id, status, item_count, prescribed_at, expires_at |
+
+Delivery is facility-scoped: `dispatch()` persists a `webhook_events` row
+(`facility_id`, `client_id` added to the model's fillable — they were silently
+dropped before) and queues one `SendWebhookJob` on the `webhooks` queue per active
+subscription whose `facility_id` matches (`WebhookSubscription.facility_id` is
+now fillable — `storeWebhook` had been writing it into the void). The job signs
+`t.<json>` with HMAC-SHA256 using the subscription secret
+(`X-OpesCare-Signature: t=…,v1=…`), logs to `webhook_delivery_logs`, retries
+3× with backoff, and marks `exhausted` on the last failure.
+
+**Replay:** `POST /developer/webhooks/deliveries/{delivery}/replay`
+(`portals.developer.webhooks.replay`) — shown as a button on failed/exhausted
+rows of `/developer/webhooks`. Own subscriptions only (foreign → 404), paused
+endpoint refused, same `event_id` + payload re-queued to the same subscription so
+the attempt count continues on the row the partner clicked; a `webhook_replays`
+row and an audit event are written.
+
+### D-9 — consents page
+`GET /developer/consents[?app=<own uuid>]` (`portals.developer.consents`, linked
+from all three developer-tier sidebars). For each facility-bound app: the
+`consent_grants` rows with `status = active` and not expired for that facility —
+Health ID (resolved by primary key from the grant, never searched), scope,
+granted, expires, status. Facility-less apps get the explainer only. The
+request flow is API-side; the page links `/docs/api#consent` and `/docs/webhooks`.
+
+### D-10
+`resources/views/portals/admin/_admin_nav.blade.php` already carried both links
+(Partners section: Developer Accounts, Production Requests with a pending badge)
+when this pass started; verified, nothing to add.
+
+## Deliberately not built (pass 1 list, kept for history)
 * Consent-grant browser (D-9): grants are facility-scoped; a portal-created
   client has no facility, so a page would be empty by construction. Needs the
   D-5 product decision (how a partner app is bound to a facility) first.

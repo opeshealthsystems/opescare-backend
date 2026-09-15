@@ -13,7 +13,7 @@
     $l             = app()->getLocale();
     $relationships = $relationships ?? \App\Http\Controllers\MedicalId\FamilyController::RELATIONSHIPS;
     $majorityAge   = $majorityAge ?? 18;
-    $maxDob        = now()->subDay()->toDateString();
+    $maxDob        = now()->toDateString(); // a newborn is registered on the day of birth
     $minDob        = now()->subYears($majorityAge)->addDay()->toDateString();
 @endphp
 

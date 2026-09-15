@@ -13,6 +13,7 @@ use App\Models\ReferralCase;
 use App\Modules\Appointments\Services\AppointmentService;
 use App\Modules\Search\Services\GlobalSearchService;
 use App\Services\Appointments\AppointmentWaitlistService;
+use App\Services\FrontDesk\FrontDeskService;
 use App\Services\Portal\PortalContextService;
 use App\Services\Queue\PatientQueueService;
 use Illuminate\Http\Request;
@@ -108,9 +109,43 @@ class StaffPortalController extends Controller
             $query->where('status', $request->status);
         }
 
-        $appointments = $query->limit(100)->get();
+        // Eager-loaded: the table prints the patient's Health ID and phone and
+        // the clinician's name for every row, which used to be one query per
+        // row (and a raw provider uuid). Paginated: `limit(100)` silently
+        // dropped the rest of a hospital's book with no page 2.
+        $appointments = $query
+            ->with(['patient:id,health_id,first_name,last_name,phone_number', 'provider:id,name'])
+            ->paginate(50)
+            ->withQueryString();
 
-        return view('portals.staff.appointments', compact('appointments'));
+        return view('portals.staff.appointments', [
+            'appointments' => $appointments,
+            'facilityName' => $this->activeFacilityName(),
+            // The clinicians posted HERE, for the filter — never a typed uuid.
+            'clinicians'   => $this->clinicians(),
+            // The column vocabulary the database actually holds, from the one
+            // service that owns it (FrontDeskService), so the filter offers
+            // `booked` (a patient's own booking) and not only `scheduled`.
+            'statuses'     => array_values(array_unique(array_merge(FrontDeskService::ACTIVE_STATUSES, FrontDeskService::CLOSED_STATUSES))),
+        ]);
+    }
+
+    /** The name of the facility this desk acts for, for display only. */
+    private function activeFacilityName(): ?string
+    {
+        $facilityId = $this->ctx->facilityId();
+
+        return $facilityId
+            ? Facility::withoutGlobalScopes()->whereKey($facilityId)->value('name')
+            : null;
+    }
+
+    /** Clinicians posted at this session's facility (FrontDeskService::clinicians). */
+    private function clinicians()
+    {
+        $facilityId = $this->ctx->facilityId();
+
+        return $facilityId ? app(FrontDeskService::class)->clinicians($facilityId) : collect();
     }
 
     public function appointmentsCreate(Request $request)
@@ -129,7 +164,11 @@ class StaffPortalController extends Controller
                 ->findOrFail((string) $request->query('waitlist'));
         }
 
-        return view('portals.staff.appointments_create', compact('patients', 'waitlistEntry'));
+        // The form shows the facility it books into; it used to show a generic
+        // "the facility you are signed in to" because nothing passed the name.
+        $activeFacilityName = $this->activeFacilityName();
+
+        return view('portals.staff.appointments_create', compact('patients', 'waitlistEntry', 'activeFacilityName'));
     }
 
     /** The waitlist of this session's facility — never any other. */
@@ -209,8 +248,7 @@ class StaffPortalController extends Controller
         abort_unless(
             $facilityId !== null && $facilityId !== '',
             409,
-            'No facility is selected for this session, so there is no way to tell which '
-            . 'facility this appointment belongs to. Select a facility first.'
+            __('staff.desk.no_facility_for_booking')
         );
 
         try {
@@ -254,6 +292,17 @@ class StaffPortalController extends Controller
         // another facility's patient data, and confirming it tells a patient
         // somewhere else that their slot is booked.
         $appointment = $this->ctx->scopeToFacility(Appointment::query())->findOrFail($id);
+
+        // Only a pending booking can be confirmed — `booked` (the patient's
+        // own request from the app) as much as `scheduled`. This used to
+        // rewrite ANY status to `confirmed`, a completed or cancelled visit
+        // included, and the table offered Confirm on `scheduled` only, so a
+        // patient's own request could never be confirmed from the web.
+        if (! in_array($appointment->status, FrontDeskService::PENDING_STATUSES, true)) {
+            return redirect()->route('portals.staff.appointments')
+                ->with('error', __('desk_api.' . ($appointment->status === 'confirmed' ? 'already_confirmed' : 'not_confirm_eligible')));
+        }
+
         $appointment->update(['status' => 'confirmed']);
 
         $this->ctx->auditPatientAccess(
@@ -271,10 +320,13 @@ class StaffPortalController extends Controller
     {
         $request->validate(['reason' => 'required|string|min:5|max:500']);
 
+        // Same scoping as confirm: cancelling another facility's appointment
+        // silently cancels a real patient's real slot. Resolved OUTSIDE the
+        // try: the catch (Throwable) below turned a foreign id's 404 into a
+        // redirect-back carrying the raw "No query results" string.
+        $appointment = $this->ctx->scopeToFacility(Appointment::query())->findOrFail($id);
+
         try {
-            // Same scoping as confirm: cancelling another facility's
-            // appointment silently cancels a real patient's real slot.
-            $appointment = $this->ctx->scopeToFacility(Appointment::query())->findOrFail($id);
             $cancelled   = $svc->cancel($appointment, $request->reason, $this->ctx->actorId());
 
             $this->ctx->auditPatientAccess(
@@ -295,28 +347,71 @@ class StaffPortalController extends Controller
         }
     }
 
-    public function appointmentsCheckIn(Request $request, string $id, AppointmentService $svc)
+    public function appointmentsCheckIn(Request $request, string $id, PatientQueueService $queue)
     {
-        try {
-            // Scoped to this session's facility, like confirm/cancel — a bare
-            // findOrFail let any staff user check a patient in at another facility.
-            $appointment = $this->ctx->scopeToFacility(Appointment::query())->findOrFail($id);
-            $svc->checkIn($appointment, $this->ctx->actorId());
+        // Scoped to this session's facility, like confirm/cancel — a bare
+        // findOrFail let any staff user check a patient in at another facility.
+        $appointment = $this->ctx->scopeToFacility(Appointment::query())->with('patient')->findOrFail($id);
 
-            return redirect()->route('portals.staff.appointments')
-                ->with('success', __('public.staff_portal.appointment_checked_in', [], app()->getLocale()) ?: 'Patient checked in.');
-        } catch (Throwable $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+        // ONE check-in path. This used to call AppointmentService::checkIn(),
+        // which accepts scheduled|confirmed only (so a patient's own `booked`
+        // request was refused with a raw exception string) and opened a visit
+        // WITHOUT a queue ticket — while the queue desk's check-in of the same
+        // booking did both. Two doors, two different results for one patient.
+        // PatientQueueService::checkIn() is the door the queue desk uses: it
+        // checks the appointment in through FrontDeskService (the wide status
+        // vocabulary), opens the visit and issues the ticket.
+        if ($appointment->patient === null) {
+            return redirect()->back()->with('error', __('api.patient_not_found'));
         }
+
+        try {
+            $ticket = $queue->checkIn([
+                'patient'        => $appointment->patient,
+                'facility_id'    => (string) $appointment->facility_id,
+                'actor_id'       => (string) $this->ctx->actorId(),
+                'appointment'    => $appointment,
+                'priority_level' => PatientQueueService::DEFAULT_ARRIVAL_PRIORITY,
+                'ip'             => $request->ip(),
+            ]);
+        } catch (\App\Services\Queue\QueueRefusal $e) {
+            return redirect()->route('portals.staff.appointments')
+                ->with('error', __('queue_desk.refusal.' . $e->key));
+        }
+
+        $this->ctx->auditPatientAccess(
+            actionType:   'queue_checked_in',
+            resourceType: 'QueueTicket',
+            resourceId:   $ticket->id,
+            patientId:    $appointment->patient_id,
+        );
+
+        return redirect()->route('portals.staff.appointments')
+            ->with('success', __('queue_desk.checked_in', ['number' => PatientQueueService::displayNumber($ticket)]));
     }
 
     public function appointmentsNoShow(Request $request, string $id)
     {
         $appointment = $this->ctx->scopeToFacility(Appointment::query())->findOrFail($id);
+
+        // Same vocabulary as the phone desk: a no-show may follow a pending,
+        // confirmed or checked-in booking and nothing that is already closed.
+        if (! in_array($appointment->status, FrontDeskService::NO_SHOW_FROM, true)) {
+            return redirect()->route('portals.staff.appointments')
+                ->with('error', __('desk_api.' . ($appointment->status === 'no_show' ? 'already_no_show' : 'not_no_show_eligible')));
+        }
+
         $appointment->update([
             'status'     => 'no_show',
             'no_show_at' => now(),
         ]);
+
+        $this->ctx->auditPatientAccess(
+            actionType:   'staff_appointment_no_show',
+            resourceType: 'Appointment',
+            resourceId:   $appointment->id,
+            patientId:    $appointment->patient_id,
+        );
 
         return redirect()->route('portals.staff.appointments')
             ->with('success', __('public.staff_portal.appointment_no_show', [], app()->getLocale()) ?: 'Appointment marked as no-show.');

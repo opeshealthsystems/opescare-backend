@@ -100,6 +100,9 @@
                         </td>
                         <td data-label="{{ __('prescriber.col_issued') }}" class="td-muted">
                             {{ $rx->prescribed_at?->format('d M Y') ?? '—' }}
+                            @if(filled($rx->reference))
+                                <div class="td-muted" data-rx-code>{{ $rx->reference }}</div>
+                            @endif
                         </td>
                         <td class="row-actions" data-label="{{ __('prescriber.view') }}">
                             <a href="{{ route('portals.prescriber.show', $rx->id) }}" class="btn btn-secondary btn-sm">

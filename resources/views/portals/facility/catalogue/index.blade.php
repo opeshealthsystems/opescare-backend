@@ -39,6 +39,27 @@
 </div>
 @endif
 
+{{-- A centre that offers imaging exams as well as lab tests publishes both
+     from this one list, to two different public finders. Say how many reach
+     each, from the published rows themselves. --}}
+@if(! empty($mix) && $mix['imaging_catalogue'] > 0)
+<div class="banner banner--info mb-4" data-testid="service-mix">
+    <i data-lucide="scan-line"></i>
+    <div>
+        <strong>{{ __('catalogue.mix_title') }}</strong><br>
+        {{ __('catalogue.mix_lab', ['catalogue' => $mix['lab_catalogue'], 'published' => $mix['lab_published']]) }}
+        @if(Route::has('public.network.lab-test-finder'))
+            <a href="{{ route('public.network.lab-test-finder') }}">{{ __('catalogue.mix_view_finder') }}</a>
+        @endif
+        <br>
+        {{ __('catalogue.mix_imaging', ['catalogue' => $mix['imaging_catalogue'], 'published' => $mix['imaging_published']]) }}
+        @if(Route::has('public.network.imaging-finder'))
+            <a href="{{ route('public.network.imaging-finder') }}">{{ __('catalogue.mix_view_finder') }}</a>
+        @endif
+    </div>
+</div>
+@endif
+
 {{-- Retired entries are one click away, not hidden. A manager who cannot see
      that a service was retired will simply add it again. --}}
 <div class="filter-bar mb-4">
@@ -87,6 +108,12 @@
                 <td>
                     <code>{{ $item->code }}</code>
                     <div><span class="pill pill--muted">{{ $item->system }}</span></div>
+                    @php $finder = \App\Services\DiagnosticCentre\ServiceMix::finderFor($item->system, $entry); @endphp
+                    @if($finder === \App\Services\DiagnosticCentre\ServiceMix::IMAGING)
+                        <div class="text-muted text-sm" data-finder="imaging"><i data-lucide="scan-line"></i> {{ __('catalogue.mix_badge_imaging') }}</div>
+                    @elseif($finder === \App\Services\DiagnosticCentre\ServiceMix::LAB)
+                        <div class="text-muted text-sm" data-finder="lab"><i data-lucide="flask-conical"></i> {{ __('catalogue.mix_badge_lab') }}</div>
+                    @endif
                 </td>
                 <td>
                     {{ $item->displayName($entry) }}
@@ -128,6 +155,9 @@
                         <summary class="btn btn-ghost btn-sm"><i data-lucide="pencil"></i></summary>
                         <form method="POST" action="{{ route('portals.facility.catalogue.update', $item->id) }}" class="stack mt-2">
                             @csrf
+                            {{-- What this form saw: a save made by another role
+                                 after it was opened is not overwritten. --}}
+                            <input type="hidden" name="seen_updated_at" value="{{ $item->updated_at?->getTimestamp() }}">
                             {{-- No facility_id field, on purpose: the facility
                                  comes from the session context, and a field here
                                  would be a field to tamper with. The system and

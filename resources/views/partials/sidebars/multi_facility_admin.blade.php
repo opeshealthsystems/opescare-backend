@@ -32,9 +32,20 @@
     <a href="{{ route('portals.facility.admin.reports') }}" class="sidebar-link sidebar-link--sub {{ request()->routeIs('portals.facility.admin.reports*') ? 'active' : '' }}">
         <i data-lucide="bar-chart-3"></i><span>{{ __('facility_admin.nav_reports', [], $l) }}</span>
     </a>
+    @php
+        // Wards and beds only mean something where patients are admitted. A
+        // clinic, lab, dental or eye practice has none; the link was noise.
+        // A facility that has recorded wards keeps the link whatever its type.
+        $__fid = app(\App\Services\Portal\PortalContextService::class)->facilityId();
+        $__type = $__fid ? \App\Models\Facility::withoutGlobalScopes()->whereKey($__fid)->value('type') : null;
+        $__showWards = in_array($__type, ['hospital', 'maternity', 'health_center'], true)
+            || ($__fid && \Illuminate\Support\Facades\DB::table('wards')->where('facility_id', $__fid)->exists());
+    @endphp
+    @if($__showWards)
     <a href="{{ route('portals.facility.admin.wards') }}" class="sidebar-link sidebar-link--sub {{ request()->routeIs('portals.facility.admin.wards*') ? 'active' : '' }}">
         <i data-lucide="bed"></i><span>{{ __('facility_admin.nav_wards', [], $l) }}</span>
     </a>
+    @endif
     @endcapability
     @capability('service_catalogue')
     <a href="{{ route('portals.facility.settings.index') }}" class="sidebar-link {{ request()->routeIs('portals.facility.settings.*') ? 'active' : '' }}">

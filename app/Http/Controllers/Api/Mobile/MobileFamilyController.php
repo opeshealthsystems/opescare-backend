@@ -163,7 +163,7 @@ class MobileFamilyController extends Controller
             'full_name'     => 'required_without:first_name|nullable|string|max:200',
             'first_name'    => 'required_without:full_name|nullable|string|max:100',
             'last_name'     => 'required_with:first_name|nullable|string|max:100',
-            'date_of_birth' => 'required|date|before:today',
+            'date_of_birth' => 'required|date|before_or_equal:today', // a baby born today needs a Health ID for its birth doses
             'sex'           => 'required|in:male,female', // patients.sex is constrained to these two
             'relationship'  => ['required', Rule::in(FamilyLink::RELATIONSHIPS)],
             'access_level'  => ['nullable', Rule::in(FamilyLink::ACCESS_LEVELS)],
