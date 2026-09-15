@@ -152,7 +152,9 @@ class FacilitySettingsService
     public static function identityRules(): array
     {
         return [
-            'facility_name'   => ['required', 'string', 'max:150'],
+            // No angle brackets in fields the public profile prints into
+            // JSON-LD and page titles (security scan 2026-09-15, item 2).
+            'facility_name'   => ['required', 'string', 'max:150', 'not_regex:/[<>]/'],
             'license_number'  => ['nullable', 'string', 'max:80'],
             'phone_primary'   => ['nullable', 'string', 'max:40'],
             'phone_secondary' => ['nullable', 'string', 'max:40'],
@@ -166,9 +168,9 @@ class FacilitySettingsService
     public static function locationRules(): array
     {
         return [
-            'address'   => ['required', 'string', 'max:255'],
-            'city'      => ['required', 'string', 'max:120'],
-            'region'    => ['nullable', 'string', 'max:120'],
+            'address'   => ['required', 'string', 'max:255', 'not_regex:/[<>]/'],
+            'city'      => ['required', 'string', 'max:120', 'not_regex:/[<>]/'],
+            'region'    => ['nullable', 'string', 'max:120', 'not_regex:/[<>]/'],
             'latitude'  => ['nullable', 'numeric', 'between:-90,90', 'required_with:longitude'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180', 'required_with:latitude'],
         ];

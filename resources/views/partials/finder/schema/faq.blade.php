@@ -39,7 +39,7 @@
         '@type'      => 'FAQPage',
         'inLanguage' => app()->getLocale(),
         'mainEntity' => $fqEntities,
-    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP);
 @endphp
 @if ($fqJsonLd !== null)
 <script type="application/ld+json">
