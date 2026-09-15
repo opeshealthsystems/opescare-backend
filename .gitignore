@@ -43,3 +43,6 @@ yarn-error.log
 
 # Terminology release files are downloaded by the importers, not committed.
 /storage/app/terminology/
+
+# JWT signing keys are per environment (php artisan opescare:jwt-keys); never commit them.
+/storage/keys/*.pem

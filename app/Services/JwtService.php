@@ -10,8 +10,10 @@ use Illuminate\Support\Str;
 /**
  * Zero-dependency RS256 JWT implementation using PHP's built-in openssl extension.
  *
- * Tokens are signed with a 2048-bit RSA private key at storage/keys/jwt_private.pem.
- * Verification uses the matching public key at storage/keys/jwt_public.pem.
+ * Tokens are signed with a 2048-bit RSA private key (config jwt.private_key_path,
+ * default storage/keys/jwt_private.pem) and verified with the matching public key
+ * (jwt.public_key_path). Keys are per environment and never committed: create
+ * them with `php artisan opescare:jwt-keys`.
  *
  * Security hardening (migration sprint):
  *   - `aud` claim added: tokens are bound to 'opescare-api'; cross-service reuse rejected.
@@ -269,7 +271,7 @@ class JwtService
 
     private function privateKey(): \OpenSSLAsymmetricKey
     {
-        $path = storage_path('keys/jwt_private.pem');
+        $path = (string) config('jwt.private_key_path', storage_path('keys/jwt_private.pem'));
 
         if (! file_exists($path)) {
             throw new \RuntimeException("JWT private key not found at {$path}.");
@@ -286,7 +288,7 @@ class JwtService
 
     private function publicKey(): \OpenSSLAsymmetricKey
     {
-        $path = storage_path('keys/jwt_public.pem');
+        $path = (string) config('jwt.public_key_path', storage_path('keys/jwt_public.pem'));
 
         if (! file_exists($path)) {
             throw new \RuntimeException("JWT public key not found at {$path}.");
