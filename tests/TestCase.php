@@ -34,6 +34,32 @@ abstract class TestCase extends BaseTestCase
         $this->assertDatabaseIsSafeForTesting();
     }
 
+    /**
+     * Tests never hit real DNS for partner URLs. Reserved example domains
+     * (RFC 2606: *.example.com, *.example, *.test) resolve to a documentation
+     * public address; anything else is unresolvable. IP literals bypass this and
+     * are always checked for real, so private/metadata addresses stay blocked.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        \App\Support\PublicUrlGuard::resolveUsing(static function (string $host): array {
+            $h = strtolower($host);
+
+            return ($h === 'example.com' || str_ends_with($h, '.example.com') || str_ends_with($h, '.example') || str_ends_with($h, '.test'))
+                ? ['203.0.113.10']
+                : [];
+        });
+    }
+
+    protected function tearDown(): void
+    {
+        \App\Support\PublicUrlGuard::resolveUsing(null);
+
+        parent::tearDown();
+    }
+
     private function assertDatabaseIsSafeForTesting(): void
     {
         $connection = config('database.default');

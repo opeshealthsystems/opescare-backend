@@ -63,8 +63,26 @@ class SendWebhookJob implements ShouldQueue
 
         $log->increment('attempts');
 
+        // Re-check at send time (DNS can change after registration) and pin the
+        // connection to the address just checked, so the host cannot be
+        // re-pointed at an internal address between check and request. A
+        // refused destination is final: no retry.
+        $target = \App\Support\PublicUrlGuard::resolve($subscription->callback_url);
+        if ($target === null) {
+            Log::warning('Webhook delivery refused: destination is not a public address', [
+                'subscription' => $this->subscriptionId,
+                'event_id'     => $this->payload['event_id'],
+            ]);
+            $log->update(['status' => 'failed', 'response_body' => 'blocked_destination']);
+
+            return;
+        }
+
         try {
-            $response = Http::withHeaders([
+            $response = Http::withOptions([
+                'allow_redirects' => false,
+                'curl' => [CURLOPT_RESOLVE => [$target['host'] . ':' . $target['port'] . ':' . (str_contains($target['ip'], ':') ? '[' . $target['ip'] . ']' : $target['ip'])]],
+            ])->withHeaders([
                 'Content-Type'             => 'application/json',
                 'X-OpesCare-Signature'     => 't=' . $timestamp . ',v1=' . $signature,
                 'X-OpesCare-Timestamp'     => (string) $timestamp,

@@ -165,4 +165,6 @@ return [
     'flash_replay_paused'      => "This endpoint is paused. Resume it before replaying.",
     'flash_approve_facility_not_found' => "No facility has exactly that name. Approval needs the facility the app will act for.",
     'flash_approve_facility_ambiguous' => "More than one facility has that name. Rename one in the facility register, then approve.",
+
+    'webhook_url_not_public' => 'The webhook address must be a public https endpoint. Private, local and internal network addresses are not allowed.',
 ];

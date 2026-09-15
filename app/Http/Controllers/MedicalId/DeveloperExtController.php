@@ -125,7 +125,14 @@ class DeveloperExtController extends Controller
 
         $validated = $request->validate([
             'integration_client_id' => ['required', 'string', 'max:191'],
-            'callback_url'          => ['required', 'url', 'starts_with:https://', 'max:255'],
+            'callback_url'          => ['required', 'url', 'starts_with:https://', 'max:255',
+                // Public hosts only: never loopback, private network or cloud metadata.
+                function (string $attribute, mixed $value, \Closure $fail) {
+                    if (! \App\Support\PublicUrlGuard::isAllowed((string) $value)) {
+                        $fail(__('developer_ext.webhook_url_not_public'));
+                    }
+                },
+            ],
             'events'                => ['required', 'array', 'min:1'],
             'events.*'              => ['string', 'in:' . implode(',', self::EVENT_TYPES)],
         ]);

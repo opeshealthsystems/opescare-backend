@@ -165,4 +165,6 @@ return [
     'flash_replay_paused'      => "Ce point de terminaison est suspendu. Reprenez-le avant de rejouer.",
     'flash_approve_facility_not_found' => "Aucun établissement ne porte exactement ce nom. L'approbation exige l'établissement au nom duquel l'application agira.",
     'flash_approve_facility_ambiguous' => "Plusieurs établissements portent ce nom. Renommez-en un dans le registre, puis approuvez.",
+
+    'webhook_url_not_public' => 'L\'adresse du webhook doit être un point de terminaison https public. Les adresses privées, locales et du réseau interne ne sont pas autorisées.',
 ];
