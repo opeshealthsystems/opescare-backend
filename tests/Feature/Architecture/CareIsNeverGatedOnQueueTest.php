@@ -65,6 +65,10 @@ class CareIsNeverGatedOnQueueTest extends TestCase
         // It never loads a ticket, never transitions one, and links only to
         // the queue desk. A number on a dashboard cannot gate anyone's care.
         'app/Services/Portal/FacilityAdminDeskService.php',
+        // Imported platform analytics (group C): queueSummary() counts tickets
+        // and averages waits for a reporting period. Aggregates only; it never
+        // loads a ticket for a decision or transitions one.
+        'app/Modules/Analytics/Services/OperationalAnalyticsService.php',
     ];
 
     /** Structural: no clinical code can spell the queue. */

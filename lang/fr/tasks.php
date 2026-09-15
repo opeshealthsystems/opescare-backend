@@ -31,4 +31,16 @@ return [
     'all_statuses'     => 'Tous les statuts',
     'created'          => 'Tâche créée et assignée.',
     'reassigned'       => 'Tâche réassignée.',
+
+    // Import Finder (groupe B)
+    'scope_mine'     => 'Les miennes',
+    'scope_facility' => 'Mon établissement',
+    'cancel'         => 'Annuler',
+    'cancelled'      => 'Tâche annulée.',
+    'type_follow_up' => 'Suivi',
+    'type_callback'  => 'Rappel',
+    'type_review'    => 'Revue',
+    'type_referral'  => 'Référence',
+    'type_admin'     => 'Administratif',
+    'type_clinical'  => 'Clinique',
 ];

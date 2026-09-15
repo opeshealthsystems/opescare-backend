@@ -76,7 +76,44 @@
     </div>
     @endif
 
-    @if(!$patient || ($docCount === 0 && empty($available)))
+    {{-- Files a facility attached and released to the patient (scans,
+         radiology reports). Stored uploads, downloaded through a short-lived
+         signed link. --}}
+    @if(!empty($attachments))
+    <div class="f-card" data-section="documents-files" style="margin-bottom:16px;">
+        <h2 class="f-card__title" style="margin:0 0 4px;">{{ __('files.patient_title') }}</h2>
+        <p class="f-small f-muted" style="margin:0 0 14px;">{{ __('files.patient_hint') }}</p>
+        <div class="pf-table-wrap">
+            <table class="pf-table">
+                <thead>
+                    <tr>
+                        <th>{{ __('family.col_document') }}</th>
+                        <th>{{ __('files.col_category') }}</th>
+                        <th>{{ __('files.col_released') }}</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach($attachments as $file)
+                    <tr>
+                        <td style="font-weight:650;color:var(--f-ink);">{{ $file['title'] }}</td>
+                        <td>{{ $file['category'] }}</td>
+                        <td>{{ $file['date'] ? \Illuminate\Support\Carbon::parse($file['date'])->translatedFormat('d M Y') : '—' }}</td>
+                        <td style="text-align:right;">
+                            <a href="{{ $file['url'] }}" class="f-btn" style="min-height:36px;padding:4px 10px;">
+                                <i data-lucide="download" aria-hidden="true" style="width:15px;height:15px;"></i>
+                                {{ __('family.doc_download') }}
+                            </a>
+                        </td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @endif
+
+    @if(!$patient || ($docCount === 0 && empty($available) && empty($attachments)))
     <div class="f-card" style="text-align:center;padding:40px 20px;" data-section="documents-empty">
         <div class="pf-qa__icon" style="margin:0 auto 12px;width:48px;height:48px;">
             <i data-lucide="file-text" aria-hidden="true" style="width:24px;height:24px;"></i>

@@ -18,3 +18,13 @@ Group E is aggregate-only (no patient-level data), draft → review → push.
 
 Not importable (absent from the platform): imaging request desk, dentist and
 radiographer roles, diagnostic packages, nurse prescribing protocols.
+
+## Status (2026-09-15)
+
+| Group | State | Notes |
+|---|---|---|
+| A files + radiology | imported | 5 models copied (only the tables existed); hard delete → void; signed downloads with access log; released files appear in patient documents; added the missing RadiologyReportDistributed event so release notifies the patient. Lab roles lack clinical_chart (decision). |
+| B tasks/support/broadcasts | imported | new StaffSupportController; broadcasts target facilities/roles and track acknowledgement; KnowledgeBaseService and TicketAssignmentService copied but unwired (schema mismatch). |
+| C interactions/antenatal/KPI | imported | platform interaction data is only 4 hard-coded pairs — imported as-is, nothing invented; warnings never block; KPI export aggregates only; insurance metric dropped. |
+| D readiness/onboarding/secops | imported | readiness uses the Finder's six real go-live checks; reconciled with existing security pages (nothing duplicated); ApiAbuseDetectionService unwired (no request metrics). |
+| E DHIS2 | imported | aggregate only; draft → approve → queued push; idempotent per facility/period/element; patient-level and invented elements dropped; needs MINSANTE credentials, org unit ids, dataset and data element ids. |

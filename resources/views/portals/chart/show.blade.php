@@ -120,6 +120,9 @@
         @capability('queue')
         <a href="{{ route('portals.queue.index') }}" class="btn btn-secondary"><i data-lucide="list-ordered"></i> {{ __('chart.link_queue') }}</a>
         @endcapability
+        @capability('clinical_chart')
+        <a href="{{ route('portals.files.index', ['patientId' => $patient->id]) }}" class="btn btn-secondary"><i data-lucide="paperclip"></i> {{ __('files.chart_link') }}</a>
+        @endcapability
         @capability('blood_inventory')
         <a href="{{ route('portals.staff.blood_requests.index') }}" class="btn btn-secondary"><i data-lucide="droplet"></i> {{ __('chart.link_blood') }}</a>
         @endcapability

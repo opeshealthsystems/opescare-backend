@@ -198,10 +198,10 @@ class SecurityOpsController extends Controller
         try {
             // created_by is a uuid FK to users here (the main platform wrote an
             // email string into it, which this schema would reject).
-            SecurityIncident::create($data + [
-                'status' => 'open',
-                'created_by' => $request->user()?->id,
-            ]);
+            // Group D import: opened through the platform's SecurityIncidentService,
+            // which adds the audit_events row this desk used to skip.
+            app(\App\Modules\SecurityOperations\Services\SecurityIncidentService::class)
+                ->openIncident($data, (string) $request->user()->id);
 
             return redirect()->route('portals.admin.security.incidents')
                 ->with('success', __('flash.security_incident_logged'));
@@ -236,6 +236,10 @@ class SecurityOpsController extends Controller
 
     public function auditExplorer(Request $request)
     {
+        // Group D import: every use of the explorer is itself logged (AuditExplorerService).
+        rescue(fn () => app(\App\Modules\SecurityOperations\Services\AuditExplorerService::class)
+            ->recordSearch((string) $request->user()->id), null, true);
+
         $q = AuditEvent::orderByDesc('created_at');
 
         if ($request->filled('action_type')) {

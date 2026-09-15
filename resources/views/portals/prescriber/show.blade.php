@@ -87,6 +87,7 @@
 </div>
 
 @if(session('success'))<div class="alert alert-success mb-6"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
+@if(session('warning'))<div class="alert alert-warning mb-6" role="status"><i data-lucide="triangle-alert"></i><div>{{ session('warning') }}</div></div>@endif
 @if(session('error'))<div class="alert alert-danger mb-6"><i data-lucide="alert-circle"></i><div>{{ session('error') }}</div></div>@endif
 
 <div class="grid-2">

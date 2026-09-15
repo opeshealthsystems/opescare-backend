@@ -116,4 +116,12 @@ return [
         'issuer' => env('OPESCARE_OAUTH_ISSUER'),
     ],
 
+    // DHIS2 (MINSANTE national HMIS), merged from the platform. The Finder reads
+    // config/dhis2.php; this block mirrors the same env so either key resolves.
+    'dhis2' => [
+        'url'      => env('DHIS2_BASE_URL', env('DHIS2_URL')),
+        'username' => env('DHIS2_USERNAME'),
+        'password' => env('DHIS2_PASSWORD'),
+    ],
+
 ];

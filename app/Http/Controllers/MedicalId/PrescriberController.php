@@ -7,7 +7,10 @@ use App\Models\Facility;
 use App\Models\Medicine;
 use App\Models\Patient;
 use App\Models\Prescription;
+use App\Modules\ClinicalDecisionSupport\Services\DrugInteractionService;
 use App\Services\Clinical\PrescriptionService;
+use App\Services\Portal\PortalContextService;
+use Illuminate\Http\JsonResponse;
 use App\Services\Portal\DeskFacilityContext;
 use App\Support\ClinicalRelationshipGate;
 use Illuminate\Http\RedirectResponse;
@@ -95,6 +98,7 @@ class PrescriberController extends Controller
             'items.*.route'         => 'nullable|string|max:50',
             'items.*.duration_days' => 'nullable|integer|min:1|max:365',
             'items.*.quantity'      => 'nullable|integer|min:1|max:1000',
+            'interactions_acknowledged' => 'nullable|boolean',
         ]);
 
         // Drop blank rows the form may submit, then require at least one real line.
@@ -127,8 +131,109 @@ class PrescriberController extends Controller
             return back()->withInput()->with('error', __('prescriber.issue_failed'));
         }
 
-        return redirect()->route('portals.prescriber.show', $prescription->id)
+        // Drug interactions (imported CDSS): a WARNING, never a block. The
+        // prescription above is already saved; what the prescriber was shown
+        // and whether they ticked the acknowledgement goes into the audit trail.
+        $alerts = $this->interactionAlerts(
+            array_column($items, 'drug_name'),
+            $validated['patient_id'],
+            $prescription->id,
+        );
+
+        $redirect = redirect()->route('portals.prescriber.show', $prescription->id)
             ->with('success', __('prescriber.issued'));
+
+        if ($alerts !== []) {
+            $acknowledged = (bool) ($validated['interactions_acknowledged'] ?? false);
+
+            app(PortalContextService::class)->auditPatientAccess(
+                actionType:   'prescription_interaction_warning',
+                resourceType: 'Prescription',
+                resourceId:   $prescription->id,
+                patientId:    $validated['patient_id'],
+                extra:        [
+                    'facility_id' => $this->facilityId(),
+                    'reason'      => $acknowledged ? 'acknowledged_by_prescriber' : 'shown_not_acknowledged',
+                    'after_state' => [
+                        'acknowledged' => $acknowledged,
+                        'interactions' => array_map(fn ($a) => [
+                            'drug_a'   => $a['drug_a'],
+                            'drug_b'   => $a['drug_b'],
+                            'severity' => $a['severity'],
+                        ], $alerts),
+                    ],
+                ],
+            );
+
+            $redirect->with('warning', trans_choice('cdss.saved_with_warnings', count($alerts), ['count' => count($alerts)]));
+        }
+
+        return $redirect;
+    }
+
+    /**
+     * POST /facility/prescriptions/interaction-check — JSON warnings for the
+     * medicines on the form, against each other and (only when the prescriber
+     * has standing with the patient) the patient's active prescriptions.
+     */
+    public function interactionCheck(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'patient_id' => 'nullable|uuid',
+            'drugs'      => 'required|array|max:30',
+            'drugs.*'    => 'nullable|string|max:200',
+        ]);
+
+        $alerts = $this->interactionAlerts(
+            array_values(array_filter($validated['drugs'], fn ($d) => filled($d))),
+            $validated['patient_id'] ?? null,
+        );
+
+        return response()->json([
+            'data' => array_map(fn ($a) => [
+                'drug_a'         => $a['drug_a'],
+                'drug_b'         => $a['drug_b'],
+                'severity'       => $a['severity'],
+                'severity_label' => __('cdss.severity_' . $a['severity']),
+                'message'        => __('cdss.pair_' . str_replace('|', '_', $a['key'])),
+            ], $alerts),
+        ]);
+    }
+
+    /**
+     * Interaction pairs that involve at least one medicine on the form. Pairs
+     * made only of already-active medicines are not this prescriber's decision.
+     *
+     * @param  list<string>  $drugNames  the medicines being written now
+     * @return list<array>
+     */
+    private function interactionAlerts(array $drugNames, ?string $patientId, ?string $excludePrescriptionId = null): array
+    {
+        $current = array_map(fn ($n) => ['name' => (string) $n], $drugNames);
+
+        // Active prescriptions are patient data: read only with standing.
+        $active = [];
+        if ($patientId && ClinicalRelationshipGate::evaluate((string) auth()->id(), $this->facilityId(), $patientId)->holds()) {
+            $active = \App\Models\PrescriptionItem::query()
+                ->whereHas('prescription', fn ($q) => $q
+                    ->where('patient_id', $patientId)
+                    ->whereIn('status', ['active', 'partially_dispensed'])
+                    ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+                    ->when($excludePrescriptionId, fn ($q) => $q->where('id', '!=', $excludePrescriptionId)))
+                ->pluck('drug_name')
+                ->filter()
+                ->map(fn ($n) => ['name' => (string) $n])
+                ->all();
+        }
+
+        $onForm = fn (string $drug) => collect($current)->contains(
+            fn ($c) => preg_match('/\b' . preg_quote($drug, '/') . '\b/i', $c['name']) === 1
+        );
+
+        return array_values(array_filter(
+            app(DrugInteractionService::class)->checkInteractions(array_merge($current, $active)),
+            fn ($a) => $onForm($a['drug_a']) || $onForm($a['drug_b']),
+        ));
     }
 
     /** One prescription, with its lines and dispense state. */

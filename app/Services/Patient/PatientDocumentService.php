@@ -64,6 +64,40 @@ class PatientDocumentService
     {
     }
 
+    /**
+     * Files a facility attached to this patient AND released to them — scans,
+     * radiology reports, a signed glasses prescription (docs/PLATFORM_IMPORTS.md,
+     * group A). These are ADDITIONAL to the on-demand sheets and are the one
+     * kind of document that is a stored file: the bytes were uploaded by the
+     * facility, not rendered from the record. Voided files never appear. Each
+     * row carries a short-lived signed URL; the download handler re-checks the
+     * patient and logs the access.
+     *
+     * @return array<int, array{id: string, title: string, category: string, date: ?string, url: string}>
+     */
+    public function releasedAttachments(Patient $patient): array
+    {
+        return \App\Models\MedicalAttachment::with('fileAsset')
+            ->releasedToPatient()
+            ->where('resource_type', 'patient')
+            ->where('resource_id', (string) $patient->id)
+            ->orderByDesc('released_at')
+            ->limit(100)
+            ->get()
+            ->map(fn (\App\Models\MedicalAttachment $a) => [
+                'id'       => (string) $a->id,
+                'title'    => $a->description ?: ($a->fileAsset?->original_name ?? '—'),
+                'category' => (string) (\App\Models\MedicalAttachment::categories()[$a->category] ?? __('files.categories.other')),
+                'date'     => $a->released_at?->toDateString(),
+                'url'      => \Illuminate\Support\Facades\URL::temporarySignedRoute(
+                    'portals.patient.files.download',
+                    now()->addMinutes(10),
+                    ['id' => $a->id]
+                ),
+            ])
+            ->all();
+    }
+
     public static function types(): array
     {
         return array_keys(self::VIEWS);

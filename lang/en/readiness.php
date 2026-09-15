@@ -1,0 +1,35 @@
+<?php
+
+// Group D import (docs/PLATFORM_IMPORTS.md): facility go-live readiness.
+
+return [
+    'page_title' => 'Go-live readiness',
+    'panel_title' => 'Go-live checklist',
+    'score' => 'Readiness :score%',
+    'facility_intro' => 'What still stands between your facility and being findable and usable on OpesCare.',
+    'done' => 'Done',
+    'todo' => 'To do',
+    'check_listing_linked' => 'Directory listing linked',
+    'check_coordinates_set' => 'Map location set',
+    'check_hours_set' => 'Opening hours set',
+    'check_catalogue_item' => 'At least one published service, medicine or test',
+    'check_staff_member' => 'At least one staff member besides the admin',
+    'check_photo_set' => 'Facility photo uploaded',
+    'hint_listing_linked' => 'Claim or join your directory listing so patients can find you.',
+    'hint_coordinates_set' => 'Set the latitude and longitude in facility settings.',
+    'hint_hours_set' => 'Add your opening hours in facility settings.',
+    'hint_catalogue_item' => 'Publish a catalogue item, a medicine in stock or a lab test.',
+    'hint_staff_member' => 'Invite a clinician, pharmacist or other staff member.',
+    'hint_photo_set' => 'Upload a photo or logo in facility settings.',
+    'btn_compute' => 'Save score snapshot',
+    'btn_manage' => 'Manage checklist',
+    'flash_score_computed' => 'Readiness score saved: :score%.',
+    'latest_snapshot' => 'Latest saved score',
+    'no_snapshot' => 'No score saved yet.',
+    'snap_overall' => 'Overall',
+    'snap_staff' => 'Staff',
+    'snap_config' => 'Listing and configuration',
+    'snap_data' => 'Published catalogue',
+    'snap_when' => 'Calculated',
+    'section_checklist' => 'Manual onboarding checklist',
+];

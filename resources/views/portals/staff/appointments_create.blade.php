@@ -104,7 +104,14 @@
                         <option value="emergency" {{ old('appointment_type') === 'emergency' ? 'selected' : '' }}>
                             {{ __('public.staff_portal.type_emergency', [], app()->getLocale()) ?: 'Emergency' }}
                         </option>
+                        {{-- Maternity presets imported from the platform MaternityService. --}}
+                        <optgroup label="{{ __('public.appt_preset_group_maternity') }}">
+                            @foreach(\App\Modules\Maternity\Services\MaternityService::appointmentPresets() as $preset)
+                            <option value="{{ $preset }}" @selected(old('appointment_type') === $preset)>{{ __('public.appt_type_' . $preset) }}</option>
+                            @endforeach
+                        </optgroup>
                     </select>
+                    <p class="form-hint">{{ __('public.appt_preset_anc_weeks_hint', ['weeks' => implode(', ', \App\Modules\Maternity\Services\MaternityService::recommendedVisitWeeks())]) }}</p>
                     @error('appointment_type')<p class="form-error">{{ $message }}</p>@enderror
                 </div>
                 <div class="form-group">

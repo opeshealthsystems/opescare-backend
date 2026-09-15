@@ -1,0 +1,35 @@
+<?php
+
+// Group D import (docs/PLATFORM_IMPORTS.md): facility go-live readiness.
+
+return [
+    'page_title' => 'Préparation à la mise en service',
+    'panel_title' => 'Liste de mise en service',
+    'score' => 'Préparation :score %',
+    'facility_intro' => 'Ce qui sépare encore votre établissement d\'être trouvable et utilisable sur OpesCare.',
+    'done' => 'Fait',
+    'todo' => 'À faire',
+    'check_listing_linked' => 'Fiche d\'annuaire liée',
+    'check_coordinates_set' => 'Position sur la carte définie',
+    'check_hours_set' => 'Horaires d\'ouverture définis',
+    'check_catalogue_item' => 'Au moins un service, médicament ou examen publié',
+    'check_staff_member' => 'Au moins un membre du personnel en plus de l\'administrateur',
+    'check_photo_set' => 'Photo de l\'établissement ajoutée',
+    'hint_listing_linked' => 'Revendiquez ou rejoignez votre fiche d\'annuaire pour que les patients vous trouvent.',
+    'hint_coordinates_set' => 'Renseignez la latitude et la longitude dans les paramètres de l\'établissement.',
+    'hint_hours_set' => 'Ajoutez vos horaires d\'ouverture dans les paramètres de l\'établissement.',
+    'hint_catalogue_item' => 'Publiez un élément du catalogue, un médicament en stock ou un examen de laboratoire.',
+    'hint_staff_member' => 'Invitez un clinicien, un pharmacien ou un autre membre du personnel.',
+    'hint_photo_set' => 'Ajoutez une photo ou un logo dans les paramètres de l\'établissement.',
+    'btn_compute' => 'Enregistrer le score',
+    'btn_manage' => 'Gérer la liste',
+    'flash_score_computed' => 'Score de préparation enregistré : :score %.',
+    'latest_snapshot' => 'Dernier score enregistré',
+    'no_snapshot' => 'Aucun score enregistré pour l\'instant.',
+    'snap_overall' => 'Global',
+    'snap_staff' => 'Personnel',
+    'snap_config' => 'Fiche et configuration',
+    'snap_data' => 'Catalogue publié',
+    'snap_when' => 'Calculé le',
+    'section_checklist' => 'Liste d\'intégration manuelle',
+];

@@ -133,6 +133,35 @@ class EnsurePortalAccess
             'cashier', 'billing_officer', 'finance_manager', 'refund_approver', 'wallet_ops',
             'data_steward', 'reconciliation_officer', 'data_import_officer', 'data_quality_reviewer',
         ],
+        // Staff task inbox (/facility/tasks) and Help desk (/facility/support),
+        // imported from the platform (routes/imports_tasks.php). Same shape and
+        // reasoning as 'facility/queue': every operational role AND the
+        // facility administrators (who are closed out of the 'facility' desk)
+        // have tasks and tickets. Listed BEFORE 'facility' — first prefix wins.
+        'facility/tasks' => [
+            'facility_admin', 'clinic_admin', 'hospital_admin', 'facility_ceo', 'branch_admin',
+            'department_manager', 'multi_facility_admin',
+            'doctor', 'multi_doctor', 'specialist', 'consultant', 'resident', 'visiting_doctor',
+            'nurse', 'triage_nurse', 'ward_nurse', 'midwife', 'nurse_supervisor',
+            'student_doctor', 'student_nurse', 'intern', 'medical_supervisor',
+            'receptionist', 'front_desk', 'appointment_coordinator', 'queue_manager', 'records_officer',
+            'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection',
+            'pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'medicine_stock', 'dispensing_officer',
+            'cashier', 'billing_officer', 'finance_manager', 'refund_approver', 'wallet_ops',
+            'data_steward', 'reconciliation_officer', 'data_import_officer', 'data_quality_reviewer',
+        ],
+        'facility/support' => [
+            'facility_admin', 'clinic_admin', 'hospital_admin', 'facility_ceo', 'branch_admin',
+            'department_manager', 'multi_facility_admin',
+            'doctor', 'multi_doctor', 'specialist', 'consultant', 'resident', 'visiting_doctor',
+            'nurse', 'triage_nurse', 'ward_nurse', 'midwife', 'nurse_supervisor',
+            'student_doctor', 'student_nurse', 'intern', 'medical_supervisor',
+            'receptionist', 'front_desk', 'appointment_coordinator', 'queue_manager', 'records_officer',
+            'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection',
+            'pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'medicine_stock', 'dispensing_officer',
+            'cashier', 'billing_officer', 'finance_manager', 'refund_approver', 'wallet_ops',
+            'data_steward', 'reconciliation_officer', 'data_import_officer', 'data_quality_reviewer',
+        ],
         // Operations desk (was /portals/staff, now /facility).
         'facility' => [
             // Clinical providers

@@ -7850,6 +7850,241 @@
                     }
                 }
             ]
+        },
+        {
+            "name": "Radiology",
+            "item": [
+                {
+                    "name": "Pending",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "X-Client-ID",
+                                "value": "{{clientId}}"
+                            },
+                            {
+                                "key": "X-Client-Secret",
+                                "value": "{{clientSecret}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/radiology/facilities/{facilityId}/reports/pending",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "radiology",
+                                "facilities",
+                                "{facilityId}",
+                                "reports",
+                                "pending"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Store",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "X-Client-ID",
+                                "value": "{{clientId}}"
+                            },
+                            {
+                                "key": "X-Client-Secret",
+                                "value": "{{clientSecret}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/radiology/reports",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "radiology",
+                                "reports"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Show",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "X-Client-ID",
+                                "value": "{{clientId}}"
+                            },
+                            {
+                                "key": "X-Client-Secret",
+                                "value": "{{clientSecret}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/radiology/reports/{id}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "radiology",
+                                "reports",
+                                "{id}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Amend",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "X-Client-ID",
+                                "value": "{{clientId}}"
+                            },
+                            {
+                                "key": "X-Client-Secret",
+                                "value": "{{clientSecret}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/radiology/reports/{id}/amend",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "radiology",
+                                "reports",
+                                "{id}",
+                                "amend"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Distribute",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "X-Client-ID",
+                                "value": "{{clientId}}"
+                            },
+                            {
+                                "key": "X-Client-Secret",
+                                "value": "{{clientSecret}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/radiology/reports/{id}/distribute",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "radiology",
+                                "reports",
+                                "{id}",
+                                "distribute"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Finalize",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "X-Client-ID",
+                                "value": "{{clientId}}"
+                            },
+                            {
+                                "key": "X-Client-Secret",
+                                "value": "{{clientSecret}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/radiology/reports/{id}/finalize",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "radiology",
+                                "reports",
+                                "{id}",
+                                "finalize"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
         }
     ],
     "variable": [

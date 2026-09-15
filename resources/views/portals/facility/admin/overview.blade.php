@@ -235,4 +235,5 @@
     </div>
 </div>
 
+@include('portals.facility.admin._go_live_checklist')
 @endsection

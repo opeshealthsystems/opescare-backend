@@ -31,4 +31,16 @@ return [
     'all_statuses'     => 'All statuses',
     'created'          => 'Task created and assigned.',
     'reassigned'       => 'Task reassigned.',
+
+    // Finder import (group B)
+    'scope_mine'     => 'Mine',
+    'scope_facility' => 'My facility',
+    'cancel'         => 'Cancel',
+    'cancelled'      => 'Task cancelled.',
+    'type_follow_up' => 'Follow-up',
+    'type_callback'  => 'Callback',
+    'type_review'    => 'Review',
+    'type_referral'  => 'Referral',
+    'type_admin'     => 'Administrative',
+    'type_clinical'  => 'Clinical',
 ];

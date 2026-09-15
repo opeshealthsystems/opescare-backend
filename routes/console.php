@@ -108,3 +108,8 @@ Schedule::command('push:check-receipts')->everyFifteenMinutes()->withoutOverlapp
 // backfill for catalogues curated before the projector existed. Idempotent,
 // nothing deleted. Runs after the blood/MPI night jobs.
 Schedule::command('lab:publish-catalogue')->dailyAt('04:30')->withoutOverlapping();
+
+// Group E (DHIS2, docs/PLATFORM_IMPORTS.md): the platform pushed last month's
+// aggregate on the 1st at 04:00. The Finder only GENERATES the drafts then;
+// a platform admin reviews, approves and pushes from /admin/public-health/dhis2.
+Schedule::command('opescare:push-dhis2')->monthlyOn(1, '04:00')->withoutOverlapping();

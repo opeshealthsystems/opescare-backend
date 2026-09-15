@@ -660,7 +660,13 @@ class PatientPortalController extends Controller
     /** Appointment types a patient may request. */
     private function appointmentTypes(): array
     {
-        return ['consultation', 'follow_up', 'vaccination', 'lab_test', 'antenatal', 'dental', 'general'];
+        // Maternity presets (antenatal, postnatal) come from the imported
+        // platform MaternityService so both booking forms offer the same list.
+        return array_values(array_unique(array_merge(
+            ['consultation', 'follow_up', 'vaccination', 'lab_test'],
+            \App\Modules\Maternity\Services\MaternityService::appointmentPresets(),
+            ['dental', 'general'],
+        )));
     }
 
     /** GET — appointment request form (pick facility, type, date/time, reason). */
@@ -837,7 +843,10 @@ class PatientPortalController extends Controller
         // the issued-document rows above are a separate, older register.
         $available = $patient ? app(PatientDocumentService::class)->available($patient) : [];
 
-        return view('portals.patient.documents', compact('patient', 'documents', 'available'));
+        // Files a facility released to the patient (routes/imports_files.php).
+        $attachments = $patient ? app(PatientDocumentService::class)->releasedAttachments($patient) : [];
+
+        return view('portals.patient.documents', compact('patient', 'documents', 'available', 'attachments'));
     }
 
     /**

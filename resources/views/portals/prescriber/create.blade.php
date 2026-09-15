@@ -349,6 +349,28 @@
             </div>
         </div>
 
+        {{-- Drug-interaction warnings (imported CDSS). Advisory only: the
+             prescription saves whether or not the box is ticked, and both the
+             warnings shown and the acknowledgement are audited on save. --}}
+        <div class="panel mb-4" id="rx-interactions" data-check-url="{{ route('portals.prescriber.interaction_check') }}" hidden>
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i data-lucide="triangle-alert"></i>
+                    {{ __('cdss.panel_title') }}
+                </h2>
+            </div>
+            <div class="panel-body">
+                <p class="form-hint mb-3">{{ __('cdss.panel_hint') }}</p>
+                <ul class="alert-list mb-3" id="rx-interactions-list"></ul>
+                <label class="form-check">
+                    <input type="hidden" name="interactions_acknowledged" value="0">
+                    <input type="checkbox" name="interactions_acknowledged" value="1" id="rx-interactions-ack">
+                    <span>{{ __('cdss.acknowledge') }}</span>
+                </label>
+            </div>
+        </div>
+        <p class="form-hint mb-4">{{ __('cdss.coverage_note') }}</p>
+
         <div class="row-actions-inline">
             <button type="submit" class="btn btn-primary">
                 <i data-lucide="file-plus-2"></i>
@@ -447,9 +469,64 @@
         var row    = el.closest('.rx-row');
         var hidden = row ? row.querySelector('.rx-medicine-id') : null;
         if (hidden) hidden.value = catalogue[(el.value || '').trim().toLowerCase()] || '';
+        scheduleCheck();
     });
 
+    // ── Drug-interaction check (warning only, never blocks submit) ─────────
+    var panel   = document.getElementById('rx-interactions');
+    var listEl  = document.getElementById('rx-interactions-list');
+    var form    = document.getElementById('rx-form');
+    var timer   = null;
+
+    function scheduleCheck() {
+        if (!panel) return;
+        clearTimeout(timer);
+        timer = setTimeout(runCheck, 400);
+    }
+
+    function runCheck() {
+        var drugs = rows().map(function (row) {
+            var el = row.querySelector('.rx-drug');
+            return el ? el.value : '';
+        }).filter(function (v) { return v && v.trim() !== ''; });
+
+        if (!drugs.length) { panel.hidden = true; return; }
+
+        var token = form.querySelector('input[name="_token"]');
+        fetch(panel.getAttribute('data-check-url'), {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': token ? token.value : ''
+            },
+            body: JSON.stringify({
+                patient_id: form.querySelector('input[name="patient_id"]').value,
+                drugs: drugs
+            })
+        }).then(function (r) { return r.ok ? r.json() : { data: [] }; })
+          .then(function (json) {
+              var alerts = (json && json.data) || [];
+              listEl.innerHTML = '';
+              alerts.forEach(function (a) {
+                  var li = document.createElement('li');
+                  var strong = document.createElement('strong');
+                  strong.textContent = a.severity_label + ' — ' + a.drug_a + ' + ' + a.drug_b + ': ';
+                  li.appendChild(strong);
+                  li.appendChild(document.createTextNode(a.message));
+                  listEl.appendChild(li);
+              });
+              panel.hidden = alerts.length === 0;
+              if (typeof lucide !== 'undefined') lucide.createIcons();
+          })
+          .catch(function () { /* advisory only — a failed check never blocks */ });
+    }
+
+    list.addEventListener('click', function () { scheduleCheck(); });
+
     reindex();
+    scheduleCheck();
 })();
 </script>
 @endif

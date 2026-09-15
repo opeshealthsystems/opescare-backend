@@ -78,6 +78,16 @@
     <a href="{{ route('portals.admin.appointments.index') }}" class="sidebar-link {{ request()->routeIs('portals.admin.appointments.*') ? 'active' : '' }}">
         <i data-lucide="calendar"></i><span>{{ __('public.adm_cc_sidebar_appointments', [], $l) ?: 'Appointments' }}</span>
     </a>
+    {{-- Tasks, broadcasts and the support desk (routes/imports_tasks.php, imported from the platform). --}}
+    <a href="{{ route('portals.admin.tasks') }}" class="sidebar-link {{ request()->routeIs('portals.admin.tasks*') ? 'active' : '' }}">
+        <i data-lucide="check-square"></i><span>{{ __('tasks.nav', [], $l) }}</span>
+    </a>
+    <a href="{{ route('portals.admin.broadcasts') }}" class="sidebar-link {{ request()->routeIs('portals.admin.broadcasts*') ? 'active' : '' }}">
+        <i data-lucide="megaphone"></i><span>{{ __('broadcasts.nav', [], $l) }}</span>
+    </a>
+    <a href="{{ route('portals.admin.support.index') }}" class="sidebar-link {{ request()->routeIs('portals.admin.support.*') ? 'active' : '' }}">
+        <i data-lucide="life-buoy"></i><span>{{ __('support.admin_nav', [], $l) }}</span>
+    </a>
     <a href="{{ route('portals.admin.leads') }}" class="sidebar-link {{ request()->routeIs('portals.admin.leads*') ? 'active' : '' }}">
         <i data-lucide="user-plus"></i><span>{{ __('leads.admin.page_title', [], $l) ?: 'Leads' }}</span>
     </a>
@@ -103,6 +113,10 @@
          we already wrote onto the records still resolve at all". --}}
     <a href="{{ route('portals.admin.terminology.gaps') }}" class="sidebar-link {{ request()->routeIs('portals.admin.terminology.gaps') ? 'active' : '' }}">
         <i data-lucide="scan-search"></i><span>{{ __('terminology.gaps_nav', [], $l) ?: 'Terminology gaps' }}</span>
+    </a>
+    {{-- Platform KPIs (imported, group C): aggregates only, platform tier. --}}
+    <a href="{{ route('portals.admin.kpi.index') }}" class="sidebar-link {{ request()->routeIs('portals.admin.kpi.*') ? 'active' : '' }}">
+        <i data-lucide="bar-chart-3"></i><span>{{ __('kpi.nav', [], $l) }}</span>
     </a>
 </div>
 
@@ -167,6 +181,43 @@
         <i data-lucide="map-pinned"></i><span>{{ __('public.portal.nav_caremap_governance', [], $l) ?: 'Directory governance' }}</span>
     </a>
 </div>
+
+{{-- ── Group D import (routes/imports_ops.php): facility onboarding + security operations. Platform tier only. ── --}}
+<div class="sidebar-nav-section">
+    <div class="sidebar-nav-label">{{ __('security_ops.nav_group_d', [], $l) }}</div>
+    <a href="{{ route('portals.admin.onboarding') }}" class="sidebar-link {{ request()->routeIs('portals.admin.onboarding*') || request()->routeIs('portals.admin.facilities.readiness*') ? 'active' : '' }}">
+        <i data-lucide="rocket"></i><span>{{ __('security_ops.nav_onboarding', [], $l) }}</span>
+    </a>
+    <a href="{{ route('portals.admin.security.access_review') }}" class="sidebar-link {{ request()->routeIs('portals.admin.security.access_review*') ? 'active' : '' }}">
+        <i data-lucide="user-check"></i><span>{{ __('security_ops.nav_access_review', [], $l) }}</span>
+    </a>
+    <a href="{{ route('portals.admin.security.suspicious_access') }}" class="sidebar-link {{ request()->routeIs('portals.admin.security.suspicious_access*') ? 'active' : '' }}">
+        <i data-lucide="radar"></i><span>{{ __('security_ops.nav_suspicious_access', [], $l) }}</span>
+        @php $openSuspicious = rescue(fn () => \App\Models\SuspiciousAccessFlag::where('status', 'open')->count(), 0, false); @endphp
+        @if($openSuspicious > 0)<span class="sidebar-badge sidebar-badge--warning">{{ $openSuspicious }}</span>@endif
+    </a>
+    <a href="{{ route('portals.admin.security.breaches') }}" class="sidebar-link {{ request()->routeIs('portals.admin.security.breaches*') ? 'active' : '' }}">
+        <i data-lucide="file-warning"></i><span>{{ __('security_ops.nav_breaches', [], $l) }}</span>
+    </a>
+    <a href="{{ route('portals.admin.security.compliance_export') }}" class="sidebar-link {{ request()->routeIs('portals.admin.security.compliance_export*') ? 'active' : '' }}">
+        <i data-lucide="file-down"></i><span>{{ __('security_ops.nav_compliance_export', [], $l) }}</span>
+    </a>
+</div>
+{{-- ── end Group D import ── --}}
+
+{{-- ── Group E import (routes/imports_dhis2.php): DHIS2 aggregate reporting to MINSANTE. Platform tier only. ── --}}
+<div class="sidebar-nav-section">
+    <div class="sidebar-nav-label">{{ __('dhis2.nav', [], $l) }}</div>
+    <a href="{{ route('portals.admin.dhis2') }}" class="sidebar-link {{ request()->routeIs('portals.admin.dhis2') || request()->routeIs('portals.admin.dhis2.drafts.*') ? 'active' : '' }}">
+        <i data-lucide="send"></i><span>{{ __('dhis2.drafts_title', [], $l) }}</span>
+        @php $dhis2Drafts = rescue(fn () => \App\Models\PublicHealthReport::whereHas('reportType', fn ($q) => $q->where('code', 'dhis2_monthly_aggregate'))->whereIn('status', ['draft', 'submission_failed'])->count(), 0, false); @endphp
+        @if($dhis2Drafts > 0)<span class="sidebar-badge sidebar-badge--warning">{{ $dhis2Drafts }}</span>@endif
+    </a>
+    <a href="{{ route('portals.admin.dhis2.mappings') }}" class="sidebar-link {{ request()->routeIs('portals.admin.dhis2.mappings*') ? 'active' : '' }}">
+        <i data-lucide="link-2"></i><span>{{ __('dhis2.mappings_link', [], $l) }}</span>
+    </a>
+</div>
+{{-- ── end Group E import ── --}}
 
 {{-- Control Center --}}
 <div class="sidebar-nav-section">

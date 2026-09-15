@@ -22,6 +22,8 @@ the "not" column is out of scope even if a table for it exists.
   — aggregates from data the platform already holds; CSV of aggregates.
 - **Money at the counter only:** invoices and MTN/Orange payments for services
   rendered here; never a gate on care.
+- Reporting aggregate counts (never patient-level) to the national DHIS2
+  (MINSANTE), reviewed and approved by a platform admin before sending.
 
 ## A facility dashboard is NOT for
 - Full clinical documentation (SOAP notes, nursing charts, surgical records,
@@ -33,7 +35,6 @@ the "not" column is out of scope even if a table for it exists.
 - Insurance claims adjudication, pre-authorisation (module removed).
 - Laboratory instrument interfaces, QC/QA runs, reagent lot management beyond a
   simple reorder note.
-- Public-health reporting pipelines (DHIS2 exports etc.).
 
 ## Rules every audit applies
 - `facility_id` only from session/PortalContextService; cross-facility = 404;
