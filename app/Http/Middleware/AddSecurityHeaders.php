@@ -93,8 +93,11 @@ class AddSecurityHeaders
                 // dashboards' buttons/icons are all dead. XSS defence still relies
                 // on Blade auto-escaping + CSRF. HARDENING TODO: externalise the
                 // inline JS to event listeners, then drop 'unsafe-inline'.
-                "script-src 'self' 'unsafe-inline' " . ($isHorizon ? "'unsafe-eval' " : '') . "https://cdn.jsdelivr.net; " .
-                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; " .
+                // cdn.jsdelivr.net removed (security scan 2026-09-15, item 6): nothing
+                // loads from it, and allowing the whole CDN let any npm/GitHub file be
+                // loaded as script, bypassing this policy.
+                "script-src 'self' 'unsafe-inline' " . ($isHorizon ? "'unsafe-eval'" : '') . "; " .
+                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " .
                 "font-src 'self' https://fonts.gstatic.com; " .
                 "img-src 'self' data: https:; " .
                 "connect-src 'self'; " .
