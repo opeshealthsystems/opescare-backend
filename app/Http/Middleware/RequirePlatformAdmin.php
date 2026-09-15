@@ -25,7 +25,7 @@ use Symfony\Component\HttpFoundation\Response;
 class RequirePlatformAdmin
 {
     /** Roles operated by the platform owner (OpesCare) — full god-mode tier. */
-    private const PLATFORM_ROLES = [
+    public const PLATFORM_ROLES = [
         'super_admin', 'platform_admin', 'system_admin', 'product_admin',
         'legal_admin', 'country_admin', 'regional_admin',
         // Compliance / security / support / partner are platform-company
@@ -99,6 +99,17 @@ class RequirePlatformAdmin
     public static function isPlatformTier(?\Illuminate\Contracts\Auth\Authenticatable $user): bool
     {
         if (! $user) {
+            return false;
+        }
+
+        // A demo account is never platform tier, whatever role it was seeded
+        // with. The public demo login handed out a platform_admin session with
+        // no password or MFA, and several admin screens read across the demo
+        // boundary on purpose (withoutGlobalScope('isolate_demo')), so that
+        // session could approve go-live for real facilities and read real
+        // security incidents. Refusing here covers the middleware AND the nav
+        // (both call this), and ends any such session already open.
+        if ((bool) ($user->is_demo ?? false)) {
             return false;
         }
 

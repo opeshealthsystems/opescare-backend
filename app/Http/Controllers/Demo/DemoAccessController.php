@@ -58,7 +58,23 @@ class DemoAccessController extends Controller
             return back()->withErrors(['email' => 'Demo account not found. Please run the demo reset command.']);
         }
 
+        // Never hand out a platform-tier session through one-click demo login,
+        // whatever the page offers: the check is on the account's real role,
+        // not on the `role` field the form sends. Same list the platform-admin
+        // middleware enforces.
+        $roleName = $user->role?->name;
+        if (in_array($roleName, \App\Http\Middleware\RequirePlatformAdmin::PLATFORM_ROLES, true)) {
+            Log::channel('single')->warning('demo_login_refused_platform_role', [
+                'demo_user_id' => $user->id,
+                'role'         => $roleName,
+                'ip_address'   => $request->ip(),
+            ]);
+            abort(403, 'This demo account is not available.');
+        }
+
         Auth::login($user);
+        // A fresh session id on every demo login (no fixation).
+        $request->session()->regenerate();
 
         // Store session expiry info
         $mode = $request->input('mode', 'public');

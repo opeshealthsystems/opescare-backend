@@ -151,9 +151,6 @@
                 <button class="demo-tab-btn" type="button" data-demo-tab="patient">
                     <i data-lucide="user"></i> Patient
                 </button>
-                <button class="demo-tab-btn" type="button" data-demo-tab="admin">
-                    <i data-lucide="settings-2"></i> Admin
-                </button>
                 <button class="demo-tab-btn" type="button" data-demo-tab="developer">
                     <i data-lucide="code-2"></i> Developer
                 </button>
@@ -268,15 +265,6 @@
                 </div>
             </div>
 
-            <div class="demo-tab-pane" id="demo-tab-admin" role="tabpanel">
-                <div class="demo-btn-grid">
-                    <button type="button" class="demo-login-btn demo-btn-admin" data-demo-role="platform_admin" data-demo-email="demo.admin@opescare.test">
-                        <i data-lucide="settings-2"></i>
-                        <span>Platform Admin</span>
-                        <small>Super Administrator</small>
-                    </button>
-                </div>
-            </div>
 
             <div class="demo-tab-pane" id="demo-tab-developer" role="tabpanel">
                 <div class="demo-btn-grid">

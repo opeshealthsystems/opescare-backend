@@ -32,7 +32,6 @@ class LoginDemoPanelTest extends TestCase
         'demo.girl@opescare.test',
         'demo.guardian@opescare.test',
         'demo.grandmother@opescare.test',
-        'demo.admin@opescare.test',
         'demo.developer@opescare.test',
         // "Facility types" tab — one admin/manager per type (DemoFacilityTypesSeeder).
         'demo.hospital.admin@opescare.test',
