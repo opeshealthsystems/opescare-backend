@@ -2,7 +2,9 @@
 
 namespace Spatie\Backup\Commands;
 
+use Spatie\Backup\Config\Config;
 use Spatie\Backup\Support\BackupLogger;
+use Spatie\Backup\Tasks\Cleanup\CleanupStrategy;
 use Spatie\SignalAwareCommand\SignalAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -33,6 +35,25 @@ abstract class BaseCommand extends SignalAwareCommand
         });
 
         return parent::run($input, $output);
+    }
+
+    /**
+     * Make the config file passed via `--config` the active backup config for
+     * the rest of this process. Everything that resolves the config from the
+     * container (`app(Config::class)`) or reads `config('backup.*')` directly
+     * needs to see the alternate config as well, not just the command itself.
+     */
+    protected function resolveConfig(): Config
+    {
+        $configArray = config($this->option('config'));
+        $config = Config::fromArray($configArray);
+
+        config()->set('backup', $configArray);
+
+        app()->instance(Config::class, $config);
+        app()->bind(CleanupStrategy::class, $config->cleanup->strategy);
+
+        return $config;
     }
 
     protected function runningInConsole(): bool

@@ -612,6 +612,8 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
 
             /** @phpstan-ignore catch.neverThrown */
         } catch (Throwable $e) {
+            $this->status = TestStatus::error($e->getMessage());
+
             Event\Facade::emitter()->testErrored(
                 $this->valueObjectForEvents(),
                 Event\Code\ThrowableBuilder::from($e),
@@ -883,7 +885,7 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
 
             return sprintf(
                 ' with data set "%s"',
-                Sanitizer::sanitizeBidirectionalControlCharacters($this->dataName),
+                Sanitizer::sanitizeControlCharacters($this->dataName),
             );
         }
 
@@ -1065,11 +1067,15 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
 
     final protected function expectOutputRegex(string $expectedRegex): void
     {
+        $this->warnAboutMultipleOutputExpectations();
+
         $this->outputExpectedRegex = $expectedRegex;
     }
 
     final protected function expectOutputString(string $expectedString): void
     {
+        $this->warnAboutMultipleOutputExpectations();
+
         $this->outputExpectedString = $expectedString;
     }
 
@@ -1328,7 +1334,7 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
 
             return sprintf(
                 '@%s',
-                Sanitizer::sanitizeBidirectionalControlCharacters($this->dataName),
+                Sanitizer::sanitizeControlCharacters($this->dataName),
             );
         }
 
@@ -1651,7 +1657,9 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
                 $message = 'Test code or tested code removed error handlers other than its own';
             }
 
-            foreach ($activeErrorHandlers as $handler) {
+            $numberOfActiveErrorHandlers = count($activeErrorHandlers);
+
+            for ($i = 0; $i < $numberOfActiveErrorHandlers; $i++) {
                 restore_error_handler();
             }
 
@@ -1678,7 +1686,9 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
                 $message = 'Test code or tested code removed exception handlers other than its own';
             }
 
-            foreach ($activeExceptionHandlers as $handler) {
+            $numberOfActiveExceptionHandlers = count($activeExceptionHandlers);
+
+            for ($i = 0; $i < $numberOfActiveExceptionHandlers; $i++) {
                 restore_exception_handler();
             }
 
@@ -2511,6 +2521,16 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
                 'invokeTestMethod',
             ),
         );
+    }
+
+    private function warnAboutMultipleOutputExpectations(): void
+    {
+        if ($this->hasExpectationOnOutput()) {
+            Event\Facade::emitter()->testTriggeredPhpunitWarning(
+                $this->valueObjectForEvents(),
+                'Only one expectation on output can be configured: expectOutputString() and expectOutputRegex() cannot be combined and must not be called more than once',
+            );
+        }
     }
 
     /**

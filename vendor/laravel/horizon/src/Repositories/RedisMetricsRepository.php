@@ -4,11 +4,13 @@ namespace Laravel\Horizon\Repositories;
 
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Redis\Factory as RedisFactory;
+use Illuminate\Redis\Connections\PhpRedisConnection;
 use Illuminate\Support\Str;
 use Laravel\Horizon\Contracts\MetricsRepository;
 use Laravel\Horizon\Lock;
 use Laravel\Horizon\LuaScripts;
 use Laravel\Horizon\WaitTimeCalculator;
+use Throwable;
 
 class RedisMetricsRepository implements MetricsRepository
 {
@@ -158,7 +160,7 @@ class RedisMetricsRepository implements MetricsRepository
     {
         return collect($this->measuredQueues())
             ->sortBy(function ($queue) {
-                if ($snapshots = $this->connection()->zrange('snapshot:queue:'.$queue, -1, 1)) {
+                if ($snapshots = $this->connection()->zrange('snapshot:queue:'.$queue, -1, -1)) {
                     return json_decode($snapshots[0])->runtime;
                 }
             })
@@ -174,7 +176,7 @@ class RedisMetricsRepository implements MetricsRepository
     {
         return collect($this->measuredQueues())
             ->sortBy(function ($queue) {
-                if ($snapshots = $this->connection()->zrange('snapshot:queue:'.$queue, -1, 1)) {
+                if ($snapshots = $this->connection()->zrange('snapshot:queue:'.$queue, -1, -1)) {
                     return json_decode($snapshots[0])->throughput;
                 }
             })
@@ -324,6 +326,10 @@ class RedisMetricsRepository implements MetricsRepository
             $trans->del($key);
         });
 
+        if (! is_array($responses[0])) {
+            return ['throughput' => null, 'runtime' => null];
+        }
+
         $snapshot = array_values($responses[0]);
 
         return [
@@ -392,12 +398,20 @@ class RedisMetricsRepository implements MetricsRepository
         $this->forget('measured_queues');
         $this->forget('metrics:snapshot');
 
+        $connection = $this->connection();
+
+        // phpredis 6.1+ requires the SCAN cursor to start as null, while predis and older phpredis expect "0"...
+        $defaultCursorValue = match (true) {
+            $connection instanceof PhpRedisConnection && version_compare(phpversion('redis'), '6.1.0', '>=') => null,
+            default => '0',
+        };
+
         foreach (['queue:*', 'job:*', 'snapshot:*'] as $pattern) {
-            $cursor = null;
+            $cursor = $defaultCursorValue;
 
             do {
-                $scanResult = $this->connection()->scan(
-                    $cursor ?? 0, ['match' => config('horizon.prefix').$pattern]
+                $scanResult = $connection->scan(
+                    $cursor, ['match' => $this->snapshotPatternToMatch($pattern)]
                 );
 
                 if (! is_array($scanResult)) {
@@ -409,7 +423,50 @@ class RedisMetricsRepository implements MetricsRepository
                 foreach ($keys ?? [] as $key) {
                     $this->forget(Str::after($key, config('horizon.prefix')));
                 }
-            } while ($cursor > 0);
+            } while (((string) $cursor) !== $defaultCursorValue);
+        }
+    }
+
+    /**
+     * Get the Redis SCAN match pattern for the given metric pattern.
+     *
+     * @param  string  $pattern
+     * @return string
+     */
+    protected function snapshotPatternToMatch($pattern)
+    {
+        return $this->usesPhpRedisScanPrefix()
+            ? $pattern
+            : config('horizon.prefix').$pattern;
+    }
+
+    /**
+     * Determine if PhpRedis prefixes SCAN patterns itself.
+     *
+     * @return bool
+     */
+    protected function usesPhpRedisScanPrefix()
+    {
+        if (! defined('Redis::OPT_SCAN') || ! defined('Redis::SCAN_PREFIX')) {
+            return false;
+        }
+
+        $connection = $this->connection();
+
+        if (! method_exists($connection, 'client')) {
+            return false;
+        }
+
+        $client = $connection->client();
+
+        if (! is_object($client) || ! method_exists($client, 'getOption')) {
+            return false;
+        }
+
+        try {
+            return (int) $client->getOption(\Redis::OPT_SCAN) === \Redis::SCAN_PREFIX;
+        } catch (Throwable) {
+            return false;
         }
     }
 
