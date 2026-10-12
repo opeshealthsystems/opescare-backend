@@ -17,6 +17,18 @@ Server-rendered **Laravel + Blade** with a REST API, on **PostgreSQL**.
 - **Fresh `APP_KEY` and JWT keypair** (`storage/keys/`) — never shared with the
   platform. Do not copy secrets in either direction.
 
+## The three checkouts on this machine
+Exactly three OpesCare working folders exist; any other `opescare*` folder is cruft.
+
+| Folder | What it is |
+|---|---|
+| `C:\laragon\www\opescare-finder` | **this** repo — the Finder web app (finder.opescare.cloud) |
+| `C:\laragon\www\opescare-finder-mobile` | the Finder's Expo app, shipped via EAS |
+| `C:\laragon\www\opescare` | the platform monorepo (opescare.cloud), `main` |
+
+Secrets never cross between this repo and the platform (see above). `opescare-legacy`
+was retired on 2026-10-12 — it was a duplicate platform checkout with no unique code.
+
 ## The four services (everything else is out of scope)
 | Service | What it does |
 |---|---|
