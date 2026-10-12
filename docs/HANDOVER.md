@@ -155,6 +155,12 @@ There is **no CI deploy and no git remote**. This recipe shipped every release:
    tells you nothing — that is why `phpunit --teamcity` is used.
 2. **Checks:** `php scripts/i18n-audit.php` and `php artisan view:cache`.
 3. **Commit by explicit path** and confirm the staged list before committing.
+   **After any `composer update`/`require`, run `git add -f vendor`.** `/vendor` is
+   git-ignored even though it is tracked, so `git add -A` stages modified and deleted
+   vendor files but silently skips every *new* one — on 2026-10-12 that shipped a
+   framework missing `Illuminate/Image/*` and the site 500'd until the files were added.
+   Also keep `composer.json` → `config.platform.php` at prod's PHP (8.3) so the lock
+   never resolves to packages prod cannot run.
 4. **Ship changed files only:** `git archive` the diff → `scp` → compare md5 → extract
    in `/home/finder/htdocs/finder.opescare.cloud` → `chown -R finder:finder` →
    `rm -f bootstrap/cache/*.php` → `migrate --force` → `config:cache && route:cache &&
