@@ -2,7 +2,7 @@
 
 @section('title', __('public.medical_id.health_id', [], app()->getLocale()) . ' — OpesCare Patient Portal')
 
-@section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()) ?: 'My Portal')
+@section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()))
 @section('breadcrumb_home_url', route('portals.patient'))
 
 @section('head')
@@ -60,7 +60,7 @@
             <div style="min-width:0;flex:1;">
                 <span class="pf-hid__label">
                     @include('partials.finder.icon', ['name' => 'shield-check', 'size' => 16])
-                    {{ __('public.medical_id.health_id', [], $l) ?: 'OpesCare Health ID' }}
+                    {{ __('public.medical_id.health_id', [], $l) }}
                 </span>
                 <div class="pf-hid__value">{{ $patient->health_id }}</div>
                 @if($isViewing)
@@ -68,18 +68,18 @@
                 @endif
                 <div class="pf-hid__meta">
                     <div>
-                        <div class="pf-hid__meta-label">{{ __('public.portal.status', [], $l) ?: 'Status' }}</div>
+                        <div class="pf-hid__meta-label">{{ __('public.portal.status', [], $l) }}</div>
                         <div class="pf-hid__meta-value">
                             @enum(($patient->verification_status instanceof \BackedEnum ? $patient->verification_status->value : $patient->verification_status) ?? 'Active', 'verification')
                         </div>
                     </div>
                     <div>
-                        <div class="pf-hid__meta-label">{{ __('public.portal.country', [], $l) ?: 'Country' }}</div>
+                        <div class="pf-hid__meta-label">{{ __('public.portal.country', [], $l) }}</div>
                         <div class="pf-hid__meta-value">{{ $patient->country_code ?? '—' }}</div>
                     </div>
                     <div>
-                        <div class="pf-hid__meta-label">{{ __('public.portal.registered', [], $l) ?: 'Registered' }}</div>
-                        <div class="pf-hid__meta-value">{{ $patient->created_at?->format('M Y') ?? '—' }}</div>
+                        <div class="pf-hid__meta-label">{{ __('public.portal.registered', [], $l) }}</div>
+                        <div class="pf-hid__meta-value">{{ $patient->created_at?->translatedFormat('M Y') ?? '—' }}</div>
                     </div>
                 </div>
                 @if($canWrite)
@@ -91,8 +91,8 @@
             </div>
             <div class="pf-hid__qr">
                 @if($staticQrDataUri)
-                    <img src="{{ $staticQrDataUri }}" alt="{{ __('public.medical_id.health_id_qr_alt', [], $l) ?: 'Health ID QR Code' }}">
-                    <span>{{ __('public.medical_id.scan_qr', [], $l) ?: 'Scan QR' }}</span>
+                    <img src="{{ $staticQrDataUri }}" alt="{{ __('public.medical_id.health_id_qr_alt', [], $l) }}">
+                    <span>{{ __('public.medical_id.scan_qr', [], $l) }}</span>
                 @elseif(!$canWrite)
                     <div style="width:88px;height:88px;display:flex;align-items:center;justify-content:center;" title="{{ __('family.read_only_qr_note', ['name' => $viewName]) }}">
                         <i data-lucide="lock" aria-hidden="true" style="width:36px;height:36px;"></i>
@@ -102,7 +102,7 @@
                     <div style="width:88px;height:88px;display:flex;align-items:center;justify-content:center;">
                         @include('partials.finder.icon', ['name' => 'qr-code', 'size' => 40])
                     </div>
-                    <span>{{ __('public.medical_id.scan_qr', [], $l) ?: 'Scan QR' }}</span>
+                    <span>{{ __('public.medical_id.scan_qr', [], $l) }}</span>
                 @endif
             </div>
         </div>
@@ -158,11 +158,11 @@
         <div class="pf-qa" data-section="quick-actions">
             <a href="{{ route('portals.patient.appointments') }}" class="f-card pf-qa__item">
                 <span class="pf-qa__icon">@include('partials.finder.icon', ['name' => 'calendar', 'size' => 20])</span>
-                {{ __('public.portal.nav_appointments', [], $l) ?: 'Appointments' }}
+                {{ __('public.portal.nav_appointments', [], $l) }}
             </a>
             <a href="{{ route('portals.patient.prescriptions') }}" class="f-card pf-qa__item">
                 <span class="pf-qa__icon">@include('partials.finder.icon', ['name' => 'pill', 'size' => 20])</span>
-                {{ __('public.portal.nav_prescriptions', [], $l) ?: 'Prescriptions' }}
+                {{ __('public.portal.nav_prescriptions', [], $l) }}
             </a>
             <a href="{{ route('portals.patient.immunizations') }}" class="f-card pf-qa__item">
                 <span class="pf-qa__icon"><i data-lucide="syringe" aria-hidden="true" style="width:20px;height:20px;"></i></span>
@@ -194,15 +194,15 @@
             </a>
             <a href="{{ route('portals.patient.profile') }}" class="f-card pf-qa__item">
                 <span class="pf-qa__icon">@include('partials.finder.icon', ['name' => 'shield-check', 'size' => 20])</span>
-                {{ __('public.portal.nav_profile', [], $l) ?: 'My Profile' }}
+                {{ __('public.portal.nav_profile', [], $l) }}
             </a>
             <a href="{{ route('public.care-map') }}" class="f-card pf-qa__item">
                 <span class="pf-qa__icon">@include('partials.finder.icon', ['name' => 'map-pin', 'size' => 20])</span>
-                {{ __('public.portal.nav_care_map', [], $l) ?: 'Care Map' }}
+                {{ __('public.portal.nav_care_map', [], $l) }}
             </a>
             <a href="{{ route('portals.patient.family') }}" class="f-card pf-qa__item">
                 <span class="pf-qa__icon">@include('partials.finder.icon', ['name' => 'users', 'size' => 20])</span>
-                {{ __('public.portal.nav_family', [], $l) ?: 'Family' }}
+                {{ __('public.portal.nav_family', [], $l) }}
             </a>
             <a href="{{ route('portals.guardian.dashboard') }}" class="f-card pf-qa__item">
                 <span class="pf-qa__icon"><i data-lucide="baby" aria-hidden="true" style="width:20px;height:20px;"></i></span>
@@ -215,10 +215,10 @@
     <div class="pf-section">
         <h2 class="pf-card-head" style="margin-bottom:10px;">
             @include('partials.finder.icon', ['name' => 'calendar', 'size' => 18])
-            {{ __('public.portal.upcoming_appointments', [], $l) ?: 'Upcoming Appointments' }}
+            {{ __('public.portal.upcoming_appointments', [], $l) }}
             @if(isset($upcomingAppointments) && $upcomingAppointments->isNotEmpty())
             <a href="{{ route('portals.patient.appointments') }}" class="f-btn f-btn--ghost" style="margin-left:auto;min-height:36px;padding:4px 12px;">
-                {{ __('public.portal.view_all', [], $l) ?: 'View all' }}
+                {{ __('public.portal.view_all', [], $l) }}
             </a>
             @endif
         </h2>
@@ -277,20 +277,20 @@
     <div class="f-card pf-section">
         <h2 class="pf-card-head">
             @include('partials.finder.icon', ['name' => 'heart-pulse', 'size' => 18])
-            {{ __('public.portal.clinical_safety_summary', [], $l) ?: 'Clinical Safety Summary' }}
+            {{ __('public.portal.clinical_safety_summary', [], $l) }}
         </h2>
         <div class="pf-tiles">
             <div>
-                <div class="pf-tile__label">{{ __('public.portal.blood_group', [], $l) ?: 'Blood Group' }}</div>
+                <div class="pf-tile__label">{{ __('public.portal.blood_group', [], $l) }}</div>
                 <div class="pf-tile__value">{{ $patient->blood_group ?? '—' }}</div>
                 @if(!$patient->blood_group && $canWrite)
-                    <a href="{{ route('portals.patient.profile') }}" class="f-small">{{ __('public.portal.lnk_add_in_profile', [], $l) ?: 'Add in profile →' }}</a>
+                    <a href="{{ route('portals.patient.profile') }}" class="f-small">{{ __('public.portal.lnk_add_in_profile', [], $l) }}</a>
                 @endif
             </div>
             <div>
-                <div class="pf-tile__label">{{ __('public.portal.critical_allergies', [], $l) ?: 'Critical Allergies' }}</div>
+                <div class="pf-tile__label">{{ __('public.portal.critical_allergies', [], $l) }}</div>
                 @if(($criticalAllergies ?? collect())->isEmpty())
-                    <div class="pf-tile__value" style="color:var(--f-good);font-size:.9375rem;">{{ __('public.portal.none_on_record', [], $l) ?: 'None on record' }}</div>
+                    <div class="pf-tile__value" style="color:var(--f-good);font-size:.9375rem;">{{ __('public.portal.none_on_record', [], $l) }}</div>
                 @else
                     <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">
                         @foreach(($criticalAllergies ?? collect())->take(3) as $a)
@@ -300,18 +300,18 @@
                 @endif
             </div>
             <div>
-                <div class="pf-tile__label">{{ __('public.portal.active_allergies', [], $l) ?: 'Active Allergies' }}</div>
+                <div class="pf-tile__label">{{ __('public.portal.active_allergies', [], $l) }}</div>
                 <div class="pf-tile__value">{{ ($activeAllergies ?? collect())->count() }}</div>
             </div>
             <div>
-                <div class="pf-tile__label">{{ __('public.portal.active_conditions', [], $l) ?: 'Active Conditions' }}</div>
+                <div class="pf-tile__label">{{ __('public.portal.active_conditions', [], $l) }}</div>
                 <div class="pf-tile__value">{{ ($activeConditions ?? collect())->count() }}</div>
             </div>
         </div>
         @if(($activeAllergies ?? collect())->isNotEmpty() || ($activeConditions ?? collect())->isNotEmpty())
         <div class="pf-alert pf-alert--warn" style="margin:14px 0 0;">
             @include('partials.finder.icon', ['name' => 'alert-circle', 'size' => 18])
-            <p>{{ __('public.portal.allergy_safety_notice', [], $l) ?: 'Ensure your care team has your up-to-date allergy and condition list before any procedure or prescription.' }}</p>
+            <p>{{ __('public.portal.allergy_safety_notice', [], $l) }}</p>
         </div>
         @endif
     </div>
@@ -322,17 +322,17 @@
         <div class="f-card" style="text-align:center;" data-section="temporary-qr">
             <h2 class="pf-card-head" style="justify-content:center;">
                 @include('partials.finder.icon', ['name' => 'qr-code', 'size' => 18])
-                {{ __('public.medical_id.temporary_access_qr', [], $l) ?: 'Temporary Access QR' }}
+                {{ __('public.medical_id.temporary_access_qr', [], $l) }}
             </h2>
             <p class="f-muted f-small" style="margin:0 0 16px;">
-                {{ __('public.portal.temp_qr_desc', [], $l) ?: 'Generate a secure, time-limited QR code to share with a new healthcare provider. Expires in 1 hour.' }}
+                {{ __('public.portal.temp_qr_desc', [], $l) }}
             </p>
 
             @if($canWrite)
             <button id="generate-temp-qr" class="f-btn f-btn--primary" style="min-height:48px;"
-                    data-label-generating="{{ __('public.portal.generating', [], $l) ?: 'Generating…' }}"
-                    data-label-regenerate="{{ __('public.portal.regenerate_qr', [], $l) ?: 'Regenerate QR' }}">
-                {{ __('public.portal.generate_qr', [], $l) ?: 'Generate Temporary QR' }}
+                    data-label-generating="{{ __('public.portal.generating', [], $l) }}"
+                    data-label-regenerate="{{ __('public.portal.regenerate_qr', [], $l) }}">
+                {{ __('public.portal.generate_qr', [], $l) }}
             </button>
             @else
             <div class="pf-alert pf-alert--warn" style="text-align:left;margin:0;">
@@ -345,7 +345,7 @@
 
             <div id="temp-qr-container" style="display:none;flex-direction:column;align-items:center;margin-top:16px;" aria-live="polite">
                 <div style="padding:10px;border-radius:var(--f-r);border:1px solid var(--f-line);background:var(--f-surface);">
-                    <img id="temp-qr-img" src="" alt="{{ __('public.portal.temp_qr_alt', [], $l) ?: 'Temporary Access QR Code' }}"
+                    <img id="temp-qr-img" src="" alt="{{ __('public.portal.temp_qr_alt', [], $l) }}"
                          style="width:8rem;height:8rem;border-radius:6px;display:none;">
                     <div id="temp-qr-placeholder" style="width:8rem;height:8rem;display:flex;align-items:center;justify-content:center;background:var(--f-wash);border-radius:6px;color:var(--f-brand);">
                         @include('partials.finder.icon', ['name' => 'qr-code', 'size' => 48])
@@ -353,13 +353,13 @@
                 </div>
                 <p class="f-small" style="color:var(--f-warn);font-weight:700;display:flex;align-items:center;gap:6px;margin:10px 0 0;">
                     @include('partials.finder.icon', ['name' => 'clock', 'size' => 15])
-                    {{ __('public.portal.expires_in', [], $l) ?: 'Expires in' }}: <span id="countdown">60:00</span>
+                    {{ __('public.portal.expires_in', [], $l) }}: <span id="countdown">60:00</span>
                 </p>
             </div>
 
             <div class="pf-alert" style="text-align:left;margin:16px 0 0;">
                 @include('partials.finder.icon', ['name' => 'info', 'size' => 18])
-                <p class="f-small">{{ __('public.portal.qr_audit_notice', [], $l) ?: 'Each QR scan is audited. You can view access history in your Access Logs.' }}
+                <p class="f-small">{{ __('public.portal.qr_audit_notice', [], $l) }}
                     <a href="{{ route('portals.patient.access-logs') }}">{{ __('family.nav_access_logs') }}</a></p>
             </div>
         </div>
@@ -367,17 +367,17 @@
         <div class="pf-stack">
             {{-- Profile prompt --}}
             <div class="f-card">
-                <p class="f-muted f-small" style="margin:0 0 12px;">{{ __('public.portal.profile_prompt_desc', [], $l) ?: 'Manage your privacy preferences, contact details and emergency contacts in your profile.' }}</p>
+                <p class="f-muted f-small" style="margin:0 0 12px;">{{ __('public.portal.profile_prompt_desc', [], $l) }}</p>
                 <a href="{{ route('portals.patient.profile') }}" class="f-btn">
                     @include('partials.finder.icon', ['name' => 'shield-check', 'size' => 16])
-                    {{ __('public.portal.profile_prompt_btn', [], $l) ?: 'Go to Profile' }}
+                    {{ __('public.portal.profile_prompt_btn', [], $l) }}
                 </a>
             </div>
 
             {{-- Clinical disclaimer --}}
             <div class="pf-alert pf-alert--warn" style="margin:0;">
                 @include('partials.finder.icon', ['name' => 'alert-circle', 'size' => 18])
-                <p class="f-small">{{ __('onboarding.brand.clinical_disclaimer', [], $l) ?: 'OpesCare facilitates access to your health records but is not a substitute for clinical advice. Always consult a licensed healthcare provider for medical decisions.' }}</p>
+                <p class="f-small">{{ __('onboarding.brand.clinical_disclaimer', [], $l) }}</p>
             </div>
         </div>
 
@@ -391,8 +391,8 @@
         <div class="pf-qa__icon" style="margin:0 auto 12px;width:48px;height:48px;">
             @include('partials.finder.icon', ['name' => 'alert-circle', 'size' => 24])
         </div>
-        <h2 style="font-size:1.125rem;font-weight:750;margin:0 0 6px;">{{ __('public.portal.no_profile_title', [], app()->getLocale()) ?: 'No Patient Profile Found' }}</h2>
-        <p class="f-muted" style="margin:0 0 18px;">{{ __('public.portal.no_profile_desc', [], app()->getLocale()) ?: 'Your patient profile could not be loaded. Please contact support if this problem persists.' }}</p>
+        <h2 style="font-size:1.125rem;font-weight:750;margin:0 0 6px;">{{ __('public.portal.no_profile_title', [], app()->getLocale()) }}</h2>
+        <p class="f-muted" style="margin:0 0 18px;">{{ __('public.portal.no_profile_desc', [], app()->getLocale()) }}</p>
         <div class="pf-actions" style="justify-content:center;">
             <a href="{{ route('portals.guardian.dashboard') }}" class="f-btn">
                 @include('partials.finder.icon', ['name' => 'users', 'size' => 18])
@@ -400,7 +400,7 @@
             </a>
             <a href="{{ route('public.help') }}" class="f-btn f-btn--primary">
                 @include('partials.finder.icon', ['name' => 'info', 'size' => 18])
-                {{ __('public.portal.nav_help', [], app()->getLocale()) ?: 'Get Help' }}
+                {{ __('public.portal.nav_help', [], app()->getLocale()) }}
             </a>
         </div>
     </div>
@@ -410,7 +410,7 @@
 @endsection
 
 @section('scripts')
-<script>
+<script @cspNonce>
 document.addEventListener('DOMContentLoaded', function () {
     var countdownInterval = null;
     var btnGen = document.getElementById('generate-temp-qr');
@@ -419,7 +419,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (btnGen) {
         var lblGenerating   = btnGen.getAttribute('data-label-generating');
         var lblRegenerateQr = btnGen.getAttribute('data-label-regenerate');
-        var lblQrExpired    = @json(__('public.portal.lbl_qr_expired', [], app()->getLocale()) ?: 'Expired');
+        var lblQrExpired    = @json(__('public.portal.lbl_qr_expired', [], app()->getLocale()));
 
         btnGen.addEventListener('click', async function () {
             btnGen.disabled = true;

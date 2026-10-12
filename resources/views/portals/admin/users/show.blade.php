@@ -24,9 +24,9 @@
         <button class="btn btn-success"><i data-lucide="check-circle"></i> {{ __('public.adm_users_show_btn_activate') }}</button>
     </form>
     @else
-    <button type="button" class="btn btn-warning" onclick="opOpenModal('suspend-modal')"><i data-lucide="ban"></i> {{ __('public.adm_users_show_btn_suspend') }}</button>
+    <button type="button" class="btn btn-warning" data-call="opOpenModal" data-args="[&quot;suspend-modal&quot;]"><i data-lucide="ban"></i> {{ __('public.adm_users_show_btn_suspend') }}</button>
     @endif
-    <button type="button" class="btn btn-danger" onclick="opOpenModal('delete-modal')"><i data-lucide="trash-2"></i> {{ __('public.adm_users_show_btn_delete') }}</button>
+    <button type="button" class="btn btn-danger" data-call="opOpenModal" data-args="[&quot;delete-modal&quot;]"><i data-lucide="trash-2"></i> {{ __('public.adm_users_show_btn_delete') }}</button>
 </div>
 
 @if(session('success'))<div class="alert alert-success mb-6"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
@@ -55,7 +55,7 @@
     </div>
     <div class="stat-card">
         <div class="stat-card__label">{{ __('public.adm_users_show_stat_joined') }}</div>
-        <div class="stat-card__value">{{ $user->created_at?->format('M d, Y') ?? '—' }}</div>
+        <div class="stat-card__value">{{ $user->created_at?->translatedFormat('M d, Y') ?? '—' }}</div>
     </div>
     <div class="stat-card">
         <div class="stat-card__label">{{ __('public.adm_users_show_stat_last_login') }}</div>
@@ -148,7 +148,7 @@
         <form method="POST" action="{{ route('admin.users.suspend', $user->id) }}">@csrf
             <div class="modal__body"><p>{{ __('public.adm_users_show_modal_suspend_body', ['name' => $user->name]) }}</p></div>
             <div class="modal__footer">
-                <button type="button" class="btn btn-ghost" onclick="opCloseModal('suspend-modal')">{{ __('public.adm_users_show_modal_suspend_btn_cancel') }}</button>
+                <button type="button" class="btn btn-ghost" data-call="opCloseModal" data-args="[&quot;suspend-modal&quot;]">{{ __('public.adm_users_show_modal_suspend_btn_cancel') }}</button>
                 <button type="submit" class="btn btn-warning"><i data-lucide="ban"></i> {{ __('public.adm_users_show_modal_suspend_btn_suspend') }}</button>
             </div>
         </form>
@@ -161,7 +161,7 @@
         <form method="POST" action="{{ route('admin.users.destroy', $user->id) }}">@csrf @method('DELETE')
             <div class="modal__body"><p>{{ __('public.adm_users_show_modal_delete_body', ['name' => $user->name]) }}</p></div>
             <div class="modal__footer">
-                <button type="button" class="btn btn-ghost" onclick="opCloseModal('delete-modal')">{{ __('public.adm_users_show_modal_delete_btn_cancel') }}</button>
+                <button type="button" class="btn btn-ghost" data-call="opCloseModal" data-args="[&quot;delete-modal&quot;]">{{ __('public.adm_users_show_modal_delete_btn_cancel') }}</button>
                 <button type="submit" class="btn btn-danger"><i data-lucide="trash-2"></i> {{ __('public.adm_users_show_modal_delete_btn_delete') }}</button>
             </div>
         </form>
@@ -170,7 +170,7 @@
 
 @endsection
 @section('scripts')
-<script>
+<script @cspNonce>
 function opOpenModal(id){ document.getElementById(id).removeAttribute('hidden'); }
 function opCloseModal(id){ document.getElementById(id).setAttribute('hidden',''); }
 document.addEventListener('keydown', function(e){

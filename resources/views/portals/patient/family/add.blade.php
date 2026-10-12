@@ -1,7 +1,7 @@
 @extends('layouts.portal')
 
 @section('title', __('family.dash_add_child') . ' — OpesCare')
-@section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()) ?: 'My Portal')
+@section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()))
 @section('breadcrumb_home_url', route('portals.patient'))
 @section('breadcrumb_section', __('family.dash_add_child'))
 
@@ -23,11 +23,11 @@
     <div class="pf-head">
         <div>
             <h1>{{ __('family.dash_add_child') }}</h1>
-            <p class="pf-sub">{{ __('public.portal.add_dependent_info', [], $l) ?: 'This creates a new patient record for your dependent. No login account is created — you manage their records.' }}</p>
+            <p class="pf-sub">{{ __('public.portal.add_dependent_info', [], $l) }}</p>
         </div>
         <a href="{{ route('portals.patient.family') }}" class="f-btn">
             @include('partials.finder.icon', ['name' => 'chevron-left', 'size' => 18])
-            {{ __('public.portal.family_breadcrumb', [], $l) ?: 'My Family' }}
+            {{ __('public.portal.family_breadcrumb', [], $l) }}
         </a>
     </div>
 
@@ -47,29 +47,29 @@
     <form method="POST" action="{{ route('portals.patient.family.store') }}" class="f-card">
         @csrf
         <div class="f-field">
-            <label class="f-label" for="first_name">{{ __('public.portal.field_first_name', [], $l) ?: 'First Name' }}</label>
+            <label class="f-label" for="first_name">{{ __('public.portal.field_first_name', [], $l) }}</label>
             <input type="text" id="first_name" name="first_name" value="{{ old('first_name') }}" required class="f-input">
         </div>
         <div class="f-field">
-            <label class="f-label" for="last_name">{{ __('public.portal.field_last_name', [], $l) ?: 'Last Name' }}</label>
+            <label class="f-label" for="last_name">{{ __('public.portal.field_last_name', [], $l) }}</label>
             <input type="text" id="last_name" name="last_name" value="{{ old('last_name') }}" required class="f-input">
         </div>
         <div class="f-field">
-            <label class="f-label" for="date_of_birth">{{ __('public.portal.field_dob', [], $l) ?: 'Date of Birth' }}</label>
+            <label class="f-label" for="date_of_birth">{{ __('public.portal.field_dob', [], $l) }}</label>
             <input type="date" id="date_of_birth" name="date_of_birth" value="{{ old('date_of_birth') }}" required class="f-input" min="{{ $minDob }}" max="{{ $maxDob }}">
         </div>
         <div class="f-field">
-            <label class="f-label" for="sex">{{ __('public.portal.field_sex', [], $l) ?: 'Sex' }}</label>
+            <label class="f-label" for="sex">{{ __('public.portal.field_sex', [], $l) }}</label>
             <select id="sex" name="sex" required class="f-input">
-                <option value="">{{ __('public.portal.opt_select', [], $l) ?: '— select —' }}</option>
-                <option value="male" {{ old('sex') === 'male' ? 'selected' : '' }}>{{ __('public.portal.opt_male', [], $l) ?: 'Male' }}</option>
-                <option value="female" {{ old('sex') === 'female' ? 'selected' : '' }}>{{ __('public.portal.opt_female', [], $l) ?: 'Female' }}</option>
+                <option value="">{{ __('public.portal.opt_select', [], $l) }}</option>
+                <option value="male" {{ old('sex') === 'male' ? 'selected' : '' }}>{{ __('public.portal.opt_male', [], $l) }}</option>
+                <option value="female" {{ old('sex') === 'female' ? 'selected' : '' }}>{{ __('public.portal.opt_female', [], $l) }}</option>
             </select>
         </div>
         <div class="f-field">
-            <label class="f-label" for="relationship">{{ __('public.portal.field_relationship', [], $l) ?: 'Your Relationship' }}</label>
+            <label class="f-label" for="relationship">{{ __('public.portal.field_relationship', [], $l) }}</label>
             <select id="relationship" name="relationship" required class="f-input">
-                <option value="">{{ __('public.portal.opt_select', [], $l) ?: '— select —' }}</option>
+                <option value="">{{ __('public.portal.opt_select', [], $l) }}</option>
                 @foreach($relationships as $r)
                 <option value="{{ $r }}" {{ old('relationship', 'parent') === $r ? 'selected' : '' }}>{{ __('family.relationship.' . $r) }}</option>
                 @endforeach
@@ -77,7 +77,7 @@
             <p class="f-hint">{{ __('family.relationship_hint') }}</p>
         </div>
         <div class="f-field">
-            <label class="f-label" for="access_level">{{ __('public.portal.field_access_level', [], $l) ?: 'Access Level' }}</label>
+            <label class="f-label" for="access_level">{{ __('public.portal.field_access_level', [], $l) }}</label>
             <select id="access_level" name="access_level" required class="f-input">
                 <option value="full" {{ old('access_level', 'full') === 'full' ? 'selected' : '' }}>{{ __('family.access.full') }}</option>
                 <option value="read_only" {{ old('access_level') === 'read_only' ? 'selected' : '' }}>{{ __('family.access.read_only') }}</option>
@@ -86,8 +86,8 @@
             <p class="f-hint">{{ __('family.access_read_only_explained') }}</p>
         </div>
         <div class="pf-actions" style="margin-top:8px;">
-            <button type="submit" class="f-btn f-btn--primary" style="min-height:48px;">{{ __('public.portal.btn_register_dependent', [], $l) ?: 'Register Dependent' }}</button>
-            <a href="{{ route('portals.patient.family') }}" class="f-btn">{{ __('public.portal.btn_cancel', [], $l) ?: 'Cancel' }}</a>
+            <button type="submit" class="f-btn f-btn--primary" style="min-height:48px;">{{ __('public.portal.btn_register_dependent', [], $l) }}</button>
+            <a href="{{ route('portals.patient.family') }}" class="f-btn">{{ __('public.portal.btn_cancel', [], $l) }}</a>
         </div>
     </form>
 </div>

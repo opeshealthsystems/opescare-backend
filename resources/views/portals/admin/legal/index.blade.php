@@ -92,7 +92,7 @@
 
 @endsection
 @section('scripts')
-<script>
+<script @cspNonce>
 function opOpenModal(id){ document.getElementById(id).classList.add('open'); }
 function opCloseModal(id){ document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-fixed').forEach(function(m){

@@ -2,7 +2,7 @@
 
 @section('title', __('public.pat_referral_title', [], app()->getLocale()) . ' — OpesCare Patient Portal')
 
-@section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()) ?: 'My Portal')
+@section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()))
 @section('breadcrumb_home_url', route('portals.patient'))
 @section('breadcrumb_section', __('public.pat_referral_breadcrumb', [], app()->getLocale()))
 

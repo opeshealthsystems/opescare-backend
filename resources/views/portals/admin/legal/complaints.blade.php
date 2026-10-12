@@ -40,7 +40,7 @@
                         <td data-label="{{ __('public.adm_legal_col_status') }}">
                             <span class="badge badge--{{ $c->statusColor() }} badge-sm">@enum($c->status)</span>
                         </td>
-                        <td data-label="{{ __('public.adm_legal_complaints_col_received') }}" class="td-muted">{{ $c->created_at->format('d M Y') }}</td>
+                        <td data-label="{{ __('public.adm_legal_complaints_col_received') }}" class="td-muted">{{ $c->created_at->translatedFormat('d M Y') }}</td>
                         {{--
                             Empty cell, same as the closures table: the column,
                             the controller action and the button string all
@@ -66,7 +66,7 @@
                                         <i data-lucide="check-circle"></i> {{ __('public.adm_legal_complaints_btn_resolve') }}
                                     </summary>
                                     <form method="POST" action="{{ route('portals.admin.legal.complaints.resolve', $c->id) }}" class="stack-form"
-                                          onsubmit="return confirm('{{ __('public.adm_legal_complaints_confirm_resolve') }}')">
+                                          data-confirm="{{ __('public.adm_legal_complaints_confirm_resolve') }}">
                                         @csrf
                                         <label class="form-label" for="resolution-{{ $c->id }}">{{ __('public.adm_legal_complaints_resolution_label') }}</label>
                                         <textarea id="resolution-{{ $c->id }}" name="resolution" class="form-control" rows="4"

@@ -2,17 +2,17 @@
 
 @php $l = app()->getLocale(); @endphp
 
-@section('title', __('prescriber.counter_title', [], $l) ?: 'Dispense at the counter')
+@section('title', __('prescriber.counter_title', [], $l))
 
 @section('content')
 <div class="page-header">
     <div>
-        <h1 class="page-title">{{ __('prescriber.counter_title', [], $l) ?: 'Dispense at the counter' }}</h1>
-        <p class="page-subtitle">{{ __('prescriber.counter_sub', [], $l) ?: 'Enter the Health ID the patient presents, or the number printed on their prescription.' }}</p>
+        <h1 class="page-title">{{ __('prescriber.counter_title', [], $l) }}</h1>
+        <p class="page-subtitle">{{ __('prescriber.counter_sub', [], $l) }}</p>
     </div>
     <a href="{{ route('portals.pharmacy.prescriptions') }}" class="btn btn-secondary">
         <i data-lucide="list"></i>
-        <span>{{ __('prescriber.title', [], $l) ?: 'Prescriptions' }}</span>
+        <span>{{ __('prescriber.title', [], $l) }}</span>
     </a>
 </div>
 
@@ -34,17 +34,17 @@
     <div class="panel-body">
         <form method="GET" action="{{ route('portals.pharmacy.prescriptions.lookup') }}" class="form-row">
             <div class="form-group" style="flex:1 1 300px">
-                <label class="form-label" for="q">{{ __('prescriber.counter_query', [], $l) ?: 'Health ID or prescription number' }}</label>
+                <label class="form-label" for="q">{{ __('prescriber.counter_query', [], $l) }}</label>
                 <input type="text" id="q" name="q" class="form-control"
                        value="{{ $query }}" autocomplete="off" autocapitalize="characters"
                        spellcheck="false" required
                        placeholder="CM-HID-XXXX-XXXX-XXXX  /  RX-XXXX-XXXX">
-                <p class="form-hint">{{ __('prescriber.counter_query_hint', [], $l) ?: 'Enter the exact Health ID, or the prescription number from the printed script. Patient names are not searchable.' }}</p>
+                <p class="form-hint">{{ __('prescriber.counter_query_hint', [], $l) }}</p>
             </div>
             <div class="form-group" style="align-self:flex-start">
                 <button type="submit" class="btn btn-primary">
                     <i data-lucide="search"></i>
-                    <span>{{ __('prescriber.counter_lookup', [], $l) ?: 'Find prescriptions' }}</span>
+                    <span>{{ __('prescriber.counter_lookup', [], $l) }}</span>
                 </button>
             </div>
         </form>
@@ -60,7 +60,7 @@
 @elseif($searched && ! $patient)
     <div class="alert alert-danger">
         <i data-lucide="user-x"></i>
-        <div>{{ __('prescriber.counter_nopat', [], $l) ?: 'No patient matches that Health ID.' }}</div>
+        <div>{{ __('prescriber.counter_nopat', [], $l) }}</div>
     </div>
 @endif
 
@@ -104,7 +104,7 @@
             <div class="panel-body">
                 <div class="empty-state">
                     <i data-lucide="file-x" style="width:32px;height:32px"></i>
-                    <p>{{ __('prescriber.counter_none', [], $l) ?: 'No active prescriptions on that Health ID.' }}</p>
+                    <p>{{ __('prescriber.counter_none', [], $l) }}</p>
                 </div>
             </div>
         @else
@@ -134,7 +134,7 @@
                     $refusal = match (true) {
                         $canDispense              => null,
                         $rxStatus === 'dispensed' => __('prescriber.counter_blocked_dispensed', [], $l),
-                        $expired                  => __('prescriber.counter_blocked_expired', ['date' => $rx->expires_at?->format('d M Y') ?? '—'], $l),
+                        $expired                  => __('prescriber.counter_blocked_expired', ['date' => $rx->expires_at?->translatedFormat('d M Y') ?? '—'], $l),
                         default                   => __('prescriber.counter_blocked_terminal', ['status' => $label($rxStatus)], $l),
                     };
 
@@ -160,31 +160,31 @@
                                 <span class="badge {{ $rxBadge }} badge-sm">{{ $label($rxStatus) }}</span>
                                 {{-- A script can sit at 'active' and still be long lapsed; say so next to the status. --}}
                                 @if($expired && ! $terminal && $rxStatus !== 'expired')
-                                    <span class="badge badge-danger badge-sm">{{ __('prescriber.st_expired', [], $l) ?: 'Expired' }}</span>
+                                    <span class="badge badge-danger badge-sm">{{ __('prescriber.st_expired', [], $l) }}</span>
                                 @endif
                             </div>
 
                             <table class="kv-table" style="margin-top:8px">
                                 <tr>
-                                    <td>{{ __('prescriber.counter_from', [], $l) ?: 'Issued at' }}</td>
+                                    <td>{{ __('prescriber.counter_from', [], $l) }}</td>
                                     <td class="kv-strong">{{ $rx->facility->name ?? '—' }}</td>
                                 </tr>
                                 <tr>
-                                    <td>{{ __('prescriber.col_prescriber', [], $l) ?: 'Prescriber' }}</td>
+                                    <td>{{ __('prescriber.col_prescriber', [], $l) }}</td>
                                     <td class="kv-strong">{{ $prescriberName !== '' ? $prescriberName : '—' }}</td>
                                 </tr>
                                 <tr>
-                                    <td>{{ __('prescriber.issued_at', [], $l) ?: 'Issued' }}</td>
-                                    <td class="kv-strong">{{ $rx->prescribed_at?->format('d M Y H:i') ?? '—' }}</td>
+                                    <td>{{ __('prescriber.issued_at', [], $l) }}</td>
+                                    <td class="kv-strong">{{ $rx->prescribed_at?->translatedFormat('d M Y H:i') ?? '—' }}</td>
                                 </tr>
                                 <tr>
-                                    <td>{{ __('prescriber.expires_at', [], $l) ?: 'Expires' }}</td>
+                                    <td>{{ __('prescriber.expires_at', [], $l) }}</td>
                                     <td class="kv-strong">
                                         @if($rx->expires_at)
                                             @if($expired)
-                                                <span class="badge badge-danger badge-sm">{{ $rx->expires_at->format('d M Y') }}</span>
+                                                <span class="badge badge-danger badge-sm">{{ $rx->expires_at->translatedFormat('d M Y') }}</span>
                                             @else
-                                                {{ $rx->expires_at->format('d M Y') }}
+                                                {{ $rx->expires_at->translatedFormat('d M Y') }}
                                             @endif
                                         @else
                                             —
@@ -193,8 +193,8 @@
                                 </tr>
                                 @if($rx->dispensed_at)
                                 <tr>
-                                    <td>{{ __('prescriber.dispensed_at', [], $l) ?: 'Dispensed' }}</td>
-                                    <td class="kv-strong">{{ $rx->dispensed_at->format('d M Y H:i') }}</td>
+                                    <td>{{ __('prescriber.dispensed_at', [], $l) }}</td>
+                                    <td class="kv-strong">{{ $rx->dispensed_at->translatedFormat('d M Y H:i') }}</td>
                                 </tr>
                                 @endif
                             </table>
@@ -221,10 +221,10 @@
                                     </fieldset>
                                 @endif
                                 <input type="text" name="dispense_notes" class="form-control" style="min-width:180px"
-                                       placeholder="{{ __('prescriber.counter_notes', [], $l) ?: 'Dispense notes' }}">
+                                       placeholder="{{ __('prescriber.counter_notes', [], $l) }}">
                                 <button type="submit" class="btn btn-primary">
                                     <i data-lucide="check"></i>
-                                    <span>{{ __('prescriber.counter_dispense', [], $l) ?: 'Dispense' }}</span>
+                                    <span>{{ __('prescriber.counter_dispense', [], $l) }}</span>
                                 </button>
                             </form>
                         @endif
@@ -246,7 +246,7 @@
                                 <div>{{ $refusal }}</div>
                                 @if(filled($rx->void_reason))
                                     <div class="td-muted" style="font-size:.85rem">
-                                        {{ __('prescriber.void_reason', [], $l) ?: 'Reason' }}: {{ $rx->void_reason }}
+                                        {{ __('prescriber.void_reason', [], $l) }}: {{ $rx->void_reason }}
                                     </div>
                                 @endif
                             </div>
@@ -257,12 +257,12 @@
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>{{ __('prescriber.drug_name', [], $l) ?: 'Medicine' }}</th>
-                                    <th>{{ __('prescriber.dose', [], $l) ?: 'Dose' }}</th>
-                                    <th>{{ __('prescriber.frequency', [], $l) ?: 'Frequency' }}</th>
-                                    <th>{{ __('prescriber.route', [], $l) ?: 'Route' }}</th>
-                                    <th>{{ __('prescriber.quantity', [], $l) ?: 'Quantity' }}</th>
-                                    <th>{{ __('prescriber.item_status', [], $l) ?: 'Line status' }}</th>
+                                    <th>{{ __('prescriber.drug_name', [], $l) }}</th>
+                                    <th>{{ __('prescriber.dose', [], $l) }}</th>
+                                    <th>{{ __('prescriber.frequency', [], $l) }}</th>
+                                    <th>{{ __('prescriber.route', [], $l) }}</th>
+                                    <th>{{ __('prescriber.quantity', [], $l) }}</th>
+                                    <th>{{ __('prescriber.item_status', [], $l) }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -276,15 +276,15 @@
                                         };
                                     @endphp
                                     <tr>
-                                        <td data-label="{{ __('prescriber.drug_name', [], $l) ?: 'Medicine' }}" class="td-strong">{{ $item->drug_name ?: '—' }}</td>
-                                        <td data-label="{{ __('prescriber.dose', [], $l) ?: 'Dose' }}">{{ $item->dose ?: '—' }}</td>
-                                        <td data-label="{{ __('prescriber.frequency', [], $l) ?: 'Frequency' }}">{{ $item->frequency ?: '—' }}</td>
-                                        <td data-label="{{ __('prescriber.route', [], $l) ?: 'Route' }}">{{ $item->route ? \App\Support\Enums::label($item->route, 'route') : '—' }}</td>
-                                        <td data-label="{{ __('prescriber.quantity', [], $l) ?: 'Quantity' }}">{{ $item->quantity !== null && $item->quantity !== '' ? $item->quantity : '—' }}</td>
-                                        <td data-label="{{ __('prescriber.item_status', [], $l) ?: 'Line status' }}">
+                                        <td data-label="{{ __('prescriber.drug_name', [], $l) }}" class="td-strong">{{ $item->drug_name ?: '—' }}</td>
+                                        <td data-label="{{ __('prescriber.dose', [], $l) }}">{{ $item->dose ?: '—' }}</td>
+                                        <td data-label="{{ __('prescriber.frequency', [], $l) }}">{{ $item->frequency ?: '—' }}</td>
+                                        <td data-label="{{ __('prescriber.route', [], $l) }}">{{ $item->route ? \App\Support\Enums::label($item->route, 'route') : '—' }}</td>
+                                        <td data-label="{{ __('prescriber.quantity', [], $l) }}">{{ $item->quantity !== null && $item->quantity !== '' ? $item->quantity : '—' }}</td>
+                                        <td data-label="{{ __('prescriber.item_status', [], $l) }}">
                                             <span class="badge {{ $itemBadge }} badge-sm">{{ $label($itemStatus) }}</span>
                                             @if($item->dispensed_at)
-                                                <div class="td-muted" style="font-size:.8rem">{{ $item->dispensed_at->format('d M Y H:i') }}</div>
+                                                <div class="td-muted" style="font-size:.8rem">{{ $item->dispensed_at->translatedFormat('d M Y H:i') }}</div>
                                             @endif
                                         </td>
                                     </tr>

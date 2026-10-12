@@ -98,7 +98,7 @@
                 &middot; {{ __('triage.pregnancy_status') }}: {{ __('triage.pregnancy.' . $record->pregnancy_status) }}
             @endif
             &middot; {{ __('triage.col_assessed_by') }}: {{ $record->nurse?->name ?? '—' }}
-            &middot; {{ __('triage.col_assessed_at') }}: {{ $record->created_at?->format('d M Y H:i') ?? '—' }}
+            &middot; {{ __('triage.col_assessed_at') }}: {{ $record->created_at?->translatedFormat('d M Y H:i') ?? '—' }}
         </div>
     </div>
 </div>
@@ -182,7 +182,7 @@
             </div>
 
             <div class="td-muted mt-3">
-                {{ __('triage.recorded_at') }}: {{ $latest->recorded_at?->format('d M Y H:i') ?? '—' }}
+                {{ __('triage.recorded_at') }}: {{ $latest->recorded_at?->translatedFormat('d M Y H:i') ?? '—' }}
                 @if($vitals->count() > 1)
                     &middot; {{ __('triage.vitals_retaken') }} ({{ $vitals->count() }})
                 @endif
@@ -239,7 +239,7 @@
                             </td>
                             <td>{{ $entry->reason_for_change }}</td>
                             <td class="td-muted">
-                                {{ __('triage.reassessed_at') }}: {{ $entry->reassessed_at?->format('d M Y H:i') ?? '—' }}
+                                {{ __('triage.reassessed_at') }}: {{ $entry->reassessed_at?->translatedFormat('d M Y H:i') ?? '—' }}
                             </td>
                         </tr>
                     @endforeach
@@ -315,7 +315,7 @@
                     <tr>
                         <td><span class="{{ $badge($score->priority_level) }}">{{ $sKey ? __($sKey) : $score->priority_level }}</span></td>
                         <td class="td-muted">{{ __('triage.scoring_manual') }}</td>
-                        <td class="td-muted">{{ $score->scored_at?->format('d M Y H:i') ?? '—' }}</td>
+                        <td class="td-muted">{{ $score->scored_at?->translatedFormat('d M Y H:i') ?? '—' }}</td>
                     </tr>
                 @endforeach
                 </tbody>

@@ -13,25 +13,25 @@
      used to be here is gone: no front-desk role holds `prescribe`. --}}
 <div class="sidebar-role-badge">
     <i data-lucide="monitor"></i>
-    {{ __('portal.receptionist_role', [], $l) ?: 'Receptionist' }}
+    {{ __('portal.receptionist_role', [], $l) }}
 </div>
 <div class="sidebar-spacer"></div>
 
 <div class="sidebar-nav-section">
     <a href="{{ route('portals.staff') }}" class="sidebar-link {{ request()->routeIs('portals.staff') && !request()->routeIs('portals.staff.*') ? 'active' : '' }}">
-        <i data-lucide="layout-dashboard"></i><span>{{ __('public.portal.nav_dashboard', [], $l) ?: 'Dashboard' }}</span>
+        <i data-lucide="layout-dashboard"></i><span>{{ __('public.portal.nav_dashboard', [], $l) }}</span>
     </a>
     {{-- Global search (facilities, documents, medicines, lab tests, partners,
          messages — never patients). The screen existed, complete, with no
          route: the audit called it unreachable. --}}
     <a href="{{ route('portals.staff.search') }}" class="sidebar-link {{ request()->routeIs('portals.staff.search') ? 'active' : '' }}">
-        <i data-lucide="search"></i><span>{{ __('public.staff_portal.page_heading_search', [], $l) ?: 'Global Search' }}</span>
+        <i data-lucide="search"></i><span>{{ __('public.staff_portal.page_heading_search', [], $l) }}</span>
     </a>
 </div>
 
 @capability('queue', 'front_desk', 'schedule', 'blood_inventory', 'messaging')
 <div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.portal.nav_operations', [], $l) ?: 'Operations' }}</div>
+    <div class="sidebar-nav-label">{{ __('public.portal.nav_operations', [], $l) }}</div>
     {{-- The patient queue: the waiting room, gated by the same `queue`
          capability as its routes (config/staff_capabilities.php). --}}
     @capability('queue')
@@ -41,7 +41,7 @@
     @endcapability
     @capability('front_desk', 'schedule')
     <a href="{{ route('portals.staff.appointments') }}" class="sidebar-link {{ request()->routeIs('portals.staff.appointments*') ? 'active' : '' }}">
-        <i data-lucide="calendar-check-2"></i><span>{{ __('public.portal.nav_appointments', [], $l) ?: 'Appointments' }}</span>
+        <i data-lucide="calendar-check-2"></i><span>{{ __('public.portal.nav_appointments', [], $l) }}</span>
     </a>
     <a href="{{ route('portals.staff.appointments.waitlist') }}" class="sidebar-link {{ request()->routeIs('portals.staff.appointments.waitlist') ? 'active' : '' }}">
         <i data-lucide="list-ordered"></i><span>{{ __('waitlist.staff_title', [], $l) }}</span>
@@ -49,17 +49,17 @@
     @endcapability
     @capability('blood_inventory')
     <a href="{{ route('portals.staff.inventory.blood') }}" class="sidebar-link {{ request()->routeIs('portals.staff.inventory.blood*') ? 'active' : '' }}">
-        <i data-lucide="droplet"></i><span>{{ __('public.portal.nav_blood_inventory', [], $l) ?: 'Blood Inventory' }}</span>
+        <i data-lucide="droplet"></i><span>{{ __('public.portal.nav_blood_inventory', [], $l) }}</span>
     </a>
     {{-- The queue of patients asking this blood bank for units. Sits beside
          the shelf it is asked against, behind the same capability. --}}
     <a href="{{ route('portals.staff.blood_requests.index') }}" class="sidebar-link {{ request()->routeIs('portals.staff.blood_requests.*') ? 'active' : '' }}">
-        <i data-lucide="clipboard-list"></i><span>{{ __('blood_desk.nav', [], $l) ?: 'Blood Requests' }}</span>
+        <i data-lucide="clipboard-list"></i><span>{{ __('blood_desk.nav', [], $l) }}</span>
     </a>
     @endcapability
     @capability('messaging')
     <a href="{{ route('portals.staff.messages') }}" class="sidebar-link {{ request()->routeIs('portals.staff.messages*') ? 'active' : '' }}">
-        <i data-lucide="messages-square"></i><span>{{ __('public.portal.nav_messages', [], $l) ?: 'Messages' }}</span>
+        <i data-lucide="messages-square"></i><span>{{ __('public.portal.nav_messages', [], $l) }}</span>
     </a>
     @endcapability
 </div>

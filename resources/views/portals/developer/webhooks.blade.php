@@ -109,7 +109,7 @@
                             <td data-label="{{ __('developer_ext.wh_col_status') }}">
                                 <span class="badge {{ $sub->status === 'active' ? 'badge-success' : 'badge-neutral' }}">{{ $sub->status === 'active' ? __('developer_ext.wh_status_active') : __('developer_ext.wh_status_paused') }}</span>
                             </td>
-                            <td data-label="{{ __('developer_ext.wh_col_created') }}" class="td-muted">{{ $sub->created_at?->format('d M Y') }}</td>
+                            <td data-label="{{ __('developer_ext.wh_col_created') }}" class="td-muted">{{ $sub->created_at?->translatedFormat('d M Y') }}</td>
                             <td class="row-actions" data-label="">
                                 <form method="POST" action="{{ route('portals.developer.webhooks.toggle', $sub->id) }}">
                                     @csrf
@@ -156,7 +156,7 @@
                             <td data-label="{{ __('developer_ext.wh_col_status') }}">
                                 <span class="badge {{ $log->status === 'delivered' ? 'badge-success' : ($log->status === 'pending' ? 'badge-info' : 'badge-danger') }}">{{ $deliveryLabel($log->status) }}</span>
                             </td>
-                            <td data-label="{{ __('developer_ext.wh_col_delivered_at') }}" class="td-muted">{{ $log->delivered_at?->format('d M Y H:i') ?? '—' }}</td>
+                            <td data-label="{{ __('developer_ext.wh_col_delivered_at') }}" class="td-muted">{{ $log->delivered_at?->translatedFormat('d M Y H:i') ?? '—' }}</td>
                             <td class="row-actions">
                                 @if($log->isFailed())
                                     <form method="POST" action="{{ route('portals.developer.webhooks.replay', $log->id) }}">
@@ -183,7 +183,7 @@
 
 @endsection
 @section('scripts')
-<script>
+<script @cspNonce>
 document.addEventListener('click', function(e){
     var t = e.target.closest('.code-token[data-copy]');
     if(!t) return;

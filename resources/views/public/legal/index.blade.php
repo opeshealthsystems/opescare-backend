@@ -41,7 +41,7 @@
                                 @if($ver)
                                     {{ __('public.legal_page.version_label') }} {{ $ver->version }}
                                     @if($ver->effective_at)
-                                        · {{ __('public.legal_page.effective_label') }} {{ $ver->effective_at->format('d F Y') }}
+                                        · {{ __('public.legal_page.effective_label') }} {{ $ver->effective_at->translatedFormat('d F Y') }}
                                     @endif
                                 @else
                                     {{ __('public.legal_page.no_version') }}

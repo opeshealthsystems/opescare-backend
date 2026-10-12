@@ -36,7 +36,7 @@
                     <tbody>
                     @foreach($labs as $r)
                         <tr>
-                            <td class="td-muted">{{ $r['resulted_at']?->format('d M Y H:i') ?? '—' }}</td>
+                            <td class="td-muted">{{ $r['resulted_at']?->translatedFormat('d M Y H:i') ?? '—' }}</td>
                             <td class="td-strong">{{ $r['parameter'] ?: '—' }}</td>
                             <td class="td-muted">
                                 {{ $r['loinc_code'] ?: '—' }}

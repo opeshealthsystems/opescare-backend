@@ -100,6 +100,14 @@ class AppServiceProvider extends ServiceProvider
             return "<?php echo e(\App\Support\Enums::label({$expression})); ?>";
         });
 
+        // `<script @cspNonce>` — stamps the per-request nonce that
+        // AddSecurityHeaders put in the Content-Security-Policy, so the block
+        // runs without 'unsafe-inline'. Empty outside an HTTP request (CLI
+        // rendering, mail) so the attribute is simply omitted there.
+        \Illuminate\Support\Facades\Blade::directive('cspNonce', function () {
+            return "<?php echo (\$__n = request()->attributes->get('csp_nonce')) ? 'nonce=\"' . e(\$__n) . '\"' : ''; ?>";
+        });
+
         // Clinical module routes (Group 3 + wired modules) — loaded here to
         // avoid touching the sealed routes/api.php file.
         Route::middleware('api')

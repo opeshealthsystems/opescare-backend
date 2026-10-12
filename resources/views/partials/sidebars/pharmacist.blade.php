@@ -4,35 +4,35 @@
      (config/staff_capabilities.php: dispense, pharmacy_stock, messaging). --}}
 <div class="sidebar-role-badge">
     <i data-lucide="pill"></i>
-    {{ __('portal.pharmacist_role', [], $l) ?: 'Pharmacist' }}
+    {{ __('portal.pharmacist_role', [], $l) }}
 </div>
 <div class="sidebar-spacer"></div>
 
 <div class="sidebar-nav-section">
     <a href="{{ route('portals.pharmacy.dashboard') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.dashboard') ? 'active' : '' }}">
-        <i data-lucide="layout-dashboard"></i><span>{{ __('public.portal.nav_dashboard', [], $l) ?: 'Dashboard' }}</span>
+        <i data-lucide="layout-dashboard"></i><span>{{ __('public.portal.nav_dashboard', [], $l) }}</span>
     </a>
 </div>
 
 @capability('pharmacy_stock', 'dispense', 'messaging')
 <div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.portal.nav_pharmacy', [], $l) ?: 'Pharmacy' }}</div>
+    <div class="sidebar-nav-label">{{ __('public.portal.nav_pharmacy', [], $l) }}</div>
     @capability('pharmacy_stock')
     <a href="{{ route('portals.pharmacy.stock') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.stock') ? 'active' : '' }}">
-        <i data-lucide="package"></i><span>{{ __('public.portal.nav_stock', [], $l) ?: 'Stock' }}</span>
+        <i data-lucide="package"></i><span>{{ __('public.portal.nav_stock', [], $l) }}</span>
     </a>
     @endcapability
     @capability('dispense')
     <a href="{{ route('portals.pharmacy.prescriptions') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.prescriptions') ? 'active' : '' }}">
-        <i data-lucide="file-text"></i><span>{{ __('public.portal.nav_prescriptions', [], $l) ?: 'Prescriptions' }}</span>
+        <i data-lucide="file-text"></i><span>{{ __('public.portal.nav_prescriptions', [], $l) }}</span>
     </a>
     <a href="{{ route('portals.pharmacy.prescriptions.lookup') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.prescriptions.lookup') ? 'active' : '' }}">
-        <i data-lucide="scan-line"></i><span>{{ __('prescriber.counter_link', [], $l) ?: 'Counter lookup' }}</span>
+        <i data-lucide="scan-line"></i><span>{{ __('prescriber.counter_link', [], $l) }}</span>
     </a>
     @endcapability
     @capability('pharmacy_stock')
     <a href="{{ route('portals.pharmacy.controlled') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.controlled*') ? 'active' : '' }}">
-        <i data-lucide="shield-alert"></i><span>{{ __('public.portal.nav_controlled', [], $l) ?: 'Controlled Substances' }}</span>
+        <i data-lucide="shield-alert"></i><span>{{ __('public.portal.nav_controlled', [], $l) }}</span>
     </a>
     @endcapability
     @capability('dispense')
@@ -49,7 +49,7 @@
     {{-- The staff inbox lives under /facility; pharmacy roles are in that
          portal bucket too (EnsurePortalAccess), so the link resolves. --}}
     <a href="{{ route('portals.staff.messages') }}" class="sidebar-link {{ request()->routeIs('portals.staff.messages*') ? 'active' : '' }}">
-        <i data-lucide="messages-square"></i><span>{{ __('messaging.nav', [], $l) ?: 'Messages' }}</span>
+        <i data-lucide="messages-square"></i><span>{{ __('messaging.nav', [], $l) }}</span>
     </a>
     @endcapability
 </div>

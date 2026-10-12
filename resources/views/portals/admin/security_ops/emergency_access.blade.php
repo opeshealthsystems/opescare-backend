@@ -133,12 +133,12 @@
                             @endif
                         </td>
                         <td data-label="{{ __('security_ops.emerg_col_when') }}" class="td-muted">
-                            {{ $ev->created_at?->format('M d, Y H:i') }}
+                            {{ $ev->created_at?->translatedFormat('M d, Y H:i') }}
                             <div class="code-muted">{{ $ev->created_at?->diffForHumans() }}</div>
                         </td>
                         <td class="row-actions">
                             <button type="button" class="btn btn-ghost btn-sm"
-                                onclick="openReviewModal('{{ $ev->id }}', '{{ $review->status ?? 'pending' }}', {{ json_encode($review->reviewer_notes ?? '') }})">
+                                data-call="openReviewModal" data-args="{{ json_encode([$ev->id, $review->status ?? 'pending', $review->reviewer_notes ?? '']) }}">
                                 <i data-lucide="clipboard-check"></i> {{ __('security_ops.emerg_btn_review') }}
                             </button>
                         </td>
@@ -159,7 +159,7 @@
     <div class="modal-fixed__panel">
         <div class="modal-fixed__head">
             <h3 class="modal-fixed__title">{{ __('security_ops.emerg_modal_title') }}</h3>
-            <button type="button" class="icon-btn" aria-label="{{ __('security_ops.btn_close') }}" onclick="closeReviewModal()"><i data-lucide="x"></i></button>
+            <button type="button" class="icon-btn" aria-label="{{ __('security_ops.btn_close') }}" data-call="closeReviewModal"><i data-lucide="x"></i></button>
         </div>
         <p class="text-muted text-sm mb-3">{{ __('security_ops.emerg_modal_note') }}</p>
         <form id="review-form" method="POST" action="">
@@ -178,7 +178,7 @@
                           placeholder="{{ __('security_ops.emerg_form_notes_placeholder') }}"></textarea>
             </div>
             <div class="modal__footer">
-                <button type="button" class="btn btn-ghost btn-sm" onclick="closeReviewModal()">{{ __('security_ops.btn_cancel') }}</button>
+                <button type="button" class="btn btn-ghost btn-sm" data-call="closeReviewModal">{{ __('security_ops.btn_cancel') }}</button>
                 <button type="submit" class="btn btn-primary btn-sm">{{ __('security_ops.emerg_btn_save') }}</button>
             </div>
         </form>
@@ -187,7 +187,7 @@
 @endsection
 
 @section('scripts')
-<script>
+<script @cspNonce>
 function openReviewModal(id, status, notes) {
     document.getElementById('review-form').action = '{{ url('/admin/security/emergency-access') }}/' + id + '/review';
     document.getElementById('rev-status').value = status;

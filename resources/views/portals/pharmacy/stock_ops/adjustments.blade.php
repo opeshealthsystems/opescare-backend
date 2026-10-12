@@ -81,7 +81,7 @@
 </details>
 
 <form method="GET" class="fs-search" role="search">
-    <select name="reason" class="filter-select" onchange="this.form.submit()" aria-label="{{ __('pharmacy_ops.lbl_reason') }}">
+    <select name="reason" class="filter-select" data-autosubmit aria-label="{{ __('pharmacy_ops.lbl_reason') }}">
         <option value="">{{ __('pharmacy_ops.filter_all') }}</option>
         @foreach($reasons as $r)
         <option value="{{ $r }}" {{ $filter === $r ? 'selected' : '' }}>{{ __('pharmacy_ops.reason.' . $r) }}</option>
@@ -111,7 +111,7 @@
             @forelse($movements as $m)
                 @php [$code, $note] = \App\Services\Pharmacy\PharmacyStockOpsService::decodeReason($m->reason); @endphp
                 <tr>
-                    <td data-label="{{ __('pharmacy_ops.col_when') }}" class="td-muted">{{ ($m->performed_at ?? $m->created_at)?->format('d M Y H:i') }}</td>
+                    <td data-label="{{ __('pharmacy_ops.col_when') }}" class="td-muted">{{ ($m->performed_at ?? $m->created_at)?->translatedFormat('d M Y H:i') }}</td>
                     <td data-label="{{ __('pharmacy_ops.col_medicine') }}" class="td-strong">{{ $m->item?->medicine?->name ?? $m->item?->name ?? '—' }}</td>
                     <td data-label="{{ __('pharmacy_ops.col_lot') }}" class="fs-mono">{{ $m->batch?->lot_number ?? '—' }}</td>
                     <td data-label="{{ __('pharmacy_ops.col_change') }}" class="fs-mono {{ $m->quantity >= 0 ? 'fs-delta--in' : 'fs-delta--out' }}">{{ $m->quantity > 0 ? '+' : '' }}{{ $m->quantity }}</td>

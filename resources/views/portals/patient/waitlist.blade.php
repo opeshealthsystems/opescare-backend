@@ -2,7 +2,7 @@
 
 @section('title', __('waitlist.title') . ' — OpesCare Patient Portal')
 
-@section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()) ?: 'My Portal')
+@section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()))
 @section('breadcrumb_home_url', route('portals.patient'))
 @section('breadcrumb_section', __('waitlist.title'))
 
@@ -30,7 +30,7 @@
         </div>
         <a href="{{ route('portals.patient.appointments') }}" class="f-btn">
             @include('partials.finder.icon', ['name' => 'chevron-left', 'size' => 18])
-            {{ __('public.portal.nav_appointments', [], $l) ?: 'Appointments' }}
+            {{ __('public.portal.nav_appointments', [], $l) }}
         </a>
     </div>
 
@@ -160,7 +160,7 @@
             <div class="pf-appt__meta">
                 <span>
                     @include('partials.finder.icon', ['name' => 'map-pin', 'size' => 15])
-                    {{ $entry->facility?->name ?? (__('public.portal.unknown_facility', [], $l) ?: 'Unknown Facility') }}
+                    {{ $entry->facility?->name ?? (__('public.portal.unknown_facility', [], $l)) }}
                 </span>
                 <span>
                     @include('partials.finder.icon', ['name' => 'calendar', 'size' => 15])

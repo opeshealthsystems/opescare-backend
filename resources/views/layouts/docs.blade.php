@@ -15,6 +15,7 @@
 
     <!-- Lucide icons -->
     <script src="{{ asset('js/lucide.min.js') }}"></script>
+<script src="{{ asset('js/op-actions.js') }}?v={{ @filemtime(public_path('js/op-actions.js')) ?: '1' }}" defer></script>
 
     <!-- Docs CSS -->
     <link rel="stylesheet" href="{{ asset('css/docs.css') }}">
@@ -33,7 +34,7 @@
     </button>
     <a href="{{ route('docs.index') }}" class="docs-topbar-logo">
         <svg width="24" height="24" viewBox="0 0 40 40" fill="none">
-            <circle cx="20" cy="20" r="20" fill="#4F46E5"/>
+            <circle cx="20" cy="20" r="20" fill="#0F4C81"/>
             <path d="M12 20 Q20 10 28 20 Q20 30 12 20Z" fill="white"/>
         </svg>
         OpesCare
@@ -102,7 +103,7 @@
 
 </div>
 
-<script>
+<script @cspNonce>
 // Mobile sidebar toggle
 document.getElementById('docsMenuToggle')?.addEventListener('click', function() {
     document.getElementById('docsSidebar').classList.toggle('open');
@@ -164,7 +165,7 @@ document.getElementById('docsMenuToggle')?.addEventListener('click', function() 
 
 @yield('scripts')
 
-<script>
+<script @cspNonce>
 if (typeof lucide !== 'undefined') lucide.createIcons();
 </script>
 </body>

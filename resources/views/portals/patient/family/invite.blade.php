@@ -1,7 +1,7 @@
 @extends('layouts.portal')
 
 @section('title', __('family.dash_invite_adult') . ' — OpesCare')
-@section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()) ?: 'My Portal')
+@section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()))
 @section('breadcrumb_home_url', route('portals.patient'))
 @section('breadcrumb_section', __('family.dash_invite_adult'))
 
@@ -25,7 +25,7 @@
         </div>
         <a href="{{ route('portals.patient.family') }}" class="f-btn">
             @include('partials.finder.icon', ['name' => 'chevron-left', 'size' => 18])
-            {{ __('public.portal.family_breadcrumb', [], $l) ?: 'My Family' }}
+            {{ __('public.portal.family_breadcrumb', [], $l) }}
         </a>
     </div>
 
@@ -51,9 +51,9 @@
             <p class="f-hint">{{ __('family.invite_contact_hint') }}</p>
         </div>
         <div class="f-field">
-            <label class="f-label" for="relationship">{{ __('public.portal.field_relationship', [], $l) ?: 'Your Relationship' }}</label>
+            <label class="f-label" for="relationship">{{ __('public.portal.field_relationship', [], $l) }}</label>
             <select id="relationship" name="relationship" required class="f-input">
-                <option value="">{{ __('public.portal.opt_select', [], $l) ?: '— select —' }}</option>
+                <option value="">{{ __('public.portal.opt_select', [], $l) }}</option>
                 @foreach($relationships as $r)
                 <option value="{{ $r }}" {{ old('relationship') === $r ? 'selected' : '' }}>{{ __('family.relationship.' . $r) }}</option>
                 @endforeach
@@ -61,7 +61,7 @@
             <p class="f-hint">{{ __('family.relationship_hint') }}</p>
         </div>
         <div class="f-field">
-            <label class="f-label" for="access_level">{{ __('public.portal.field_access_level', [], $l) ?: 'Access Level' }}</label>
+            <label class="f-label" for="access_level">{{ __('public.portal.field_access_level', [], $l) }}</label>
             <select id="access_level" name="access_level" required class="f-input">
                 <option value="read_only" {{ old('access_level', 'read_only') === 'read_only' ? 'selected' : '' }}>{{ __('family.access.read_only') }}</option>
                 <option value="full" {{ old('access_level') === 'full' ? 'selected' : '' }}>{{ __('family.access.full') }}</option>
@@ -71,10 +71,10 @@
         </div>
         <div class="pf-actions" style="margin-top:8px;">
             <button type="submit" class="f-btn f-btn--primary" style="min-height:48px;">
-                {{ __('public.portal.btn_send_invite', [], $l) ?: 'Send Invite' }}
+                {{ __('public.portal.btn_send_invite', [], $l) }}
                 @include('partials.finder.icon', ['name' => 'arrow-right', 'size' => 16])
             </button>
-            <a href="{{ route('portals.patient.family') }}" class="f-btn">{{ __('public.portal.btn_cancel', [], $l) ?: 'Cancel' }}</a>
+            <a href="{{ route('portals.patient.family') }}" class="f-btn">{{ __('public.portal.btn_cancel', [], $l) }}</a>
         </div>
     </form>
 </div>

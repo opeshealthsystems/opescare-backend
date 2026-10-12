@@ -16,7 +16,7 @@
         <div class="page-head__spacer"></div>
         @if($clients->count() > 1)
         <form method="GET" class="filter-bar filter-bar--flush">
-            <select name="app" class="filter-select" aria-label="{{ __('developer_ext.act_filter_aria') }}" onchange="this.form.submit()">
+            <select name="app" class="filter-select" aria-label="{{ __('developer_ext.act_filter_aria') }}" data-autosubmit>
                 <option value="">{{ __('developer_ext.act_filter_all') }}</option>
                 @foreach($clients as $c)
                     <option value="{{ $c->id }}" {{ $selected && $selected->id === $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
@@ -86,8 +86,8 @@
                                     <td data-label="{{ __('developer_ext.cs_col_scope') }}">
                                         @forelse((array) $g->scope as $s)<span class="code-token">{{ $s }}</span> @empty<span class="td-muted">—</span>@endforelse
                                     </td>
-                                    <td data-label="{{ __('developer_ext.cs_col_granted') }}" class="td-muted">{{ $g->created_at?->format('d M Y H:i') ?? '—' }}</td>
-                                    <td data-label="{{ __('developer_ext.cs_col_expires') }}" class="td-muted">{{ $g->expires_at?->format('d M Y H:i') ?? __('developer_ext.cs_no_expiry') }}</td>
+                                    <td data-label="{{ __('developer_ext.cs_col_granted') }}" class="td-muted">{{ $g->created_at?->translatedFormat('d M Y H:i') ?? '—' }}</td>
+                                    <td data-label="{{ __('developer_ext.cs_col_expires') }}" class="td-muted">{{ $g->expires_at?->translatedFormat('d M Y H:i') ?? __('developer_ext.cs_no_expiry') }}</td>
                                     <td data-label="{{ __('developer_ext.cs_col_status') }}"><span class="badge badge-success">@enum($g->status)</span></td>
                                 </tr>
                             @endforeach

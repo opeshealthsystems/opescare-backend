@@ -113,7 +113,7 @@
             </div>
         @endif
         <div class="td-muted text-sm mt-6">
-            {{ __('public.adm_cc_hlth_last_checked') }} {{ now()->format('M d, Y H:i:s') }} {{ __('public.adm_cc_hlth_server_time') }}
+            {{ __('public.adm_cc_hlth_last_checked') }} {{ now()->translatedFormat('M d, Y H:i:s') }} {{ __('public.adm_cc_hlth_server_time') }}
         </div>
     </div>
 </div>

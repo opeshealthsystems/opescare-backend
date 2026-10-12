@@ -1,7 +1,7 @@
 @php $l = app()->getLocale(); @endphp
 <div class="sidebar-role-badge">
     <i data-lucide="webhook"></i>
-    {{ __('portal.webhook_manager_role', [], $l) ?: 'Webhook Manager' }}
+    {{ __('portal.webhook_manager_role', [], $l) }}
 </div>
 <div class="sidebar-spacer"></div>
 
@@ -10,12 +10,12 @@
          EnsurePortalAccess silently redirected back to /developer — a Dashboard
          link that never showed a dashboard. --}}
     <a href="{{ route('portals.developer.dashboard') }}" class="sidebar-link {{ request()->routeIs('portals.developer.dashboard') ? 'active' : '' }}">
-        <i data-lucide="layout-dashboard"></i><span>{{ __('public.portal.nav_dashboard', [], $l) ?: 'Dashboard' }}</span>
+        <i data-lucide="layout-dashboard"></i><span>{{ __('public.portal.nav_dashboard', [], $l) }}</span>
     </a>
 </div>
 
 <div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.portal.nav_developer_accounts', [], $l) ?: 'Developer' }}</div>
+    <div class="sidebar-nav-label">{{ __('public.portal.nav_developer_accounts', [], $l) }}</div>
     {{-- portals.developer.webhook_deliveries needs a {clientId}; linking it bare threw a
          UrlGenerationException on every page (docs/DEVELOPER_DASHBOARD_AUDIT.md D-1). --}}
     <a href="{{ route('portals.developer.webhooks') }}" class="sidebar-link {{ request()->routeIs('portals.developer.webhook*') ? 'active' : '' }}">
@@ -28,6 +28,6 @@
         <i data-lucide="shield-check"></i><span>{{ __('developer_ext.nav_consents', [], $l) }}</span>
     </a>
     <a href="{{ route('portals.developer.apps') }}" class="sidebar-link {{ request()->routeIs('portals.developer.apps*') ? 'active' : '' }}">
-        <i data-lucide="terminal"></i><span>{{ __('public.portal.nav_apps', [], $l) ?: 'My Apps' }}</span>
+        <i data-lucide="terminal"></i><span>{{ __('public.portal.nav_apps', [], $l) }}</span>
     </a>
 </div>

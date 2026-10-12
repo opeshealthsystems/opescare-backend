@@ -68,7 +68,7 @@
     </div>
     <div class="stat-card">
         <div class="stat-card__label">{{ __('public.adm_appt_col_scheduled_at') }}</div>
-        <div class="stat-card__value">{{ $appointment->scheduled_at?->format('d M Y H:i') ?? '—' }}</div>
+        <div class="stat-card__value">{{ $appointment->scheduled_at?->translatedFormat('d M Y H:i') ?? '—' }}</div>
     </div>
     <div class="stat-card">
         <div class="stat-card__label">{{ __('public.adm_appt_col_status') }}</div>
@@ -93,7 +93,7 @@
     <div class="panel-body">
         <p style="margin:0 0 .5rem;">{{ $appointment->cancellation_reason ?: '—' }}</p>
         @if($appointment->cancelled_at)
-            <p class="td-muted" style="margin:0;font-size:.85rem;">{{ $appointment->cancelled_at->format('d M Y H:i') }}</p>
+            <p class="td-muted" style="margin:0;font-size:.85rem;">{{ $appointment->cancelled_at->translatedFormat('d M Y H:i') }}</p>
         @endif
     </div>
 </div>
@@ -104,7 +104,7 @@
         <h3 class="panel-title"><i data-lucide="clock"></i> {{ __('appointments.status.checked_in') }}</h3>
     </div>
     <div class="panel-body">
-        <p style="margin:0;">{{ $appointment->checked_in_at?->format('d M Y H:i') ?? '—' }}</p>
+        <p style="margin:0;">{{ $appointment->checked_in_at?->translatedFormat('d M Y H:i') ?? '—' }}</p>
     </div>
 </div>
 

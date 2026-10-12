@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', __('professional.reg_title', [], app()->getLocale()) ?: 'Register as a health professional')
+@section('title', __('professional.reg_title', [], app()->getLocale()))
 
 {{--
     Public self-service registration for a health professional. Served by
@@ -15,12 +15,12 @@
     <div class="f-auth-col">
         <a href="{{ route('register') }}" class="f-auth-back">
             @include('partials.finder.icon', ['name' => 'chevron-left', 'size' => 16])
-            {{ __('onboarding.common.back', [], app()->getLocale()) ?: 'Back' }}
+            {{ __('onboarding.common.back', [], app()->getLocale()) }}
         </a>
 
         <div class="f-auth-card">
-            <h1 class="f-auth-title">{{ __('professional.reg_title', [], app()->getLocale()) ?: 'Register as a health professional' }}</h1>
-            <p class="f-auth-sub">{{ __('professional.reg_subtitle', [], app()->getLocale()) ?: 'Create your account, then add the qualifications an administrator will verify.' }}</p>
+            <h1 class="f-auth-title">{{ __('professional.reg_title', [], app()->getLocale()) }}</h1>
+            <p class="f-auth-sub">{{ __('professional.reg_subtitle', [], app()->getLocale()) }}</p>
 
             @if ($errors->any())
                 <div class="f-auth-alert f-auth-alert--danger" role="alert">
@@ -37,7 +37,7 @@
                 @csrf
 
                 <div class="f-field">
-                    <label for="name" class="f-label">{{ __('professional.reg_full_name', [], app()->getLocale()) ?: 'Full name' }}</label>
+                    <label for="name" class="f-label">{{ __('professional.reg_full_name', [], app()->getLocale()) }}</label>
                     <input type="text" id="name" name="name" required autofocus
                            autocomplete="name"
                            class="f-input @error('name') f-input--invalid @enderror"
@@ -48,7 +48,7 @@
                 </div>
 
                 <div class="f-field">
-                    <label for="email" class="f-label">{{ __('professional.reg_email', [], app()->getLocale()) ?: 'Email address' }}</label>
+                    <label for="email" class="f-label">{{ __('professional.reg_email', [], app()->getLocale()) }}</label>
                     <input type="email" id="email" name="email" required
                            autocomplete="email" inputmode="email"
                            class="f-input @error('email') f-input--invalid @enderror"
@@ -59,7 +59,7 @@
                 </div>
 
                 <div class="f-field">
-                    <label for="phone" class="f-label">{{ __('professional.reg_phone', [], app()->getLocale()) ?: 'Phone number' }}</label>
+                    <label for="phone" class="f-label">{{ __('professional.reg_phone', [], app()->getLocale()) }}</label>
                     <input type="tel" id="phone" name="phone" required
                            autocomplete="tel" inputmode="tel"
                            class="f-input @error('phone') f-input--invalid @enderror"
@@ -70,10 +70,10 @@
                 </div>
 
                 <div class="f-field">
-                    <label for="profession" class="f-label">{{ __('professional.reg_profession', [], app()->getLocale()) ?: 'Profession' }}</label>
+                    <label for="profession" class="f-label">{{ __('professional.reg_profession', [], app()->getLocale()) }}</label>
                     <select id="profession" name="profession" required
                             class="f-input @error('profession') f-input--invalid @enderror">
-                        <option value="" disabled {{ old('profession') ? '' : 'selected' }}>{{ __('onboarding.common.select_option', [], app()->getLocale()) ?: 'Choose option...' }}</option>
+                        <option value="" disabled {{ old('profession') ? '' : 'selected' }}>{{ __('onboarding.common.select_option', [], app()->getLocale()) }}</option>
                         @foreach ($professions as $key)
                             <option value="{{ $key }}" {{ old('profession') === $key ? 'selected' : '' }}>{{ __('professional.prof_' . $key, [], app()->getLocale()) ?: ucfirst($key) }}</option>
                         @endforeach
@@ -84,7 +84,7 @@
                 </div>
 
                 <div class="f-field">
-                    <label for="password" class="f-label">{{ __('professional.reg_password', [], app()->getLocale()) ?: 'Password' }}</label>
+                    <label for="password" class="f-label">{{ __('professional.reg_password', [], app()->getLocale()) }}</label>
                     <div class="f-auth-pass">
                         <input type="password" id="password" name="password" required
                                autocomplete="new-password" minlength="8"
@@ -97,7 +97,7 @@
                 </div>
 
                 <div class="f-field">
-                    <label for="password_confirmation" class="f-label">{{ __('professional.reg_password_confirm', [], app()->getLocale()) ?: 'Confirm password' }}</label>
+                    <label for="password_confirmation" class="f-label">{{ __('professional.reg_password_confirm', [], app()->getLocale()) }}</label>
                     <div class="f-auth-pass">
                         <input type="password" id="password_confirmation" name="password_confirmation" required
                                autocomplete="new-password" minlength="8" class="f-input">
@@ -106,11 +106,11 @@
                 </div>
 
                 {{-- Optional first qualification — most professionals have one to hand. --}}
-                <p class="f-auth-section">{{ __('professional.reg_qual_section', [], app()->getLocale()) ?: 'Primary licence (optional)' }}</p>
-                <p class="f-auth-fine" style="margin-top:0">{{ __('professional.reg_qual_intro', [], app()->getLocale()) ?: 'Have your main licence to hand? Add it now — you can add more later.' }}</p>
+                <p class="f-auth-section">{{ __('professional.reg_qual_section', [], app()->getLocale()) }}</p>
+                <p class="f-auth-fine" style="margin-top:0">{{ __('professional.reg_qual_intro', [], app()->getLocale()) }}</p>
 
                 <div class="f-field">
-                    <label for="issuing_body" class="f-label">{{ __('professional.issuing_body', [], app()->getLocale()) ?: 'Issuing body' }}</label>
+                    <label for="issuing_body" class="f-label">{{ __('professional.issuing_body', [], app()->getLocale()) }}</label>
                     <input type="text" id="issuing_body" name="issuing_body"
                            autocomplete="off"
                            class="f-input @error('issuing_body') f-input--invalid @enderror"
@@ -121,7 +121,7 @@
                 </div>
 
                 <div class="f-field">
-                    <label for="credential_number" class="f-label">{{ __('professional.credential_number', [], app()->getLocale()) ?: 'Licence / certificate number' }}</label>
+                    <label for="credential_number" class="f-label">{{ __('professional.credential_number', [], app()->getLocale()) }}</label>
                     <input type="text" id="credential_number" name="credential_number"
                            autocomplete="off"
                            class="f-input @error('credential_number') f-input--invalid @enderror"
@@ -132,18 +132,18 @@
                 </div>
 
                 <button type="submit" class="f-btn f-btn--primary f-btn--block">
-                    {{ __('professional.reg_create', [], app()->getLocale()) ?: 'Create my account' }}
+                    {{ __('professional.reg_create', [], app()->getLocale()) }}
                 </button>
             </form>
 
             <div class="f-auth-note">
                 @include('partials.finder.icon', ['name' => 'info', 'size' => 16])
-                <p>{{ __('professional.reg_note', [], app()->getLocale()) ?: 'New accounts are unverified until an administrator reviews your qualifications.' }}</p>
+                <p>{{ __('professional.reg_note', [], app()->getLocale()) }}</p>
             </div>
 
             <div class="f-auth-alt f-auth-alt--divide">
-                <p>{{ __('professional.reg_have_account', [], app()->getLocale()) ?: 'Already have an account?' }}
-                    <a href="{{ route('login') }}">{{ __('professional.reg_sign_in', [], app()->getLocale()) ?: 'Sign in' }}</a>
+                <p>{{ __('professional.reg_have_account', [], app()->getLocale()) }}
+                    <a href="{{ route('login') }}">{{ __('professional.reg_sign_in', [], app()->getLocale()) }}</a>
                 </p>
             </div>
         </div>

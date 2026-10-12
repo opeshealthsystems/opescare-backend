@@ -31,14 +31,14 @@
             <div class="form-group">
                 <label class="form-label form-label-required" for="file-input">{{ __('files.lbl_file') }}</label>
                 <div id="drop-zone" class="empty-state" style="border:2px dashed var(--p-border);border-radius:var(--p-radius);cursor:pointer;"
-                     onclick="document.getElementById('file-input').click()">
+                     data-click="file-input">
                     <div class="empty-state-icon"><i data-lucide="upload-cloud"></i></div>
                     <div class="td-strong">{{ __('files.click_browse') }}</div>
                     <div id="file-name" class="td-muted">{{ __('files.size_hint', ['max' => $maxSizeMb]) }}</div>
                 </div>
                 <input type="file" id="file-input" name="file" required class="sr-only"
                     accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
-                    onchange="updateFileName(this)">
+                    data-call-change="updateFileName" data-call-self>
                 @error('file')<div class="form-hint">{{ $message }}</div>@enderror
             </div>
 
@@ -71,7 +71,7 @@
 @endsection
 
 @section('scripts')
-<script>
+<script @cspNonce>
 function updateFileName(input) {
     const label = document.getElementById('file-name');
     if (input.files && input.files[0]) {

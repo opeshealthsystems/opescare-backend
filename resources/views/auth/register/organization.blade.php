@@ -89,7 +89,7 @@
 
                         <div class="auth-form-group">
                             <label for="org_type" class="auth-label">{{ __('onboarding.org.type_lbl') }} *</label>
-                            <select id="org_type" name="org_type" class="auth-input" required onchange="adaptOrgType()">
+                            <select id="org_type" name="org_type" class="auth-input" required data-call-change="adaptOrgType" data-call-self>
                                 <option value="hospital"          {{ request('type') == 'hospital'          ? 'selected' : '' }}>Hospital</option>
                                 <option value="clinic"            {{ request('type') == 'clinic'            ? 'selected' : '' }}>Clinic</option>
                                 <option value="pharmacy"          {{ request('type') == 'pharmacy'          ? 'selected' : '' }}>Pharmacy</option>
@@ -249,7 +249,7 @@
                         <div class="auth-form-group">
                             <label class="auth-label">{{ __('onboarding.org.doc_business') }} *</label>
                             <div class="file-upload-field" id="upload-box-business">
-                                <input type="file" id="doc_business" name="doc_business" required onchange="handleFileSelected('doc_business', 'business-preview-name')">
+                                <input type="file" id="doc_business" name="doc_business" required data-call-change="handleFileSelected" data-args="[&quot;doc_business&quot;,&quot;business-preview-name&quot;]">
                                 <div class="upload-icon"><i data-lucide="upload-cloud"></i></div>
                                 <p>{{ __('onboarding.common.upload_file') }}</p>
                                 <span>{{ __('onboarding.common.file_hint') }}</span>
@@ -259,7 +259,7 @@
                                     <i data-lucide="file-text"></i>
                                     <span id="business-preview-name">file.pdf</span>
                                 </div>
-                                <button type="button" class="file-preview-remove" onclick="removeUploadedFile('doc_business','business-preview','upload-box-business')">
+                                <button type="button" class="file-preview-remove" data-call="removeUploadedFile" data-args="[&quot;doc_business&quot;,&quot;business-preview&quot;,&quot;upload-box-business&quot;]">
                                     <i data-lucide="trash-2"></i>
                                 </button>
                             </div>
@@ -268,7 +268,7 @@
                         <div class="auth-form-group">
                             <label class="auth-label">{{ __('onboarding.org.doc_license') }} *</label>
                             <div class="file-upload-field" id="upload-box-license">
-                                <input type="file" id="doc_license" name="doc_license" required onchange="handleFileSelected('doc_license', 'license-preview-name')">
+                                <input type="file" id="doc_license" name="doc_license" required data-call-change="handleFileSelected" data-args="[&quot;doc_license&quot;,&quot;license-preview-name&quot;]">
                                 <div class="upload-icon"><i data-lucide="upload-cloud"></i></div>
                                 <p>{{ __('onboarding.common.upload_file') }}</p>
                                 <span>{{ __('onboarding.common.file_hint') }}</span>
@@ -278,7 +278,7 @@
                                     <i data-lucide="file-text"></i>
                                     <span id="license-preview-name">file.pdf</span>
                                 </div>
-                                <button type="button" class="file-preview-remove" onclick="removeUploadedFile('doc_license','license-preview','upload-box-license')">
+                                <button type="button" class="file-preview-remove" data-call="removeUploadedFile" data-args="[&quot;doc_license&quot;,&quot;license-preview&quot;,&quot;upload-box-license&quot;]">
                                     <i data-lucide="trash-2"></i>
                                 </button>
                             </div>
@@ -343,11 +343,11 @@
 
                 <!-- Stepper Actions -->
                 <div class="stepper-actions">
-                    <button type="button" class="auth-btn auth-btn-secondary" id="btn-prev" onclick="changeStep(-1)">
+                    <button type="button" class="auth-btn auth-btn-secondary" id="btn-prev" data-call="changeStep" data-args="[-1]">
                         <i data-lucide="arrow-left"></i>
                         <span>{{ __('onboarding.common.back') }}</span>
                     </button>
-                    <button type="button" class="auth-btn auth-btn-primary" id="btn-next" onclick="changeStep(1)">
+                    <button type="button" class="auth-btn auth-btn-primary" id="btn-next" data-call="changeStep" data-args="[1]">
                         <span>{{ __('onboarding.common.continue') }}</span>
                         <i data-lucide="arrow-right"></i>
                     </button>
@@ -358,7 +358,7 @@
 @endsection
 
 @section('scripts')
-    <script>
+    <script @cspNonce>
         let currentStep = 1;
         const totalSteps = 7;
 
@@ -420,7 +420,7 @@
                     }
                 });
                 if (!isValid) {
-                    alert(@json(__('public.org_register_js_required_fields', [], app()->getLocale()) ?: 'Please fill in all required fields marked with * before continuing.'));
+                    alert(@json(__('public.org_register_js_required_fields', [], app()->getLocale())));
                     return;
                 }
             }

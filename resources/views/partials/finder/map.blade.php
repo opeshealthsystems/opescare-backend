@@ -51,16 +51,16 @@
     <link rel="stylesheet" href="{{ asset('css/leaflet.css') }}">
     <script src="{{ asset('js/leaflet.js') }}" defer></script>
     <script src="{{ asset('js/finder-map.js') }}?v={{ @filemtime(public_path('js/finder-map.js')) ?: 1 }}" defer></script>
-    <script>
+    <script @cspNonce>
             window.FINDER_MAP_I18N = {
-                view: @json(__('finder_map.view', [], $l) ?: 'View'),
-                call: @json(__('finder_map.call', [], $l) ?: 'Call'),
-                directions: @json(__('finder_map.directions', [], $l) ?: 'Directions'),
-                locate: @json(__('finder_map.locate', [], $l) ?: 'Show my location'),
-                you: @json(__('finder_map.you', [], $l) ?: 'You are here'),
-                distance: @json(__('finder_map.distance', [], $l) ?: 'Distance'),
-                straightLine: @json(__('finder_map.straight_line', [], $l) ?: 'straight line'),
-                geoDenied: @json(__('finder_map.geo_denied', [], $l) ?: 'Location unavailable. Please allow location access.'),
+                view: @json(__('finder_map.view', [], $l)),
+                call: @json(__('finder_map.call', [], $l)),
+                directions: @json(__('finder_map.directions', [], $l)),
+                locate: @json(__('finder_map.locate', [], $l)),
+                you: @json(__('finder_map.you', [], $l)),
+                distance: @json(__('finder_map.distance', [], $l)),
+                straightLine: @json(__('finder_map.straight_line', [], $l)),
+                geoDenied: @json(__('finder_map.geo_denied', [], $l)),
             };
         </script>
         <style>
@@ -81,11 +81,11 @@
 
 @if($pick)
 <div class="finder-map-shell" style="--fm-h: {{ $height }}">
-    <div data-finder-pick="{{ $pick['lat'] }},{{ $pick['lng'] }}" data-finder-pick-type="{{ $pickType }}" id="{{ $mapId }}" role="application" aria-label="{{ __('finder_map.aria', [], $l) ?: 'Facility map' }}"></div>
+    <div data-finder-pick="{{ $pick['lat'] }},{{ $pick['lng'] }}" data-finder-pick-type="{{ $pickType }}" id="{{ $mapId }}" role="application" aria-label="{{ __('finder_map.aria', [], $l) }}"></div>
 </div>
 @else
 <div class="finder-map-shell" style="--fm-h: {{ $height }}">
-    <div data-finder-map id="{{ $mapId }}" role="application" aria-label="{{ __('finder_map.aria', [], $l) ?: 'Facility map' }}"></div>
+    <div data-finder-map id="{{ $mapId }}" role="application" aria-label="{{ __('finder_map.aria', [], $l) }}"></div>
     <script type="application/json" class="finder-map-data">@json(['single' => (bool) $single, 'facilities' => $points])</script>
 </div>
 @endif

@@ -87,7 +87,7 @@
                             {{ $record->nurse?->name ?? '—' }}
                         </td>
                         <td data-label="{{ __('triage.col_assessed_at') }}" class="td-muted">
-                            {{ $record->created_at?->format('d M Y H:i') ?? '—' }}
+                            {{ $record->created_at?->translatedFormat('d M Y H:i') ?? '—' }}
                         </td>
                         <td class="row-actions" data-label="{{ __('triage.col_open') }}">
                             <a href="{{ route('portals.triage.show', $record->id) }}" class="btn btn-secondary btn-sm">

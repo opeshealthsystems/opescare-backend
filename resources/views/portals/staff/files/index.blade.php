@@ -75,7 +75,7 @@
                         </td>
                         <td data-label="{{ __('files.col_description') }}" class="td-muted">{{ $att->description ?? '—' }}</td>
                         <td data-label="{{ __('files.col_size') }}" class="td-muted">{{ $att->fileAsset?->humanSize() ?? '—' }}</td>
-                        <td data-label="{{ __('files.col_date') }}" class="td-muted">{{ $att->created_at?->format('d M Y') }}</td>
+                        <td data-label="{{ __('files.col_date') }}" class="td-muted">{{ $att->created_at?->translatedFormat('d M Y') }}</td>
                         <td data-label="{{ __('files.col_status') }}">
                             @if($att->isVoided())
                                 <span class="badge badge-danger">{{ __('files.status_voided') }}</span>

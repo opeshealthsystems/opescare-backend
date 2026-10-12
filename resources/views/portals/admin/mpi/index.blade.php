@@ -165,7 +165,7 @@
                                 <div class="dr-field"><dt>{{ __('mpi.f_health_id') }}</dt><dd><code>{{ $p->health_id }}</code></dd></div>
                                 <div class="dr-field"><dt>{{ __('mpi.f_name') }}</dt><dd>{{ trim($p->first_name . ' ' . ($p->middle_name ? $p->middle_name . ' ' : '') . $p->last_name) }}</dd></div>
                                 <div class="dr-field"><dt>{{ __('mpi.f_dob') }}</dt>
-                                    @php $dob = rescue(fn () => $p->date_of_birth?->format('d M Y'), null, false); @endphp
+                                    @php $dob = rescue(fn () => $p->date_of_birth?->translatedFormat('d M Y'), null, false); @endphp
                                     <dd class="{{ $dob ? '' : 'is-missing' }}">{{ $dob ?: __('mpi.f_missing') }}@if($p->is_dob_estimated) <span class="td-muted">({{ __('mpi.f_estimated') }})</span>@endif</dd>
                                 </div>
                                 <div class="dr-field"><dt>{{ __('mpi.f_sex') }}</dt><dd class="{{ $p->sex ? '' : 'is-missing' }}">{{ $p->sex ? __('mpi.sex_' . ($p->sex instanceof \BackedEnum ? $p->sex->value : $p->sex)) : __('mpi.f_missing') }}</dd></div>
@@ -173,7 +173,7 @@
                                 <div class="dr-field"><dt>{{ __('mpi.f_national_id') }}</dt><dd class="{{ $p->national_id_number ? '' : 'is-missing' }}">{{ $p->national_id_number ? __('mpi.f_on_file') : __('mpi.f_missing') }}</dd></div>
                                 <div class="dr-field"><dt>{{ __('mpi.f_logins') }}</dt><dd class="{{ $fp['logins'] ? '' : 'is-missing' }}">{{ $fp['logins'] ? implode(', ', $fp['logins']) : __('mpi.f_none') }}</dd></div>
                                 <div class="dr-field"><dt>{{ __('mpi.f_history') }}</dt><dd>{{ __('mpi.f_history_counts', ['rx' => $fp['prescriptions'], 'appt' => $fp['appointments'], 'enc' => $fp['encounters']]) }}</dd></div>
-                                <div class="dr-field"><dt>{{ __('mpi.f_created') }}</dt><dd>{{ $p->created_at?->format('d M Y') }}</dd></div>
+                                <div class="dr-field"><dt>{{ __('mpi.f_created') }}</dt><dd>{{ $p->created_at?->translatedFormat('d M Y') }}</dd></div>
                                 <div class="dr-field"><dt>{{ __('mpi.f_status') }}</dt><dd>@enum($p->identity_status instanceof \BackedEnum ? $p->identity_status->value : $p->identity_status)</dd></div>
                             </dl>
                         @endif
@@ -191,7 +191,7 @@
                         undone from the Merged tab.
                     --}}
                     <form method="POST" action="{{ route('portals.admin.mpi.candidates.merge', $c->id) }}"
-                          onsubmit="return confirm('{{ __('mpi.confirm_merge') }}')">
+                          data-confirm="{{ __('mpi.confirm_merge') }}">
                         @csrf
                         <div class="dr-survivor">
                             <span class="form-label">{{ __('mpi.survivor_label') }}</span>
@@ -223,7 +223,7 @@
                     <details>
                         <summary class="btn btn-secondary btn-sm"><i data-lucide="undo-2"></i> {{ __('mpi.btn_unmerge') }}</summary>
                         <form method="POST" action="{{ route('portals.admin.mpi.merges.unmerge', $c->merge->id) }}" style="margin-top:.6rem"
-                              onsubmit="return confirm('{{ __('mpi.confirm_unmerge') }}')">
+                              data-confirm="{{ __('mpi.confirm_unmerge') }}">
                             @csrf
                             <label class="form-label" for="unmerge-{{ $c->id }}">{{ __('mpi.unmerge_reason_label') }}</label>
                             <textarea id="unmerge-{{ $c->id }}" name="reason" class="form-control" rows="2" minlength="10" maxlength="1000" required></textarea>

@@ -226,9 +226,12 @@ class LabManagerDeskService
             ];
         }
 
+        // Same imaging exclusion as the public lab finder (D-2): a combined
+        // diagnostic centre's X-ray rows are counted on the imaging side.
         $rows = LabTestAvailability::query()
             ->where('facility_id', $listing->id)
-            ->where('source_system', LabTestAvailability::SOURCE_PORTAL);
+            ->where('source_system', LabTestAvailability::SOURCE_PORTAL)
+            ->excludingImaging();
 
         $last = (clone $rows)->max('last_published_at');
 

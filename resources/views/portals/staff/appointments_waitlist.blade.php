@@ -2,7 +2,7 @@
 
 @section('title', __('waitlist.staff_title'))
 
-@section('breadcrumb_home', __('public.staff_portal.title', [], app()->getLocale()) ?: 'Staff Portal')
+@section('breadcrumb_home', __('public.staff_portal.title', [], app()->getLocale()))
 @section('breadcrumb_home_url', route('portals.staff'))
 @section('breadcrumb_section', __('waitlist.staff_title'))
 
@@ -55,12 +55,12 @@
                     <thead>
                         <tr>
                             <th>{{ __('waitlist.col_patient') }}</th>
-                            <th>{{ __('public.staff_portal.col_type', [], $lApp) ?: 'Type' }}</th>
+                            <th>{{ __('public.staff_portal.col_type', [], $lApp) }}</th>
                             <th>{{ __('waitlist.col_window') }}</th>
                             <th>{{ __('waitlist.col_urgency') }}</th>
-                            <th>{{ __('public.staff_portal.col_status', [], $lApp) ?: 'Status' }}</th>
+                            <th>{{ __('public.staff_portal.col_status', [], $lApp) }}</th>
                             <th>{{ __('waitlist.col_joined') }}</th>
-                            <th>{{ __('public.staff_portal.col_actions', [], $lApp) ?: 'Actions' }}</th>
+                            <th>{{ __('public.staff_portal.col_actions', [], $lApp) }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -70,15 +70,15 @@
                             $healthId = $entry->patient?->health_id ?? '—';
                             $urgencyBadge = $entry->urgency === 'urgent' ? 'badge-danger' : 'badge-neutral';
                             $statusBadge  = $entry->status === 'notified' ? 'badge-teal' : 'badge-warning';
-                            $from = $entry->preferred_earliest_date?->format('d M Y');
-                            $to   = $entry->preferred_latest_date?->format('d M Y');
+                            $from = $entry->preferred_earliest_date?->translatedFormat('d M Y');
+                            $to   = $entry->preferred_latest_date?->translatedFormat('d M Y');
                         @endphp
                         <tr>
                             <td data-label="{{ __('waitlist.col_patient') }}">
                                 <span class="td-strong">{{ $name !== '' ? $name : '—' }}</span>
                                 <div><span class="mono">{{ $healthId }}</span></div>
                             </td>
-                            <td data-label="{{ __('public.staff_portal.col_type', [], $lApp) ?: 'Type' }}">
+                            <td data-label="{{ __('public.staff_portal.col_type', [], $lApp) }}">
                                 <span class="badge badge-primary">@enum($entry->appointment_type)</span>
                             </td>
                             <td data-label="{{ __('waitlist.col_window') }}">
@@ -91,16 +91,16 @@
                             <td data-label="{{ __('waitlist.col_urgency') }}">
                                 <span class="badge {{ $urgencyBadge }}">@enum($entry->urgency, 'urgency')</span>
                             </td>
-                            <td data-label="{{ __('public.staff_portal.col_status', [], $lApp) ?: 'Status' }}">
+                            <td data-label="{{ __('public.staff_portal.col_status', [], $lApp) }}">
                                 <span class="badge {{ $statusBadge }}">@enum($entry->status)</span>
                                 @if($entry->notified_at)
-                                    <div class="td-muted">{{ $entry->notified_at->format('d M, H:i') }}</div>
+                                    <div class="td-muted">{{ $entry->notified_at->translatedFormat('d M, H:i') }}</div>
                                 @endif
                             </td>
                             <td data-label="{{ __('waitlist.col_joined') }}">
-                                {{ $entry->created_at?->format('d M Y') }}
+                                {{ $entry->created_at?->translatedFormat('d M Y') }}
                             </td>
-                            <td data-label="{{ __('public.staff_portal.col_actions', [], $lApp) ?: 'Actions' }}">
+                            <td data-label="{{ __('public.staff_portal.col_actions', [], $lApp) }}">
                                 @if($canAct)
                                 <a class="fs-act-btn fs-act-btn--good"
                                    href="{{ route('portals.staff.appointments.create', ['waitlist' => $entry->id, 'patient_id' => $entry->patient_id]) }}">

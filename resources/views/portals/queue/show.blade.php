@@ -60,7 +60,7 @@
                 @foreach($stamps as $key => $at)
                 <tr>
                     <td class="td-strong">{{ __('queue_desk.' . $key) }}</td>
-                    <td>{{ $at ? $at->format('d M Y H:i:s') : __('queue_desk.not_yet') }}</td>
+                    <td>{{ $at ? $at->translatedFormat('d M Y H:i:s') : __('queue_desk.not_yet') }}</td>
                 </tr>
                 @endforeach
                 <tr>
@@ -129,7 +129,7 @@
             <tbody>
             @foreach($ticket->histories as $h)
                 <tr>
-                    <td data-label="{{ __('queue_desk.col_at') }}" class="td-muted">{{ $h->changed_at?->format('d M Y H:i:s') ?? '—' }}</td>
+                    <td data-label="{{ __('queue_desk.col_at') }}" class="td-muted">{{ $h->changed_at?->translatedFormat('d M Y H:i:s') ?? '—' }}</td>
                     <td data-label="{{ __('queue_desk.col_from') }}">{{ $h->from_status ? __('queue_desk.status.' . $h->from_status) : '—' }}</td>
                     <td data-label="{{ __('queue_desk.col_to') }}"><span class="badge badge-neutral">{{ __('queue_desk.status.' . $h->to_status) }}</span></td>
                     <td data-label="{{ __('queue_desk.col_by') }}" class="td-muted">{{ $h->changed_by ? ($actors[$h->changed_by] ?? '—') : '—' }}</td>

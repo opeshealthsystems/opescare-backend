@@ -62,12 +62,12 @@
                     </td>
                     <td data-label="{{ __('leads.admin.col_source') }}"><span class="badge badge-neutral">{{ $lead->source }}</span></td>
                     <td data-label="{{ __('leads.admin.col_status') }}"><span class="badge {{ $statusBadge }}">{{ __('leads.statuses.'.$lead->status) }}</span></td>
-                    <td data-label="{{ __('leads.admin.col_date') }}">{{ $lead->created_at?->format('d M Y') }}</td>
+                    <td data-label="{{ __('leads.admin.col_date') }}">{{ $lead->created_at?->translatedFormat('d M Y') }}</td>
                     <td class="row-actions" data-label="{{ __('leads.admin.col_actions') }}">
                         @if($lead->isConverted())
                         <a href="{{ route('portals.admin.leads.convert', $lead) }}" class="btn btn-ghost btn-sm"><i data-lucide="building-2"></i> {{ __('leads.conversion.action_view_tenant') }}</a>
                         @else
-                        <button type="button" class="btn btn-ghost btn-sm" onclick="opOpenModal('lead-{{ $lead->id }}')"><i data-lucide="pencil"></i> {{ __('leads.admin.action_update') }}</button>
+                        <button type="button" class="btn btn-ghost btn-sm" data-call="opOpenModal" data-args="[&quot;lead-{{ $lead->id }}&quot;]"><i data-lucide="pencil"></i> {{ __('leads.admin.action_update') }}</button>
                         @if(in_array($lead->organization_type, ['facility', 'lab', 'pharmacy', 'other', null], true))
                         <a href="{{ route('portals.admin.leads.convert', $lead) }}" class="btn btn-primary btn-sm"><i data-lucide="building-2"></i> {{ __('leads.conversion.action_convert') }}</a>
                         @endif
@@ -104,7 +104,7 @@
                 <textarea name="note" id="note-{{ $lead->id }}" rows="3" class="filter-select" style="width:100%;" placeholder="{{ __('leads.admin.modal_note_ph') }}"></textarea>
             </div>
             <div class="modal__footer">
-                <button type="button" class="btn btn-ghost" onclick="opCloseModal('lead-{{ $lead->id }}')">{{ __('leads.admin.modal_cancel') }}</button>
+                <button type="button" class="btn btn-ghost" data-call="opCloseModal" data-args="[&quot;lead-{{ $lead->id }}&quot;]">{{ __('leads.admin.modal_cancel') }}</button>
                 <button type="submit" class="btn btn-primary">{{ __('leads.admin.modal_save') }}</button>
             </div>
         </form>
@@ -114,7 +114,7 @@
 
 @endsection
 @section('scripts')
-<script>
+<script @cspNonce>
 function opOpenModal(id){ document.getElementById(id).removeAttribute('hidden'); }
 function opCloseModal(id){ document.getElementById(id).setAttribute('hidden',''); }
 document.addEventListener('keydown', function(e){

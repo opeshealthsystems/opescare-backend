@@ -4,7 +4,7 @@
     <div style="display:flex;align-items:center;gap:0.5rem;">
         <i data-lucide="eye" style="width:1rem;height:1rem;"></i>
         <span>
-            {{ __('public.portal.viewing_as', [], app()->getLocale()) ?: 'Viewing:' }}
+            {{ __('public.portal.viewing_as', [], app()->getLocale()) }}
             <strong>{{ $viewingPatient->first_name }} {{ $viewingPatient->last_name }}</strong>
             &nbsp;({{ $viewingPatient->health_id }})
         </span>
@@ -12,7 +12,7 @@
     <form method="POST" action="{{ route('portals.patient.family.switch.back') }}" style="margin:0;">
         @csrf
         <button type="submit" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:0.25rem 0.75rem;border-radius:4px;cursor:pointer;font-size:0.8125rem;">
-            {{ __('public.portal.switch_back', [], app()->getLocale()) ?: 'Switch Back' }}
+            {{ __('public.portal.switch_back', [], app()->getLocale()) }}
         </button>
     </form>
 </div>

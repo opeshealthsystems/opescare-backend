@@ -30,6 +30,13 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class SetLocale
 {
+    // Carbon keeps its own locale: without this, translatedFormat() in the
+    // views printed English month names on French pages.
+    private static function syncCarbon(): void
+    {
+        \Carbon\Carbon::setLocale(App::getLocale());
+    }
+
     /** Locales this platform actually ships, kept 1:1 in lang/en and lang/fr. */
     public const SUPPORTED = ['en', 'fr'];
 
@@ -39,6 +46,7 @@ class SetLocale
 
         if (is_string($requested) && in_array($requested, self::SUPPORTED, true)) {
             App::setLocale($requested);
+            self::syncCarbon();
 
             // Persist, so the choice survives navigation without the parameter.
             // Guarded because this middleware also runs on stateless API
@@ -55,6 +63,7 @@ class SetLocale
             && in_array(Session::get('locale'), self::SUPPORTED, true)
         ) {
             App::setLocale(Session::get('locale'));
+            self::syncCarbon();
 
             return $next($request);
         }
@@ -78,6 +87,7 @@ class SetLocale
 
             if (is_string($preferred) && in_array($preferred, self::SUPPORTED, true)) {
                 App::setLocale($preferred);
+                self::syncCarbon();
             }
         }
 

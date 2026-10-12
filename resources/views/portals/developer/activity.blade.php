@@ -16,7 +16,7 @@
         <div class="page-head__spacer"></div>
         @if($clients->count() > 1)
         <form method="GET" class="filter-bar filter-bar--flush">
-            <select name="app" class="filter-select" aria-label="{{ __('developer_ext.act_filter_aria') }}" onchange="this.form.submit()">
+            <select name="app" class="filter-select" aria-label="{{ __('developer_ext.act_filter_aria') }}" data-autosubmit>
                 <option value="">{{ __('developer_ext.act_filter_all') }}</option>
                 @foreach($clients as $c)
                     <option value="{{ $c->id }}" {{ $selected && $selected->id === $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
@@ -70,7 +70,7 @@
                     @foreach($ingest as $e)
                         @php $outcome = $outcomeFor($e); @endphp
                         <tr>
-                            <td data-label="{{ __('developer_ext.act_col_when') }}" class="td-muted">{{ $e->created_at?->format('d M Y H:i:s') }}</td>
+                            <td data-label="{{ __('developer_ext.act_col_when') }}" class="td-muted">{{ $e->created_at?->translatedFormat('d M Y H:i:s') }}</td>
                             <td data-label="{{ __('developer_ext.act_col_app') }}">{{ $clientNames[$e->integration_client_id] ?? $e->integration_client_id }}</td>
                             <td data-label="{{ __('developer_ext.act_col_resource') }}" class="mono">{{ $e->resource_type }}</td>
                             <td data-label="{{ __('developer_ext.act_col_outcome') }}">
@@ -122,7 +122,7 @@
                     <tbody>
                     @foreach($requests as $r)
                         <tr>
-                            <td data-label="{{ __('developer_ext.act_col_when') }}" class="td-muted">{{ $r->logged_at?->format('d M Y H:i:s') }}</td>
+                            <td data-label="{{ __('developer_ext.act_col_when') }}" class="td-muted">{{ $r->logged_at?->translatedFormat('d M Y H:i:s') }}</td>
                             <td data-label="{{ __('developer_ext.act_col_app') }}">{{ $clientNames[$r->integration_client_id] ?? $r->integration_client_id }}</td>
                             <td data-label="{{ __('developer_ext.act_col_method') }}" class="mono">{{ $r->method }}</td>
                             <td data-label="{{ __('developer_ext.act_col_endpoint') }}" class="mono">/{{ ltrim($r->endpoint, '/') }}</td>

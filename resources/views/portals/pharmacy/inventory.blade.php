@@ -1,9 +1,9 @@
 @extends('layouts.portal')
-@section('title', __('public.pharmacy_portal.page_title', [], app()->getLocale()) ?: 'Drug Inventory')
-@section('sidebar_user_role', __('public.pharmacy_portal.role_label', [], app()->getLocale()) ?: 'Pharmacist')
-@section('breadcrumb_home', __('public.pharmacy_portal.breadcrumb_home', [], app()->getLocale()) ?: 'Pharmacy Portal')
+@section('title', __('public.pharmacy_portal.page_title', [], app()->getLocale()))
+@section('sidebar_user_role', __('public.pharmacy_portal.role_label', [], app()->getLocale()))
+@section('breadcrumb_home', __('public.pharmacy_portal.breadcrumb_home', [], app()->getLocale()))
 @section('breadcrumb_home_url', route('portals.pharmacy.dashboard'))
-@section('breadcrumb_section', __('public.pharmacy_portal.breadcrumb_section_stock', [], app()->getLocale()) ?: 'Public Availability')
+@section('breadcrumb_section', __('public.pharmacy_portal.breadcrumb_section_stock', [], app()->getLocale()))
 
 @section('head')
 @include('portals.pharmacy._supply_styles')
@@ -79,18 +79,18 @@
     <label class="fs-search__box">
         @include('partials.finder.icon', ['name' => 'search', 'size' => 18])
         <input type="text" name="search" class="fs-search__input" inputmode="search" autocomplete="off"
-               placeholder="{{ __('public.pharmacy_portal.ph_search_drug', [], $l) ?: 'Drug or generic name…' }}"
+               placeholder="{{ __('public.pharmacy_portal.ph_search_drug', [], $l) }}"
                value="{{ request('search') }}" aria-label="{{ __('public.aria_search_drugs') }}">
     </label>
-    <select name="stock_status" class="filter-select" aria-label="{{ __('public.aria_stock_status') }}" onchange="this.form.submit()">
-        <option value="">{{ __('public.pharmacy_portal.filter_all_stock', [], $l) ?: 'All stock' }}</option>
+    <select name="stock_status" class="filter-select" aria-label="{{ __('public.aria_stock_status') }}" data-autosubmit>
+        <option value="">{{ __('public.pharmacy_portal.filter_all_stock', [], $l) }}</option>
         @foreach($statuses as $s)
         <option value="{{ $s->value }}" {{ request('stock_status') === $s->value ? 'selected' : '' }}>@enum($s->value, 'stock_status')</option>
         @endforeach
     </select>
-    <button type="submit" class="btn btn-secondary btn-sm fs-tap"><i data-lucide="filter"></i> {{ __('public.pharmacy_portal.btn_filter', [], $l) ?: 'Filter' }}</button>
+    <button type="submit" class="btn btn-secondary btn-sm fs-tap"><i data-lucide="filter"></i> {{ __('public.pharmacy_portal.btn_filter', [], $l) }}</button>
     @if(request()->hasAny(['stock_status','search']))
-        <a href="{{ route('portals.pharmacy.stock') }}" class="btn btn-ghost btn-sm fs-tap">{{ __('public.pharmacy_portal.btn_clear', [], $l) ?: 'Clear' }}</a>
+        <a href="{{ route('portals.pharmacy.stock') }}" class="btn btn-ghost btn-sm fs-tap">{{ __('public.pharmacy_portal.btn_clear', [], $l) }}</a>
     @endif
 </form>
 
@@ -189,7 +189,7 @@
                     <th>{{ __('public.pharmacy_portal.stock_col_reserve', [], $l) }}</th>
                     <th>{{ __('public.pharmacy_portal.stock_col_source', [], $l) }}</th>
                     <th>{{ __('public.pharmacy_portal.stock_col_reported', [], $l) }}</th>
-                    <th>{{ __('public.pharmacy_portal.col_action', [], $l) ?: 'Action' }}</th>
+                    <th>{{ __('public.pharmacy_portal.col_action', [], $l) }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -238,7 +238,7 @@
                         @include('partials.finder.icon', ['name' => 'clock', 'size' => 13])
                         {{ $stock->last_reported_at?->diffForHumans() ?? __('public.pharmacy_portal.stock_never', [], $l) }}
                     </td>
-                    <td data-label="{{ __('public.pharmacy_portal.col_action', [], $l) ?: 'Action' }}">
+                    <td data-label="{{ __('public.pharmacy_portal.col_action', [], $l) }}">
                         <form method="POST" action="{{ route('portals.pharmacy.stock.report') }}" id="stock-{{ $stock->id }}" class="inline-form">
                             @csrf
                             <input type="hidden" name="medicine_id" value="{{ $stock->medicine_id }}">

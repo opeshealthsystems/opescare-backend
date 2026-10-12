@@ -82,7 +82,7 @@
                 <dt>{{ __('pharmacy_orders.lbl_fulfilment') }}</dt>
                 <dd>{{ $reservation->isDelivery() ? __('pharmacy_orders.mode_delivery') : __('pharmacy_orders.mode_pickup') }}</dd>
                 <dt>{{ __('pharmacy_orders.col_expires') }}</dt>
-                <dd>{{ $reservation->expires_at?->format('d M Y H:i') ?? __('pharmacy_orders.no_expiry') }}</dd>
+                <dd>{{ $reservation->expires_at?->translatedFormat('d M Y H:i') ?? __('pharmacy_orders.no_expiry') }}</dd>
                 @if($reservation->prescription_id)
                 <dt>{{ __('pharmacy_orders.lbl_prescription') }}</dt>
                 <dd class="fs-mono">{{ $reservation->prescription?->reference ?? '—' }}</dd>
@@ -135,7 +135,7 @@
             <ul class="po-timeline">
                 @foreach($timeline as $key => $at)
                     @if($at)
-                        <li><span>{{ __('pharmacy_orders.ts_' . $key) }}</span><span class="td-muted fs-mono">{{ $at->format('d M Y H:i') }}</span></li>
+                        <li><span>{{ __('pharmacy_orders.ts_' . $key) }}</span><span class="td-muted fs-mono">{{ $at->translatedFormat('d M Y H:i') }}</span></li>
                     @endif
                 @endforeach
             </ul>
@@ -153,7 +153,7 @@
             @include('portals.pharmacy.orders._actions', ['reservation' => $reservation, 'desk' => $desk, 'compact' => false])
 
             <div class="po-cancel">
-                <form method="POST" action="{{ route('portals.pharmacy.orders.cancel', $reservation->id) }}" onsubmit="return confirm(@json(__('pharmacy_orders.confirm_cancel')));">
+                <form method="POST" action="{{ route('portals.pharmacy.orders.cancel', $reservation->id) }}" data-confirm="{{ __('pharmacy_orders.confirm_cancel') }}">
                     @csrf
                     <div class="form-group">
                         <label class="form-label" for="po-reason">{{ __('pharmacy_orders.lbl_reason') }}</label>

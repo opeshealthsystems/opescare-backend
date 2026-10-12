@@ -2,7 +2,7 @@
 
 @section('title', __('tasks.title') . ' — OpesCare')
 
-@section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()) ?: 'Portal')
+@section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()))
 @section('breadcrumb_home_url', route('portals.staff'))
 @section('breadcrumb_section', __('tasks.title'))
 

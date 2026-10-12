@@ -80,6 +80,7 @@ reverted:
 | Clinician portal | Live. 39 mobile endpoints, facility switching, rosters. |
 | One-off payments | Live. MTN MoMo / Orange Money against an invoice, `simulated` on demo hosts. This is *pay a bill for care*, NOT insurance or subscriptions — those stay out. |
 | Telemedicine | Still thin: book-to-consult only, no in-app video. |
+| DHIS2 monthly aggregate reporting | Live, admin-only (`routes/imports_dhis2.php`, `/admin/public-health/dhis2`, nav link in `_admin_nav`). This is *Finder reporting its own aggregates to MINSANTE* — a one-way push of counts, not the platform's DHIS2 data-exchange integration, which stays out. Recorded here 2026-10-12 so the "Deliberately absent" line above is not read as a reason to delete it. |
 | FHIR R4 / HL7 | Still absent. Interop stays in the platform. |
 
 ## Data invariants

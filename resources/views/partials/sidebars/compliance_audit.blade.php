@@ -6,25 +6,25 @@
      to do. The links below are the role's actual work. --}}
 <div class="sidebar-role-badge">
     <i data-lucide="clipboard-check"></i>
-    {{ __('portal.compliance_audit_role', [], $l) ?: 'Compliance Auditor' }}
+    {{ __('portal.compliance_audit_role', [], $l) }}
 </div>
 <div class="sidebar-spacer"></div>
 
 <div class="sidebar-nav-section">
     <a href="{{ route('portals.admin') }}" class="sidebar-link {{ request()->routeIs('portals.admin') && !request()->routeIs('portals.admin.*') ? 'active' : '' }}">
-        <i data-lucide="layout-dashboard"></i><span>{{ __('public.portal.nav_dashboard', [], $l) ?: 'Dashboard' }}</span>
+        <i data-lucide="layout-dashboard"></i><span>{{ __('public.portal.nav_dashboard', [], $l) }}</span>
     </a>
 </div>
 
 <div class="sidebar-nav-section">
     <a href="{{ route('portals.admin.cc.audit') }}" class="sidebar-link {{ request()->routeIs('portals.admin.cc.audit*') ? 'active' : '' }}">
-        <i data-lucide="scroll-text"></i><span>{{ __('public.adm_cc_sidebar_admin_action_log', [], $l) ?: 'Audit Log' }}</span>
+        <i data-lucide="scroll-text"></i><span>{{ __('public.adm_cc_sidebar_admin_action_log', [], $l) }}</span>
     </a>
     <a href="{{ route('portals.admin.security.audit_explorer') }}" class="sidebar-link {{ request()->routeIs('portals.admin.security.audit_explorer*') ? 'active' : '' }}">
-        <i data-lucide="search-code"></i><span>{{ __('security_ops.nav_audit_explorer', [], $l) ?: 'Audit explorer' }}</span>
+        <i data-lucide="search-code"></i><span>{{ __('security_ops.nav_audit_explorer', [], $l) }}</span>
     </a>
     <a href="{{ route('portals.admin.governance.log') }}" class="sidebar-link {{ request()->routeIs('portals.admin.governance.log*') ? 'active' : '' }}">
-        <i data-lucide="file-check"></i><span>{{ __('governance_desk.nav_log', [], $l) ?: 'Decision log' }}</span>
+        <i data-lucide="file-check"></i><span>{{ __('governance_desk.nav_log', [], $l) }}</span>
     </a>
 </div>
 

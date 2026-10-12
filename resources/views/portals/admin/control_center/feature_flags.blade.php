@@ -46,7 +46,7 @@
                 @csrf
                 <input type="hidden" name="enabled" value="{{ $flag->enabled ? '0' : '1' }}">
                 <label class="switch">
-                    <input type="checkbox" {{ $flag->enabled ? 'checked' : '' }} onchange="this.form.submit()" aria-label="Toggle {{ $flag->label }}">
+                    <input type="checkbox" {{ $flag->enabled ? 'checked' : '' }} data-autosubmit aria-label="Toggle {{ $flag->label }}">
                     <span class="switch__track"></span>
                 </label>
             </form>

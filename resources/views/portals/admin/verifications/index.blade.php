@@ -1,15 +1,15 @@
 @extends('layouts.portal')
-@section('title', __('professional.ver_title', [], app()->getLocale()) ?: 'Qualification verifications')
+@section('title', __('professional.ver_title', [], app()->getLocale()))
 @include('portals.admin.control_center._sidebar')
 @section('breadcrumb_home', 'Admin')
 @section('breadcrumb_home_url', route('portals.admin'))
-@section('breadcrumb_section', __('professional.ver_title', [], app()->getLocale()) ?: 'Qualification verifications')
+@section('breadcrumb_section', __('professional.ver_title', [], app()->getLocale()))
 @section('content')
 
 <div class="page-header">
     <div>
-        <h1 class="page-title">{{ __('professional.ver_title', [], app()->getLocale()) ?: 'Qualification verifications' }}</h1>
-        <p class="page-subtitle">{{ __('professional.ver_subtitle', [], app()->getLocale()) ?: 'Review and verify qualifications submitted by professionals.' }}</p>
+        <h1 class="page-title">{{ __('professional.ver_title', [], app()->getLocale()) }}</h1>
+        <p class="page-subtitle">{{ __('professional.ver_subtitle', [], app()->getLocale()) }}</p>
     </div>
 </div>
 
@@ -19,12 +19,12 @@
 <div class="stat-grid mb-6">
     <div class="stat-card stat-card--primary">
         <div class="stat-card__head"><i data-lucide="clock"></i></div>
-        <div class="stat-card__label">{{ __('professional.ver_pending_count', [], app()->getLocale()) ?: 'Pending review' }}</div>
+        <div class="stat-card__label">{{ __('professional.ver_pending_count', [], app()->getLocale()) }}</div>
         <div class="stat-card__value">{{ $pending->total() }}</div>
     </div>
     <div class="stat-card stat-card--success">
         <div class="stat-card__head"><i data-lucide="shield-check"></i></div>
-        <div class="stat-card__label">{{ __('professional.ver_verified_total', [], app()->getLocale()) ?: 'Verified to date' }}</div>
+        <div class="stat-card__label">{{ __('professional.ver_verified_total', [], app()->getLocale()) }}</div>
         <div class="stat-card__value">{{ $verifiedTotal }}</div>
     </div>
 </div>
@@ -33,7 +33,7 @@
     <div class="panel">
         <div class="empty-state">
             <div class="empty-state-icon"><i data-lucide="shield-check"></i></div>
-            <p>{{ __('professional.ver_empty', [], app()->getLocale()) ?: 'No qualifications are awaiting verification.' }}</p>
+            <p>{{ __('professional.ver_empty', [], app()->getLocale()) }}</p>
         </div>
     </div>
 @else
@@ -42,12 +42,12 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>{{ __('professional.ver_provider', [], app()->getLocale()) ?: 'Professional' }}</th>
-                        <th>{{ __('professional.ver_credential', [], app()->getLocale()) ?: 'Qualification' }}</th>
-                        <th>{{ __('professional.ver_number', [], app()->getLocale()) ?: 'Number' }}</th>
-                        <th>{{ __('professional.ver_issuer', [], app()->getLocale()) ?: 'Issuing body' }}</th>
-                        <th>{{ __('professional.ver_submitted', [], app()->getLocale()) ?: 'Submitted' }}</th>
-                        <th class="row-actions">{{ __('professional.ver_verify', [], app()->getLocale()) ?: 'Verify' }}</th>
+                        <th>{{ __('professional.ver_provider', [], app()->getLocale()) }}</th>
+                        <th>{{ __('professional.ver_credential', [], app()->getLocale()) }}</th>
+                        <th>{{ __('professional.ver_number', [], app()->getLocale()) }}</th>
+                        <th>{{ __('professional.ver_issuer', [], app()->getLocale()) }}</th>
+                        <th>{{ __('professional.ver_submitted', [], app()->getLocale()) }}</th>
+                        <th class="row-actions">{{ __('professional.ver_verify', [], app()->getLocale()) }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -61,7 +61,7 @@
                         }
                     @endphp
                     <tr>
-                        <td data-label="{{ __('professional.ver_provider', [], app()->getLocale()) ?: 'Professional' }}">
+                        <td data-label="{{ __('professional.ver_provider', [], app()->getLocale()) }}">
                             <div class="td-strong">{{ $credential->provider?->name }}</div>
                             <div class="td-muted">{{ $credential->provider?->email }}</div>
                             @php
@@ -82,18 +82,18 @@
                             <div class="td-muted">{{ $roleLabel }}</div>
                             @endif
                         </td>
-                        <td data-label="{{ __('professional.ver_credential', [], app()->getLocale()) ?: 'Qualification' }}">
+                        <td data-label="{{ __('professional.ver_credential', [], app()->getLocale()) }}">
                             <span class="badge badge-neutral">{{ $ctLabel }}</span>
                         </td>
-                        <td data-label="{{ __('professional.ver_number', [], app()->getLocale()) ?: 'Number' }}">{{ $credential->credential_number ?: '—' }}</td>
-                        <td data-label="{{ __('professional.ver_issuer', [], app()->getLocale()) ?: 'Issuing body' }}">{{ $credential->issuing_body ?: '—' }}</td>
-                        <td data-label="{{ __('professional.ver_submitted', [], app()->getLocale()) ?: 'Submitted' }}" class="td-muted">{{ $credential->created_at?->diffForHumans() }}</td>
-                        <td class="row-actions" data-label="{{ __('professional.ver_verify', [], app()->getLocale()) ?: 'Verify' }}">
+                        <td data-label="{{ __('professional.ver_number', [], app()->getLocale()) }}">{{ $credential->credential_number ?: '—' }}</td>
+                        <td data-label="{{ __('professional.ver_issuer', [], app()->getLocale()) }}">{{ $credential->issuing_body ?: '—' }}</td>
+                        <td data-label="{{ __('professional.ver_submitted', [], app()->getLocale()) }}" class="td-muted">{{ $credential->created_at?->diffForHumans() }}</td>
+                        <td class="row-actions" data-label="{{ __('professional.ver_verify', [], app()->getLocale()) }}">
                             <form method="POST" action="{{ route('portals.admin.verifications.verify', $credential->id) }}" class="inline-form">
                                 @csrf
-                                <button type="submit" class="btn btn-success btn-sm"><i data-lucide="check"></i> {{ __('professional.ver_verify', [], app()->getLocale()) ?: 'Verify' }}</button>
+                                <button type="submit" class="btn btn-success btn-sm"><i data-lucide="check"></i> {{ __('professional.ver_verify', [], app()->getLocale()) }}</button>
                             </form>
-                            <button type="button" class="btn btn-ghost btn-sm" onclick="opOpenModal('reject-{{ $credential->id }}')"><i data-lucide="x"></i> {{ __('professional.ver_reject', [], app()->getLocale()) ?: 'Reject' }}</button>
+                            <button type="button" class="btn btn-ghost btn-sm" data-call="opOpenModal" data-args="[&quot;reject-{{ $credential->id }}&quot;]"><i data-lucide="x"></i> {{ __('professional.ver_reject', [], app()->getLocale()) }}</button>
                         </td>
                     </tr>
                 @endforeach
@@ -109,17 +109,17 @@
     @foreach($pending as $credential)
     <div id="reject-{{ $credential->id }}" class="modal-backdrop mt-6" hidden>
         <div class="modal" role="dialog" aria-modal="true" aria-labelledby="reject-{{ $credential->id }}-title">
-            <h3 class="modal__title" id="reject-{{ $credential->id }}-title"><i data-lucide="x-circle"></i> {{ __('professional.ver_reject', [], app()->getLocale()) ?: 'Reject' }}</h3>
+            <h3 class="modal__title" id="reject-{{ $credential->id }}-title"><i data-lucide="x-circle"></i> {{ __('professional.ver_reject', [], app()->getLocale()) }}</h3>
             <form method="POST" action="{{ route('portals.admin.verifications.reject', $credential->id) }}">
                 @csrf
                 <div class="modal__body">
                     <p class="td-strong mb-2">{{ $credential->provider?->name }}</p>
-                    <label class="form-label" for="notes-{{ $credential->id }}">{{ __('professional.ver_reject_reason', [], app()->getLocale()) ?: 'Reason (optional)' }}</label>
+                    <label class="form-label" for="notes-{{ $credential->id }}">{{ __('professional.ver_reject_reason', [], app()->getLocale()) }}</label>
                     <textarea name="notes" id="notes-{{ $credential->id }}" rows="3" class="form-control" style="width:100%;"></textarea>
                 </div>
                 <div class="modal__footer">
-                    <button type="button" class="btn btn-ghost" onclick="opCloseModal('reject-{{ $credential->id }}')">{{ __('public.adm_users_idx_modal_delete_btn_cancel', [], app()->getLocale()) ?: 'Cancel' }}</button>
-                    <button type="submit" class="btn btn-danger"><i data-lucide="x"></i> {{ __('professional.ver_reject', [], app()->getLocale()) ?: 'Reject' }}</button>
+                    <button type="button" class="btn btn-ghost" data-call="opCloseModal" data-args="[&quot;reject-{{ $credential->id }}&quot;]">{{ __('public.adm_users_idx_modal_delete_btn_cancel', [], app()->getLocale()) }}</button>
+                    <button type="submit" class="btn btn-danger"><i data-lucide="x"></i> {{ __('professional.ver_reject', [], app()->getLocale()) }}</button>
                 </div>
             </form>
         </div>
@@ -129,7 +129,7 @@
 
 @endsection
 @section('scripts')
-<script>
+<script @cspNonce>
 function opOpenModal(id){ document.getElementById(id).removeAttribute('hidden'); }
 function opCloseModal(id){ document.getElementById(id).setAttribute('hidden',''); }
 document.addEventListener('keydown', function(e){

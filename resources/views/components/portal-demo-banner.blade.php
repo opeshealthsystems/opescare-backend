@@ -47,12 +47,12 @@
 <div id="portal-demo-banner" class="demo-banner">
     <span class="demo-banner-msg">
         <i data-lucide="flask-conical" aria-hidden="true"></i>
-        {{ __('public.portal.demo_banner', [], $l) ?: 'Demo Mode — You are viewing sample data only. No real patient records are accessible.' }}
+        {{ __('public.portal.demo_banner', [], $l) }}
     </span>
     @if(session('demo_session_expires_at'))
     <span class="demo-banner-expiry">
         <i data-lucide="clock" aria-hidden="true"></i>
-        {{ __('public.portal.demo_expires', [], $l) ?: 'Session expires' }}:
+        {{ __('public.portal.demo_expires', [], $l) }}:
         {{ \Carbon\Carbon::parse(session('demo_session_expires_at'))->diffForHumans() }}
     </span>
     @endif

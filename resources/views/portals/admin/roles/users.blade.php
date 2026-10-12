@@ -58,7 +58,7 @@
                         @if($user->is_active ?? true)<span class="badge badge-success">{{ __('public.adm_roles_status_active') }}</span>
                         @else<span class="badge badge-neutral">{{ __('public.adm_roles_status_inactive') }}</span>@endif
                     </td>
-                    <td data-label="{{ __('public.adm_roles_col_joined') }}" class="td-muted">{{ $user->created_at?->format('d M Y') ?? '—' }}</td>
+                    <td data-label="{{ __('public.adm_roles_col_joined') }}" class="td-muted">{{ $user->created_at?->translatedFormat('d M Y') ?? '—' }}</td>
                 </tr>
                 @empty
                 <tr><td colspan="5" class="td-muted empty-cell">{{ __('public.adm_roles_empty') }}</td></tr>

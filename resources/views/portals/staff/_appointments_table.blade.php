@@ -35,13 +35,13 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>{{ __('public.staff_portal.col_datetime', [], $lApp) ?: 'Date / Time' }}</th>
-                        <th>{{ __('public.staff_portal.col_patient_id', [], $lApp) ?: 'Patient ID' }}</th>
+                        <th>{{ __('public.staff_portal.col_datetime', [], $lApp) }}</th>
+                        <th>{{ __('public.staff_portal.col_patient_id', [], $lApp) }}</th>
                         <th>{{ __('staff.desk.col_clinician') }}</th>
-                        <th>{{ __('public.staff_portal.col_type', [], $lApp) ?: 'Type' }}</th>
-                        <th>{{ __('public.staff_portal.col_facility', [], $lApp) ?: 'Facility' }}</th>
-                        <th>{{ __('public.staff_portal.col_status', [], $lApp) ?: 'Status' }}</th>
-                        <th>{{ __('public.staff_portal.col_actions', [], $lApp) ?: 'Actions' }}</th>
+                        <th>{{ __('public.staff_portal.col_type', [], $lApp) }}</th>
+                        <th>{{ __('public.staff_portal.col_facility', [], $lApp) }}</th>
+                        <th>{{ __('public.staff_portal.col_status', [], $lApp) }}</th>
+                        <th>{{ __('public.staff_portal.col_actions', [], $lApp) }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -67,10 +67,10 @@
                         $canCheckIn = $canQueue && in_array($status, $checkInFrom, true);
                     @endphp
                     <tr>
-                        <td data-label="{{ __('public.staff_portal.col_datetime', [], $lApp) ?: 'Date / Time' }}">
-                            <span class="td-strong">{{ ($timeOnly ?? false) ? $when->format('H:i') : $when->format('M d, Y H:i') }}</span>
+                        <td data-label="{{ __('public.staff_portal.col_datetime', [], $lApp) }}">
+                            <span class="td-strong">{{ ($timeOnly ?? false) ? $when->format('H:i') : $when->translatedFormat('M d, Y H:i') }}</span>
                         </td>
-                        <td data-label="{{ __('public.staff_portal.col_patient_id', [], $lApp) ?: 'Patient ID' }}">
+                        <td data-label="{{ __('public.staff_portal.col_patient_id', [], $lApp) }}">
                             <span class="mono">{{ $patientLabel }}</span>
                             @if($dial)
                                 {{-- The number a desk actually needs: tap to call. --}}
@@ -86,18 +86,18 @@
                             {{-- The clinician's name (eager-loaded), never a raw uuid. --}}
                             {{ $appointment->provider?->name ?? __('staff.desk.unassigned') }}
                         </td>
-                        <td data-label="{{ __('public.staff_portal.col_type', [], $lApp) ?: 'Type' }}">
+                        <td data-label="{{ __('public.staff_portal.col_type', [], $lApp) }}">
                             <span class="badge badge-primary">@enum($appointment->appointment_type ?? 'General')</span>
                         </td>
-                        <td data-label="{{ __('public.staff_portal.col_facility', [], $lApp) ?: 'Facility' }}">
+                        <td data-label="{{ __('public.staff_portal.col_facility', [], $lApp) }}">
                             {{-- Always the session's facility (the query is scoped to it);
                                  its name, not the uuid this column used to print. --}}
                             {{ $facilityName ?? '—' }}
                         </td>
-                        <td data-label="{{ __('public.staff_portal.col_status', [], $lApp) ?: 'Status' }}">
+                        <td data-label="{{ __('public.staff_portal.col_status', [], $lApp) }}">
                             <span class="badge {{ $statusBadge }}">@enum($appointment->status ?? 'Unknown')</span>
                         </td>
-                        <td data-label="{{ __('public.staff_portal.col_actions', [], $lApp) ?: 'Actions' }}">
+                        <td data-label="{{ __('public.staff_portal.col_actions', [], $lApp) }}">
                             @if($canConfirm || $canNoShow || $canCancel || $canCheckIn)
                             <div class="fs-act">
                                 @if($canCheckIn)
@@ -129,7 +129,7 @@
                                 @endif
                                 @if($canCancel)
                                 <button type="button" class="fs-act-btn fs-act-btn--danger"
-                                        onclick="openApptCancelModal('{{ $appointment->id }}', '{{ addslashes($patientLabel) }} · {{ $when->format('M d, H:i') }}')">
+                                        data-call="openApptCancelModal" data-args="{{ json_encode([$appointment->id, $patientLabel . ' · ' . $when->translatedFormat('M d, H:i')]) }}">
                                     @include('partials.finder.icon', ['name' => 'x', 'size' => 15])
                                     {{ __('finder_supply.btn_cancel') }}
                                 </button>

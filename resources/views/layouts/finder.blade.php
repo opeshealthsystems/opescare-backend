@@ -182,7 +182,7 @@
 
     {{-- Progressive enhancement only: keyboard + aria for the CSS-only menu.
          The menu itself works with JS disabled. --}}
-    <script>
+    <script @cspNonce>
     (function () {
         var t = document.getElementById('f-nav-toggle');
         var b = document.querySelector('.f-burger');
@@ -203,6 +203,7 @@
     })();
     </script>
 
+    <script src="{{ asset('js/op-actions.js') }}?v={{ @filemtime(public_path('js/op-actions.js')) ?: '1' }}" defer></script>
     @stack('scripts')
 </body>
 </html>

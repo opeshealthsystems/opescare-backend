@@ -6,24 +6,24 @@
      reachable only by URL from here. --}}
 <div class="sidebar-role-badge">
     <i data-lucide="package-2"></i>
-    {{ __('portal.medicine_stock_role', [], $l) ?: 'Medicine Stock' }}
+    {{ __('portal.medicine_stock_role', [], $l) }}
 </div>
 <div class="sidebar-spacer"></div>
 
 <div class="sidebar-nav-section">
     <a href="{{ route('portals.pharmacy.dashboard') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.dashboard') ? 'active' : '' }}">
-        <i data-lucide="layout-dashboard"></i><span>{{ __('public.portal.nav_dashboard', [], $l) ?: 'Dashboard' }}</span>
+        <i data-lucide="layout-dashboard"></i><span>{{ __('public.portal.nav_dashboard', [], $l) }}</span>
     </a>
 </div>
 
 @capability('pharmacy_stock')
 <div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.portal.nav_pharmacy', [], $l) ?: 'Pharmacy' }}</div>
+    <div class="sidebar-nav-label">{{ __('public.portal.nav_pharmacy', [], $l) }}</div>
     <a href="{{ route('portals.pharmacy.stock') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.stock') ? 'active' : '' }}">
-        <i data-lucide="package"></i><span>{{ __('public.portal.nav_stock', [], $l) ?: 'Stock' }}</span>
+        <i data-lucide="package"></i><span>{{ __('public.portal.nav_stock', [], $l) }}</span>
     </a>
     <a href="{{ route('portals.pharmacy.controlled') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.controlled*') ? 'active' : '' }}">
-        <i data-lucide="shield-alert"></i><span>{{ __('public.portal.nav_controlled', [], $l) ?: 'Controlled Substances' }}</span>
+        <i data-lucide="shield-alert"></i><span>{{ __('public.portal.nav_controlled', [], $l) }}</span>
     </a>
     @capability('pharmacy_stock')
     <a href="{{ route('portals.pharmacy.prices.index') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.prices.*') ? 'active' : '' }}">

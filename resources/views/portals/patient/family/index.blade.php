@@ -1,9 +1,9 @@
 @extends('layouts.portal')
 
-@section('title', __('public.portal.family_title', [], app()->getLocale()) ?: 'My Family')
-@section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()) ?: 'My Portal')
+@section('title', __('public.portal.family_title', [], app()->getLocale()))
+@section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()))
 @section('breadcrumb_home_url', route('portals.patient'))
-@section('breadcrumb_section', __('public.portal.family_breadcrumb', [], app()->getLocale()) ?: 'My Family')
+@section('breadcrumb_section', __('public.portal.family_breadcrumb', [], app()->getLocale()))
 
 @section('head')
     @include('portals.patient._finder_head')
@@ -31,7 +31,7 @@
 
     <div class="pf-head">
         <div>
-            <h1>{{ __('public.portal.family_title', [], $l) ?: 'My Family' }}</h1>
+            <h1>{{ __('public.portal.family_title', [], $l) }}</h1>
             <p class="pf-sub">{{ __('family.age_child_note', ['age' => $majorityAge]) }}</p>
         </div>
         <div class="pf-actions">
@@ -59,7 +59,7 @@
         </h2>
         <div class="pf-stack">
             @foreach($incomingInvites as $inv)
-            @php $who = $inv->guardianUser?->name ?? $inv->guardianUser?->email ?? (__('public.portal.unknown_guardian', [], $l) ?: 'Unknown guardian'); @endphp
+            @php $who = $inv->guardianUser?->name ?? $inv->guardianUser?->email ?? (__('public.portal.unknown_guardian', [], $l)); @endphp
             <div class="f-card" data-invitation="{{ $inv->id }}">
                 <p style="margin:0 0 10px;">{{ __('family.inv_from', ['name' => $who, 'relationship' => mb_strtolower($relLabel($inv->relationship)), 'access' => mb_strtolower($inv->access_level === 'full' ? __('family.access.full') : __('family.access.read_only'))]) }}</p>
                 <div class="pf-actions">
@@ -83,8 +83,8 @@
         <div class="pf-qa__icon" style="margin:0 auto 12px;width:48px;height:48px;">
             @include('partials.finder.icon', ['name' => 'users', 'size' => 24])
         </div>
-        <h2 style="font-size:1.125rem;font-weight:750;margin:0 0 6px;">{{ __('public.portal.no_family_title', [], $l) ?: 'No family members linked yet' }}</h2>
-        <p class="f-muted" style="margin:0;">{{ __('public.portal.no_family_desc', [], $l) ?: 'Add a dependent or invite an existing patient to link their records to yours.' }}</p>
+        <h2 style="font-size:1.125rem;font-weight:750;margin:0 0 6px;">{{ __('public.portal.no_family_title', [], $l) }}</h2>
+        <p class="f-muted" style="margin:0;">{{ __('public.portal.no_family_desc', [], $l) }}</p>
     </div>
     @else
     <div class="pf-stack">
@@ -101,7 +101,7 @@
                 <div class="pf-avatar">{{ strtoupper(substr($dep?->first_name ?? 'D', 0, 1)) }}</div>
                 <div style="flex:1;min-width:0;">
                     <div style="font-weight:750;color:var(--f-ink);">
-                        {{ $dep ? ($link->status === 'active' ? trim(($dep->first_name ?? '') . ' ' . ($dep->last_name ?? '')) : trim(($dep->first_name ?? '') . ' ' . mb_substr((string) ($dep->last_name ?? ''), 0, 1) . '.')) : (__('public.portal.unknown_patient', [], $l) ?: 'Unknown patient') }}
+                        {{ $dep ? ($link->status === 'active' ? trim(($dep->first_name ?? '') . ' ' . ($dep->last_name ?? '')) : trim(($dep->first_name ?? '') . ' ' . mb_substr((string) ($dep->last_name ?? ''), 0, 1) . '.')) : (__('public.portal.unknown_patient', [], $l)) }}
                         @if($dep && $viewingId === $dep->id)<span class="f-badge f-badge--good" style="margin-left:6px;">{{ __('family.dash_currently_viewing') }}</span>@endif
                     </div>
                     @if($dep && $link->status === 'active')
@@ -109,9 +109,9 @@
                     @endif
                 </div>
                 @if($link->status === 'pending_invite')
-                <span class="f-badge f-badge--warn">{{ __('public.portal.lbl_pending', [], $l) ?: 'Pending' }}</span>
+                <span class="f-badge f-badge--warn">{{ __('public.portal.lbl_pending', [], $l) }}</span>
                 @else
-                <span class="f-badge f-badge--good">{{ __('public.portal.lbl_active', [], $l) ?: 'Active' }}</span>
+                <span class="f-badge f-badge--good">{{ __('public.portal.lbl_active', [], $l) }}</span>
                 @endif
             </div>
             <p class="f-small f-muted" style="margin:10px 0 0;">
@@ -143,8 +143,8 @@
                     <button type="submit" class="f-btn f-btn--primary">{{ __('family.dash_view_as') }}</button>
                 </form>
                 @endif
-                <a href="{{ route('portals.patient.family.edit', $link->id) }}" class="f-btn">{{ __('public.portal.btn_edit', [], $l) ?: 'Edit' }}</a>
-                <button type="button" class="f-btn pf-btn--danger-ghost" onclick="pfOpenModal('remove-link-{{ $link->id }}')">{{ __('public.portal.btn_remove', [], $l) ?: 'Remove' }}</button>
+                <a href="{{ route('portals.patient.family.edit', $link->id) }}" class="f-btn">{{ __('public.portal.btn_edit', [], $l) }}</a>
+                <button type="button" class="f-btn pf-btn--danger-ghost" data-call="pfOpenModal" data-args="[&quot;remove-link-{{ $link->id }}&quot;]">{{ __('public.portal.btn_remove', [], $l) }}</button>
             </div>
         </div>
         @endforeach
@@ -155,23 +155,23 @@
     <div data-section="guardian-consent" class="pf-section" style="margin-top:24px;">
         <h2 class="pf-card-head" style="margin-bottom:10px;">
             @include('partials.finder.icon', ['name' => 'shield-check', 'size' => 18])
-            {{ __('public.portal.guardian_section_title', [], $l) ?: 'Guardian Access — Your Approval Needed' }}
+            {{ __('public.portal.guardian_section_title', [], $l) }}
         </h2>
         <div class="pf-stack">
             @foreach($incomingConsent as $cl)
             <div class="f-card">
                 <p style="margin:0 0 12px;">
-                    <strong>{{ $cl->guardianUser?->name ?? $cl->guardianUser?->email ?? (__('public.portal.unknown_guardian', [], $l) ?: 'Unknown guardian') }}</strong>
-                    {{ __('public.portal.guardian_access_desc', [], $l) ?: 'has guardian access to your records. This access will expire on' }}
+                    <strong>{{ $cl->guardianUser?->name ?? $cl->guardianUser?->email ?? (__('public.portal.unknown_guardian', [], $l)) }}</strong>
+                    {{ __('public.portal.guardian_access_desc', [], $l) }}
                     <strong>{{ $cl->age_transition_expires_at->translatedFormat('d M Y') }}</strong>
-                    {{ __('public.portal.guardian_approve_suffix', [], $l) ?: 'unless you approve continued access.' }}
+                    {{ __('public.portal.guardian_approve_suffix', [], $l) }}
                 </p>
                 <div class="pf-actions">
                     <form method="POST" action="{{ route('portals.patient.family.guardian_consent.approve', $cl->id) }}">
                         @csrf
-                        <button type="submit" class="f-btn f-btn--primary">{{ __('public.portal.btn_keep_access', [], $l) ?: 'Keep Access' }}</button>
+                        <button type="submit" class="f-btn f-btn--primary">{{ __('public.portal.btn_keep_access', [], $l) }}</button>
                     </form>
-                    <button type="button" class="f-btn pf-btn--danger-ghost" onclick="pfOpenModal('deny-guardian-{{ $cl->id }}')">{{ __('public.portal.btn_remove_access', [], $l) ?: 'Remove Access' }}</button>
+                    <button type="button" class="f-btn pf-btn--danger-ghost" data-call="pfOpenModal" data-args="[&quot;deny-guardian-{{ $cl->id }}&quot;]">{{ __('public.portal.btn_remove_access', [], $l) }}</button>
                 </div>
             </div>
             @endforeach
@@ -184,14 +184,14 @@
         <div class="pf-modal" role="dialog" aria-modal="true" aria-labelledby="remove-link-{{ $link->id }}-title">
             <h3 id="remove-link-{{ $link->id }}-title">
                 @include('partials.finder.icon', ['name' => 'alert-circle', 'size' => 18])
-                {{ __('public.portal.modal_remove_link_title', [], $l) ?: 'Remove family link' }}
+                {{ __('public.portal.modal_remove_link_title', [], $l) }}
             </h3>
             <form method="POST" action="{{ route('portals.patient.family.revoke', $link->id) }}">
                 @csrf
-                <p>{{ __('public.portal.modal_remove_link_body', [], $l) ?: 'Remove this family link?' }}</p>
+                <p>{{ __('public.portal.modal_remove_link_body', [], $l) }}</p>
                 <div class="pf-modal__actions">
-                    <button type="button" class="f-btn" onclick="pfCloseModal('remove-link-{{ $link->id }}')">{{ __('public.portal.btn_cancel', [], $l) ?: 'Cancel' }}</button>
-                    <button type="submit" class="f-btn pf-btn--danger">{{ __('public.portal.btn_remove', [], $l) ?: 'Remove' }}</button>
+                    <button type="button" class="f-btn" data-call="pfCloseModal" data-args="[&quot;remove-link-{{ $link->id }}&quot;]">{{ __('public.portal.btn_cancel', [], $l) }}</button>
+                    <button type="submit" class="f-btn pf-btn--danger">{{ __('public.portal.btn_remove', [], $l) }}</button>
                 </div>
             </form>
         </div>
@@ -203,14 +203,14 @@
         <div class="pf-modal" role="dialog" aria-modal="true" aria-labelledby="deny-guardian-{{ $cl->id }}-title">
             <h3 id="deny-guardian-{{ $cl->id }}-title">
                 @include('partials.finder.icon', ['name' => 'alert-circle', 'size' => 18])
-                {{ __('public.portal.modal_remove_guardian_title', [], $l) ?: 'Remove guardian access' }}
+                {{ __('public.portal.modal_remove_guardian_title', [], $l) }}
             </h3>
             <form method="POST" action="{{ route('portals.patient.family.guardian_consent.deny', $cl->id) }}">
                 @csrf
-                <p>{{ __('public.portal.modal_remove_guardian_body', [], $l) ?: "Remove this guardian's access?" }}</p>
+                <p>{{ __('public.portal.modal_remove_guardian_body', [], $l) }}</p>
                 <div class="pf-modal__actions">
-                    <button type="button" class="f-btn" onclick="pfCloseModal('deny-guardian-{{ $cl->id }}')">{{ __('public.portal.btn_cancel', [], $l) ?: 'Cancel' }}</button>
-                    <button type="submit" class="f-btn pf-btn--danger">{{ __('public.portal.btn_remove_access', [], $l) ?: 'Remove Access' }}</button>
+                    <button type="button" class="f-btn" data-call="pfCloseModal" data-args="[&quot;deny-guardian-{{ $cl->id }}&quot;]">{{ __('public.portal.btn_cancel', [], $l) }}</button>
+                    <button type="submit" class="f-btn pf-btn--danger">{{ __('public.portal.btn_remove_access', [], $l) }}</button>
                 </div>
             </form>
         </div>
@@ -221,7 +221,7 @@
 @endsection
 
 @section('scripts')
-<script>
+<script @cspNonce>
 function pfOpenModal(id){ document.getElementById(id).removeAttribute('hidden'); }
 function pfCloseModal(id){ document.getElementById(id).setAttribute('hidden',''); }
 document.addEventListener('keydown', function(e){

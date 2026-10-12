@@ -16,19 +16,19 @@
     // Strings the JS needs are handed over as a JSON blob so notifications.js
     // stays a static, framework-free file (no Blade / no hardcoded English).
     $notifI18n = [
-        'loading'    => __('notifications_ui.loading', [], $__loc) ?: 'Loading…',
-        'empty'      => __('notifications_ui.empty', [], $__loc) ?: 'You have no notifications yet.',
-        'empty_desc' => __('notifications_ui.empty_desc', [], $__loc) ?: 'Orders, alerts and updates will appear here.',
-        'just_now'   => __('notifications_ui.just_now', [], $__loc) ?: 'Just now',
-        'new_badge'  => __('notifications_ui.new_badge', [], $__loc) ?: 'New',
-        'title'      => __('notifications_ui.title', [], $__loc) ?: 'Notifications',
+        'loading'    => __('notifications_ui.loading', [], $__loc),
+        'empty'      => __('notifications_ui.empty', [], $__loc),
+        'empty_desc' => __('notifications_ui.empty_desc', [], $__loc),
+        'just_now'   => __('notifications_ui.just_now', [], $__loc),
+        'new_badge'  => __('notifications_ui.new_badge', [], $__loc),
+        'title'      => __('notifications_ui.title', [], $__loc),
         'categories' => [
-            'blood'       => __('notifications_ui.category_blood', [], $__loc) ?: 'Blood',
-            'pharmacy'    => __('notifications_ui.category_pharmacy', [], $__loc) ?: 'Pharmacy',
-            'appointment' => __('notifications_ui.category_appointment', [], $__loc) ?: 'Appointment',
-            'account'     => __('notifications_ui.category_account', [], $__loc) ?: 'Account',
-            'admin'       => __('notifications_ui.category_admin', [], $__loc) ?: 'Admin',
-            'general'     => __('notifications_ui.category_general', [], $__loc) ?: 'Update',
+            'blood'       => __('notifications_ui.category_blood', [], $__loc),
+            'pharmacy'    => __('notifications_ui.category_pharmacy', [], $__loc),
+            'appointment' => __('notifications_ui.category_appointment', [], $__loc),
+            'account'     => __('notifications_ui.category_account', [], $__loc),
+            'admin'       => __('notifications_ui.category_admin', [], $__loc),
+            'general'     => __('notifications_ui.category_general', [], $__loc),
         ],
     ];
 @endphp
@@ -42,33 +42,33 @@
 
     <button type="button" class="topbar-icon-btn notif-bell-btn" id="notif-bell-btn"
             aria-haspopup="true" aria-expanded="false" aria-controls="notif-panel"
-            aria-label="{{ __('notifications_ui.bell_label', [], $__loc) ?: 'Notifications' }}">
+            aria-label="{{ __('notifications_ui.bell_label', [], $__loc) }}">
         <i data-lucide="bell" aria-hidden="true"></i>
         <span class="notif-badge" id="notif-badge" aria-live="polite" hidden>0</span>
     </button>
 
     <div class="notif-panel" id="notif-panel" role="dialog" aria-modal="false"
-         aria-label="{{ __('notifications_ui.title', [], $__loc) ?: 'Notifications' }}" hidden>
+         aria-label="{{ __('notifications_ui.title', [], $__loc) }}" hidden>
 
         <div class="notif-panel-header">
-            <span class="notif-panel-title">{{ __('notifications_ui.title', [], $__loc) ?: 'Notifications' }}</span>
+            <span class="notif-panel-title">{{ __('notifications_ui.title', [], $__loc) }}</span>
         </div>
 
         <div class="notif-list" id="notif-list" role="list">
-            <div class="notif-loading">{{ __('notifications_ui.loading', [], $__loc) ?: 'Loading…' }}</div>
+            <div class="notif-loading">{{ __('notifications_ui.loading', [], $__loc) }}</div>
         </div>
 
         <div class="notif-panel-footer">
             <button type="button" class="notif-foot-btn" id="notif-mark-read">
-                {{ __('notifications_ui.mark_all_read', [], $__loc) ?: 'Mark all as read' }}
+                {{ __('notifications_ui.mark_all_read', [], $__loc) }}
             </button>
             <a href="{{ route('notifications.center') }}" class="notif-foot-link">
-                {{ __('notifications_ui.view_all', [], $__loc) ?: 'View all notifications' }}
+                {{ __('notifications_ui.view_all', [], $__loc) }}
             </a>
             <button type="button" class="notif-foot-btn notif-sound-toggle" data-notif-sound-toggle
-                    aria-label="{{ __('notifications_ui.sound_alerts', [], $__loc) ?: 'Sound alerts' }}">
+                    aria-label="{{ __('notifications_ui.sound_alerts', [], $__loc) }}">
                 <i data-lucide="volume-2" aria-hidden="true"></i>
-                <span>{{ __('notifications_ui.sound_alerts', [], $__loc) ?: 'Sound alerts' }}</span>
+                <span>{{ __('notifications_ui.sound_alerts', [], $__loc) }}</span>
             </button>
         </div>
     </div>

@@ -14,7 +14,7 @@
 <div class="page-head">
     <h2 class="fs-mono">{{ __('pharmacy_ops.receipt_title', ['number' => $receipt->receipt_number]) }}</h2>
     <p class="page-subtitle">
-        {{ __('pharmacy_ops.lbl_received_date') }} {{ $receipt->received_date?->format('d M Y') }}
+        {{ __('pharmacy_ops.lbl_received_date') }} {{ $receipt->received_date?->translatedFormat('d M Y') }}
         · {{ $receipt->supplier?->name ?? __('pharmacy_ops.lbl_no_supplier') }}
         @if($receipt->purchaseOrder) · {{ __('pharmacy_ops.lbl_order') }} {{ $receipt->purchaseOrder->po_number ?? $receipt->purchaseOrder->id }} @endif
     </p>
@@ -48,7 +48,7 @@
                     <td data-label="{{ __('pharmacy_ops.col_line_qty') }}" class="fs-mono">{{ $line->quantity_received }}</td>
                     <td data-label="{{ __('pharmacy_ops.col_line_lot') }}" class="fs-mono">{{ $line->batch_number ?? '—' }}</td>
                     <td data-label="{{ __('pharmacy_ops.col_line_expiry') }}">
-                        @if($line->expiry_date) {{ $line->expiry_date->format('d M Y') }} @else <span class="badge badge-neutral">{{ __('pharmacy_ops.expiry_unknown') }}</span> @endif
+                        @if($line->expiry_date) {{ $line->expiry_date->translatedFormat('d M Y') }} @else <span class="badge badge-neutral">{{ __('pharmacy_ops.expiry_unknown') }}</span> @endif
                     </td>
                     <td data-label="{{ __('pharmacy_ops.col_line_cost') }}" class="fs-mono">{{ $line->unit_cost !== null ? number_format((int) $line->unit_cost, 0, ',', ' ') . ' ' . __('pharmacy_ops.xaf') : '—' }}</td>
                     <td data-label="{{ __('pharmacy_ops.col_batch_created') }}">

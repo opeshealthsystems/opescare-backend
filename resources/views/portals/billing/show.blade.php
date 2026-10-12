@@ -60,8 +60,8 @@
     <div class="panel-header">
         <h2 class="panel-title"><i data-lucide="receipt"></i> {{ __('billing_desk.lines_title') }}</h2>
         <div class="td-muted">
-            {{ __('billing_desk.raised_on') }} {{ $invoice->created_at?->format('d M Y H:i') }}
-            @if($invoice->issued_at) · {{ __('billing_desk.issued_on') }} {{ $invoice->issued_at->format('d M Y H:i') }} @endif
+            {{ __('billing_desk.raised_on') }} {{ $invoice->created_at?->translatedFormat('d M Y H:i') }}
+            @if($invoice->issued_at) · {{ __('billing_desk.issued_on') }} {{ $invoice->issued_at->translatedFormat('d M Y H:i') }} @endif
         </div>
     </div>
     <div class="table-wrapper">
@@ -97,7 +97,7 @@
     @if($invoice->status === BillingDeskService::STATUS_VOID)
         <div class="panel-body">
             <div class="alert alert-danger"><i data-lucide="ban"></i>
-                <div>{{ __('billing_desk.voided_on') }} {{ $invoice->voided_at?->format('d M Y H:i') }} — {{ __('billing_desk.void_reason') }}: {{ $invoice->void_reason }}</div>
+                <div>{{ __('billing_desk.voided_on') }} {{ $invoice->voided_at?->translatedFormat('d M Y H:i') }} — {{ __('billing_desk.void_reason') }}: {{ $invoice->void_reason }}</div>
             </div>
         </div>
     @endif
@@ -129,7 +129,7 @@
                         <td data-label="{{ __('billing_desk.col_amount') }}">{{ Xaf::format(Xaf::int($payment->amount)) }}</td>
                         <td data-label="{{ __('billing_desk.refunded') }}">{{ Xaf::format(Xaf::int($payment->refunded_amount)) }}</td>
                         <td data-label="{{ __('billing_desk.col_taken_by') }}" class="td-muted">{{ $payment->cashier?->name ?? '—' }}</td>
-                        <td data-label="{{ __('billing_desk.col_taken_at') }}" class="td-muted">{{ $payment->created_at?->format('d M Y H:i') }}</td>
+                        <td data-label="{{ __('billing_desk.col_taken_at') }}" class="td-muted">{{ $payment->created_at?->translatedFormat('d M Y H:i') }}</td>
                         <td class="row-actions" data-label="{{ __('billing_desk.col_receipt') }}">
                             @if($receipt)
                                 <a href="{{ route('portals.billing.receipt', $receipt->id) }}" class="btn btn-secondary btn-sm"><i data-lucide="printer"></i> {{ $receipt->receipt_number }}</a>
@@ -175,7 +175,7 @@
                     <td data-label="{{ __('billing_desk.col_amount') }}" class="td-strong">{{ Xaf::format(Xaf::int($refund->amount)) }}</td>
                     <td data-label="{{ __('billing_desk.refund.col_reason') }}">{{ $refund->reason }}@if($refund->status === 'rejected' && $refund->notes) <div class="td-muted">{{ $refund->notes }}</div>@endif</td>
                     <td data-label="{{ __('billing_desk.refund.col_status') }}"><span class="{{ $refundBadge($refund->status) }}">{{ __('billing_desk.refund.status.'.$refund->status) }}</span></td>
-                    <td data-label="{{ __('billing_desk.refund.col_requested') }}" class="td-muted">{{ $refund->created_at?->format('d M Y H:i') }}</td>
+                    <td data-label="{{ __('billing_desk.refund.col_requested') }}" class="td-muted">{{ $refund->created_at?->translatedFormat('d M Y H:i') }}</td>
                     <td class="row-actions" data-label="{{ __('billing_desk.refund.col_decision') }}">
                         @if($refund->status === 'pending' && $canRefund)
                             <form method="POST" action="{{ route('portals.billing.refund.approve', $refund->id) }}" style="display:inline">@csrf
@@ -218,7 +218,7 @@
                     <td data-label="{{ __('billing_desk.momo.col_number') }}" class="td-muted">{{ $charge->payer_msisdn_masked ?? '—' }}</td>
                     <td data-label="{{ __('billing_desk.col_amount') }}">{{ Xaf::format((int) $charge->amount_minor) }}</td>
                     <td data-label="{{ __('billing_desk.momo.col_status') }}"><span class="badge badge-neutral">{{ $charge->status?->value ?? '—' }}</span></td>
-                    <td data-label="{{ __('billing_desk.momo.col_sent') }}" class="td-muted">{{ $charge->created_at?->format('d M Y H:i') }}</td>
+                    <td data-label="{{ __('billing_desk.momo.col_sent') }}" class="td-muted">{{ $charge->created_at?->translatedFormat('d M Y H:i') }}</td>
                 </tr>
             @endforeach
             </tbody>

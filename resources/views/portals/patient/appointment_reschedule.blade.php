@@ -2,7 +2,7 @@
 
 @section('title', __('public.appt_reschedule_title') . ' — OpesCare')
 
-@section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()) ?: 'My Portal')
+@section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()))
 @section('breadcrumb_home_url', route('portals.patient'))
 @section('breadcrumb_section', __('public.appt_reschedule_title'))
 
@@ -25,7 +25,7 @@
         </div>
         <a href="{{ route('portals.patient.appointments') }}" class="f-btn">
             @include('partials.finder.icon', ['name' => 'chevron-left', 'size' => 18])
-            {{ __('public.portal.nav_appointments', [], app()->getLocale()) ?: 'Appointments' }}
+            {{ __('public.portal.nav_appointments', [], app()->getLocale()) }}
         </a>
     </div>
 

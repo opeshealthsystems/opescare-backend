@@ -8,8 +8,8 @@
 :root {
   --docs-sidebar-w: 260px;
   --docs-topbar-h: 56px;
-  --docs-primary: #4F46E5;
-  --docs-primary-light: #818CF8;
+  --docs-primary: #0F4C81;
+  --docs-primary-light: #5EA3DC;
   --docs-bg: #0F172A;
   --docs-sidebar-bg: #1E293B;
   --docs-content-bg: #FFFFFF;
@@ -18,8 +18,8 @@
   --docs-text-muted: #94A3B8;
   --docs-code-bg: #1E293B;
   --docs-code-border: #334155;
-  --docs-tab-active: #4F46E5;
-  --docs-link: #818CF8;
+  --docs-tab-active: #0F4C81;
+  --docs-link: #5EA3DC;
 }
 
 body.docs-body {

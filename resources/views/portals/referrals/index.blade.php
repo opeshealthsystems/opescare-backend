@@ -62,7 +62,7 @@
                     @foreach($referrals as $r)
                         @php $current = $service->currentStatus($r); @endphp
                         <tr>
-                            <td class="td-muted">{{ $r->created_at?->format('d M Y') ?? '—' }}</td>
+                            <td class="td-muted">{{ $r->created_at?->translatedFormat('d M Y') ?? '—' }}</td>
                             <td class="td-strong">{{ $r->patient?->health_id ?? '—' }}</td>
                             <td>{{ $r->referringFacility?->name ?? '—' }}</td>
                             <td>{{ $r->receivingFacility?->name ?? ($r->receiving_specialty ?: ($r->receiving_provider_name ?: '—')) }}</td>

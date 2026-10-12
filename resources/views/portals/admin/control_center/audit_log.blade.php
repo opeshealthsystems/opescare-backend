@@ -54,13 +54,13 @@
                         <td data-label="{{ __('public.adm_cc_audit_col_actor') }}">{{ $log->actor_id }}</td>
                         <td data-label="{{ __('public.adm_cc_audit_col_ip') }}" class="td-muted">{{ $log->ip_address ?? '—' }}</td>
                         <td data-label="{{ __('public.adm_cc_audit_col_when') }}" class="td-muted">
-                            {{ \Carbon\Carbon::parse($log->occurred_at)->format('M d, Y H:i') }}
+                            {{ \Carbon\Carbon::parse($log->occurred_at)->translatedFormat('M d, Y H:i') }}
                             <div class="code-muted">{{ \Carbon\Carbon::parse($log->occurred_at)->diffForHumans() }}</div>
                         </td>
                         <td class="row-actions">
                             @if($log->after || $log->before)
                                 <button type="button" class="icon-btn" aria-label="{{ __('public.aria_view_diff') }}"
-                                    onclick="showDiff({{ json_encode($log->before) }}, {{ json_encode($log->after) }}, '{{ addslashes($log->action) }}')">
+                                    data-call="showDiff" data-args="{{ json_encode([$log->before, $log->after, $log->action]) }}">
                                     <i data-lucide="eye"></i>
                                 </button>
                             @endif
@@ -86,7 +86,7 @@
     <div class="modal-fixed__panel">
         <div class="modal-fixed__head">
             <h3 id="diff-title" class="modal-fixed__title"></h3>
-            <button type="button" class="icon-btn" aria-label="{{ __('public.aria_close') }}" onclick="closeDiff()">
+            <button type="button" class="icon-btn" aria-label="{{ __('public.aria_close') }}" data-call="closeDiff">
                 <i data-lucide="x"></i>
             </button>
         </div>
@@ -105,7 +105,7 @@
 @endsection
 
 @section('scripts')
-<script>
+<script @cspNonce>
     var _ag = {
         diffTitlePrefix: @json(__('public.adm_cc_audit_js_diff_title_prefix')),
         empty: @json(__('public.adm_cc_audit_js_empty')),

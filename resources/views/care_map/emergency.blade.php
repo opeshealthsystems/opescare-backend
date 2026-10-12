@@ -204,7 +204,7 @@
     </footer>
 </main>
 
-<script>
+<script @cspNonce>
 (function () {
     var btn    = document.getElementById('em-locate');
     var status = document.getElementById('em-locate-status');

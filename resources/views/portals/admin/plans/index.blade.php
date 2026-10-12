@@ -121,7 +121,7 @@
                                     'name' => $actorName,
                                     'when' => \Carbon\Carbon::parse($lastChange->occurred_at)->diffForHumans(),
                                 ]) }}
-                                <div class="code-muted">{{ \Carbon\Carbon::parse($lastChange->occurred_at)->format('M d, Y H:i') }}</div>
+                                <div class="code-muted">{{ \Carbon\Carbon::parse($lastChange->occurred_at)->translatedFormat('M d, Y H:i') }}</div>
                             @else
                                 {{ __('plan_pricing.last_change_never') }}
                             @endif
@@ -129,7 +129,7 @@
 
                         <td class="row-actions">
                             <div class="pp-actions">
-                                <button type="button" class="btn btn-ghost btn-sm" onclick="ppOpen('{{ $plan->id }}')">
+                                <button type="button" class="btn btn-ghost btn-sm" data-call="ppOpen" data-args="[&quot;{{ $plan->id }}&quot;]">
                                     <i data-lucide="pencil"></i> {{ __('plan_pricing.btn_edit') }}
                                 </button>
                                 <form method="POST" action="{{ route('portals.admin.plans.toggle', $plan) }}" class="inline-form">
@@ -161,7 +161,7 @@
         <div class="modal-fixed__panel modal-fixed__panel--md">
             <div class="modal-fixed__head">
                 <h3 class="modal-fixed__title">{{ $plan->name }}</h3>
-                <button type="button" class="icon-btn" aria-label="{{ __('public.aria_close') }}" onclick="ppClose('{{ $plan->id }}')"><i data-lucide="x"></i></button>
+                <button type="button" class="icon-btn" aria-label="{{ __('public.aria_close') }}" data-call="ppClose" data-args="[&quot;{{ $plan->id }}&quot;]"><i data-lucide="x"></i></button>
             </div>
             <form method="POST" action="{{ route('portals.admin.plans.update', $plan) }}">
                 @csrf
@@ -199,7 +199,7 @@
                 <p class="form-hint">{{ __('plan_pricing.not_sold_hint') }}</p>
 
                 <div class="modal__footer">
-                    <button type="button" class="btn btn-ghost btn-sm" onclick="ppClose('{{ $plan->id }}')">{{ __('public.adm_cc_set_edit_modal_btn_cancel') }}</button>
+                    <button type="button" class="btn btn-ghost btn-sm" data-call="ppClose" data-args="[&quot;{{ $plan->id }}&quot;]">{{ __('public.adm_cc_set_edit_modal_btn_cancel') }}</button>
                     <button type="submit" class="btn btn-primary btn-sm">{{ __('plan_pricing.btn_save') }}</button>
                 </div>
             </form>
@@ -209,7 +209,7 @@
 @endsection
 
 @section('scripts')
-<script>
+<script @cspNonce>
     function ppOpen(id)  { document.getElementById('pp-modal-' + id).classList.add('open'); }
     function ppClose(id) { document.getElementById('pp-modal-' + id).classList.remove('open'); }
     document.querySelectorAll('.modal-fixed[id^="pp-modal-"]').forEach(function (modal) {

@@ -1,7 +1,7 @@
 @extends('layouts.portal')
 
-@section('title', __('notifications_ui.center_title', [], app()->getLocale()) ?: 'Notifications')
-@section('breadcrumb_section', __('notifications_ui.center_title', [], app()->getLocale()) ?: 'Notifications')
+@section('title', __('notifications_ui.center_title', [], app()->getLocale()))
+@section('breadcrumb_section', __('notifications_ui.center_title', [], app()->getLocale()))
 
 @section('head')
 <style>
@@ -19,12 +19,12 @@
 <div class="page-header">
     <div>
         <h1 class="page-title">
-            {{ __('notifications_ui.center_title', [], app()->getLocale()) ?: 'Notifications' }}
+            {{ __('notifications_ui.center_title', [], app()->getLocale()) }}
             @if($unread > 0)
                 <span class="badge badge-danger badge-sm">{{ $unread }}</span>
             @endif
         </h1>
-        <p class="page-subtitle">{{ __('notifications_ui.center_subtitle', [], app()->getLocale()) ?: 'Everything that needs your attention.' }}</p>
+        <p class="page-subtitle">{{ __('notifications_ui.center_subtitle', [], app()->getLocale()) }}</p>
     </div>
 
     @if($events->total() > 0)
@@ -32,7 +32,7 @@
         @csrf
         <button type="submit" class="btn btn-secondary btn-sm">
             <i data-lucide="check-check"></i>
-            {{ __('notifications_ui.mark_all_read', [], app()->getLocale()) ?: 'Mark all as read' }}
+            {{ __('notifications_ui.mark_all_read', [], app()->getLocale()) }}
         </button>
     </form>
     @endif
@@ -50,8 +50,8 @@
     <div class="panel">
         <div class="empty-state">
             <div class="empty-state-icon"><i data-lucide="bell-off"></i></div>
-            <h3>{{ __('notifications_ui.empty', [], app()->getLocale()) ?: 'You have no notifications yet.' }}</h3>
-            <p>{{ __('notifications_ui.empty_desc', [], app()->getLocale()) ?: 'Orders, alerts and updates will appear here.' }}</p>
+            <h3>{{ __('notifications_ui.empty', [], app()->getLocale()) }}</h3>
+            <p>{{ __('notifications_ui.empty_desc', [], app()->getLocale()) }}</p>
         </div>
     </div>
 
@@ -105,7 +105,7 @@
                             <div class="flex-between">
                                 <span class="timeline-title">{{ $title }}</span>
                                 @if($isUnread)
-                                    <span class="badge badge-danger badge-sm">{{ __('notifications_ui.new_badge', [], app()->getLocale()) ?: 'New' }}</span>
+                                    <span class="badge badge-danger badge-sm">{{ __('notifications_ui.new_badge', [], app()->getLocale()) }}</span>
                                 @endif
                             </div>
 

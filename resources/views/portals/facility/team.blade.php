@@ -68,7 +68,7 @@
         <p class="page-subtitle" style="margin:0 0 .75rem;">
             {{ __('team.invite_link_help', ['email' => session('invite_link_for')]) }}
         </p>
-        <input type="text" class="form-control" readonly onclick="this.select()"
+        <input type="text" class="form-control" readonly data-select-on-click
                value="{{ session('invite_link') }}"
                aria-label="{{ __('team.invite_link_title') }}">
     </div>

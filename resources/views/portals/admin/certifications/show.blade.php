@@ -39,10 +39,10 @@
                     <tr><td>{{ __('public.adm_cert_show_kv_vendor') }}</td><td class="kv-strong">{{ $certification->vendor_name ?? '—' }}</td></tr>
                     <tr><td>{{ __('public.adm_cert_show_kv_contact') }}</td><td class="kv-strong">{{ $certification->vendor_contact ?? '—' }}</td></tr>
                     <tr><td>{{ __('public.adm_cert_show_kv_version') }}</td><td class="kv-strong">{{ $certification->version ?? '—' }}</td></tr>
-                    <tr><td>{{ __('public.adm_cert_show_kv_submitted') }}</td><td class="kv-strong">{{ $certification->submitted_at?->format('d M Y') ?? '—' }}</td></tr>
-                    <tr><td>{{ __('public.adm_cert_show_kv_certified') }}</td><td class="kv-strong">{{ $certification->certified_at?->format('d M Y') ?? '—' }}</td></tr>
+                    <tr><td>{{ __('public.adm_cert_show_kv_submitted') }}</td><td class="kv-strong">{{ $certification->submitted_at?->translatedFormat('d M Y') ?? '—' }}</td></tr>
+                    <tr><td>{{ __('public.adm_cert_show_kv_certified') }}</td><td class="kv-strong">{{ $certification->certified_at?->translatedFormat('d M Y') ?? '—' }}</td></tr>
                     <tr><td>{{ __('public.adm_cert_show_kv_expires') }}</td><td class="kv-strong">
-                        {{ $certification->expires_at?->format('d M Y') ?? __('public.adm_cert_show_kv_no_expiry') }}
+                        {{ $certification->expires_at?->translatedFormat('d M Y') ?? __('public.adm_cert_show_kv_no_expiry') }}
                         @if($certification->isExpiringSoon())
                             <span class="badge badge-warning badge-sm"><i data-lucide="alert-triangle"></i> {{ __('public.adm_cert_show_kv_expiring_soon') }}</span>
                         @endif
@@ -67,12 +67,12 @@
                     <div class="badge-showcase__level">{{ ucfirst($certification->badge->certification_level) }}</div>
                     <div class="mono code-token">{{ $certification->badge->badge_code }}</div>
                     <div class="td-muted text-sm">
-                        {{ __('public.adm_cert_show_badge_issued') }} {{ $certification->badge->issued_at->format('d M Y') }}
-                        @if($certification->badge->expires_at) {{ __('public.adm_cert_show_badge_expires') }} {{ $certification->badge->expires_at->format('d M Y') }} @endif
+                        {{ __('public.adm_cert_show_badge_issued') }} {{ $certification->badge->issued_at->translatedFormat('d M Y') }}
+                        @if($certification->badge->expires_at) {{ __('public.adm_cert_show_badge_expires') }} {{ $certification->badge->expires_at->translatedFormat('d M Y') }} @endif
                     </div>
                 </div>
                 <form method="POST" action="{{ route('portals.admin.certifications.badge.revoke', $certification->badge) }}"
-                      class="mt-6" onsubmit="return confirm({{ Illuminate\Support\Js::from(__('public.adm_cert_show_js_confirm_revoke')) }})">
+                      class="mt-6" data-confirm="{{ Illuminate\Support\Js::from(__('public.adm_cert_show_js_confirm_revoke')) }}">
                     @csrf
                     <div class="form-group mb-3">
                         <input type="text" name="revoke_reason" class="form-control" placeholder="{{ __('public.adm_cert_show_ph_revoke_reason') }}" required>
@@ -116,7 +116,7 @@
                 @if($requirements->isEmpty())
                 <p class="td-muted">
                     {{ __('public.adm_cert_show_no_requirements') }}
-                    <a href="{{ route('portals.admin.certifications.seed') }}" onclick="this.closest('form')?.submit();return false;">{{ __('public.adm_cert_show_seed_link') }}</a> {{ __('public.adm_cert_show_seed_first') }}
+                    <a href="{{ route('portals.admin.certifications.seed') }}" data-submit-closest>{{ __('public.adm_cert_show_seed_link') }}</a> {{ __('public.adm_cert_show_seed_first') }}
                 </p>
                 @else
                 <form method="POST" action="{{ route('portals.admin.certifications.test_run', $certification) }}">
@@ -180,7 +180,7 @@
                             <span class="td-muted code-muted">({{ $run->passed_count }}/{{ $run->total_requirements }})</span>
                         </td>
                         <td data-label="{{ __('public.adm_cert_show_col_status') }}"><span class="badge {{ $run->statusBadgeClass() }} badge-sm">@enum($run->status)</span></td>
-                        <td data-label="{{ __('public.adm_cert_show_col_date') }}" class="td-muted">{{ $run->started_at?->format('d M Y') }}</td>
+                        <td data-label="{{ __('public.adm_cert_show_col_date') }}" class="td-muted">{{ $run->started_at?->translatedFormat('d M Y') }}</td>
                     </tr>
                     @endforeach
                     </tbody>

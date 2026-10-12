@@ -1,7 +1,7 @@
 @extends('layouts.portal')
 @section('title', __('public.adm_fac_title'))
 @include('portals.admin.control_center._sidebar')
-@section('breadcrumb_home', __('admin_extra.breadcrumb_admin', [], app()->getLocale()) ?: 'Admin')
+@section('breadcrumb_home', __('admin_extra.breadcrumb_admin', [], app()->getLocale()))
 @section('breadcrumb_home_url', route('portals.admin'))
 @section('breadcrumb_section', __('public.adm_fac_breadcrumb'))
 @section('content')
@@ -31,13 +31,13 @@
         <i data-lucide="search"></i>
         <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('public.adm_fac_ph_search') }}" aria-label="{{ __('public.aria_search_facilities') }}">
     </label>
-    <select name="type" class="filter-select" aria-label="{{ __('admin_extra.aria_type', [], app()->getLocale()) ?: 'Type' }}" onchange="this.form.submit()">
+    <select name="type" class="filter-select" aria-label="{{ __('admin_extra.aria_type', [], app()->getLocale()) }}" data-autosubmit>
         <option value="">{{ __('public.adm_fac_opt_all_types') }}</option>
         @foreach(['hospital','clinic','laboratory','pharmacy','radiology','specialist'] as $t)
         <option value="{{ $t }}" {{ request('type')===$t?'selected':'' }}>{{ ucfirst($t) }}</option>
         @endforeach
     </select>
-    <select name="status" class="filter-select" aria-label="{{ __('public.aria_status') }}" onchange="this.form.submit()">
+    <select name="status" class="filter-select" aria-label="{{ __('public.aria_status') }}" data-autosubmit>
         <option value="">{{ __('public.adm_fac_opt_all_statuses') }}</option>
         <option value="active" {{ request('status')==='active'?'selected':'' }}>{{ __('public.adm_fac_opt_active') }}</option>
         <option value="pending_approval" {{ request('status')==='pending_approval'?'selected':'' }}>{{ __('public.adm_fac_opt_pending') }}</option>
@@ -81,7 +81,7 @@
                         @else<span class="badge badge-neutral">@enum($f->status ?? 'pending')</span>@endif
                     </td>
                     <td class="row-actions" data-label="{{ __('public.adm_fac_col_actions') }}">
-                        <a href="{{ route('admin.facilities.show', $f->id) }}" class="icon-btn" aria-label="{{ __('public.aria_view_facility') }}" title="{{ __('admin_extra.title_view', [], app()->getLocale()) ?: 'View' }}">
+                        <a href="{{ route('admin.facilities.show', $f->id) }}" class="icon-btn" aria-label="{{ __('public.aria_view_facility') }}" title="{{ __('admin_extra.title_view', [], app()->getLocale()) }}">
                             <i data-lucide="eye"></i>
                         </a>
                         @if(($f->status ?? '') !== 'active')

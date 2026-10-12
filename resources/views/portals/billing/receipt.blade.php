@@ -37,14 +37,14 @@
         <p class="page-subtitle">{{ __('billing_desk.receipt.html_note') }}</p></div>
     <div class="row-actions-inline">
         <a href="{{ route('portals.billing.show', $invoice->id) }}" class="btn btn-secondary"><i data-lucide="arrow-left"></i> {{ __('billing_desk.receipt.back') }}</a>
-        <button type="button" class="btn btn-primary" onclick="window.print()"><i data-lucide="printer"></i> {{ __('billing_desk.receipt.print') }}</button>
+        <button type="button" class="btn btn-primary" data-print><i data-lucide="printer"></i> {{ __('billing_desk.receipt.print') }}</button>
     </div>
 </div>
 
 <div class="receipt-sheet">
     <div class="brand">OpesCare · {{ $facility?->name ?? '' }}</div>
     <div class="td-muted">{{ __('billing_desk.receipt.number') }} <strong>{{ $receipt->receipt_number }}</strong></div>
-    <div class="td-muted">{{ __('billing_desk.receipt.issued_at') }} {{ $receipt->issued_at?->format('d M Y H:i') }}</div>
+    <div class="td-muted">{{ __('billing_desk.receipt.issued_at') }} {{ $receipt->issued_at?->translatedFormat('d M Y H:i') }}</div>
 
     <table>
         <tr><td>{{ __('billing_desk.receipt.received') }}</td><td>{{ $pName !== '' ? $pName : '—' }}<br><span class="td-muted">{{ $patient?->health_id }}</span></td></tr>

@@ -407,7 +407,7 @@
         {{ $t('reset_title', 'Demo Reset') }}
     </h4>
     <p class="di-reset-desc">{{ $t('reset_desc', 'Reset all demo data to its default state.') }}</p>
-    <form method="POST" action="{{ url('/artisan/demo-reset') }}" onsubmit="return confirm('This will reset all demo data. Continue?');">
+    <form method="POST" action="{{ url('/artisan/demo-reset') }}" data-confirm="This will reset all demo data. Continue?">
         @csrf
         <button type="submit" class="demo-reset-btn">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>

@@ -10,6 +10,10 @@ use Illuminate\Support\Collection;
 
 class LegalDocumentService
 {
+    public function __construct(private readonly LegalHtmlSanitizer $sanitizer = new LegalHtmlSanitizer())
+    {
+    }
+
     /**
      * List of required legal documents every OpesCare installation must have.
      */
@@ -52,6 +56,11 @@ class LegalDocumentService
         string        $changeSummary = '',
         ?string       $effectiveAt = null,
     ): LegalDocumentVersion {
+        // Rendered unescaped on the public legal pages: strip scripts, handlers
+        // and javascript: links BEFORE the hash is taken, so the sealed bytes are
+        // the clean ones. See LegalHtmlSanitizer.
+        $contentHtml = $this->sanitizer->clean($contentHtml);
+
         // Unset current flag on previous versions
         $document->versions()->where('is_current', true)->update(['is_current' => false]);
 

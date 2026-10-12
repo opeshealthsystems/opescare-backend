@@ -85,7 +85,7 @@
                 </div>
                 <div class="form-group">
                     <div class="form-label">{{ __('lab_manager.pub_last') }}</div>
-                    <div class="td-strong">{{ $publication['last_published_at'] ? $publication['last_published_at']->format('d M Y H:i') : __('lab_manager.pub_never') }}</div>
+                    <div class="td-strong">{{ $publication['last_published_at'] ? $publication['last_published_at']->translatedFormat('d M Y H:i') : __('lab_manager.pub_never') }}</div>
                 </div>
             </div>
             @if($publication['catalogue_tests'] === 0)
@@ -235,7 +235,7 @@
                         $pName = trim(($p->first_name ?? '') . ' ' . ($p->last_name ?? ''));
                     @endphp
                     <tr>
-                        <td data-label="{{ __('lab_manager.col_raised') }}" class="td-muted">{{ $alert->created_at?->format('d M Y H:i') ?? '—' }}</td>
+                        <td data-label="{{ __('lab_manager.col_raised') }}" class="td-muted">{{ $alert->created_at?->translatedFormat('d M Y H:i') ?? '—' }}</td>
                         <td data-label="{{ __('lab_manager.col_patient') }}">
                             <span class="td-strong">{{ $pName !== '' ? $pName : '—' }}</span>
                             @if($p?->health_id)<div class="td-muted">{{ $p->health_id }}</div>@endif

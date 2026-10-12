@@ -9,7 +9,7 @@
 <div class="page-head">
     <h2>{{ __('security_ops.inc_title') }}</h2>
     <div class="page-head__spacer"></div>
-    <button type="button" class="btn btn-primary btn-sm" onclick="openCreateModal()">
+    <button type="button" class="btn btn-primary btn-sm" data-call="openCreateModal">
         <i data-lucide="plus-circle"></i> {{ __('security_ops.inc_btn_log') }}
     </button>
 </div>
@@ -86,17 +86,11 @@
                         <td data-label="{{ __('security_ops.inc_col_severity') }}"><span class="badge {{ $sevBadge }} badge-sm">@enum($inc->severity, 'severity')</span></td>
                         <td data-label="{{ __('security_ops.inc_col_status') }}"><span class="badge {{ $stBadge }} badge-sm">@enum($inc->status)</span></td>
                         <td data-label="{{ __('security_ops.inc_col_summary') }}">{{ Str::limit($inc->summary, 80) }}</td>
-                        <td data-label="{{ __('security_ops.inc_col_detected') }}" class="td-muted">{{ $inc->detected_at?->format('M d, Y') }}</td>
-                        <td data-label="{{ __('security_ops.inc_col_resolved') }}" class="td-muted">{{ $inc->resolved_at?->format('M d, Y') ?? '—' }}</td>
+                        <td data-label="{{ __('security_ops.inc_col_detected') }}" class="td-muted">{{ $inc->detected_at?->translatedFormat('M d, Y') }}</td>
+                        <td data-label="{{ __('security_ops.inc_col_resolved') }}" class="td-muted">{{ $inc->resolved_at?->translatedFormat('M d, Y') ?? '—' }}</td>
                         <td class="row-actions">
                             <button type="button" class="btn btn-ghost btn-sm"
-                                onclick="openUpdateModal(
-                                    '{{ $inc->id }}',
-                                    '{{ $inc->status }}',
-                                    {{ json_encode($inc->summary) }},
-                                    '{{ $inc->contained_at?->format('Y-m-d') }}',
-                                    '{{ $inc->resolved_at?->format('Y-m-d') }}'
-                                )">
+                                data-call="openUpdateModal" data-args="{{ json_encode([$inc->id, $inc->status, $inc->summary, $inc->contained_at?->format('Y-m-d') ?? '', $inc->resolved_at?->format('Y-m-d') ?? '']) }}">
                                 <i data-lucide="pencil"></i> {{ __('security_ops.inc_btn_update') }}
                             </button>
                         </td>
@@ -117,7 +111,7 @@
     <div class="modal-fixed__panel">
         <div class="modal-fixed__head">
             <h3 class="modal-fixed__title">{{ __('security_ops.inc_modal_create_title') }}</h3>
-            <button type="button" class="icon-btn" aria-label="{{ __('security_ops.btn_close') }}" onclick="closeCreateModal()"><i data-lucide="x"></i></button>
+            <button type="button" class="icon-btn" aria-label="{{ __('security_ops.btn_close') }}" data-call="closeCreateModal"><i data-lucide="x"></i></button>
         </div>
         <form method="POST" action="{{ route('portals.admin.security.incidents.store') }}">
             @csrf
@@ -147,7 +141,7 @@
                           placeholder="{{ __('security_ops.inc_form_summary_placeholder') }}">{{ old('summary') }}</textarea>
             </div>
             <div class="modal__footer">
-                <button type="button" class="btn btn-ghost btn-sm" onclick="closeCreateModal()">{{ __('security_ops.btn_cancel') }}</button>
+                <button type="button" class="btn btn-ghost btn-sm" data-call="closeCreateModal">{{ __('security_ops.btn_cancel') }}</button>
                 <button type="submit" class="btn btn-primary btn-sm">{{ __('security_ops.inc_btn_log') }}</button>
             </div>
         </form>
@@ -159,7 +153,7 @@
     <div class="modal-fixed__panel">
         <div class="modal-fixed__head">
             <h3 class="modal-fixed__title">{{ __('security_ops.inc_modal_update_title') }}</h3>
-            <button type="button" class="icon-btn" aria-label="{{ __('security_ops.btn_close') }}" onclick="closeUpdateModal()"><i data-lucide="x"></i></button>
+            <button type="button" class="icon-btn" aria-label="{{ __('security_ops.btn_close') }}" data-call="closeUpdateModal"><i data-lucide="x"></i></button>
         </div>
         <form id="update-form" method="POST" action="">
             @csrf
@@ -186,7 +180,7 @@
                 </div>
             </div>
             <div class="modal__footer">
-                <button type="button" class="btn btn-ghost btn-sm" onclick="closeUpdateModal()">{{ __('security_ops.btn_cancel') }}</button>
+                <button type="button" class="btn btn-ghost btn-sm" data-call="closeUpdateModal">{{ __('security_ops.btn_cancel') }}</button>
                 <button type="submit" class="btn btn-primary btn-sm">{{ __('security_ops.inc_btn_save') }}</button>
             </div>
         </form>
@@ -195,7 +189,7 @@
 @endsection
 
 @section('scripts')
-<script>
+<script @cspNonce>
 function openCreateModal()  { document.getElementById('create-modal').style.display = 'flex'; }
 function closeCreateModal() { document.getElementById('create-modal').style.display = 'none'; }
 function openUpdateModal(id, status, summary, containedAt, resolvedAt) {

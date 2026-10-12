@@ -59,7 +59,7 @@
             @forelse($changes as $c)
                 @php $delta = $c->old_price_xaf === null ? null : $c->new_price_xaf - $c->old_price_xaf; @endphp
                 <tr>
-                    <td data-label="{{ __('pharmacy_prices.col_when') }}" class="td-muted">{{ $c->created_at?->format('d M Y H:i') }}</td>
+                    <td data-label="{{ __('pharmacy_prices.col_when') }}" class="td-muted">{{ $c->created_at?->translatedFormat('d M Y H:i') }}</td>
                     <td data-label="{{ __('pharmacy_prices.col_old') }}" class="fs-mono">
                         @if($c->old_price_xaf === null)
                             <span class="badge badge-neutral">{{ __('pharmacy_prices.no_price_yet') }}</span>

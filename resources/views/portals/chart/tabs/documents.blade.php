@@ -23,7 +23,7 @@
                     <tbody>
                     @foreach($documents as $d)
                         <tr>
-                            <td class="td-muted">{{ $d->issued_at?->format('d M Y') ?? '—' }}</td>
+                            <td class="td-muted">{{ $d->issued_at?->translatedFormat('d M Y') ?? '—' }}</td>
                             <td class="td-strong">{{ $d->title ?: '—' }}</td>
                             <td>@if($d->document_type)@enum($d->document_type)@else —@endif</td>
                             <td class="td-muted">{{ $d->document_number ?: '—' }}</td>

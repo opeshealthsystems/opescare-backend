@@ -72,7 +72,7 @@
 @endsection
 
 @section('scripts')
-<script>
+<script @cspNonce>
 (function () {
     var fields = @json(collect($importTypes)->map(fn ($d) => ['required' => $d['required'], 'optional' => $d['optional']]));
     var labels = @json(['required' => __('staff_data.js_required'), 'optional' => __('staff_data.js_optional')]);

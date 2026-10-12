@@ -12,7 +12,7 @@
         <p class="page-subtitle">{{ __('public.adm_cc_mnt_subtitle') }}</p>
     </div>
     <div class="page-head__spacer"></div>
-    <button type="button" class="btn btn-primary btn-sm" onclick="openCreateModal()">
+    <button type="button" class="btn btn-primary btn-sm" data-call="openCreateModal">
         <i data-lucide="plus"></i> {{ __('public.adm_cc_mnt_btn_schedule') }}
     </button>
 </div>
@@ -31,7 +31,7 @@
     <i data-lucide="wrench"></i>
     <div>
         <strong>{{ __('public.adm_cc_mnt_banner_active') }}</strong> {{ $active->title }}
-        <span class="td-muted text-sm">Until {{ \Carbon\Carbon::parse($active->ends_at)->format('M d, Y H:i') }}</span>
+        <span class="td-muted text-sm">Until {{ \Carbon\Carbon::parse($active->ends_at)->translatedFormat('M d, Y H:i') }}</span>
     </div>
 </div>
 @endif
@@ -66,8 +66,8 @@
                                 <div class="td-muted text-sm">{{ Str::limit($win->message, 60) }}</div>
                             @endif
                         </td>
-                        <td data-label="Starts">{{ $starts->format('M d, Y H:i') }}</td>
-                        <td data-label="Ends">{{ $ends->format('M d, Y H:i') }}</td>
+                        <td data-label="Starts">{{ $starts->translatedFormat('M d, Y H:i') }}</td>
+                        <td data-label="Ends">{{ $ends->translatedFormat('M d, Y H:i') }}</td>
                         <td data-label="Status">
                             @if($live)
                                 <span class="badge badge-danger badge-sm">{{ __('public.adm_cc_mnt_badge_live') }}</span>
@@ -92,7 +92,7 @@
                                 @csrf
                                 <input type="hidden" name="active" value="{{ $win->is_active ? '0' : '1' }}">
                                 <label class="switch">
-                                    <input type="checkbox" {{ $win->is_active ? 'checked' : '' }} onchange="this.form.submit()" aria-label="Toggle {{ $win->title }}">
+                                    <input type="checkbox" {{ $win->is_active ? 'checked' : '' }} data-autosubmit aria-label="Toggle {{ $win->title }}">
                                     <span class="switch__track"></span>
                                 </label>
                             </form>
@@ -111,7 +111,7 @@
     <div class="modal-fixed__panel modal-fixed__panel--md">
         <div class="modal-fixed__head">
             <h3 class="modal-fixed__title">{{ __('public.adm_cc_mnt_modal_heading') }}</h3>
-            <button type="button" class="icon-btn" aria-label="{{ __('public.aria_close') }}" onclick="closeCreateModal()"><i data-lucide="x"></i></button>
+            <button type="button" class="icon-btn" aria-label="{{ __('public.aria_close') }}" data-call="closeCreateModal"><i data-lucide="x"></i></button>
         </div>
         <form method="POST" action="{{ route('portals.admin.cc.maintenance.store') }}">
             @csrf
@@ -140,7 +140,7 @@
                 </label>
             </div>
             <div class="modal__footer">
-                <button type="button" class="btn btn-ghost btn-sm" onclick="closeCreateModal()">{{ __('public.adm_cc_mnt_modal_btn_cancel') }}</button>
+                <button type="button" class="btn btn-ghost btn-sm" data-call="closeCreateModal">{{ __('public.adm_cc_mnt_modal_btn_cancel') }}</button>
                 <button type="submit" class="btn btn-primary btn-sm">{{ __('public.adm_cc_mnt_modal_btn_schedule') }}</button>
             </div>
         </form>
@@ -149,7 +149,7 @@
 @endsection
 
 @section('scripts')
-<script>
+<script @cspNonce>
     function openCreateModal()  { document.getElementById('create-modal').classList.add('open'); }
     function closeCreateModal() { document.getElementById('create-modal').classList.remove('open'); }
     document.getElementById('create-modal').addEventListener('click', function(e) { if (e.target === this) closeCreateModal(); });

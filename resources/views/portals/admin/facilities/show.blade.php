@@ -62,7 +62,7 @@
     </div>
     <div class="stat-card">
         <div class="stat-card__label">{{ __('public.adm_fac_show_lbl_created') }}</div>
-        <div class="stat-card__value">{{ $facility->created_at?->format('d M Y') ?? '—' }}</div>
+        <div class="stat-card__value">{{ $facility->created_at?->translatedFormat('d M Y') ?? '—' }}</div>
     </div>
 </div>
 
@@ -106,9 +106,9 @@
     <div class="panel-body">
         <div class="page-head">
             @if(($facility->status ?? '') !== 'suspended')
-            <button type="button" class="btn btn-warning" onclick="opOpenModal('suspend-modal')"><i data-lucide="pause-circle"></i> {{ __('public.adm_fac_show_btn_suspend') }}</button>
+            <button type="button" class="btn btn-warning" data-call="opOpenModal" data-args="[&quot;suspend-modal&quot;]"><i data-lucide="pause-circle"></i> {{ __('public.adm_fac_show_btn_suspend') }}</button>
             @endif
-            <button type="button" class="btn btn-danger" onclick="opOpenModal('delete-modal')"><i data-lucide="trash-2"></i> {{ __('public.adm_fac_show_btn_delete') }}</button>
+            <button type="button" class="btn btn-danger" data-call="opOpenModal" data-args="[&quot;delete-modal&quot;]"><i data-lucide="trash-2"></i> {{ __('public.adm_fac_show_btn_delete') }}</button>
         </div>
     </div>
 </div>
@@ -123,7 +123,7 @@
                 <textarea name="reason" class="form-control" rows="3" placeholder="{{ __('public.adm_fac_show_modal_suspend_ph') }}" required></textarea>
             </div>
             <div class="modal__footer">
-                <button type="button" class="btn btn-ghost" onclick="opCloseModal('suspend-modal')">{{ __('public.adm_fac_show_btn_cancel') }}</button>
+                <button type="button" class="btn btn-ghost" data-call="opCloseModal" data-args="[&quot;suspend-modal&quot;]">{{ __('public.adm_fac_show_btn_cancel') }}</button>
                 <button type="submit" class="btn btn-warning">{{ __('public.adm_fac_show_btn_suspend_confirm') }}</button>
             </div>
         </form>
@@ -140,7 +140,7 @@
                 <textarea name="reason" class="form-control" rows="3" placeholder="{{ __('public.adm_fac_show_modal_delete_ph') }}" required></textarea>
             </div>
             <div class="modal__footer">
-                <button type="button" class="btn btn-ghost" onclick="opCloseModal('delete-modal')">{{ __('public.adm_fac_show_btn_cancel') }}</button>
+                <button type="button" class="btn btn-ghost" data-call="opCloseModal" data-args="[&quot;delete-modal&quot;]">{{ __('public.adm_fac_show_btn_cancel') }}</button>
                 <button type="submit" class="btn btn-danger">{{ __('public.adm_fac_show_btn_delete_confirm') }}</button>
             </div>
         </form>
@@ -149,7 +149,7 @@
 
 @endsection
 @section('scripts')
-<script>
+<script @cspNonce>
 function opOpenModal(id){ document.getElementById(id).removeAttribute('hidden'); }
 function opCloseModal(id){ document.getElementById(id).setAttribute('hidden',''); }
 document.addEventListener('keydown', function(e){

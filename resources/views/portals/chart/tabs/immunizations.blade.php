@@ -26,7 +26,7 @@
                     <tbody>
                     @foreach($immunizations as $i)
                         <tr>
-                            <td class="td-muted">{{ $i->administered_at?->format('d M Y') ?? '—' }}</td>
+                            <td class="td-muted">{{ $i->administered_at?->translatedFormat('d M Y') ?? '—' }}</td>
                             <td class="td-strong">
                                 {{ $i->vaccine_name ?: '—' }}
                                 @if($i->vaccine_code)<br><small class="td-muted">{{ $i->vaccine_code }}</small>@endif

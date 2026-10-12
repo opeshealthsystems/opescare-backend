@@ -90,7 +90,7 @@
                             @if($req->test_code)<div class="td-muted">{{ $req->test_code }}</div>@endif
                         </td>
                         <td data-label="{{ __('lab_manager.col_priority') }}"><span class="{{ $priorityBadge($pk) }}">{{ __('lab_manager.priority.' . $pk) }}</span></td>
-                        <td data-label="{{ __('lab_manager.col_requested') }}" class="td-muted">{{ $req->submitted_at?->format('d M Y H:i') ?? '—' }}</td>
+                        <td data-label="{{ __('lab_manager.col_requested') }}" class="td-muted">{{ $req->submitted_at?->translatedFormat('d M Y H:i') ?? '—' }}</td>
                         <td data-label="{{ __('lab_manager.col_notes') }}" class="td-muted">{{ $req->clinical_notes ?: '—' }}</td>
                         @if($status === 'submitted')
                         <td class="row-actions" data-label="{{ __('lab_manager.col_actions') }}">
@@ -115,7 +115,7 @@
                         @else
                         <td data-label="{{ __('lab_manager.col_decision') }}" class="td-muted">
                             @if($req->reviewed_at)
-                                {{ __('lab_manager.decided_by', ['name' => $req->reviewer?->name ?? __('lab_desk.unknown'), 'at' => $req->reviewed_at->format('d M Y H:i')]) }}
+                                {{ __('lab_manager.decided_by', ['name' => $req->reviewer?->name ?? __('lab_desk.unknown'), 'at' => $req->reviewed_at->translatedFormat('d M Y H:i')]) }}
                             @endif
                             @if($req->decision_reason)<div>{{ $req->decision_reason }}</div>@endif
                             @if($req->lab_order_id)

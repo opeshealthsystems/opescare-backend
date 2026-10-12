@@ -18,7 +18,7 @@
         <div class="panel-header">
             <h2 class="panel-title">
                 <i data-lucide="clipboard-pen-line"></i>
-                {{ __('chart.col_submitted') }}: {{ $s['submitted_at'] ? \Illuminate\Support\Carbon::parse($s['submitted_at'])->format('d M Y H:i') : '—' }}
+                {{ __('chart.col_submitted') }}: {{ $s['submitted_at'] ? \Illuminate\Support\Carbon::parse($s['submitted_at'])->translatedFormat('d M Y H:i') : '—' }}
             </h2>
             <span class="badge badge-warning">{{ __('chart.preconsult_badge') }}</span>
         </div>

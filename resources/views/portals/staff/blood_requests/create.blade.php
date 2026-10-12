@@ -12,9 +12,9 @@
 
 @section('title', __('blood_desk.create_title'))
 
-@section('sidebar_user_role', __('public.staff_portal.role_clinical_staff', [], app()->getLocale()) ?: 'Clinical Staff')
+@section('sidebar_user_role', __('public.staff_portal.role_clinical_staff', [], app()->getLocale()))
 
-@section('breadcrumb_home', __('public.staff_portal.title', [], app()->getLocale()) ?: 'Staff Portal')
+@section('breadcrumb_home', __('public.staff_portal.title', [], app()->getLocale()))
 @section('breadcrumb_home_url', route('portals.staff'))
 @section('breadcrumb_section', __('blood_desk.breadcrumb'))
 

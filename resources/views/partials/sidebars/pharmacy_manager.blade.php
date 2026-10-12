@@ -5,34 +5,34 @@
      sidebar. Every link self-gates with the same @capability as its route. --}}
 <div class="sidebar-role-badge">
     <i data-lucide="pill"></i>
-    {{ __('portal.pharmacy_manager_role', [], $l) ?: 'Pharmacy Manager' }}
+    {{ __('portal.pharmacy_manager_role', [], $l) }}
 </div>
 <div class="sidebar-spacer"></div>
 
 <div class="sidebar-nav-section">
     <a href="{{ route('portals.pharmacy.dashboard') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.dashboard') ? 'active' : '' }}">
-        <i data-lucide="layout-dashboard"></i><span>{{ __('public.portal.nav_dashboard', [], $l) ?: 'Dashboard' }}</span>
+        <i data-lucide="layout-dashboard"></i><span>{{ __('public.portal.nav_dashboard', [], $l) }}</span>
     </a>
 </div>
 
 <div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.portal.nav_pharmacy', [], $l) ?: 'Pharmacy' }}</div>
+    <div class="sidebar-nav-label">{{ __('public.portal.nav_pharmacy', [], $l) }}</div>
     @capability('pharmacy_stock')
     <a href="{{ route('portals.pharmacy.stock') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.stock') ? 'active' : '' }}">
-        <i data-lucide="package"></i><span>{{ __('public.portal.nav_stock', [], $l) ?: 'Stock' }}</span>
+        <i data-lucide="package"></i><span>{{ __('public.portal.nav_stock', [], $l) }}</span>
     </a>
     @endcapability
     @capability('dispense')
     <a href="{{ route('portals.pharmacy.prescriptions') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.prescriptions') ? 'active' : '' }}">
-        <i data-lucide="file-text"></i><span>{{ __('public.portal.nav_prescriptions', [], $l) ?: 'Prescriptions' }}</span>
+        <i data-lucide="file-text"></i><span>{{ __('public.portal.nav_prescriptions', [], $l) }}</span>
     </a>
     <a href="{{ route('portals.pharmacy.prescriptions.lookup') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.prescriptions.lookup') ? 'active' : '' }}">
-        <i data-lucide="scan-line"></i><span>{{ __('prescriber.counter_link', [], $l) ?: 'Counter lookup' }}</span>
+        <i data-lucide="scan-line"></i><span>{{ __('prescriber.counter_link', [], $l) }}</span>
     </a>
     @endcapability
     @capability('pharmacy_stock')
     <a href="{{ route('portals.pharmacy.controlled') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.controlled*') ? 'active' : '' }}">
-        <i data-lucide="shield-alert"></i><span>{{ __('public.portal.nav_controlled', [], $l) ?: 'Controlled Substances' }}</span>
+        <i data-lucide="shield-alert"></i><span>{{ __('public.portal.nav_controlled', [], $l) }}</span>
     </a>
     @endcapability
     @capability('dispense')
@@ -52,7 +52,7 @@
     @endcapability
     @capability('messaging')
     <a href="{{ route('portals.staff.messages') }}" class="sidebar-link {{ request()->routeIs('portals.staff.messages*') ? 'active' : '' }}">
-        <i data-lucide="messages-square"></i><span>{{ __('messaging.nav', [], $l) ?: 'Messages' }}</span>
+        <i data-lucide="messages-square"></i><span>{{ __('messaging.nav', [], $l) }}</span>
     </a>
     @endcapability
     {{-- The listing is claim-based (FacilityListingController), not capability-gated. --}}
@@ -69,7 +69,7 @@
     @else
     <a href="{{ route('portals.listing.claims') }}" class="sidebar-link {{ request()->routeIs('portals.listing.*') ? 'active' : '' }}">
         <i data-lucide="map-pin-plus"></i>
-        <span>{{ __('caremap_claim.nav_claim_listing', [], $l) ?: 'Claim your listing' }}</span>
+        <span>{{ __('caremap_claim.nav_claim_listing', [], $l) }}</span>
     </a>
     @endif
     {{-- "What we offer": the facility's own service list, drawn from the
@@ -108,9 +108,9 @@
      requests. Self-gates on the same capability as the route. --}}
 @capability('facility_team')
 <div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.portal.nav_facility', [], $l) ?: 'Facility' }}</div>
+    <div class="sidebar-nav-label">{{ __('public.portal.nav_facility', [], $l) }}</div>
     <a href="{{ route('portals.facility.team') }}" class="sidebar-link {{ request()->routeIs('portals.facility.team*') ? 'active' : '' }}">
-        <i data-lucide="users"></i><span>{{ __('public.portal.nav_team', [], $l) ?: 'Team' }}</span>
+        <i data-lucide="users"></i><span>{{ __('public.portal.nav_team', [], $l) }}</span>
     </a>
 </div>
 @endcapability

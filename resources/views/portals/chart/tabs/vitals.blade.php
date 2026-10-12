@@ -84,7 +84,7 @@
                         @endphp
                         <tr>
                             <td class="td-muted">
-                                {{ $v['recorded_at']?->format('d M Y H:i') ?? '—' }}
+                                {{ $v['recorded_at']?->translatedFormat('d M Y H:i') ?? '—' }}
                                 @if($v['time_is_entry'])<br><small>{{ __('chart.entered_at_note') }}</small>@endif
                             </td>
                             <td>
@@ -135,7 +135,7 @@
                     <tbody>
                     @foreach($selfReported as $reading)
                         <tr>
-                            <td class="td-muted">{{ $reading->measured_at?->format('d M Y H:i') ?? '—' }}</td>
+                            <td class="td-muted">{{ $reading->measured_at?->translatedFormat('d M Y H:i') ?? '—' }}</td>
                             <td><span class="badge badge-warning">{{ __($selfBadge->labelKey()) }}</span></td>
                             <td class="td-strong">{{ $reading->measure ? __($reading->measure->labelKey()) : '—' }}</td>
                             <td>

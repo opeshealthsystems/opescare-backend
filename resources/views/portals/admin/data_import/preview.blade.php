@@ -98,7 +98,7 @@
                 <form method="POST" action="{{ route('portals.admin.data_import.approve', $job->id) }}" class="inline-form">
                     @csrf
                     <button type="submit" class="btn btn-primary btn-sm"
-                        onclick="return confirm('{{ __('staff_data.confirm_approve', ['n' => $job->valid_rows]) }}')">
+                        data-confirm="{{ __('staff_data.confirm_approve', ['n' => $job->valid_rows]) }}">
                         <i data-lucide="check-circle"></i>
                         {{ __('public.stf_import_approve_btn') }} {{ number_format($job->valid_rows) }} {{ __('public.stf_import_records_suffix') }}
                     </button>

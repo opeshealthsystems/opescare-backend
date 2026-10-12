@@ -99,7 +99,7 @@
                             </span>
                         </td>
                         <td data-label="{{ __('prescriber.col_issued') }}" class="td-muted">
-                            {{ $rx->prescribed_at?->format('d M Y') ?? '—' }}
+                            {{ $rx->prescribed_at?->translatedFormat('d M Y') ?? '—' }}
                             @if(filled($rx->reference))
                                 <div class="td-muted" data-rx-code>{{ $rx->reference }}</div>
                             @endif

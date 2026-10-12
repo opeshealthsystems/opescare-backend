@@ -40,16 +40,16 @@
                     <div class="f-card fs-legal-meta">
                         <div class="fs-legal-meta__item"><strong>Version</strong>{{ $currentVersion->version }}</div>
                         @if($currentVersion->effective_at)
-                            <div class="fs-legal-meta__item"><strong>Effective</strong>{{ $currentVersion->effective_at->format('d F Y') }}</div>
+                            <div class="fs-legal-meta__item"><strong>Effective</strong>{{ $currentVersion->effective_at->translatedFormat('d F Y') }}</div>
                         @endif
                         @if($currentVersion->published_at)
-                            <div class="fs-legal-meta__item"><strong>Published</strong>{{ $currentVersion->published_at->format('d F Y') }}</div>
+                            <div class="fs-legal-meta__item"><strong>Published</strong>{{ $currentVersion->published_at->translatedFormat('d F Y') }}</div>
                         @endif
                         <div class="fs-legal-meta__item"><strong>Language</strong>{{ strtoupper($document->language) }}</div>
                     </div>
 
                     <div class="f-card fs-legal-body">
-                        {!! $currentVersion->content_html !!}
+                        {!! app(AppModulesegalservicesegalhtmlsanitizer::class)->clean((string) $currentversion->content_html) !!}
                     </div>
                 @else
                     <div class="f-card fs-no-content">

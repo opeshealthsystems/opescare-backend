@@ -118,7 +118,7 @@
                 {{-- Narrowed from professional.* so it does not light up at the
                      same time as the "Join a facility" link below it. --}}
                 <a href="{{ $myProfileUrl }}" class="sidebar-link sidebar-link-footer {{ request()->routeIs('professional.profile*') || request()->routeIs('professional.qualifications.*') || request()->routeIs('portals.patient.profile') ? 'active' : '' }}">
-                    <i data-lucide="id-card"></i><span>{{ __('professional.nav_my_profile', [], app()->getLocale()) ?: 'My Profile' }}</span>
+                    <i data-lucide="id-card"></i><span>{{ __('professional.nav_my_profile', [], app()->getLocale()) }}</span>
                 </a>
             @endif
             @if($me?->isProfessional())
@@ -128,14 +128,14 @@
                      those are exactly the accounts whose role sidebar links to
                      pages facility.context will not let them reach. --}}
                 <a href="{{ route('professional.join') }}" class="sidebar-link sidebar-link-footer {{ request()->routeIs('professional.join*') ? 'active' : '' }}">
-                    <i data-lucide="building-2"></i><span>{{ __('team.join_nav', [], app()->getLocale()) ?: 'Join a facility' }}</span>
+                    <i data-lucide="building-2"></i><span>{{ __('team.join_nav', [], app()->getLocale()) }}</span>
                 </a>
             @endif
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="sidebar-logout">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                    {{ __('public.portal.sign_out', [], app()->getLocale()) ?: 'Sign Out' }}
+                    {{ __('public.portal.sign_out', [], app()->getLocale()) }}
                 </button>
             </form>
         </div>
@@ -200,7 +200,7 @@
                             @csrf
                             <button type="submit" class="topbar-user-signout">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                                {{ __('public.portal.sign_out', [], app()->getLocale()) ?: 'Sign Out' }}
+                                {{ __('public.portal.sign_out', [], app()->getLocale()) }}
                             </button>
                         </form>
                     </div>
@@ -240,16 +240,17 @@
 
 <!-- Lucide Icons -->
 <script src="{{ asset('js/lucide.min.js') }}"></script>
+<script src="{{ asset('js/op-actions.js') }}?v={{ @filemtime(public_path('js/op-actions.js')) ?: '1' }}" defer></script>
 @auth
 <script src="{{ asset('js/notification-sounds.js') }}" defer></script>
 <script src="{{ asset('js/notifications.js') }}" defer></script>
 @endauth
-<script>
+<script @cspNonce>
 if (typeof lucide !== 'undefined') lucide.createIcons();
 </script>
 
 <!-- Portal JS -->
-<script>
+<script @cspNonce>
 (function() {
     var sidebar  = document.getElementById('portal-sidebar');
     var overlay  = document.getElementById('sidebar-overlay');

@@ -92,15 +92,15 @@
     <script type="application/json" class="finder-map-data">@json(['single' => $single, 'facilities' => $points])</script>
 </div>
 
-<script>
+<script @cspNonce>
     window.FINDER_MAP_I18N = {
-        call: @json(__('finder_map.call', [], $l) ?: 'Call'),
-        directions: @json(__('finder_map.directions', [], $l) ?: 'Directions'),
-        locate: @json(__('finder_map.locate', [], $l) ?: 'Show my location'),
-        you: @json(__('finder_map.you', [], $l) ?: 'You are here'),
-        distance: @json(__('finder_map.distance', [], $l) ?: 'Distance'),
-        straightLine: @json(__('finder_map.straight_line', [], $l) ?: 'straight line'),
-        geoDenied: @json(__('finder_map.geo_denied', [], $l) ?: 'Location unavailable. Please allow location access.'),
+        call: @json(__('finder_map.call', [], $l)),
+        directions: @json(__('finder_map.directions', [], $l)),
+        locate: @json(__('finder_map.locate', [], $l)),
+        you: @json(__('finder_map.you', [], $l)),
+        distance: @json(__('finder_map.distance', [], $l)),
+        straightLine: @json(__('finder_map.straight_line', [], $l)),
+        geoDenied: @json(__('finder_map.geo_denied', [], $l)),
     };
     // Auto-offer directions on load when the host asks for it (?directions=1).
     @if(request('directions'))

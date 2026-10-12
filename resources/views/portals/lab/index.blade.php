@@ -109,7 +109,7 @@
                             <span class="{{ $urgencyBadge($u) }}">{{ __('lab_desk.urgency.' . $u) }}</span>
                         </td>
                         <td data-label="{{ __('lab_desk.col_ordered_by') }}" class="td-muted">{{ $order->orderedBy?->name ?? '—' }}</td>
-                        <td data-label="{{ __('lab_desk.col_ordered_at') }}" class="td-muted">{{ $order->ordered_at?->format('d M Y H:i') ?? '—' }}</td>
+                        <td data-label="{{ __('lab_desk.col_ordered_at') }}" class="td-muted">{{ $order->ordered_at?->translatedFormat('d M Y H:i') ?? '—' }}</td>
                         <td data-label="{{ __('lab_desk.col_results') }}" class="td-muted">{{ $order->results_count }}</td>
                         <td class="row-actions" data-label="{{ __('lab_desk.col_open') }}">
                             <a href="{{ route('portals.lab.show', $order->id) }}" class="btn btn-secondary btn-sm">

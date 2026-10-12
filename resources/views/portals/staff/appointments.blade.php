@@ -1,10 +1,10 @@
 @extends('layouts.portal')
 
-@section('title', __('public.portal.nav_appointments', [], app()->getLocale()) ?: 'Appointments')
+@section('title', __('public.portal.nav_appointments', [], app()->getLocale()))
 
-@section('breadcrumb_home', __('public.staff_portal.title', [], app()->getLocale()) ?: 'Staff Portal')
+@section('breadcrumb_home', __('public.staff_portal.title', [], app()->getLocale()))
 @section('breadcrumb_home_url', route('portals.staff'))
-@section('breadcrumb_section', __('public.portal.nav_appointments', [], app()->getLocale()) ?: 'Appointments')
+@section('breadcrumb_section', __('public.portal.nav_appointments', [], app()->getLocale()))
 
 @section('head')
 @include('portals.pharmacy._supply_styles')
@@ -26,8 +26,8 @@
 
 <div class="page-header">
     <div>
-        <h1 class="page-title">{{ __('public.portal.nav_appointments', [], app()->getLocale()) ?: 'Appointments' }}</h1>
-        <p class="page-subtitle">{{ __('public.staff_portal.appointments_subtitle', [], app()->getLocale()) ?: 'View and manage scheduled patient appointments.' }}</p>
+        <h1 class="page-title">{{ __('public.portal.nav_appointments', [], app()->getLocale()) }}</h1>
+        <p class="page-subtitle">{{ __('public.staff_portal.appointments_subtitle', [], app()->getLocale()) }}</p>
     </div>
     <div>
         {{-- Mirrors the gate on portals.staff.appointments.create (routes/web.php). --}}
@@ -38,7 +38,7 @@
         </a>
         <a href="{{ route('portals.staff.appointments.create') }}" class="btn btn-primary fs-tap">
             <i data-lucide="calendar-plus"></i>
-            {{ __('public.staff_portal.btn_book_appointment', [], app()->getLocale()) ?: 'Book Appointment' }}
+            {{ __('public.staff_portal.btn_book_appointment', [], app()->getLocale()) }}
         </a>
         @endcapability
     </div>
@@ -65,7 +65,7 @@
             type="text"
             name="patient_id"
             class="form-control"
-            placeholder="{{ __('public.staff_portal.filter_patient_id', [], app()->getLocale()) ?: 'Patient ID…' }}"
+            placeholder="{{ __('public.staff_portal.filter_patient_id', [], app()->getLocale()) }}"
             value="{{ request('patient_id') }}"
         >
     </div>
@@ -80,7 +80,7 @@
         @endforeach
     </select>
     {{-- The controller always honoured ?status=…; the form never offered it. --}}
-    <select name="status" class="form-control" aria-label="{{ __('public.staff_portal.col_status', [], app()->getLocale()) ?: 'Status' }}">
+    <select name="status" class="form-control" aria-label="{{ __('public.staff_portal.col_status', [], app()->getLocale()) }}">
         <option value="">{{ __('staff.desk.filter_any_status') }}</option>
         @foreach($statuses ?? [] as $s)
             <option value="{{ $s }}" @selected(request('status') === $s)>@enum($s)</option>
@@ -94,10 +94,10 @@
     >
     <button type="submit" class="btn btn-primary btn-sm fs-tap">
         <i data-lucide="filter"></i>
-        {{ __('public.staff_portal.filter_apply', [], app()->getLocale()) ?: 'Filter' }}
+        {{ __('public.staff_portal.filter_apply', [], app()->getLocale()) }}
     </button>
     <a href="{{ route('portals.staff.appointments') }}" class="btn btn-ghost btn-sm fs-tap">
-        {{ __('public.staff_portal.filter_clear', [], app()->getLocale()) ?: 'Clear' }}
+        {{ __('public.staff_portal.filter_clear', [], app()->getLocale()) }}
     </a>
 </form>
 
@@ -108,8 +108,8 @@
                 <div class="empty-state-icon">
                     <i data-lucide="calendar-x-2"></i>
                 </div>
-                <h3>{{ __('public.staff_portal.no_appointments_title', [], app()->getLocale()) ?: 'No Appointments Found' }}</h3>
-                <p>{{ __('public.staff_portal.no_appointments_desc', [], app()->getLocale()) ?: 'There are no appointments matching your current filters.' }}</p>
+                <h3>{{ __('public.staff_portal.no_appointments_title', [], app()->getLocale()) }}</h3>
+                <p>{{ __('public.staff_portal.no_appointments_desc', [], app()->getLocale()) }}</p>
             </div>
         </div>
     </div>
@@ -164,7 +164,7 @@
                 </div>
             </div>
             <div class="modal__footer">
-                <button type="button" class="btn btn-ghost btn-sm fs-tap" onclick="closeApptCancelModal()">{{ __('finder_supply.btn_keep') }}</button>
+                <button type="button" class="btn btn-ghost btn-sm fs-tap" data-call="closeApptCancelModal">{{ __('finder_supply.btn_keep') }}</button>
                 <button type="submit" class="fs-act-btn fs-act-btn--danger">
                     @include('partials.finder.icon', ['name' => 'x', 'size' => 15])
                     {{ __('finder_supply.btn_cancel_confirm') }}
@@ -177,7 +177,7 @@
 @endsection
 
 @section('scripts')
-<script>
+<script @cspNonce>
     // Built from the named route, with the id substituted client-side. The old
     // hand-written '/portals/staff/appointments' prefix is a GET-only legacy
     // redirect, so posting the cancel form to it answered 405 and the modal's

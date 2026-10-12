@@ -72,7 +72,7 @@
 <div class="panel">
     <div class="panel-header"><h3 class="panel-title"><i data-lucide="check-circle-2"></i> {{ __('leads.conversion.converted_title') }}</h3></div>
     <div class="panel-body">
-        <p>{{ __('leads.conversion.converted_body', ['date' => $lead->converted_at?->format('d M Y H:i') ?? '—']) }}</p>
+        <p>{{ __('leads.conversion.converted_body', ['date' => $lead->converted_at?->translatedFormat('d M Y H:i') ?? '—']) }}</p>
         <dl class="lc-lead mt-3">
             <div><dt>{{ __('leads.conversion.converted_tenant') }}</dt><dd>{{ $tenant?->name ?? '—' }}</dd></div>
             <div><dt>{{ __('leads.conversion.label_type') }}</dt><dd>{{ $tenant?->type ? (__('finder_directory.types.' . $tenant->type) !== 'finder_directory.types.' . $tenant->type ? __('finder_directory.types.' . $tenant->type) : $tenant->type) : '—' }}</dd></div>

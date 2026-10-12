@@ -103,7 +103,7 @@
                                 @endif
                             </td>
                             <td data-label="{{ __('public.stf_import_col_created') }}" class="td-muted">
-                                {{ \Carbon\Carbon::parse($job->created_at)->format('M d, Y H:i') }}
+                                {{ \Carbon\Carbon::parse($job->created_at)->translatedFormat('M d, Y H:i') }}
                             </td>
                             <td data-label="{{ __('public.stf_import_col_actions') }}">
                                 <div class="row-actions-inline">
@@ -126,7 +126,7 @@
 
                                     @if($job->canBeCancelled())
                                         <form method="POST" action="{{ route('portals.admin.data_import.cancel', $job->id) }}" class="inline-form">@csrf
-                                            <button type="submit" class="btn btn-ghost btn-xs" onclick="return confirm('{{ __('staff_data.confirm_cancel') }}')">{{ __('public.stf_import_cancel') }}</button>
+                                            <button type="submit" class="btn btn-ghost btn-xs" data-confirm="{{ __('staff_data.confirm_cancel') }}">{{ __('public.stf_import_cancel') }}</button>
                                         </form>
                                     @endif
                                 </div>
@@ -166,7 +166,7 @@
 @endsection
 
 @section('scripts')
-<script>
+<script @cspNonce>
 (function () {
     var modal = document.getElementById('rollback-modal');
     var form  = document.getElementById('rollback-form');

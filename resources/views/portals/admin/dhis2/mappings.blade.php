@@ -2,7 +2,7 @@
 
 @section('title', __('dhis2.mappings_title') . ' — OpesCare')
 
-@section('breadcrumb_home', __('public.portal.nav_administration', [], app()->getLocale()) ?: 'Admin')
+@section('breadcrumb_home', __('public.portal.nav_administration', [], app()->getLocale()))
 @section('breadcrumb_home_url', route('portals.admin'))
 @section('breadcrumb_section', __('dhis2.mappings_title'))
 

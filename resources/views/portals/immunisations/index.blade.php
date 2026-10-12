@@ -140,7 +140,7 @@
                     <tbody>
                     @foreach($records as $rec)
                         <tr>
-                            <td class="td-muted">{{ $rec->administered_at?->format('d M Y') ?? '—' }}</td>
+                            <td class="td-muted">{{ $rec->administered_at?->translatedFormat('d M Y') ?? '—' }}</td>
                             <td class="td-strong">
                                 {{ $rec->vaccine_name ?: '—' }}
                                 @if($rec->vaccine_code)<br><small class="td-muted">{{ $rec->vaccine_code }}</small>@endif

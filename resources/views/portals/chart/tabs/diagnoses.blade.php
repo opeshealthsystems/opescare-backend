@@ -25,7 +25,7 @@
                     <tbody>
                     @foreach($diagnoses as $d)
                         <tr>
-                            <td class="td-muted">{{ $d['recorded_at']?->format('d M Y') ?? '—' }}</td>
+                            <td class="td-muted">{{ $d['recorded_at']?->translatedFormat('d M Y') ?? '—' }}</td>
                             <td class="td-strong">{{ $d['code'] ?: '—' }} @if($d['code_system'])<small class="td-muted">{{ $d['code_system'] }}</small>@endif</td>
                             <td>
                                 {{ $d['title'] ?: '—' }}
@@ -36,7 +36,7 @@
                             <td><span class="badge {{ $d['is_primary'] ? 'badge-info' : 'badge-neutral' }}">{{ $d['is_primary'] ? __('chart.primary') : __('chart.secondary') }}</span></td>
                             <td>@if($d['status'])@enum($d['status'])@else —@endif</td>
                             <td>{{ $d['provider_name'] ?: '—' }}</td>
-                            <td class="td-muted">{{ $d['visit_at']?->format('d M Y') ?? '—' }}</td>
+                            <td class="td-muted">{{ $d['visit_at']?->translatedFormat('d M Y') ?? '—' }}</td>
                         </tr>
                     @endforeach
                     </tbody>

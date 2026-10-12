@@ -72,7 +72,7 @@
                             @if($order->test_code)<div class="td-muted">{{ $order->test_code }}</div>@endif
                         </td>
                         <td data-label="{{ __('lab_desk.col_urgency') }}"><span class="{{ $urgencyBadge($u) }}">{{ __('lab_desk.urgency.' . $u) }}</span></td>
-                        <td data-label="{{ __('lab_desk.col_ordered_at') }}" class="td-muted">{{ $order->ordered_at?->format('d M Y H:i') ?? '—' }}</td>
+                        <td data-label="{{ __('lab_desk.col_ordered_at') }}" class="td-muted">{{ $order->ordered_at?->translatedFormat('d M Y H:i') ?? '—' }}</td>
                         <td data-label="{{ __('lab_desk.specimen_type') }}">
                             <input type="text" form="collect-{{ $order->id }}" name="specimen_type" class="form-control"
                                    value="{{ old('specimen_type', $specimen) }}" maxlength="120"

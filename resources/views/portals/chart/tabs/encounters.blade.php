@@ -6,7 +6,7 @@
         <div class="panel-header">
             <h2 class="panel-title">
                 <i data-lucide="stethoscope"></i>
-                {{ $e['started_at']?->format('d M Y H:i') ?? '—' }}
+                {{ $e['started_at']?->translatedFormat('d M Y H:i') ?? '—' }}
                 @if($e['type']) &middot; @enum($e['type']) @endif
             </h2>
             @if($e['status'])<span class="badge badge-neutral">@enum($e['status'])</span>@endif
@@ -15,7 +15,7 @@
             <div class="td-muted mb-3">
                 {{ __('chart.col_facility') }}: {{ $e['facility_name'] ?: '—' }}
                 &middot; {{ __('chart.col_doctor') }}: {{ $e['doctor_name'] ?: '—' }}
-                @if($e['ended_at']) &middot; {{ __('chart.col_ended') }}: {{ $e['ended_at']->format('d M Y H:i') }} @endif
+                @if($e['ended_at']) &middot; {{ __('chart.col_ended') }}: {{ $e['ended_at']->translatedFormat('d M Y H:i') }} @endif
             </div>
 
             <div class="field-grid">

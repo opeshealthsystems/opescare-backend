@@ -51,11 +51,11 @@
             </div>
             <div>
                 <div class="td-muted">{{ __('referral_desk.col_created') }}</div>
-                <div class="td-strong">{{ $referral->created_at?->format('d M Y H:i') ?? '—' }}</div>
+                <div class="td-strong">{{ $referral->created_at?->translatedFormat('d M Y H:i') ?? '—' }}</div>
             </div>
             <div>
                 <div class="td-muted">{{ __('referral_desk.expires_at') }}</div>
-                <div class="td-strong">{{ $referral->expires_at?->format('d M Y') ?? '—' }}</div>
+                <div class="td-strong">{{ $referral->expires_at?->translatedFormat('d M Y') ?? '—' }}</div>
             </div>
             <div>
                 <div class="td-muted">{{ __('referral_desk.records_included') }}</div>
@@ -75,17 +75,17 @@
         <h3 class="panel-title mt-4">{{ __('referral_desk.clinical_summary') }}</h3>
         <p class="{{ $referral->clinical_summary ? '' : 'td-muted' }}">{{ $referral->clinical_summary ?: $dash }}</p>
 
-        @if($referral->accepted_at)<p><span class="td-muted">{{ __('referral_desk.accepted_at') }}:</span> {{ $referral->accepted_at->format('d M Y H:i') }}</p>@endif
+        @if($referral->accepted_at)<p><span class="td-muted">{{ __('referral_desk.accepted_at') }}:</span> {{ $referral->accepted_at->translatedFormat('d M Y H:i') }}</p>@endif
         @if($referral->rejected_at)
-            <p><span class="td-muted">{{ __('referral_desk.rejected_at') }}:</span> {{ $referral->rejected_at->format('d M Y H:i') }}</p>
+            <p><span class="td-muted">{{ __('referral_desk.rejected_at') }}:</span> {{ $referral->rejected_at->translatedFormat('d M Y H:i') }}</p>
             <p><span class="td-muted">{{ __('referral_desk.rejection_reason') }}:</span> {{ $referral->rejection_reason ?: $dash }}</p>
         @endif
         @if($referral->completed_at)
-            <p><span class="td-muted">{{ __('referral_desk.completed_at') }}:</span> {{ $referral->completed_at->format('d M Y H:i') }}</p>
+            <p><span class="td-muted">{{ __('referral_desk.completed_at') }}:</span> {{ $referral->completed_at->translatedFormat('d M Y H:i') }}</p>
             <p><span class="td-muted">{{ __('referral_desk.feedback') }}:</span> {{ $referral->feedback ?: $dash }}</p>
         @endif
         @if($referral->cancelled_at)
-            <p><span class="td-muted">{{ __('referral_desk.cancelled_at') }}:</span> {{ $referral->cancelled_at->format('d M Y H:i') }}</p>
+            <p><span class="td-muted">{{ __('referral_desk.cancelled_at') }}:</span> {{ $referral->cancelled_at->translatedFormat('d M Y H:i') }}</p>
             <p><span class="td-muted">{{ __('referral_desk.cancellation_reason') }}:</span> {{ $referral->cancellation_reason ?: $dash }}</p>
         @endif
     </div>

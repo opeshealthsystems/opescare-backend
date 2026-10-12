@@ -1,7 +1,7 @@
 @extends('layouts.portal')
 
 @section('title', __('family.inv_title') . ' — OpesCare')
-@section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()) ?: 'My Portal')
+@section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()))
 @section('breadcrumb_home_url', route('portals.patient'))
 @section('breadcrumb_section', __('family.inv_breadcrumb'))
 
@@ -25,7 +25,7 @@
         </div>
         <a href="{{ route('portals.patient.family') }}" class="f-btn">
             @include('partials.finder.icon', ['name' => 'chevron-left', 'size' => 18])
-            {{ __('public.portal.family_breadcrumb', [], $l) ?: 'My Family' }}
+            {{ __('public.portal.family_breadcrumb', [], $l) }}
         </a>
     </div>
 
@@ -45,7 +45,7 @@
         <div class="pf-stack" data-section="invitations">
             @foreach($invites as $inv)
             @php
-                $who   = $inv->guardianUser?->name ?? $inv->guardianUser?->email ?? (__('public.portal.unknown_guardian', [], $l) ?: 'Unknown guardian');
+                $who   = $inv->guardianUser?->name ?? $inv->guardianUser?->email ?? (__('public.portal.unknown_guardian', [], $l));
                 $rel   = __('family.relationship.' . $inv->relationship);
                 $rel   = $rel === 'family.relationship.' . $inv->relationship ? ucfirst(str_replace('_', ' ', $inv->relationship)) : $rel;
                 $level = $inv->access_level === 'full' ? __('family.access.full') : __('family.access.read_only');

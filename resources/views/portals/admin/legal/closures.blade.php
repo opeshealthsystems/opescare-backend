@@ -33,15 +33,15 @@
                         </td>
                         <td data-label="{{ __('public.adm_legal_closures_col_reason') }}">{{ \Illuminate\Support\Str::limit($req->reason, 60) ?: '—' }}</td>
                         <td data-label="{{ __('public.adm_legal_closures_col_delete_req') }}">
-                            @if($req->data_delete_requested)<span class="badge badge-danger badge-sm">{{ __('admin_extra.yes', [], app()->getLocale()) ?: 'Yes' }}</span>@else<span class="td-muted">{{ __('admin_extra.no', [], app()->getLocale()) ?: 'No' }}</span>@endif
+                            @if($req->data_delete_requested)<span class="badge badge-danger badge-sm">{{ __('admin_extra.yes', [], app()->getLocale()) }}</span>@else<span class="td-muted">{{ __('admin_extra.no', [], app()->getLocale()) }}</span>@endif
                         </td>
                         <td data-label="{{ __('public.adm_legal_closures_col_export_req') }}">
-                            @if($req->data_export_requested)<span class="badge badge-primary badge-sm">{{ __('admin_extra.yes', [], app()->getLocale()) ?: 'Yes' }}</span>@else<span class="td-muted">{{ __('admin_extra.no', [], app()->getLocale()) ?: 'No' }}</span>@endif
+                            @if($req->data_export_requested)<span class="badge badge-primary badge-sm">{{ __('admin_extra.yes', [], app()->getLocale()) }}</span>@else<span class="td-muted">{{ __('admin_extra.no', [], app()->getLocale()) }}</span>@endif
                         </td>
                         <td data-label="{{ __('public.adm_legal_col_status') }}">
                             <span class="badge badge--{{ $req->statusColor() }} badge-sm">@enum($req->status)</span>
                         </td>
-                        <td data-label="{{ __('public.adm_legal_closures_col_requested') }}" class="td-muted">{{ $req->created_at->format('d M Y') }}</td>
+                        <td data-label="{{ __('public.adm_legal_closures_col_requested') }}" class="td-muted">{{ $req->created_at->translatedFormat('d M Y') }}</td>
                         {{--
                             The cell was empty: the column, the controller
                             action and both button strings all existed, and
@@ -65,7 +65,7 @@
                         <td class="row-actions">
                             @if($req->status === 'pending')
                                 <form method="POST" action="{{ route('portals.admin.legal.closures.review', $req->id) }}" class="inline-form"
-                                      onsubmit="return confirm('{{ __('public.adm_legal_closures_confirm_approve') }}')">
+                                      data-confirm="{{ __('public.adm_legal_closures_confirm_approve') }}">
                                     @csrf
                                     <input type="hidden" name="action" value="approve">
                                     <button type="submit" class="btn btn-success btn-sm">

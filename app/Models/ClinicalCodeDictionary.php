@@ -25,7 +25,14 @@ class ClinicalCodeDictionary extends Model
 
     protected $keyType = 'string';
 
-    protected $guarded = [];
+    // Reference data written only by the vocabulary importers; an explicit
+    // allow-list so a controller can never mass-assign an unexpected column.
+    protected $fillable = [
+        'id', 'system', 'code', 'display', 'display_fr', 'short_name', 'kind',
+        'parent_code', 'chapter', 'component', 'property', 'scale', 'specimen',
+        'example_units', 'synonyms', 'is_common', 'common_reason', 'is_active',
+        'source', 'source_version', 'imported_at',
+    ];
 
     protected $casts = [
         'is_common' => 'boolean',

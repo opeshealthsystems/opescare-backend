@@ -48,7 +48,7 @@
     <div class="panel-body">
         <div class="table-wrapper mb-4">
             <table class="data-table">
-                <tr><td class="td-muted">{{ __('billing_desk.session.opened_at') }}</td><td>{{ $open->opened_at?->format('d M Y H:i') }}</td></tr>
+                <tr><td class="td-muted">{{ __('billing_desk.session.opened_at') }}</td><td>{{ $open->opened_at?->translatedFormat('d M Y H:i') }}</td></tr>
                 <tr><td class="td-muted">{{ __('billing_desk.session.float') }}</td><td>{{ Xaf::format($float) }}</td></tr>
                 <tr><td class="td-muted">{{ __('billing_desk.session.cash_taken') }}</td><td>{{ Xaf::format($cashSoFar) }}</td></tr>
                 <tr><td class="td-muted">{{ __('billing_desk.session.expected') }}</td><td class="td-strong">{{ Xaf::format($float + $cashSoFar) }}</td></tr>
@@ -94,8 +94,8 @@
                     <tr>
                         <td data-label="{{ __('billing_desk.session.col_cashier') }}">{{ $cashiers[$s->cashier_id]->name ?? '—' }}</td>
                         <td data-label="{{ __('billing_desk.col_status') }}"><span class="badge badge-{{ $s->status === 'open' ? 'success' : 'neutral' }}">{{ $s->status === 'open' ? __('billing_desk.session.status_open') : __('billing_desk.session.status_closed') }}</span></td>
-                        <td data-label="{{ __('billing_desk.session.col_opened') }}" class="td-muted">{{ $s->opened_at?->format('d M Y H:i') }}</td>
-                        <td data-label="{{ __('billing_desk.session.col_closed') }}" class="td-muted">{{ $s->closed_at?->format('d M Y H:i') ?? '—' }}</td>
+                        <td data-label="{{ __('billing_desk.session.col_opened') }}" class="td-muted">{{ $s->opened_at?->translatedFormat('d M Y H:i') }}</td>
+                        <td data-label="{{ __('billing_desk.session.col_closed') }}" class="td-muted">{{ $s->closed_at?->translatedFormat('d M Y H:i') ?? '—' }}</td>
                         <td data-label="{{ __('billing_desk.session.col_float') }}">{{ Xaf::format(Xaf::int($s->opening_float_amount)) }}</td>
                         <td data-label="{{ __('billing_desk.session.col_cash') }}">{{ Xaf::format(Xaf::int($s->cash_total_amount)) }}</td>
                         <td data-label="{{ __('billing_desk.session.col_expected') }}">{{ $s->expected_cash_amount === null ? '—' : Xaf::format(Xaf::int($s->expected_cash_amount)) }}</td>

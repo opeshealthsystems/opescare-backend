@@ -1,16 +1,16 @@
 @extends('layouts.portal')
-@section('title', __('public.pharmacy_portal.page_title', [], app()->getLocale()) ?: 'Prescription Queue')
-@section('sidebar_user_role', __('public.pharmacy_portal.role_label', [], app()->getLocale()) ?: 'Pharmacist')
-@section('breadcrumb_home', __('public.pharmacy_portal.breadcrumb_home', [], app()->getLocale()) ?: 'Pharmacy Portal')
+@section('title', __('public.pharmacy_portal.page_title', [], app()->getLocale()))
+@section('sidebar_user_role', __('public.pharmacy_portal.role_label', [], app()->getLocale()))
+@section('breadcrumb_home', __('public.pharmacy_portal.breadcrumb_home', [], app()->getLocale()))
 @section('breadcrumb_home_url', route('portals.pharmacy.dashboard'))
-@section('breadcrumb_section', __('public.pharmacy_portal.breadcrumb_section_rx', [], app()->getLocale()) ?: 'Prescription Queue')
+@section('breadcrumb_section', __('public.pharmacy_portal.breadcrumb_section_rx', [], app()->getLocale()))
 @php $l = app()->getLocale(); @endphp
 
 @section('content')
 
 <div class="page-head">
-    <h2>{{ __('public.pharmacy_portal.page_heading_rx', [], $l) ?: 'Prescription queue' }}</h2>
-    <p class="page-subtitle">{{ __('public.pharmacy_portal.page_subtitle_rx', [], $l) ?: 'All prescriptions awaiting dispensing at this facility.' }}</p>
+    <h2>{{ __('public.pharmacy_portal.page_heading_rx', [], $l) }}</h2>
+    <p class="page-subtitle">{{ __('public.pharmacy_portal.page_subtitle_rx', [], $l) }}</p>
 </div>
 
 @if(session('success'))<div class="alert alert-success mb-6"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
@@ -18,19 +18,19 @@
 <form method="GET" class="filter-bar">
     <label class="filter-search">
         <i data-lucide="search"></i>
-        <input type="text" name="search" placeholder="{{ __('public.pharmacy_portal.ph_search_patient', [], $l) ?: 'Patient name…' }}" value="{{ request('search') }}" aria-label="{{ __('public.aria_search_patient') }}">
+        <input type="text" name="search" placeholder="{{ __('public.pharmacy_portal.ph_search_patient', [], $l) }}" value="{{ request('search') }}" aria-label="{{ __('public.aria_search_patient') }}">
     </label>
-    <select name="status" class="filter-select" aria-label="{{ __('public.aria_status') }}" onchange="this.form.submit()">
-        <option value="">{{ __('public.pharmacy_portal.filter_pending_all', [], $l) ?: 'Pending (all)' }}</option>
-        <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>{{ __('public.pharmacy_portal.filter_status_active', [], $l) ?: 'Active' }}</option>
-        <option value="partially_dispensed" {{ request('status') === 'partially_dispensed' ? 'selected' : '' }}>{{ __('public.pharmacy_portal.filter_status_partial', [], $l) ?: 'Partially dispensed' }}</option>
-        <option value="dispensed" {{ request('status') === 'dispensed' ? 'selected' : '' }}>{{ __('public.pharmacy_portal.filter_status_dispensed', [], $l) ?: 'Dispensed' }}</option>
-        <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>{{ __('public.pharmacy_portal.filter_status_cancelled', [], $l) ?: 'Cancelled' }}</option>
-        <option value="expired" {{ request('status') === 'expired' ? 'selected' : '' }}>{{ __('public.pharmacy_portal.filter_status_expired', [], $l) ?: 'Expired' }}</option>
+    <select name="status" class="filter-select" aria-label="{{ __('public.aria_status') }}" data-autosubmit>
+        <option value="">{{ __('public.pharmacy_portal.filter_pending_all', [], $l) }}</option>
+        <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>{{ __('public.pharmacy_portal.filter_status_active', [], $l) }}</option>
+        <option value="partially_dispensed" {{ request('status') === 'partially_dispensed' ? 'selected' : '' }}>{{ __('public.pharmacy_portal.filter_status_partial', [], $l) }}</option>
+        <option value="dispensed" {{ request('status') === 'dispensed' ? 'selected' : '' }}>{{ __('public.pharmacy_portal.filter_status_dispensed', [], $l) }}</option>
+        <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>{{ __('public.pharmacy_portal.filter_status_cancelled', [], $l) }}</option>
+        <option value="expired" {{ request('status') === 'expired' ? 'selected' : '' }}>{{ __('public.pharmacy_portal.filter_status_expired', [], $l) }}</option>
     </select>
-    <button type="submit" class="btn btn-secondary btn-sm"><i data-lucide="filter"></i> {{ __('public.pharmacy_portal.btn_filter', [], $l) ?: 'Filter' }}</button>
+    <button type="submit" class="btn btn-secondary btn-sm"><i data-lucide="filter"></i> {{ __('public.pharmacy_portal.btn_filter', [], $l) }}</button>
     @if(request()->hasAny(['status','search']))
-        <a href="{{ route('portals.pharmacy.prescriptions') }}" class="btn btn-ghost btn-sm">{{ __('public.pharmacy_portal.btn_clear', [], $l) ?: 'Clear' }}</a>
+        <a href="{{ route('portals.pharmacy.prescriptions') }}" class="btn btn-ghost btn-sm">{{ __('public.pharmacy_portal.btn_clear', [], $l) }}</a>
     @endif
 </form>
 
@@ -39,44 +39,44 @@
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>{{ __('public.pharmacy_portal.col_patient', [], $l) ?: 'Patient' }}</th>
-                    <th>{{ __('public.pharmacy_portal.col_items', [], $l) ?: 'Items' }}</th>
-                    <th>{{ __('public.pharmacy_portal.col_prescribed', [], $l) ?: 'Prescribed' }}</th>
-                    <th>{{ __('public.pharmacy_portal.col_expires', [], $l) ?: 'Expires' }}</th>
-                    <th>{{ __('public.pharmacy_portal.col_status', [], $l) ?: 'Status' }}</th>
-                    <th class="row-actions">{{ __('public.pharmacy_portal.col_action', [], $l) ?: 'Action' }}</th>
+                    <th>{{ __('public.pharmacy_portal.col_patient', [], $l) }}</th>
+                    <th>{{ __('public.pharmacy_portal.col_items', [], $l) }}</th>
+                    <th>{{ __('public.pharmacy_portal.col_prescribed', [], $l) }}</th>
+                    <th>{{ __('public.pharmacy_portal.col_expires', [], $l) }}</th>
+                    <th>{{ __('public.pharmacy_portal.col_status', [], $l) }}</th>
+                    <th class="row-actions">{{ __('public.pharmacy_portal.col_action', [], $l) }}</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($prescriptions as $rx)
                 <tr>
-                    <td data-label="{{ __('public.pharmacy_portal.col_patient', [], $l) ?: 'Patient' }}">
+                    <td data-label="{{ __('public.pharmacy_portal.col_patient', [], $l) }}">
                         <span class="td-strong">{{ trim(($rx->patient?->first_name ?? '') . ' ' . ($rx->patient?->last_name ?? '')) ?: '—' }}</span>
                         <div class="td-muted">{{ $rx->patient?->health_id ?? '' }}</div>
                     </td>
-                    <td data-label="{{ __('public.pharmacy_portal.col_items', [], $l) ?: 'Items' }}">
+                    <td data-label="{{ __('public.pharmacy_portal.col_items', [], $l) }}">
                         @foreach($rx->items->take(2) as $item)
                             <div>{{ $item->drug_name }} {{ $item->dosage }}</div>
                         @endforeach
                         @if($rx->items->count() > 2)
-                            <div class="td-muted">+{{ $rx->items->count() - 2 }} {{ __('public.pharmacy_portal.lbl_items', [], $l) ?: 'more' }}</div>
+                            <div class="td-muted">+{{ $rx->items->count() - 2 }} {{ __('public.pharmacy_portal.lbl_items', [], $l) }}</div>
                         @endif
                     </td>
-                    <td data-label="{{ __('public.pharmacy_portal.col_prescribed', [], $l) ?: 'Prescribed' }}" class="td-muted">{{ $rx->prescribed_at?->format('d M Y H:i') ?? $rx->created_at?->format('d M Y') }}</td>
-                    <td data-label="{{ __('public.pharmacy_portal.col_expires', [], $l) ?: 'Expires' }}">
+                    <td data-label="{{ __('public.pharmacy_portal.col_prescribed', [], $l) }}" class="td-muted">{{ $rx->prescribed_at?->translatedFormat('d M Y H:i') ?? $rx->created_at?->translatedFormat('d M Y') }}</td>
+                    <td data-label="{{ __('public.pharmacy_portal.col_expires', [], $l) }}">
                         @if($rx->expires_at)
-                            @if($rx->expires_at->isPast())<span class="badge badge-danger badge-sm">{{ $rx->expires_at->format('d M Y') }}</span>
-                            @else<span class="td-muted">{{ $rx->expires_at->format('d M Y') }}</span>@endif
+                            @if($rx->expires_at->isPast())<span class="badge badge-danger badge-sm">{{ $rx->expires_at->translatedFormat('d M Y') }}</span>
+                            @else<span class="td-muted">{{ $rx->expires_at->translatedFormat('d M Y') }}</span>@endif
                         @else
                             <span class="td-muted">—</span>
                         @endif
                     </td>
-                    <td data-label="{{ __('public.pharmacy_portal.col_status', [], $l) ?: 'Status' }}"><span class="badge badge-{{ $rx->statusColor() }}">@enum($rx->status)</span></td>
-                    <td class="row-actions" data-label="{{ __('public.pharmacy_portal.col_action', [], $l) ?: 'Action' }}">
+                    <td data-label="{{ __('public.pharmacy_portal.col_status', [], $l) }}"><span class="badge badge-{{ $rx->statusColor() }}">@enum($rx->status)</span></td>
+                    <td class="row-actions" data-label="{{ __('public.pharmacy_portal.col_action', [], $l) }}">
                         @if(in_array($rx->status, ['active', 'partially_dispensed']))
                         <form method="POST" action="{{ route('portals.pharmacy.dispense', $rx->id) }}" class="inline-form">@csrf
-                            <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('{{ __('public.pharmacy_portal.confirm_dispense_msg', [], $l) ?: 'Mark prescription as fully dispensed?' }}')">
-                                <i data-lucide="check"></i> {{ __('public.pharmacy_portal.btn_dispense', [], $l) ?: 'Dispense' }}
+                            <button type="submit" class="btn btn-primary btn-sm" data-confirm="{{ __('public.pharmacy_portal.confirm_dispense_msg', [], $l) }}">
+                                <i data-lucide="check"></i> {{ __('public.pharmacy_portal.btn_dispense', [], $l) }}
                             </button>
                         </form>
                         @else
@@ -85,7 +85,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="6" class="td-muted empty-cell">{{ __('public.pharmacy_portal.no_prescriptions', [], $l) ?: 'No prescriptions found.' }}</td></tr>
+                <tr><td colspan="6" class="td-muted empty-cell">{{ __('public.pharmacy_portal.no_prescriptions', [], $l) }}</td></tr>
                 @endforelse
             </tbody>
         </table>

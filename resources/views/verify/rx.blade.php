@@ -574,7 +574,7 @@
                     {!! $icon('badge-check', '1.125rem') !!}
                     <div>
                         <div class="doc-stamp-label">{{ __('verify.rx_verified_label') }}</div>
-                        <div class="doc-stamp-time">{{ $verifiedAt->format('d M Y · H:i') }} UTC</div>
+                        <div class="doc-stamp-time">{{ $verifiedAt->translatedFormat('d M Y · H:i') }} UTC</div>
                     </div>
                 </div>
             @endif
@@ -665,11 +665,11 @@
                     </div>
                     <div>
                         <div class="field-label">{{ __('verify.rx_prescribed_at') }}</div>
-                        <div class="field-value">{{ $rx->prescribed_at ? $rx->prescribed_at->format('d M Y H:i') : __('verify.rx_not_recorded') }}</div>
+                        <div class="field-value">{{ $rx->prescribed_at ? $rx->prescribed_at->translatedFormat('d M Y H:i') : __('verify.rx_not_recorded') }}</div>
                     </div>
                     <div>
                         <div class="field-label">{{ __('verify.rx_expires_at') }}</div>
-                        <div class="field-value">{{ $rx->expires_at ? $rx->expires_at->format('d M Y') : __('verify.rx_no_expiry') }}</div>
+                        <div class="field-value">{{ $rx->expires_at ? $rx->expires_at->translatedFormat('d M Y') : __('verify.rx_no_expiry') }}</div>
                     </div>
                     <div>
                         <div class="field-label">{{ __('verify.rx_status') }}</div>
@@ -678,7 +678,7 @@
                     <div>
                         <div class="field-label">{{ __('verify.rx_dispensed_at') }}</div>
                         <div class="field-value {{ $rx->dispensed_at ? '' : 'muted' }}">
-                            {{ $rx->dispensed_at ? $rx->dispensed_at->format('d M Y H:i') : __('verify.rx_not_dispensed') }}
+                            {{ $rx->dispensed_at ? $rx->dispensed_at->translatedFormat('d M Y H:i') : __('verify.rx_not_dispensed') }}
                         </div>
                     </div>
                 </div>
@@ -724,7 +724,7 @@
                                             @endphp
                                             <span class="pill {{ $pill }}">{{ $item->status_label }}</span>
                                             @if($item->dispensed_at)
-                                                <div class="pill-when">{{ $item->dispensed_at->format('d M Y') }}</div>
+                                                <div class="pill-when">{{ $item->dispensed_at->translatedFormat('d M Y') }}</div>
                                             @endif
                                         </td>
                                     </tr>

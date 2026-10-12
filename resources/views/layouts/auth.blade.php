@@ -222,7 +222,7 @@
 
     {{-- Password visibility toggle for redesigned pages ([data-f-toggle]).
          Minimal by design; everything else on this surface works without JS. --}}
-    <script>
+    <script @cspNonce>
     (function () {
         'use strict';
         document.querySelectorAll('[data-f-toggle]').forEach(function (btn) {
@@ -242,6 +242,7 @@
          the demo panel are wired by these two files. Redesigned pages do not
          depend on them. Remove both once the legacy pages are migrated. --}}
     <script src="{{ asset('js/lucide.min.js') }}?v={{ @filemtime(public_path('js/lucide.min.js')) ?: '1' }}" defer></script>
+<script src="{{ asset('js/op-actions.js') }}?v={{ @filemtime(public_path('js/op-actions.js')) ?: '1' }}" defer></script>
     <script src="{{ asset('js/auth.js') }}?v={{ @filemtime(public_path('js/auth.js')) ?: '1' }}" defer></script>
 </body>
 </html>

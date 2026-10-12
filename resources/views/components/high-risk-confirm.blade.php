@@ -15,8 +15,8 @@
 @php
     $l       = app()->getLocale();
     $modalId = 'hrm-' . md5($action . $label);
-    $confirmText = $confirmLabel ?? (__('public.portal.confirm', [], $l) ?: 'Confirm');
-    $cancelText  = $cancelLabel  ?? (__('public.portal.cancel', [], $l)  ?: 'Cancel');
+    $confirmText = $confirmLabel ?? (__('public.portal.confirm', [], $l));
+    $cancelText  = $cancelLabel  ?? (__('public.portal.cancel', [], $l));
     $borderColor = $color === 'danger' ? 'var(--p-danger)' : 'var(--p-warning)';
     $iconColor   = $color === 'danger' ? 'var(--p-danger)' : 'var(--p-warning)';
 @endphp
@@ -45,7 +45,7 @@
 {{-- Trigger button --}}
 <button type="button"
         class="{{ $buttonClass }}"
-        onclick="document.getElementById('{{ $modalId }}').classList.add('hrm-open')"
+        data-add-class="{{ $modalId }}:hrm-open"
         aria-haspopup="dialog"
         aria-controls="{{ $modalId }}">
     <i data-lucide="{{ $icon }}" class="hrm-trigger-icon"></i>
@@ -86,21 +86,21 @@
             @if($requireReason)
             <div class="hrm-reason-wrap">
                 <label class="hrm-reason-label">
-                    {{ __('public.portal.reason_required', [], $l) ?: 'Reason (required)' }}
+                    {{ __('public.portal.reason_required', [], $l) }}
                 </label>
                 <textarea name="reason"
                           required
                           minlength="10"
                           maxlength="500"
                           rows="3"
-                          placeholder="{{ __('public.portal.reason_placeholder', [], $l) ?: 'Explain why this action is necessary…' }}"
+                          placeholder="{{ __('public.portal.reason_placeholder', [], $l) }}"
                           class="hrm-reason-textarea"></textarea>
             </div>
             @endif
 
             <div class="hrm-actions">
                 <button type="button"
-                        onclick="document.getElementById('{{ $modalId }}').classList.remove('hrm-open')"
+                        data-remove-class="{{ $modalId }}:hrm-open"
                         class="btn btn-ghost btn-sm">
                     {{ $cancelText }}
                 </button>
@@ -115,7 +115,7 @@
 </div>
 
 {{-- Close on backdrop click --}}
-<script>
+<script @cspNonce>
 (function() {
     var el = document.getElementById('{{ $modalId }}');
     if (el) {

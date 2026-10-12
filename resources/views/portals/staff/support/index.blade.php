@@ -2,7 +2,7 @@
 
 @section('title', __('support.title') . ' — OpesCare')
 
-@section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()) ?: 'Portal')
+@section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()))
 @section('breadcrumb_home_url', route('portals.staff'))
 @section('breadcrumb_section', __('support.title'))
 
@@ -14,7 +14,7 @@
         <p class="page-subtitle">{{ __('support.subtitle') }}</p>
     </div>
     <div class="page-actions">
-        <button type="button" class="btn btn-primary" onclick="document.getElementById('new-ticket').hidden = !document.getElementById('new-ticket').hidden">
+        <button type="button" class="btn btn-primary" data-toggle-hidden="new-ticket">
             <i data-lucide="plus"></i> {{ __('support.create_ticket') }}
         </button>
     </div>

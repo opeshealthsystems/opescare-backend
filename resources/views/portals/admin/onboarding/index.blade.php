@@ -82,7 +82,7 @@
                         <td data-label="{{ __('onboarding.admin_portal.col_status') }}">
                             <span class="badge badge--{{ $statusColor }} badge-sm">{{ __('onboarding.admin_portal.status_'.$status) }}</span>
                         </td>
-                        <td data-label="{{ __('onboarding.admin_portal.col_approved') }}" class="td-muted">{{ $r?->approved_at?->format('d M Y') ?? '—' }}</td>
+                        <td data-label="{{ __('onboarding.admin_portal.col_approved') }}" class="td-muted">{{ $r?->approved_at?->translatedFormat('d M Y') ?? '—' }}</td>
                         <td class="row-actions">
                             <a href="{{ route('portals.admin.facilities.readiness', $facility->id) }}" class="btn btn-ghost btn-sm"><i data-lucide="gauge"></i> {{ __('onboarding.admin_portal.btn_readiness') }}</a>
                             <a href="{{ route('portals.admin.onboarding.show', $facility->id) }}" class="btn btn-secondary btn-sm">{{ __('onboarding.admin_portal.btn_manage') }}</a>

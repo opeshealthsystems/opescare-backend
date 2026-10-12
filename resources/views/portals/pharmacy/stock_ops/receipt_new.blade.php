@@ -63,7 +63,7 @@
                     <select name="purchase_order_id" id="gr-order" class="form-control">
                         <option value="">{{ __('pharmacy_ops.lbl_no_order') }}</option>
                         @foreach($orders as $o)
-                        <option value="{{ $o->id }}" {{ old('purchase_order_id') === $o->id ? 'selected' : '' }}>{{ $o->po_number ?? $o->id }} · {{ $o->order_date?->format('d M Y') }}</option>
+                        <option value="{{ $o->id }}" {{ old('purchase_order_id') === $o->id ? 'selected' : '' }}>{{ $o->po_number ?? $o->id }} · {{ $o->order_date?->translatedFormat('d M Y') }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -164,7 +164,7 @@
 @endsection
 
 @section('scripts')
-<script>
+<script @cspNonce>
 (function () {
     var tbody = document.querySelector('#gr-lines tbody');
     var add   = document.getElementById('gr-add');

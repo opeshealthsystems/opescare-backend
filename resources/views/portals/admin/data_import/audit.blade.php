@@ -44,7 +44,7 @@
                                 @endif
                             </td>
                             <td data-label="{{ __('public.stf_import_col_created') }}" class="td-muted">
-                                {{ \Carbon\Carbon::parse($event->occurred_at)->format('M d, Y H:i:s') }}
+                                {{ \Carbon\Carbon::parse($event->occurred_at)->translatedFormat('M d, Y H:i:s') }}
                             </td>
                             <td data-label="{{ __('public.stf_import_col_message') }}">
                                 @if($event->details)

@@ -30,7 +30,7 @@
                     @foreach($triage as $t)
                         @php $key = \App\Support\TriageAcuity::labelKey($t['priority']); @endphp
                         <tr>
-                            <td class="td-muted">{{ $t['assessed_at']?->format('d M Y H:i') ?? '—' }}</td>
+                            <td class="td-muted">{{ $t['assessed_at']?->translatedFormat('d M Y H:i') ?? '—' }}</td>
                             <td>{{ $t['presenting_complaint'] ?: '—' }}</td>
                             <td>
                                 @if($key)

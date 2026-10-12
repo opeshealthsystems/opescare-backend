@@ -40,7 +40,7 @@
         <div class="page-head__spacer"></div>
         @if($clients->count() > 1)
         <form method="GET" class="filter-bar filter-bar--flush">
-            <select name="app" class="filter-select" aria-label="{{ __('developer_ext.qs_lbl_app') }}" onchange="this.form.submit()">
+            <select name="app" class="filter-select" aria-label="{{ __('developer_ext.qs_lbl_app') }}" data-autosubmit>
                 @foreach($clients as $c)
                     <option value="{{ $c->id }}" {{ $client && $client->id === $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
                 @endforeach
@@ -136,7 +136,7 @@
 
 @endsection
 @section('scripts')
-<script>
+<script @cspNonce>
 document.addEventListener('click', function(e){
     var b = e.target.closest('[data-copy-text], .code-token[data-copy]');
     if(!b) return;

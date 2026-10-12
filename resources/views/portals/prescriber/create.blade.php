@@ -386,7 +386,7 @@
 
 @section('scripts')
 @if($patient !== null)
-<script>
+<script @cspNonce>
 (function () {
     var list   = document.getElementById('rx-rows');
     var addBtn = document.getElementById('rx-add');

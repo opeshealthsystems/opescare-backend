@@ -71,7 +71,7 @@
                     <td data-label="{{ __('pharmacy_ops.col_medicine') }}" class="td-strong">{{ $b->item?->medicine?->name ?? $b->item?->name }}</td>
                     <td data-label="{{ __('pharmacy_ops.col_lot') }}" class="fs-mono">{{ $b->lot_number ?? '—' }}</td>
                     <td data-label="{{ __('pharmacy_ops.col_expiry') }}">
-                        {{ $b->expiry_date->format('d M Y') }}
+                        {{ $b->expiry_date->translatedFormat('d M Y') }}
                         <span class="badge badge-warning">{{ __('pharmacy_ops.expiring_badge', ['days' => (int) $today->diffInDays($b->expiry_date, false)]) }}</span>
                     </td>
                     <td data-label="{{ __('pharmacy_ops.col_packs') }}" class="fs-mono">{{ $b->quantity_available }}</td>
@@ -130,7 +130,7 @@
                             @if(! $b->expiry_date)
                                 <span class="badge badge-neutral" title="{{ __('pharmacy_ops.expiry_unknown_hint') }}">{{ __('pharmacy_ops.expiry_unknown') }}</span>
                             @else
-                                {{ $b->expiry_date->format('d M Y') }}
+                                {{ $b->expiry_date->translatedFormat('d M Y') }}
                                 @if($isExpired)
                                     <span class="badge badge-danger">{{ __('pharmacy_ops.expired_badge') }}</span>
                                 @elseif($daysLeft !== null && $daysLeft <= $windowDays)
@@ -142,7 +142,7 @@
                         <td data-label="{{ __('pharmacy_ops.col_status') }}">
                             <span class="badge {{ $b->status === 'active' ? 'badge-success' : 'badge-neutral' }}">{{ __('pharmacy_ops.batch_status.' . $b->status) }}</span>
                         </td>
-                        <td data-label="{{ __('pharmacy_ops.col_received') }}" class="td-muted">{{ $b->created_at?->format('d M Y') }}</td>
+                        <td data-label="{{ __('pharmacy_ops.col_received') }}" class="td-muted">{{ $b->created_at?->translatedFormat('d M Y') }}</td>
                     </tr>
                 @endforeach
             @empty

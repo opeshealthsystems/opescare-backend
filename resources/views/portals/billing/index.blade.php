@@ -107,7 +107,7 @@
                         <td data-label="{{ __('billing_desk.col_total') }}">{{ Xaf::format(Xaf::int($invoice->patient_responsibility_amount)) }}</td>
                         <td data-label="{{ __('billing_desk.col_paid') }}">{{ Xaf::format(Xaf::int($invoice->paid_amount) - Xaf::int($invoice->refunded_amount)) }}</td>
                         <td data-label="{{ __('billing_desk.col_balance') }}"><span class="td-strong">{{ Xaf::format(Xaf::int($invoice->balance_amount)) }}</span></td>
-                        <td data-label="{{ __('billing_desk.col_date') }}" class="td-muted">{{ $invoice->created_at?->format('d M Y H:i') ?? '—' }}</td>
+                        <td data-label="{{ __('billing_desk.col_date') }}" class="td-muted">{{ $invoice->created_at?->translatedFormat('d M Y H:i') ?? '—' }}</td>
                         <td class="row-actions" data-label="{{ __('billing_desk.col_open') }}">
                             <a href="{{ route('portals.billing.show', $invoice->id) }}" class="btn btn-secondary btn-sm"><i data-lucide="eye"></i> {{ __('billing_desk.col_open') }}</a>
                         </td>

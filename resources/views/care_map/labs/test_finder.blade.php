@@ -166,7 +166,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script @cspNonce>
 (function () {
     var btn    = document.getElementById('finder-locate');
     var status = document.getElementById('finder-locate-status');

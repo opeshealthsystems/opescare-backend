@@ -29,7 +29,7 @@
         <form method="GET" action="{{ route('portals.admin.kpi.trend') }}" class="filter-bar">
             <div class="form-group">
                 <label class="form-label">{{ __('public.adm_kpi_trend_label_metric') }}</label>
-                <select name="metric" class="form-control" onchange="this.form.submit()">
+                <select name="metric" class="form-control" data-autosubmit>
                     @foreach($allMetrics->groupBy(fn($m) => __('kpi.category_' . $m->category)) as $cat => $group)
                     <optgroup label="{{ $cat }}">
                         @foreach($group as $m)
@@ -41,7 +41,7 @@
             </div>
             <div class="form-group">
                 <label class="form-label">{{ __('public.adm_kpi_trend_label_period') }}</label>
-                <select name="period" class="form-control" onchange="this.form.submit()">
+                <select name="period" class="form-control" data-autosubmit>
                     <option value="7d" {{ $period === '7d' ? 'selected' : '' }}>{{ __('public.adm_kpi_trend_period_7d') }}</option>
                     <option value="30d" {{ $period === '30d' ? 'selected' : '' }}>{{ __('public.adm_kpi_trend_period_30d') }}</option>
                     <option value="90d" {{ $period === '90d' ? 'selected' : '' }}>{{ __('public.adm_kpi_trend_period_90d') }}</option>
@@ -99,7 +99,7 @@
         <div class="breakdown">
             @foreach($trendData as $date => $value)
             <div class="breakdown__row">
-                <span class="breakdown__label">{{ \Carbon\Carbon::parse($date)->format('d M Y') }}</span>
+                <span class="breakdown__label">{{ \Carbon\Carbon::parse($date)->translatedFormat('d M Y') }}</span>
                 <div class="breakdown__track">
                     @if($value !== null)
                     <div class="breakdown__fill" style="width: {{ min(100, ($value / $maxVal) * 100) }}%"></div>

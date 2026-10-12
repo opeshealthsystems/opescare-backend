@@ -94,10 +94,10 @@
                     <td data-label="{{ __('pharmacy_orders.col_status') }}">
                         <span class="badge po-badge--{{ $desk }}">@enum($desk, 'reservation_status')</span>
                     </td>
-                    <td data-label="{{ __('pharmacy_orders.col_placed') }}" class="td-muted">{{ $r->created_at?->format('d M Y H:i') }}</td>
+                    <td data-label="{{ __('pharmacy_orders.col_placed') }}" class="td-muted">{{ $r->created_at?->translatedFormat('d M Y H:i') }}</td>
                     <td data-label="{{ __('pharmacy_orders.col_expires') }}" class="td-muted">
                         @if($r->expires_at)
-                            {{ $r->expires_at->format('d M Y H:i') }}
+                            {{ $r->expires_at->translatedFormat('d M Y H:i') }}
                             @if($desk === \App\Models\MedicineReservation::DESK_PENDING && $r->expires_at->lt($now))
                                 <span class="badge badge-danger">{{ __('pharmacy_orders.expired') }}</span>
                             @endif

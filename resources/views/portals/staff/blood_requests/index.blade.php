@@ -13,9 +13,9 @@
 
 @section('title', __('blood_desk.title'))
 
-@section('sidebar_user_role', __('public.staff_portal.role_clinical_staff', [], app()->getLocale()) ?: 'Clinical Staff')
+@section('sidebar_user_role', __('public.staff_portal.role_clinical_staff', [], app()->getLocale()))
 
-@section('breadcrumb_home', __('public.staff_portal.title', [], app()->getLocale()) ?: 'Staff Portal')
+@section('breadcrumb_home', __('public.staff_portal.title', [], app()->getLocale()))
 @section('breadcrumb_home_url', route('portals.staff'))
 @section('breadcrumb_section', __('blood_desk.breadcrumb'))
 
@@ -160,7 +160,7 @@
                                 <span class="badge {{ $statusBadge }}">{{ __('blood_desk.status_' . $r->status->value) }}</span>
                             </td>
                             <td data-label="{{ __('blood_desk.col_filed') }}" class="td-muted">
-                                {{ optional($r->created_at)->format('M d, H:i') }}
+                                {{ optional($r->created_at)->translatedFormat('M d, H:i') }}
                             </td>
                             <td data-label="{{ __('blood_desk.col_actions') }}">
                                 <a href="{{ route('portals.staff.blood_requests.show', $r->id) }}" class="btn btn-primary btn-xs fs-tap">

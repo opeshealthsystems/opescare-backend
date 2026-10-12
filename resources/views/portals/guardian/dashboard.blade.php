@@ -1,7 +1,7 @@
 @extends('layouts.portal')
 
 @section('title', __('family.dash_title') . ' — OpesCare')
-@section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()) ?: 'My Portal')
+@section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()))
 @section('breadcrumb_home_url', route('portals.patient'))
 @section('breadcrumb_section', __('family.dash_breadcrumb'))
 
@@ -119,7 +119,7 @@
                     @endif
                 </div>
                 @if($link->status === 'pending_invite')
-                    <span class="f-badge f-badge--warn">{{ __('public.portal.lbl_pending', [], $l) ?: 'Pending' }}</span>
+                    <span class="f-badge f-badge--warn">{{ __('public.portal.lbl_pending', [], $l) }}</span>
                 @else
                     <span class="f-badge {{ $readOnly ? 'pf-badge--muted' : 'f-badge--good' }}">{{ $readOnly ? __('family.access.read_only') : __('family.access.full') }}</span>
                 @endif
@@ -157,7 +157,7 @@
                         <div class="pf-tile__value" style="font-size:.9375rem;">@enum($identity ?? 'provisional', 'verification')</div>
                     </div>
                     <div>
-                        <div class="pf-tile__label">{{ __('public.portal.blood_group', [], $l) ?: 'Blood Group' }}</div>
+                        <div class="pf-tile__label">{{ __('public.portal.blood_group', [], $l) }}</div>
                         <div class="pf-tile__value">{{ $dep->blood_group ?? '—' }}</div>
                     </div>
                 </div>
@@ -188,7 +188,7 @@
                             {{ __('family.dash_view_as') }}
                         </button>
                     </form>
-                    <a href="{{ route('portals.patient.family.edit', $link->id) }}" class="f-btn">{{ __('public.portal.btn_edit', [], $l) ?: 'Edit' }}</a>
+                    <a href="{{ route('portals.patient.family.edit', $link->id) }}" class="f-btn">{{ __('public.portal.btn_edit', [], $l) }}</a>
                 </div>
                 <div class="gd-dep__links" aria-label="{{ __('family.dash_quick_links') }}">
                     @foreach([
@@ -209,7 +209,7 @@
                 </div>
             @else
                 <div class="pf-appt__actions">
-                    <a href="{{ route('portals.patient.family.edit', $link->id) }}" class="f-btn">{{ __('public.portal.btn_edit', [], $l) ?: 'Edit' }}</a>
+                    <a href="{{ route('portals.patient.family.edit', $link->id) }}" class="f-btn">{{ __('public.portal.btn_edit', [], $l) }}</a>
                 </div>
             @endif
         </div>

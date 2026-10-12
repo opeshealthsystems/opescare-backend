@@ -31,7 +31,7 @@
         sort-props-alphabetically="false"
         theme='{
             "colors": {
-                "primary": { "main": "#4F46E5" },
+                "primary": { "main": "#0F4C81" },
                 "success": { "main": "#22C55E" },
                 "warning": { "main": "#F59E0B" },
                 "error": { "main": "#EF4444" }

@@ -5501,6 +5501,8 @@ return [
     'adm_appt_modal_close'              => 'Close',
     'adm_appt_modal_confirm_cancel'     => 'Confirm Cancel',
     'adm_appt_js_confirm_delete'        => 'Delete this appointment?',
+    'adm_appt_btn_delete_label'       => 'Delete appointment',
+    'adm_appt_modal_close_label'      => 'Close',
 
     // Admin – Bridge Batches
     'adm_bridge_batches_title'          => 'Sync Batches — ',

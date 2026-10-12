@@ -82,23 +82,23 @@
                     <td style="font-size:.85rem;">{{ $appointment->facility?->name ?? '—' }}</td>
                     <td style="font-size:.85rem;">@enum($appointment->appointment_type, 'appointment_type')</td>
                     <td>
-                        <div style="font-size:.85rem;">{{ $appointment->scheduled_at?->format('d M Y') ?? '—' }}</div>
+                        <div style="font-size:.85rem;">{{ $appointment->scheduled_at?->translatedFormat('d M Y') ?? '—' }}</div>
                         <div style="font-size:.75rem;color:var(--p-text-muted);">{{ $appointment->scheduled_at?->format('H:i') ?? '' }}</div>
                     </td>
                     <td><span class="badge {{ $sBadge }}">@enum($appointment->status ?? '—')</span></td>
                     <td style="font-size:.85rem;">{{ $appointment->provider?->name ?? '—' }}</td>
                     <td style="text-align:right;">
                         <div style="display:flex;gap:.35rem;justify-content:flex-end;">
-                            <a href="{{ route('portals.admin.appointments.show', $appointment) }}" class="btn btn-ghost btn-xs" aria-label="{{ __('public.aria_view_appointment') }}" title="{{ __('admin_extra.title_view', [], app()->getLocale()) ?: 'View' }}"><i data-lucide="eye"></i></a>
+                            <a href="{{ route('portals.admin.appointments.show', $appointment) }}" class="btn btn-ghost btn-xs" aria-label="{{ __('public.aria_view_appointment') }}" title="{{ __('admin_extra.title_view', [], app()->getLocale()) }}"><i data-lucide="eye"></i></a>
                             @if(!in_array($appointment->status??'',['cancelled','completed']))
-                            <button onclick="openCancelModal('{{ $appointment->id }}','{{ route('portals.admin.appointments.cancel',$appointment) }}')" class="btn btn-warning btn-xs"><i data-lucide="ban"></i></button>
+                            <button data-call="openCancelModal" data-args="{{ json_encode([$appointment->id, route('portals.admin.appointments.cancel', $appointment)]) }}" class="btn btn-warning btn-xs"><i data-lucide="ban"></i></button>
                             @endif
                             {{-- The route is POST admin/appointments/{id}/delete, so no method
                                  spoofing: @method('DELETE') rewrote the verb to one that route
                                  does not answer and the button returned 405. --}}
-                            <form method="POST" action="{{ route('portals.admin.appointments.destroy',$appointment) }}" onsubmit="return confirm('{{ addslashes(__('public.adm_appt_js_confirm_delete')) }}')">
+                            <form method="POST" action="{{ route('portals.admin.appointments.destroy',$appointment) }}" data-confirm="{{ addslashes(__('public.adm_appt_js_confirm_delete')) }}">
                                 @csrf
-                                <button type="submit" class="btn btn-danger btn-xs"><i data-lucide="trash-2"></i></button>
+                                <button type="submit" class="btn btn-danger btn-xs" aria-label="{{ __('public.adm_appt_btn_delete_label') }}" title="{{ __('public.adm_appt_btn_delete_label') }}"><i data-lucide="trash-2"></i></button>
                             </form>
                         </div>
                     </td>
@@ -119,7 +119,7 @@
     <div style="background:var(--p-surface);border:1px solid var(--p-border);border-radius:var(--p-radius-xl);width:100%;max-width:480px;overflow:hidden;box-shadow:var(--p-shadow-lg);">
         <div style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--p-border);display:flex;justify-content:space-between;align-items:center;">
             <h3 style="margin:0;font-size:1rem;font-weight:700;">{{ __('public.adm_appt_modal_cancel_title') }}</h3>
-            <button onclick="document.getElementById('cancel-modal').style.display='none'" class="topbar-icon-btn"><i data-lucide="x"></i></button>
+            <button type="button" data-hide="cancel-modal" class="topbar-icon-btn" aria-label="{{ __('public.adm_appt_modal_close_label') }}"><i data-lucide="x"></i></button>
         </div>
         {{-- Same as Delete above: portals.admin.appointments.cancel is a POST
              route, so @method('PATCH') here turned Confirm Cancel into a 405. --}}
@@ -132,7 +132,7 @@
                 </div>
             </div>
             <div style="padding:1rem 1.5rem;border-top:1px solid var(--p-border);display:flex;gap:.75rem;justify-content:flex-end;">
-                <button type="button" onclick="document.getElementById('cancel-modal').style.display='none'" class="btn btn-ghost">{{ __('public.adm_appt_modal_close') }}</button>
+                <button type="button" data-hide="cancel-modal" class="btn btn-ghost">{{ __('public.adm_appt_modal_close') }}</button>
                 <button type="submit" class="btn btn-danger"><i data-lucide="ban"></i> {{ __('public.adm_appt_modal_confirm_cancel') }}</button>
             </div>
         </form>
@@ -140,7 +140,7 @@
 </div>
 @endsection
 @section('scripts')
-<script>
+<script @cspNonce>
 function openCancelModal(id, url) {
     document.getElementById('cancel-form').action = url;
     document.getElementById('cancel-form').querySelector('textarea').value = '';

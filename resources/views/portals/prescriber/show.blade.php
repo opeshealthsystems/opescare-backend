@@ -67,7 +67,7 @@
         <div class="entity-head__sub">
             <span class="badge {{ $rxBadge }} badge-sm">{{ $label($rxStatus) }}</span>
             @if($rx->prescribed_at)
-            <span class="td-muted text-sm">{{ $rx->prescribed_at->format('d M Y H:i') }}</span>
+            <span class="td-muted text-sm">{{ $rx->prescribed_at->translatedFormat('d M Y H:i') }}</span>
             @endif
             {{-- The code the pharmacy counter looks the script up by. --}}
             @if(filled($rx->reference))
@@ -102,7 +102,7 @@
                     <td class="kv-strong">
                         {{ $patientName !== '' ? $patientName : '—' }}
                         @if($patient && ($patient->date_of_birth || $patient->sex))
-                        <div class="td-muted text-sm">@if($patient->date_of_birth){{ $patient->date_of_birth->format('d M Y') }}@endif @if($patient->date_of_birth && $patient->sex)&middot; @endif @if($patient->sex)@enum($patient->sex, 'sex')@endif</div>
+                        <div class="td-muted text-sm">@if($patient->date_of_birth){{ $patient->date_of_birth->translatedFormat('d M Y') }}@endif @if($patient->date_of_birth && $patient->sex)&middot; @endif @if($patient->sex)@enum($patient->sex, 'sex')@endif</div>
                         @endif
                     </td>
                 </tr>
@@ -125,16 +125,16 @@
                 </tr>
                 <tr>
                     <td>{{ __('prescriber.issued_at') }}</td>
-                    <td class="kv-strong">{{ $rx->prescribed_at?->format('d M Y H:i') ?? '—' }}</td>
+                    <td class="kv-strong">{{ $rx->prescribed_at?->translatedFormat('d M Y H:i') ?? '—' }}</td>
                 </tr>
                 <tr>
                     <td>{{ __('prescriber.expires_at') }}</td>
                     <td class="kv-strong">
                         @if($rx->expires_at)
                             @if($rx->expires_at->isPast())
-                            <span class="badge badge-danger badge-sm">{{ $rx->expires_at->format('d M Y') }}</span>
+                            <span class="badge badge-danger badge-sm">{{ $rx->expires_at->translatedFormat('d M Y') }}</span>
                             @else
-                            {{ $rx->expires_at->format('d M Y') }}
+                            {{ $rx->expires_at->translatedFormat('d M Y') }}
                             @endif
                         @else
                             —
@@ -144,7 +144,7 @@
                 @if($rx->dispensed_at)
                 <tr>
                     <td>{{ __('prescriber.dispensed_at') }}</td>
-                    <td class="kv-strong">{{ $rx->dispensed_at->format('d M Y H:i') }}</td>
+                    <td class="kv-strong">{{ $rx->dispensed_at->translatedFormat('d M Y H:i') }}</td>
                 </tr>
                 @endif
             </table>
@@ -202,7 +202,7 @@
                         <td data-label="{{ __('prescriber.item_status') }}">
                             <span class="badge {{ $itemBadge }} badge-sm">{{ $label($itemStatus) }}</span>
                             @if($item->dispensed_at)
-                            <div class="td-muted text-sm">{{ $item->dispensed_at->format('d M Y H:i') }}</div>
+                            <div class="td-muted text-sm">{{ $item->dispensed_at->translatedFormat('d M Y H:i') }}</div>
                             @endif
                         </td>
                     </tr>
@@ -228,7 +228,7 @@
                 @error('reason')<div class="form-hint">{{ $message }}</div>@enderror
             </div>
             <div class="mt-6">
-                <button type="submit" class="btn btn-danger" onclick="return confirm({{ Illuminate\Support\Js::from(__('prescriber.void_confirm')) }})">
+                <button type="submit" class="btn btn-danger" data-confirm="{{ Illuminate\Support\Js::from(__('prescriber.void_confirm')) }}">
                     <i data-lucide="ban"></i> {{ __('prescriber.void') }}
                 </button>
             </div>

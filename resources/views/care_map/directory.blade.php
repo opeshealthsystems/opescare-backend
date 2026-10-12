@@ -24,6 +24,7 @@
 <link rel="stylesheet" href="{{ asset('assets/finder.css') }}">
 <link rel="stylesheet" href="{{ asset('css/leaflet.css') }}">
 <script src="{{ asset('js/leaflet.js') }}" defer></script>
+<script src="{{ asset('js/op-actions.js') }}?v={{ @filemtime(public_path('js/op-actions.js')) ?: '1' }}" defer></script>
 
 @php
   $now         = now();
@@ -386,7 +387,7 @@ body {
         @if($v)<input type="hidden" name="{{ $k }}" value="{{ $v }}">@endif
       @endforeach
     </form>
-    <button type="button" class="btn-near" onclick="locateMe(this)" aria-label="{{ __('finder_directory.locate_me') }}">
+    <button type="button" class="btn-near" data-call="locateMe" data-call-self aria-label="{{ __('finder_directory.locate_me') }}">
       <span class="icon" aria-hidden="true">@includeIf('partials.finder.icon', ['name' => 'navigation'])</span>
       {{ __('finder_directory.near_me') }}
     </button>
@@ -431,7 +432,7 @@ body {
         <span class="results-page"> · {{ __('finder_directory.page_of', ['current' => $facilities->currentPage(), 'last' => $lastPage]) }}</span>
       @endif
     </p>
-    <button type="button" class="btn-map-toggle" id="mapToggle" onclick="toggleMap()" aria-expanded="false" aria-controls="mapPanel">
+    <button type="button" class="btn-map-toggle" id="mapToggle" data-call="toggleMap" aria-expanded="false" aria-controls="mapPanel">
       <span class="icon" aria-hidden="true">@includeIf('partials.finder.icon', ['name' => 'map-pin'])</span>
       <span id="mapToggleLabel">{{ __('finder_directory.show_map') }}</span>
     </button>
@@ -517,7 +518,7 @@ body {
             </a>
           @endif
           @if($dirUrl)
-            <button type="button" class="btn btn-dir" onclick="directionsTo('{{ $f->id }}')" aria-label="{{ __('finder_directory.directions') }} — {{ $f->facility_name }}">
+            <button type="button" class="btn btn-dir" data-call="directionsTo" data-args="[&quot;{{ $f->id }}&quot;]" aria-label="{{ __('finder_directory.directions') }} — {{ $f->facility_name }}">
               <span class="icon" aria-hidden="true">@includeIf('partials.finder.icon', ['name' => 'navigation'])</span>
               {{ __('finder_directory.directions') }}
             </button>
@@ -572,7 +573,7 @@ body {
       'url'  => route('public.care-map.profile', array_filter(['id' => $f->id, 'lang' => request('lang')])),
   ])->values();
 @endphp
-<script>
+<script @cspNonce>
 const MARKERS     = @json($_markers, JSON_HEX_TAG | JSON_HEX_AMP);
 const TYPE_COLORS = @json(collect($typeColors), JSON_HEX_TAG | JSON_HEX_AMP);
 const I18N = {

@@ -109,15 +109,15 @@
             <div class="form-group">
                 <div class="form-label">{{ __('lab_desk.ordered_by') }}</div>
                 <div>{{ $order->orderedBy?->name ?? __('lab_desk.unknown') }}</div>
-                <div class="td-muted">{{ $order->ordered_at?->format('d M Y H:i') ?? '—' }}</div>
+                <div class="td-muted">{{ $order->ordered_at?->translatedFormat('d M Y H:i') ?? '—' }}</div>
             </div>
             <div class="form-group">
                 <div class="form-label">{{ __('lab_desk.collected_at') }}</div>
-                <div>{{ $order->collected_at?->format('d M Y H:i') ?? __('lab_desk.not_yet') }}</div>
+                <div>{{ $order->collected_at?->translatedFormat('d M Y H:i') ?? __('lab_desk.not_yet') }}</div>
             </div>
             <div class="form-group">
                 <div class="form-label">{{ __('lab_desk.resulted_at') }}</div>
-                <div>{{ $released ? ($order->resulted_at?->format('d M Y H:i') ?? '—') : __('lab_desk.not_yet') }}</div>
+                <div>{{ $released ? ($order->resulted_at?->translatedFormat('d M Y H:i') ?? '—') : __('lab_desk.not_yet') }}</div>
             </div>
             <div class="form-group">
                 <div class="form-label">{{ __('lab_desk.validated_by') }}</div>
@@ -191,7 +191,7 @@
                                     <i data-lucide="siren"></i> {{ __('lab_desk.alert_title') }} &middot;
                                     {{ __('lab_desk.alert_threshold', ['threshold' => $alert->critical_threshold]) }}<br>
                                     @if($alert->acknowledged)
-                                        {{ __('lab_desk.alert_acknowledged', ['name' => $alert->acknowledgedBy?->name ?? __('lab_desk.unknown'), 'at' => $alert->acknowledged_at?->format('d M Y H:i') ?? '—']) }}
+                                        {{ __('lab_desk.alert_acknowledged', ['name' => $alert->acknowledgedBy?->name ?? __('lab_desk.unknown'), 'at' => $alert->acknowledged_at?->translatedFormat('d M Y H:i') ?? '—']) }}
                                     @else
                                         <span class="badge badge-warning">{{ __('lab_desk.alert_pending') }}</span>
                                     @endif
@@ -200,7 +200,7 @@
                         </td>
                         <td data-label="{{ __('lab_desk.col_entered_by') }}" class="td-muted">{{ $row['entered_by'] ?? $row['released_by'] ?? __('lab_desk.unknown') }}</td>
                         <td data-label="{{ __('lab_desk.col_resulted_at') }}" class="td-muted">
-                            {{ $r->resulted_at?->format('d M Y H:i') ?? '—' }}
+                            {{ $r->resulted_at?->translatedFormat('d M Y H:i') ?? '—' }}
                             @if($r->notes)<div>{{ $r->notes }}</div>@endif
                         </td>
                         @if($open)

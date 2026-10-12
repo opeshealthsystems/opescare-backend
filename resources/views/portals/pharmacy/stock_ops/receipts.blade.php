@@ -34,7 +34,7 @@
             @forelse($receipts as $r)
                 <tr>
                     <td data-label="{{ __('pharmacy_ops.col_number') }}"><a href="{{ route('portals.pharmacy.stock.receipts.show', $r->id) }}" class="td-strong fs-mono">{{ $r->receipt_number ?? '—' }}</a></td>
-                    <td data-label="{{ __('pharmacy_ops.col_date') }}">{{ $r->received_date?->format('d M Y') }}</td>
+                    <td data-label="{{ __('pharmacy_ops.col_date') }}">{{ $r->received_date?->translatedFormat('d M Y') }}</td>
                     <td data-label="{{ __('pharmacy_ops.col_supplier') }}">{{ $r->supplier?->name ?? __('pharmacy_ops.lbl_no_supplier') }}</td>
                     <td data-label="{{ __('pharmacy_ops.col_lines') }}" class="fs-mono">{{ $r->items_count }}</td>
                     <td data-label="{{ __('pharmacy_ops.col_status') }}"><span class="badge {{ $r->status === 'verified' ? 'badge-success' : 'badge-neutral' }}">{{ __('pharmacy_ops.receipt_status.' . $r->status) }}</span></td>

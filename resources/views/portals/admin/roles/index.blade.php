@@ -18,7 +18,7 @@
         <p class="page-subtitle">{{ __('public.adm_roles_idx_subtitle') }}</p>
     </div>
     <div class="page-head__spacer"></div>
-    <button type="button" class="btn btn-primary" onclick="opOpenModal('create-role-modal')">
+    <button type="button" class="btn btn-primary" data-call="opOpenModal" data-args="[&quot;create-role-modal&quot;]">
         <i data-lucide="plus"></i> {{ __('public.adm_roles_idx_btn_create') }}
     </button>
 </div>
@@ -65,11 +65,11 @@
                     <td class="row-actions" data-label="{{ __('public.adm_roles_idx_col_actions') }}">
                         <a href="{{ route('portals.admin.roles.users', $role) }}" class="icon-btn" aria-label="{{ __('public.adm_roles_idx_aria_view_users') }}" title="{{ __('public.adm_roles_idx_aria_view_users') }}"><i data-lucide="users"></i></a>
                         <button type="button" class="icon-btn" aria-label="{{ __('public.adm_roles_idx_aria_edit') }}" title="{{ __('public.adm_roles_idx_aria_edit') }}"
-                            onclick="openEditRole('{{ $role->id }}','{{ addslashes($role->name) }}','{{ addslashes($role->description ?? '') }}','{{ $role->portal }}','{{ $role->is_protected ? '1':'0' }}')">
+                            data-call="openEditRole" data-args="{{ json_encode([$role->id, $role->name, $role->description ?? '', $role->portal, $role->is_protected ? '1' : '0']) }}">
                             <i data-lucide="pencil"></i>
                         </button>
                         @if(!$role->is_protected)
-                        <button type="button" class="icon-btn" aria-label="{{ __('public.adm_roles_idx_aria_delete') }}" title="{{ __('public.adm_roles_idx_aria_delete') }}" onclick="opOpenModal('delete-role-{{ $role->id }}')"><i data-lucide="trash-2"></i></button>
+                        <button type="button" class="icon-btn" aria-label="{{ __('public.adm_roles_idx_aria_delete') }}" title="{{ __('public.adm_roles_idx_aria_delete') }}" data-call="opOpenModal" data-args="[&quot;delete-role-{{ $role->id }}&quot;]"><i data-lucide="trash-2"></i></button>
                         <div id="delete-role-{{ $role->id }}" class="modal-backdrop mt-6" hidden>
                             <div class="modal" role="dialog" aria-modal="true">
                                 <h3 class="modal__title"><i data-lucide="alert-triangle"></i> {{ __('public.adm_roles_idx_modal_delete_title') }}</h3>
@@ -79,7 +79,7 @@
                                 <form method="POST" action="{{ route('portals.admin.roles.destroy', $role) }}">@csrf
                                     <div class="modal__body"><p>{{ __('public.adm_roles_idx_modal_delete_body_before') }} <strong>{{ $role->name }}</strong>? {{ __('public.adm_roles_idx_cannot_undo') }}</p></div>
                                     <div class="modal__footer">
-                                        <button type="button" class="btn btn-ghost" onclick="opCloseModal('delete-role-{{ $role->id }}')">{{ __('public.adm_roles_idx_btn_cancel') }}</button>
+                                        <button type="button" class="btn btn-ghost" data-call="opCloseModal" data-args="[&quot;delete-role-{{ $role->id }}&quot;]">{{ __('public.adm_roles_idx_btn_cancel') }}</button>
                                         <button type="submit" class="btn btn-danger">{{ __('public.adm_roles_idx_btn_delete') }}</button>
                                     </div>
                                 </form>
@@ -127,7 +127,7 @@
                 </div>
             </div>
             <div class="modal__footer">
-                <button type="button" class="btn btn-ghost" onclick="opCloseModal('create-role-modal')">{{ __('public.adm_roles_idx_btn_cancel') }}</button>
+                <button type="button" class="btn btn-ghost" data-call="opCloseModal" data-args="[&quot;create-role-modal&quot;]">{{ __('public.adm_roles_idx_btn_cancel') }}</button>
                 <button type="submit" class="btn btn-primary">{{ __('public.adm_roles_idx_modal_create_title') }}</button>
             </div>
         </form>
@@ -165,7 +165,7 @@
                 </div>
             </div>
             <div class="modal__footer">
-                <button type="button" class="btn btn-ghost" onclick="opCloseModal('edit-role-modal')">{{ __('public.adm_roles_idx_btn_cancel') }}</button>
+                <button type="button" class="btn btn-ghost" data-call="opCloseModal" data-args="[&quot;edit-role-modal&quot;]">{{ __('public.adm_roles_idx_btn_cancel') }}</button>
                 <button type="submit" class="btn btn-primary">{{ __('public.adm_roles_idx_btn_save_changes') }}</button>
             </div>
         </form>
@@ -174,7 +174,7 @@
 
 @endsection
 @section('scripts')
-<script>
+<script @cspNonce>
 function opOpenModal(id){ document.getElementById(id).removeAttribute('hidden'); }
 function opCloseModal(id){ document.getElementById(id).setAttribute('hidden',''); }
 // From the named route, id substituted client-side. The hand-written

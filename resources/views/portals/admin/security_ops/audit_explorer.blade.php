@@ -120,12 +120,12 @@
                             @endif
                         </td>
                         <td data-label="{{ __('security_ops.audit_col_when') }}" class="td-muted">
-                            {{ $ev->created_at?->format('M d, Y H:i') }}
+                            {{ $ev->created_at?->translatedFormat('M d, Y H:i') }}
                         </td>
                         <td class="row-actions">
                             @if($ev->before_state || $ev->after_state || $ev->reason)
                                 <button type="button" class="icon-btn" aria-label="{{ __('security_ops.audit_view_details') }}"
-                                    onclick="showDetail({{ json_encode($ev->before_state) }}, {{ json_encode($ev->after_state) }}, {{ json_encode($ev->action_type) }}, {{ json_encode($ev->reason ?? '') }})">
+                                    data-call="showDetail" data-args="{{ json_encode([$ev->before_state, $ev->after_state, $ev->action_type, $ev->reason ?? '']) }}">
                                     <i data-lucide="eye"></i>
                                 </button>
                             @endif
@@ -147,7 +147,7 @@
     <div class="modal-fixed__panel">
         <div class="modal-fixed__head">
             <h3 id="detail-title" class="modal-fixed__title"></h3>
-            <button type="button" class="icon-btn" aria-label="{{ __('security_ops.btn_close') }}" onclick="closeDetail()"><i data-lucide="x"></i></button>
+            <button type="button" class="icon-btn" aria-label="{{ __('security_ops.btn_close') }}" data-call="closeDetail"><i data-lucide="x"></i></button>
         </div>
         <div id="detail-reason" class="text-muted text-sm mb-3"></div>
         <div class="form-row">
@@ -165,7 +165,7 @@
 @endsection
 
 @section('scripts')
-<script>
+<script @cspNonce>
 var AUDIT_REASON_LABEL = {{ Js::from(__('security_ops.audit_reason_label')) }};
 function showDetail(before, after, action, reason) {
     document.getElementById('detail-title').textContent = action;

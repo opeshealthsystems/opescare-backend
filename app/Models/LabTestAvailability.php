@@ -86,4 +86,24 @@ class LabTestAvailability extends Model
     {
         return $query->where($this->getTable() . '.availability_status', self::STATUS_AVAILABLE);
     }
+
+    /**
+     * Laboratory tests only. Imaging exams publish through this same table but
+     * belong on the imaging finder (IMAGING_DASHBOARD_AUDIT_2 I-2, DIAGNOSTIC_CENTRE
+     * D-1/D-2): the dictionary tags them by LOINC reason, never a guess from the
+     * title. The public lab finder and the lab manager's "published" count must
+     * apply the same rule, or the desk claims more than the finder shows.
+     */
+    public function scopeExcludingImaging(Builder $query): Builder
+    {
+        $column = $this->getTable() . '.loinc_code';
+
+        return $query->where(function (Builder $q) use ($column) {
+            $q->whereNull($column)
+                ->orWhereNotIn($column, \Illuminate\Support\Facades\DB::table('clinical_code_dictionary')
+                    ->select('code')
+                    ->where('system', 'LOINC')
+                    ->where('common_reason', 'like', \App\Services\Imaging\ImagingExamSearch::IMAGING_REASON_PREFIX . '%'));
+        });
+    }
 }

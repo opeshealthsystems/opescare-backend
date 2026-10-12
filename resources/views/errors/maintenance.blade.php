@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -117,8 +117,9 @@
             margin-top: 28px;
         }
 
-        .footer a { color: #6366f1; text-decoration: none; }
+        .footer a { color: #0F4C81; text-decoration: none; }
         .footer a:hover { text-decoration: underline; }
+        .message--emergency { font-size: 13px; color: #0F4C81; }
     </style>
 </head>
 <body>
@@ -144,13 +145,13 @@
             @if($window->starts_at)
             <div class="row">
                 <span class="label">Started</span>
-                <span class="value">{{ $window->starts_at->format('D, d M Y H:i') }} UTC</span>
+                <span class="value">{{ $window->starts_at->translatedFormat('D, d M Y H:i') }} UTC</span>
             </div>
             @endif
             @if($window->ends_at)
             <div class="row">
                 <span class="label">Expected end</span>
-                <span class="value">{{ $window->ends_at->format('D, d M Y H:i') }} UTC</span>
+                <span class="value">{{ $window->ends_at->translatedFormat('D, d M Y H:i') }} UTC</span>
             </div>
             <div class="row">
                 <span class="label">Time remaining</span>
@@ -165,7 +166,7 @@
         </div>
 
         @if($window->allow_emergency_access)
-        <p class="message" style="font-size:13px; color:#6366f1;">
+        <p class="message message--emergency">
             Emergency patient access remains available during this window.
         </p>
         @endif

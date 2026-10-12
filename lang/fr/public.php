@@ -5279,6 +5279,8 @@ return [
     'adm_appt_modal_close'              => 'Fermer',
     'adm_appt_modal_confirm_cancel'     => 'Confirmer l\'annulation',
     'adm_appt_js_confirm_delete'        => 'Supprimer ce rendez-vous ?',
+    'adm_appt_btn_delete_label'       => 'Supprimer le rendez-vous',
+    'adm_appt_modal_close_label'      => 'Fermer',
 
     // Admin – Bridge Lots
     'adm_bridge_batches_title'          => 'Lots de synchronisation — ',

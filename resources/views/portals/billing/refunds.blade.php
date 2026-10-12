@@ -64,7 +64,7 @@
                         <td data-label="{{ __('billing_desk.col_amount') }}" class="td-strong">{{ Xaf::format(Xaf::int($refund->amount)) }}</td>
                         <td data-label="{{ __('billing_desk.refund.col_reason') }}">{{ $refund->reason }}@if($refund->status === 'rejected' && $refund->notes)<div class="td-muted">{{ $refund->notes }}</div>@endif</td>
                         <td data-label="{{ __('billing_desk.refund.col_status') }}"><span class="{{ $refundBadge($refund->status) }}">{{ __('billing_desk.refund.status.'.$refund->status) }}</span></td>
-                        <td data-label="{{ __('billing_desk.refund.col_requested') }}" class="td-muted">{{ $refund->created_at?->format('d M Y H:i') }}</td>
+                        <td data-label="{{ __('billing_desk.refund.col_requested') }}" class="td-muted">{{ $refund->created_at?->translatedFormat('d M Y H:i') }}</td>
                         <td class="row-actions" data-label="{{ __('billing_desk.refund.col_decision') }}">
                             @if($refund->status === 'pending' && $canRefund)
                                 <form method="POST" action="{{ route('portals.billing.refund.approve', $refund->id) }}" style="display:inline">@csrf

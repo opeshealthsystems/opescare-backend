@@ -6,25 +6,25 @@
      and `sample_collection`; before it shipped both capabilities gated nothing. --}}
 <div class="sidebar-role-badge">
     <i data-lucide="flask-conical"></i>
-    {{ __('portal.labtech_role', [], $l) ?: 'Lab Technician' }}
+    {{ __('portal.labtech_role', [], $l) }}
 </div>
 <div class="sidebar-spacer"></div>
 
 <div class="sidebar-nav-section">
     <a href="{{ route('portals.staff') }}" class="sidebar-link {{ request()->routeIs('portals.staff') ? 'active' : '' }}">
-        <i data-lucide="layout-dashboard"></i><span>{{ __('public.portal.nav_dashboard', [], $l) ?: 'Dashboard' }}</span>
+        <i data-lucide="layout-dashboard"></i><span>{{ __('public.portal.nav_dashboard', [], $l) }}</span>
     </a>
     {{-- Global search (facilities, documents, medicines, lab tests, partners,
          messages — never patients). The screen existed, complete, with no
          route: the audit called it unreachable. --}}
     <a href="{{ route('portals.staff.search') }}" class="sidebar-link {{ request()->routeIs('portals.staff.search') ? 'active' : '' }}">
-        <i data-lucide="search"></i><span>{{ __('public.staff_portal.page_heading_search', [], $l) ?: 'Global Search' }}</span>
+        <i data-lucide="search"></i><span>{{ __('public.staff_portal.page_heading_search', [], $l) }}</span>
     </a>
 </div>
 
 @capability('lab_results', 'sample_collection', 'blood_inventory', 'messaging')
 <div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.portal.nav_lab', [], $l) ?: 'Laboratory' }}</div>
+    <div class="sidebar-nav-label">{{ __('public.portal.nav_lab', [], $l) }}</div>
     {{-- The bench: worklist, result entry, release. Same gate as routes/lab.php. --}}
     @capability('lab_results')
     <a href="{{ route('portals.lab_manager.dashboard') }}" class="sidebar-link {{ request()->routeIs('portals.lab_manager.dashboard') ? 'active' : '' }}">
@@ -51,18 +51,18 @@
     @capability('blood_inventory')
     <a href="{{ route('portals.staff.inventory.blood') }}" class="sidebar-link {{ request()->routeIs('portals.staff.inventory.blood*') ? 'active' : '' }}">
         <i data-lucide="droplets"></i>
-        <span>{{ __('public.portal.nav_inventory_blood', [], $l) ?: 'Blood Bank' }}</span>
+        <span>{{ __('public.portal.nav_inventory_blood', [], $l) }}</span>
     </a>
     {{-- The queue of patients asking this blood bank for units. Sits beside
          the shelf it is asked against, behind the same capability. --}}
     <a href="{{ route('portals.staff.blood_requests.index') }}" class="sidebar-link {{ request()->routeIs('portals.staff.blood_requests.*') ? 'active' : '' }}">
-        <i data-lucide="clipboard-list"></i><span>{{ __('blood_desk.nav', [], $l) ?: 'Blood Requests' }}</span>
+        <i data-lucide="clipboard-list"></i><span>{{ __('blood_desk.nav', [], $l) }}</span>
     </a>
     @endcapability
     @capability('messaging')
     <a href="{{ route('portals.staff.messages') }}" class="sidebar-link {{ request()->routeIs('portals.staff.messages*') ? 'active' : '' }}">
         <i data-lucide="messages-square"></i>
-        <span>{{ __('messaging.nav', [], $l) ?: 'Messages' }}</span>
+        <span>{{ __('messaging.nav', [], $l) }}</span>
     </a>
     @endcapability
 </div>

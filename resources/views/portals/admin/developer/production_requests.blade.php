@@ -86,16 +86,16 @@
                 </td>
                 <td data-label="{{ __('public.adm_dev_prod_col_status') }}">
                     <span class="{{ $req->statusBadgeClass() }}">@enum($req->status)</span>
-                    @if($req->reviewed_at)<div class="td-muted">{{ $req->reviewed_at->format('d M Y') }}</div>@endif
+                    @if($req->reviewed_at)<div class="td-muted">{{ $req->reviewed_at->translatedFormat('d M Y') }}</div>@endif
                 </td>
                 <td data-label="{{ __('public.adm_dev_prod_col_submitted') }}">
-                    {{ $req->created_at->format('d M Y') }}
+                    {{ $req->created_at->translatedFormat('d M Y') }}
                     @if($req->estimated_daily_requests)<div class="td-muted">{{ $req->estimated_daily_requests }} {{ __('public.adm_dev_prod_req_per_day') }}</div>@endif
                 </td>
                 <td class="row-actions" data-label="{{ __('public.adm_dev_prod_col_actions') }}">
                     @if(in_array($req->status, ['pending','under_review']))
-                        <button type="button" class="btn btn-success btn-sm" onclick="opOpenModal('approve-{{ $req->id }}')"><i data-lucide="check"></i> {{ __('public.adm_dev_prod_btn_approve') }}</button>
-                        <button type="button" class="btn btn-danger btn-sm" onclick="opOpenModal('reject-{{ $req->id }}')"><i data-lucide="x"></i> {{ __('public.adm_dev_prod_btn_reject') }}</button>
+                        <button type="button" class="btn btn-success btn-sm" data-call="opOpenModal" data-args="[&quot;approve-{{ $req->id }}&quot;]"><i data-lucide="check"></i> {{ __('public.adm_dev_prod_btn_approve') }}</button>
+                        <button type="button" class="btn btn-danger btn-sm" data-call="opOpenModal" data-args="[&quot;reject-{{ $req->id }}&quot;]"><i data-lucide="x"></i> {{ __('public.adm_dev_prod_btn_reject') }}</button>
                     @elseif($req->status === 'approved')
                         <span class="text-success">{{ __('public.adm_dev_prod_status_approved') }}</span>
                         @if($req->review_notes)<div class="td-muted">{{ Str::limit($req->review_notes, 30) }}</div>@endif
@@ -132,7 +132,7 @@
                     @endforeach
                 </div>
                 <div class="modal__footer">
-                    <button type="button" class="btn btn-ghost" onclick="opCloseModal('approve-{{ $req->id }}')">{{ __('public.adm_dev_prod_modal_btn_cancel') }}</button>
+                    <button type="button" class="btn btn-ghost" data-call="opCloseModal" data-args="[&quot;approve-{{ $req->id }}&quot;]">{{ __('public.adm_dev_prod_modal_btn_cancel') }}</button>
                     <button type="submit" class="btn btn-success">{{ __('public.adm_dev_prod_btn_approve') }}</button>
                 </div>
             </form>
@@ -148,7 +148,7 @@
                     <textarea name="reason" rows="3" required placeholder="{{ __('public.adm_dev_prod_modal_reject_ph') }}" class="form-control"></textarea>
                 </div>
                 <div class="modal__footer">
-                    <button type="button" class="btn btn-ghost" onclick="opCloseModal('reject-{{ $req->id }}')">{{ __('public.adm_dev_prod_modal_btn_cancel') }}</button>
+                    <button type="button" class="btn btn-ghost" data-call="opCloseModal" data-args="[&quot;reject-{{ $req->id }}&quot;]">{{ __('public.adm_dev_prod_modal_btn_cancel') }}</button>
                     <button type="submit" class="btn btn-danger">{{ __('public.adm_dev_prod_modal_btn_confirm_reject') }}</button>
                 </div>
             </form>
@@ -160,7 +160,7 @@
 
 @endsection
 @section('scripts')
-<script>
+<script @cspNonce>
 function opOpenModal(id){ document.getElementById(id).removeAttribute('hidden'); }
 function opCloseModal(id){ document.getElementById(id).setAttribute('hidden',''); }
 document.addEventListener('keydown', function(e){

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ __('verify.health_id_title', [], app()->getLocale()) ?: 'Health ID Verification — OpesCare' }}</title>
+    <title>{{ __('verify.health_id_title', [], app()->getLocale()) }}</title>
     <meta name="description" content="Verify a patient's OpesCare Health ID. For authorised healthcare providers only.">
     <meta name="theme-color" content="#0F4C81">
     @include('partials.favicons')
@@ -250,7 +250,7 @@
     </a>
     <div class="topbar-badge">
         <i data-lucide="shield-check" style="width:0.75rem;height:0.75rem;"></i>
-        {{ __('verify.badge_provider_tool', [], app()->getLocale()) ?: 'Provider Verification Tool' }}
+        {{ __('verify.badge_provider_tool', [], app()->getLocale()) }}
     </div>
 </header>
 
@@ -261,15 +261,15 @@
             <div class="verify-icon-wrap">
                 <i data-lucide="id-card" style="width:1.75rem;height:1.75rem;color:#fff;"></i>
             </div>
-            <h1>{{ __('verify.health_id_heading', [], app()->getLocale()) ?: 'Health ID Verification' }}</h1>
-            <p>{{ __('verify.health_id_subheading', [], app()->getLocale()) ?: 'Look up a patient\'s verified identity and active record status. For authorised clinical providers only.' }}</p>
+            <h1>{{ __('verify.health_id_heading', [], app()->getLocale()) }}</h1>
+            <p>{{ __('verify.health_id_subheading', [], app()->getLocale()) }}</p>
         </div>
 
         <div class="verify-card-body">
 
             <div class="disclaimer" role="alert">
                 <i data-lucide="triangle-alert" style="width:1rem;height:1rem;flex-shrink:0;"></i>
-                <span>{{ __('verify.disclaimer', [], app()->getLocale()) ?: 'This tool is for authorised healthcare providers. Every verification is logged and auditable by the patient. Unauthorised access is a criminal offence.' }}</span>
+                <span>{{ __('verify.disclaimer', [], app()->getLocale()) }}</span>
             </div>
 
             @if($error)
@@ -284,7 +284,7 @@
 
                 <div class="form-group">
                     <label class="form-label" for="health_id">
-                        {{ __('verify.field_health_id', [], app()->getLocale()) ?: 'Patient Health ID' }}
+                        {{ __('verify.field_health_id', [], app()->getLocale()) }}
                         <span>*</span>
                     </label>
                     <input
@@ -298,32 +298,32 @@
                         placeholder="OPES-XXXX-XXXX"
                         aria-describedby="health_id_hint"
                     >
-                    <div class="form-hint" id="health_id_hint">{{ __('verify.field_health_id_hint', [], app()->getLocale()) ?: 'Enter the alphanumeric Health ID as shown on the patient\'s card or QR code.' }}</div>
+                    <div class="form-hint" id="health_id_hint">{{ __('verify.field_health_id_hint', [], app()->getLocale()) }}</div>
                     @error('health_id')<div class="form-error">{{ $message }}</div>@enderror
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="purpose">
-                        {{ __('verify.field_purpose', [], app()->getLocale()) ?: 'Purpose of Access' }}
+                        {{ __('verify.field_purpose', [], app()->getLocale()) }}
                         <span>*</span>
                     </label>
                     <select id="purpose" name="purpose" class="form-control" required aria-describedby="purpose_hint">
-                        <option value="">{{ __('verify.field_purpose_placeholder', [], app()->getLocale()) ?: '— Select purpose —' }}</option>
-                        <option value="emergency_care"  @selected(old('purpose')==='emergency_care')>{{ __('verify.purpose_emergency', [], app()->getLocale()) ?: 'Emergency Care' }}</option>
-                        <option value="scheduled_visit" @selected(old('purpose')==='scheduled_visit')>{{ __('verify.purpose_scheduled', [], app()->getLocale()) ?: 'Scheduled Clinical Visit' }}</option>
-                        <option value="lab_result"      @selected(old('purpose')==='lab_result')>{{ __('verify.purpose_lab', [], app()->getLocale()) ?: 'Lab Result Delivery' }}</option>
-                        <option value="prescription"    @selected(old('purpose')==='prescription')>{{ __('verify.purpose_prescription', [], app()->getLocale()) ?: 'Prescription Dispensing' }}</option>
-                        <option value="insurance_claim" @selected(old('purpose')==='insurance_claim')>{{ __('verify.purpose_insurance', [], app()->getLocale()) ?: 'Insurance Claim Processing' }}</option>
-                        <option value="referral"        @selected(old('purpose')==='referral')>{{ __('verify.purpose_referral', [], app()->getLocale()) ?: 'Referral / Transfer' }}</option>
-                        <option value="other"           @selected(old('purpose')==='other')>{{ __('verify.purpose_other', [], app()->getLocale()) ?: 'Other' }}</option>
+                        <option value="">{{ __('verify.field_purpose_placeholder', [], app()->getLocale()) }}</option>
+                        <option value="emergency_care"  @selected(old('purpose')==='emergency_care')>{{ __('verify.purpose_emergency', [], app()->getLocale()) }}</option>
+                        <option value="scheduled_visit" @selected(old('purpose')==='scheduled_visit')>{{ __('verify.purpose_scheduled', [], app()->getLocale()) }}</option>
+                        <option value="lab_result"      @selected(old('purpose')==='lab_result')>{{ __('verify.purpose_lab', [], app()->getLocale()) }}</option>
+                        <option value="prescription"    @selected(old('purpose')==='prescription')>{{ __('verify.purpose_prescription', [], app()->getLocale()) }}</option>
+                        <option value="insurance_claim" @selected(old('purpose')==='insurance_claim')>{{ __('verify.purpose_insurance', [], app()->getLocale()) }}</option>
+                        <option value="referral"        @selected(old('purpose')==='referral')>{{ __('verify.purpose_referral', [], app()->getLocale()) }}</option>
+                        <option value="other"           @selected(old('purpose')==='other')>{{ __('verify.purpose_other', [], app()->getLocale()) }}</option>
                     </select>
-                    <div class="form-hint" id="purpose_hint">{{ __('verify.field_purpose_hint', [], app()->getLocale()) ?: 'This is logged against your staff ID for audit purposes.' }}</div>
+                    <div class="form-hint" id="purpose_hint">{{ __('verify.field_purpose_hint', [], app()->getLocale()) }}</div>
                     @error('purpose')<div class="form-error">{{ $message }}</div>@enderror
                 </div>
 
                 <button type="submit" class="btn-verify">
                     <i data-lucide="search" style="width:1rem;height:1rem;"></i>
-                    {{ __('verify.btn_verify', [], app()->getLocale()) ?: 'Verify Health ID' }}
+                    {{ __('verify.btn_verify', [], app()->getLocale()) }}
                 </button>
             </form>
 
@@ -331,29 +331,29 @@
             <div class="result-success" role="region" aria-label="Verification result">
                 <div class="result-row">
                     <div class="status-dot"></div>
-                    <span style="font-weight:800;font-size:0.9375rem;color:#065F46;">{{ __('verify.result_verified', [], app()->getLocale()) ?: 'Identity Verified' }}</span>
+                    <span style="font-weight:800;font-size:0.9375rem;color:#065F46;">{{ __('verify.result_verified', [], app()->getLocale()) }}</span>
                 </div>
                 <div class="result-detail-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:0.75rem;">
                     <div>
-                        <div class="result-label">{{ __('verify.result_name', [], app()->getLocale()) ?: 'Name' }}</div>
+                        <div class="result-label">{{ __('verify.result_name', [], app()->getLocale()) }}</div>
                         <div class="result-value">{{ $result->name ?? '—' }}</div>
                     </div>
                     <div>
-                        <div class="result-label">{{ __('verify.result_health_id', [], app()->getLocale()) ?: 'Health ID' }}</div>
+                        <div class="result-label">{{ __('verify.result_health_id', [], app()->getLocale()) }}</div>
                         <div class="result-value result-id">{{ $result->health_id ?? '—' }}</div>
                     </div>
                     <div>
-                        <div class="result-label">{{ __('verify.result_dob', [], app()->getLocale()) ?: 'Date of Birth' }}</div>
-                        <div class="result-value">{{ isset($result->dob) ? \Carbon\Carbon::parse($result->dob)->format('d M Y') : '—' }}</div>
+                        <div class="result-label">{{ __('verify.result_dob', [], app()->getLocale()) }}</div>
+                        <div class="result-value">{{ isset($result->dob) ? \Carbon\Carbon::parse($result->dob)->translatedFormat('d M Y') : '—' }}</div>
                     </div>
                     <div>
-                        <div class="result-label">{{ __('verify.result_blood_type', [], app()->getLocale()) ?: 'Blood Type' }}</div>
+                        <div class="result-label">{{ __('verify.result_blood_type', [], app()->getLocale()) }}</div>
                         <div class="result-value">{{ $result->blood_type ?? '—' }}</div>
                     </div>
                 </div>
                 <div class="audit-note">
                     <i data-lucide="shield-check" style="width:0.875rem;height:0.875rem;color:#0F766E;flex-shrink:0;"></i>
-                    {{ __('verify.audit_note', [], app()->getLocale()) ?: 'This access has been logged against your provider credentials and is visible to the patient.' }}
+                    {{ __('verify.audit_note', [], app()->getLocale()) }}
                 </div>
             </div>
             @endif
@@ -363,16 +363,16 @@
 
     <div class="verify-footer">
         <p>
-            {{ __('verify.footer_note', [], app()->getLocale()) ?: 'Having trouble?' }}
-            <a href="{{ route('public.help') }}">{{ __('verify.footer_help', [], app()->getLocale()) ?: 'Visit Help Center' }}</a>
+            {{ __('verify.footer_note', [], app()->getLocale()) }}
+            <a href="{{ route('public.help') }}">{{ __('verify.footer_help', [], app()->getLocale()) }}</a>
             &nbsp;·&nbsp;
-            <a href="{{ route('public.contact') }}">{{ __('verify.footer_contact', [], app()->getLocale()) ?: 'Contact Support' }}</a>
+            <a href="{{ route('public.contact') }}">{{ __('verify.footer_contact', [], app()->getLocale()) }}</a>
         </p>
     </div>
 
 </div>
 
-<script>
+<script @cspNonce>
 document.addEventListener('DOMContentLoaded', function () {
     if (typeof lucide !== 'undefined') lucide.createIcons();
 });

@@ -2,7 +2,7 @@
 
 @section('title', __('notifications.prefs_title') . ' — OpesCare')
 
-@section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()) ?: 'My Portal')
+@section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()))
 @section('breadcrumb_home_url', route('portals.patient'))
 @section('breadcrumb_section', __('notifications.prefs_title'))
 

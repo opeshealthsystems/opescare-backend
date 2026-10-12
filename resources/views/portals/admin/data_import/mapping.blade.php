@@ -122,7 +122,7 @@
 @endsection
 
 @section('scripts')
-<script>
+<script @cspNonce>
 (function () {
     var apply  = document.getElementById('apply-saved-mapping');
     var picker = document.getElementById('saved-mapping-picker');

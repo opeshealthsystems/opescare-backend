@@ -32,8 +32,8 @@
                             {{ $t->patient?->first_name }} {{ $t->patient?->last_name }}
                             <div class="code-muted">{{ $t->patient?->health_id }}</div>
                         </td>
-                        <td data-label="{{ __('public.adm_legal_minor_col_dob') }}">{{ $t->date_of_birth->format('d M Y') }}</td>
-                        <td data-label="{{ __('public.adm_legal_minor_col_turns18') }}" class="td-strong">{{ $t->turns_18_on->format('d M Y') }}</td>
+                        <td data-label="{{ __('public.adm_legal_minor_col_dob') }}">{{ $t->date_of_birth->translatedFormat('d M Y') }}</td>
+                        <td data-label="{{ __('public.adm_legal_minor_col_turns18') }}" class="td-strong">{{ $t->turns_18_on->translatedFormat('d M Y') }}</td>
                         <td data-label="{{ __('public.adm_legal_minor_col_days_until_18') }}">
                             <span class="badge {{ $daysBadge }} badge-sm">
                                 @if($days < 0) {{ __('public.adm_legal_minor_overdue') }} @elseif($days === 0) {{ __('public.adm_legal_minor_today') }} @else {{ $days }} {{ __('public.adm_legal_minor_days') }} @endif

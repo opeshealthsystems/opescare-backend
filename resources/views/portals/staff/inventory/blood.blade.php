@@ -1,12 +1,12 @@
 @extends('layouts.portal')
 
-@section('title', __('staff_inv.title_blood', [], app()->getLocale()) ?: 'Blood Bank Inventory')
+@section('title', __('staff_inv.title_blood', [], app()->getLocale()))
 
-@section('sidebar_user_role', __('public.staff_portal.role_clinical_staff', [], app()->getLocale()) ?: 'Clinical Staff')
+@section('sidebar_user_role', __('public.staff_portal.role_clinical_staff', [], app()->getLocale()))
 
-@section('breadcrumb_home', __('public.staff_portal.title', [], app()->getLocale()) ?: 'Staff Portal')
+@section('breadcrumb_home', __('public.staff_portal.title', [], app()->getLocale()))
 @section('breadcrumb_home_url', route('portals.staff'))
-@section('breadcrumb_section', __('staff_inv.breadcrumb_blood', [], app()->getLocale()) ?: 'Blood Bank')
+@section('breadcrumb_section', __('staff_inv.breadcrumb_blood', [], app()->getLocale()))
 
 @section('head')
 @include('portals.pharmacy._supply_styles')
@@ -17,7 +17,7 @@
 <div class="page-head">
     <h2>{{ __('public.stf_inv_blood_title') }}</h2>
     <div class="page-head__spacer"></div>
-    <button type="button" class="btn btn-primary btn-sm fs-tap" onclick="openUpsertModal()">
+    <button type="button" class="btn btn-primary btn-sm fs-tap" data-call="openUpsertModal">
         <i data-lucide="plus-circle"></i>
         {{ __('public.stf_inv_blood_update_stock_btn') }}
     </button>
@@ -100,7 +100,7 @@
                 <div class="empty-state-icon"><i data-lucide="droplets"></i></div>
                 <h3>{{ __('public.stf_inv_blood_empty_title') }}</h3>
                 <p>{{ __('public.stf_inv_blood_empty_desc') }}</p>
-                <button type="button" class="btn btn-primary btn-sm mt-6 fs-tap" onclick="openUpsertModal()">{{ __('public.stf_inv_blood_update_stock_btn') }}</button>
+                <button type="button" class="btn btn-primary btn-sm mt-6 fs-tap" data-call="openUpsertModal">{{ __('public.stf_inv_blood_update_stock_btn') }}</button>
             </div>
         @else
             <div class="table-wrapper">
@@ -142,22 +142,22 @@
                                 @endif
                             </td>
                             <td data-label="{{ __('public.stf_inv_blood_col_updated') }}" class="td-muted">
-                                {{ \Carbon\Carbon::parse($item->last_stock_update)->format('M d, H:i') }}
+                                {{ \Carbon\Carbon::parse($item->last_stock_update)->translatedFormat('M d, H:i') }}
                             </td>
                             <td data-label="{{ __('public.stf_inv_blood_col_actions') }}">
                                 <div class="row-actions-inline">
                                     <button type="button" class="btn btn-primary btn-xs fs-tap"
-                                        onclick="openAdjustModal('{{ $item->id }}', '{{ $item->blood_group }}', '{{ addslashes($item->component) }}', 'add')">
+                                        data-call="openAdjustModal" data-args="{{ json_encode([$item->id, $item->blood_group, $item->component, 'add']) }}">
                                         <i data-lucide="plus"></i>
                                         {{ __('public.stf_inv_blood_btn_add') }}
                                     </button>
                                     <button type="button" class="btn btn-ghost btn-xs fs-tap"
-                                        onclick="openAdjustModal('{{ $item->id }}', '{{ $item->blood_group }}', '{{ addslashes($item->component) }}', 'subtract')">
+                                        data-call="openAdjustModal" data-args="{{ json_encode([$item->id, $item->blood_group, $item->component, 'subtract']) }}">
                                         <i data-lucide="minus"></i>
                                         {{ __('public.stf_inv_blood_btn_use') }}
                                     </button>
                                     <button type="button" class="btn btn-ghost btn-xs fs-tap"
-                                        onclick="openBloodFlagModal('{{ $item->id }}', '{{ $item->blood_group }} {{ addslashes($item->component) }}', {{ $item->is_expired ? 1 : 0 }}, {{ $item->is_unsafe ? 1 : 0 }}, {{ $item->is_quarantined ? 1 : 0 }})">
+                                        data-call="openBloodFlagModal" data-args="{{ json_encode([$item->id, $item->blood_group . ' ' . $item->component, $item->is_expired ? 1 : 0, $item->is_unsafe ? 1 : 0, $item->is_quarantined ? 1 : 0]) }}">
                                         <i data-lucide="flag"></i>
                                         {{ __('public.stf_inv_blood_btn_flags') }}
                                     </button>
@@ -204,9 +204,9 @@
                 <div class="form-group">
                     <label class="form-label" for="upsert-units">{{ __('public.stf_inv_blood_lbl_units') }}</label>
                     <div class="fs-stepper">
-                        <button type="button" aria-label="{{ __('finder_supply.stepper_minus') }}" onclick="fsStep('upsert-units', -1)">&minus;</button>
+                        <button type="button" aria-label="{{ __('finder_supply.stepper_minus') }}" data-call="fsStep" data-args="[&quot;upsert-units&quot;,-1]">&minus;</button>
                         <input type="number" id="upsert-units" name="available_units" required min="0" inputmode="numeric" value="0">
-                        <button type="button" aria-label="{{ __('finder_supply.stepper_plus') }}" onclick="fsStep('upsert-units', 1)">+</button>
+                        <button type="button" aria-label="{{ __('finder_supply.stepper_plus') }}" data-call="fsStep" data-args="[&quot;upsert-units&quot;,1]">+</button>
                     </div>
                 </div>
                 @if($publishesToFinder)
@@ -218,7 +218,7 @@
                 @endif
             </div>
             <div class="modal__footer">
-                <button type="button" class="btn btn-ghost btn-sm fs-tap" onclick="closeUpsertModal()">{{ __('public.stf_inv_blood_cancel') }}</button>
+                <button type="button" class="btn btn-ghost btn-sm fs-tap" data-call="closeUpsertModal">{{ __('public.stf_inv_blood_cancel') }}</button>
                 <button type="submit" class="btn btn-primary btn-sm fs-tap">
                     @include('partials.finder.icon', ['name' => 'check', 'size' => 16])
                     {{ __('public.stf_inv_blood_btn_save') }}
@@ -240,9 +240,9 @@
                 <div class="form-group">
                     <label class="form-label" for="adjust-units">{{ __('public.stf_inv_blood_lbl_adj_units') }}</label>
                     <div class="fs-stepper">
-                        <button type="button" aria-label="{{ __('finder_supply.stepper_minus') }}" onclick="fsStep('adjust-units', -1)">&minus;</button>
+                        <button type="button" aria-label="{{ __('finder_supply.stepper_minus') }}" data-call="fsStep" data-args="[&quot;adjust-units&quot;,-1]">&minus;</button>
                         <input type="number" id="adjust-units" name="units" required min="1" inputmode="numeric" value="1">
-                        <button type="button" aria-label="{{ __('finder_supply.stepper_plus') }}" onclick="fsStep('adjust-units', 1)">+</button>
+                        <button type="button" aria-label="{{ __('finder_supply.stepper_plus') }}" data-call="fsStep" data-args="[&quot;adjust-units&quot;,1]">+</button>
                     </div>
                 </div>
                 @if($publishesToFinder)
@@ -253,7 +253,7 @@
                 @endif
             </div>
             <div class="modal__footer">
-                <button type="button" class="btn btn-ghost btn-sm fs-tap" onclick="closeAdjustModal()">{{ __('public.stf_inv_blood_cancel') }}</button>
+                <button type="button" class="btn btn-ghost btn-sm fs-tap" data-call="closeAdjustModal">{{ __('public.stf_inv_blood_cancel') }}</button>
                 <button type="submit" id="adjust-btn" class="btn btn-primary btn-sm fs-tap">{{ __('public.stf_inv_blood_btn_confirm') }}</button>
             </div>
         </form>
@@ -279,7 +279,7 @@
                 </label>
             </div>
             <div class="modal__footer">
-                <button type="button" class="btn btn-ghost btn-sm" onclick="closeBloodFlagModal()">{{ __('public.stf_inv_blood_cancel') }}</button>
+                <button type="button" class="btn btn-ghost btn-sm" data-call="closeBloodFlagModal">{{ __('public.stf_inv_blood_cancel') }}</button>
                 <button type="submit" class="btn btn-primary btn-sm">{{ __('public.stf_inv_blood_btn_save_flags') }}</button>
             </div>
         </form>
@@ -289,7 +289,7 @@
 @endsection
 
 @section('scripts')
-<script>
+<script @cspNonce>
     // Built from the named routes, with the id substituted client-side. The old
     // hand-written '/portals/staff/inventory/blood' prefix is a GET-only legacy
     // redirect, so both of these modals posted to a 405 and saved nothing.
@@ -310,12 +310,12 @@
 
     function openAdjustModal(id, group, component, direction) {
         document.getElementById('adjust-label').textContent = group + ' · ' + component.replace(/_/g,' ');
-        document.getElementById('adjust-title').textContent = direction === 'add' ? '{{ __('staff_inv.js_add_units', [], app()->getLocale()) ?: 'Add Units' }}' : '{{ __('staff_inv.js_use_units', [], app()->getLocale()) ?: 'Use Units' }}';
+        document.getElementById('adjust-title').textContent = direction === 'add' ? '{{ __('staff_inv.js_add_units', [], app()->getLocale()) }}' : '{{ __('staff_inv.js_use_units', [], app()->getLocale()) }}';
         document.getElementById('adjust-direction').value = direction;
         document.getElementById('adjust-form').action = bloodAdjustUrl.replace('__ID__', encodeURIComponent(id));
         var btn = document.getElementById('adjust-btn');
         btn.className = direction === 'add' ? 'btn btn-primary btn-sm fs-tap' : 'btn btn-warning btn-sm fs-tap';
-        btn.textContent = direction === 'add' ? '{{ __('staff_inv.js_add', [], app()->getLocale()) ?: 'Add' }}' : '{{ __('staff_inv.js_use', [], app()->getLocale()) ?: 'Use' }}';
+        btn.textContent = direction === 'add' ? '{{ __('staff_inv.js_add', [], app()->getLocale()) }}' : '{{ __('staff_inv.js_use', [], app()->getLocale()) }}';
         document.getElementById('adjust-modal').removeAttribute('hidden');
     }
     function closeAdjustModal() { document.getElementById('adjust-modal').setAttribute('hidden',''); }

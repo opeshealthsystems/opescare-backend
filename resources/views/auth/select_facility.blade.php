@@ -32,7 +32,7 @@
                     @endphp
                     <div class="facility-card{{ $isSuspended ? ' disabled' : '' }}"
                          id="{{ $cardId }}"
-                         onclick="{{ $isSuspended ? '' : "selectFacility('{$facilityVal}', '{$cardId}')" }}">
+                         @unless($isSuspended) data-call="selectFacility" data-args="{{ json_encode([$facilityVal, $cardId]) }}" @endunless>
                         <div class="facility-card__icon">
                             @include('partials.finder.icon', ['name' => 'building-2', 'size' => 18])
                         </div>
@@ -62,7 +62,7 @@
 @endsection
 
 @section('scripts')
-<script>
+<script @cspNonce>
     function selectFacility(facilityVal, cardId) {
         document.getElementById('selected-facility').value = facilityVal;
 

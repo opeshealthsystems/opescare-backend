@@ -2,7 +2,7 @@
 
 @section('title', __('referral.title') . ' — OpesCare')
 
-@section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()) ?: 'My Portal')
+@section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()))
 @section('breadcrumb_home_url', route('portals.patient'))
 @section('breadcrumb_section', __('referral.title'))
 
@@ -34,10 +34,10 @@
         </h2>
         <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
             <input id="refer-link" type="text" class="f-input" readonly
-                   value="{{ $link }}" style="flex:1;min-width:240px;" onclick="this.select();">
+                   value="{{ $link }}" style="flex:1;min-width:240px;" data-select-on-click>
             <button type="button" class="f-btn f-btn--primary" id="refer-copy-btn" style="min-height:48px;"
                     data-copied="{{ __('referral.copied') }}"
-                    onclick="pfCopyReferLink()">
+                    data-call="pfCopyReferLink">
                 <span>{{ __('referral.copy') }}</span>
             </button>
         </div>
@@ -128,7 +128,7 @@
     </div>
 </div>
 
-<script>
+<script @cspNonce>
 function pfCopyReferLink() {
     var input = document.getElementById('refer-link');
     var btn = document.getElementById('refer-copy-btn');

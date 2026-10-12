@@ -54,13 +54,13 @@
 
 {{-- Filters --}}
 <form method="GET" class="filter-bar">
-    <select name="status" class="filter-select" aria-label="{{ __('public.aria_status') }}" onchange="this.form.submit()">
+    <select name="status" class="filter-select" aria-label="{{ __('public.aria_status') }}" data-autosubmit>
         <option value="">{{ __('public.adm_cert_idx_filter_all_statuses') }}</option>
         @foreach($statuses as $s)
         <option value="{{ $s }}" {{ $status === $s ? 'selected' : '' }}>@enum($s)</option>
         @endforeach
     </select>
-    <select name="type" class="filter-select" aria-label="{{ __('admin_extra.aria_type', [], app()->getLocale()) ?: 'Type' }}" onchange="this.form.submit()">
+    <select name="type" class="filter-select" aria-label="{{ __('admin_extra.aria_type', [], app()->getLocale()) }}" data-autosubmit>
         <option value="">{{ __('public.adm_cert_idx_filter_all_types') }}</option>
         @foreach($types as $t)
         <option value="{{ $t }}" {{ $type === $t ? 'selected' : '' }}>{{ strtoupper($t) }}</option>
@@ -118,7 +118,7 @@
                             <span class="badge {{ $cert->latestTestRun->isPassed() ? 'badge-success' : 'badge-danger' }} badge-sm">
                                 {{ $cert->latestTestRun->passRate() }}%
                             </span>
-                            <span class="td-muted code-muted">({{ $cert->latestTestRun->started_at?->format('d M Y') }})</span>
+                            <span class="td-muted code-muted">({{ $cert->latestTestRun->started_at?->translatedFormat('d M Y') }})</span>
                         @else
                             <span class="td-muted">{{ __('public.adm_cert_idx_no_runs') }}</span>
                         @endif

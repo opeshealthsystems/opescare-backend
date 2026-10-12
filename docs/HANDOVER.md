@@ -76,7 +76,9 @@ From the scan of 15 September. Evidence and per-item detail: `docs/SECURITY_REME
 | 3 | MFA not required for platform admins | **Live** — `super_admin`, `platform_admin`, `system_admin` always require MFA |
 | 4 | JWT keys committed to git | **Live, one owner step left** — keys untracked, paths configurable, history rewritten. See below |
 | 5 | Webhook could reach internal addresses (SSRF) | **Live** — public addresses only, pinned connection, redirects off |
-| 6 | Headers / session cookie / CSP | **Partly live** — duplicate headers and jsDelivr removed. Host-only cookie needs a prod `.env` change; `'unsafe-inline'` remains, see backlog |
+| 6 | Headers / session cookie / CSP | **Live, one owner step left** — duplicate headers and jsDelivr removed; `script-src` is now nonce-only with **no `'unsafe-inline'`** (2026-10-12: 141 inline handlers → `data-*` + `public/js/op-actions.js`, every inline `<script>` carries `@cspNonce`, tests enforce it). Host-only cookie still needs the prod `.env` change below |
+| 7 | 31 known vulnerabilities in PHP packages (commonmark, guzzle, dompdf, flysystem, laravel) | **Live** — `composer audit` = 0 after the 2026-10-12 update (Laravel 13.35, Symfony 8). `vendor/` is tracked, so the deploy carries it |
+| 8 | Stored XSS through legal-document HTML (rendered unescaped on the public legal pages) | **Live** — sanitised with HTMLPurifier at publish time *and* at render; `tests/Unit/LegalHtmlSanitizerTest.php` |
 
 > **Commit hashes changed.** The history was rewritten to remove the keys, so hashes
 > quoted in older docs do not resolve. **Find commits by message:**

@@ -49,16 +49,16 @@
                         </td>
                         <td data-label="{{ __('public.adm_legal_show_col_reaccept') }}">
                             @if($ver->requires_reacceptance)
-                                <span class="badge badge-danger badge-sm">{{ __('admin_extra.yes', [], app()->getLocale()) ?: 'Yes' }}</span>
+                                <span class="badge badge-danger badge-sm">{{ __('admin_extra.yes', [], app()->getLocale()) }}</span>
                             @else
-                                <span class="td-muted">{{ __('admin_extra.no', [], app()->getLocale()) ?: 'No' }}</span>
+                                <span class="td-muted">{{ __('admin_extra.no', [], app()->getLocale()) }}</span>
                             @endif
                         </td>
                         <td data-label="{{ __('public.adm_legal_show_col_published') }}" class="td-muted">
-                            {{ $ver->published_at?->format('d M Y H:i') ?? '—' }}
+                            {{ $ver->published_at?->translatedFormat('d M Y H:i') ?? '—' }}
                         </td>
                         <td data-label="{{ __('public.adm_legal_show_col_effective') }}" class="td-muted">
-                            {{ $ver->effective_at?->format('d M Y') ?? '—' }}
+                            {{ $ver->effective_at?->translatedFormat('d M Y') ?? '—' }}
                         </td>
                         <td data-label="{{ __('public.adm_legal_show_col_change_summary') }}">{{ $ver->change_summary ?: '—' }}</td>
                     </tr>
@@ -83,7 +83,7 @@
     </div>
     <div class="panel-body">
         <div class="legal-preview">
-            {!! $current->content_html !!}
+            {!! app(AppModulesegalservicesegalhtmlsanitizer::class)->clean((string) $current->content_html) !!}
         </div>
     </div>
 </div>
@@ -92,7 +92,7 @@
 
 @endsection
 @section('scripts')
-<script>
+<script @cspNonce>
 function opOpenModal(id){ document.getElementById(id).classList.add('open'); }
 function opCloseModal(id){ document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-fixed').forEach(function(m){

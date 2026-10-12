@@ -2,9 +2,9 @@
 
 @section('title', __('public.portal.nav_appointments', [], app()->getLocale()) . ' — OpesCare Patient Portal')
 
-@section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()) ?: 'My Portal')
+@section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()))
 @section('breadcrumb_home_url', route('portals.patient'))
-@section('breadcrumb_section', __('public.portal.nav_appointments', [], app()->getLocale()) ?: 'Appointments')
+@section('breadcrumb_section', __('public.portal.nav_appointments', [], app()->getLocale()))
 
 @section('head')
     @include('portals.patient._finder_head')
@@ -25,8 +25,8 @@
 
     <div class="pf-head">
         <div>
-            <h1>{{ __('public.portal.nav_appointments', [], $l) ?: 'My Appointments' }}</h1>
-            <p class="pf-sub">{{ __('public.portal.appointments_subtitle', [], $l) ?: 'View your upcoming and past appointments.' }}</p>
+            <h1>{{ __('public.portal.nav_appointments', [], $l) }}</h1>
+            <p class="pf-sub">{{ __('public.portal.appointments_subtitle', [], $l) }}</p>
         </div>
         <div class="pf-actions">
             <a href="{{ route('portals.patient.waitlist') }}" class="f-btn">
@@ -45,8 +45,8 @@
         <div class="pf-qa__icon" style="margin:0 auto 12px;width:48px;height:48px;">
             @include('partials.finder.icon', ['name' => 'calendar', 'size' => 24])
         </div>
-        <h2 style="font-size:1.125rem;font-weight:750;margin:0 0 6px;">{{ __('public.portal.no_appointments_title', [], $l) ?: 'No Appointments' }}</h2>
-        <p class="f-muted" style="margin:0 0 18px;">{{ __('public.portal.no_appointments_desc', [], $l) ?: 'You don\'t have any appointments scheduled at this time.' }}</p>
+        <h2 style="font-size:1.125rem;font-weight:750;margin:0 0 6px;">{{ __('public.portal.no_appointments_title', [], $l) }}</h2>
+        <p class="f-muted" style="margin:0 0 18px;">{{ __('public.portal.no_appointments_desc', [], $l) }}</p>
         <div class="pf-actions" style="justify-content:center;">
             <a href="{{ route('portals.patient.appointments.book') }}" class="f-btn f-btn--primary" style="min-height:48px;">
                 @include('partials.finder.icon', ['name' => 'calendar-plus', 'size' => 18])
@@ -58,7 +58,7 @@
             </a>
             <a href="{{ route('public.care-map') }}" class="f-btn">
                 @include('partials.finder.icon', ['name' => 'map-pin', 'size' => 18])
-                {{ __('public.portal.nav_care_map', [], $l) ?: 'Find a Provider' }}
+                {{ __('public.portal.nav_care_map', [], $l) }}
             </a>
         </div>
     </div>
@@ -99,7 +99,7 @@
                         @endif
                         <span>
                             @include('partials.finder.icon', ['name' => 'map-pin', 'size' => 15])
-                            {{ $appt->facility?->name ?? (__('public.portal.unknown_facility', [], $l) ?: 'Unknown Facility') }}
+                            {{ $appt->facility?->name ?? (__('public.portal.unknown_facility', [], $l)) }}
                         </span>
                         @if($providerName !== '')
                         <span>
@@ -120,9 +120,9 @@
                             @include('partials.finder.icon', ['name' => 'refresh-cw', 'size' => 16])
                             {{ __('public.appt_reschedule_btn') }}
                         </a>
-                        <button type="button" class="f-btn pf-btn--danger-ghost" onclick="pfOpenModal('cancel-appt-{{ $appt->id }}')">
+                        <button type="button" class="f-btn pf-btn--danger-ghost" data-call="pfOpenModal" data-args="[&quot;cancel-appt-{{ $appt->id }}&quot;]">
                             @include('partials.finder.icon', ['name' => 'x', 'size' => 16])
-                            {{ __('public.portal.btn_cancel_appointment', [], $l) ?: 'Cancel' }}
+                            {{ __('public.portal.btn_cancel_appointment', [], $l) }}
                         </button>
                     </div>
                     @endif
@@ -145,14 +145,14 @@
             <div class="pf-modal" role="dialog" aria-modal="true" aria-labelledby="cancel-appt-{{ $appt->id }}-title">
                 <h3 id="cancel-appt-{{ $appt->id }}-title">
                     @include('partials.finder.icon', ['name' => 'alert-circle', 'size' => 18])
-                    {{ __('public.portal.modal_cancel_appt_title', [], $l) ?: 'Cancel appointment' }}
+                    {{ __('public.portal.modal_cancel_appt_title', [], $l) }}
                 </h3>
                 <form method="POST" action="{{ route('portals.patient.appointments.cancel', $appt->id) }}">
                     @csrf
-                    <p>{{ __('public.portal.modal_cancel_appt_body', [], $l) ?: 'Cancel this appointment? This action cannot be undone.' }}</p>
+                    <p>{{ __('public.portal.modal_cancel_appt_body', [], $l) }}</p>
                     <div class="pf-modal__actions">
-                        <button type="button" class="f-btn" onclick="pfCloseModal('cancel-appt-{{ $appt->id }}')">{{ __('public.portal.btn_keep_appointment', [], $l) ?: 'Keep appointment' }}</button>
-                        <button type="submit" class="f-btn pf-btn--danger">{{ __('public.portal.btn_cancel_appointment', [], $l) ?: 'Cancel appointment' }}</button>
+                        <button type="button" class="f-btn" data-call="pfCloseModal" data-args="[&quot;cancel-appt-{{ $appt->id }}&quot;]">{{ __('public.portal.btn_keep_appointment', [], $l) }}</button>
+                        <button type="submit" class="f-btn pf-btn--danger">{{ __('public.portal.btn_cancel_appointment', [], $l) }}</button>
                     </div>
                 </form>
             </div>
@@ -166,7 +166,7 @@
 @endsection
 
 @section('scripts')
-<script>
+<script @cspNonce>
 function pfOpenModal(id){ document.getElementById(id).removeAttribute('hidden'); }
 function pfCloseModal(id){ document.getElementById(id).setAttribute('hidden',''); }
 document.addEventListener('keydown', function(e){

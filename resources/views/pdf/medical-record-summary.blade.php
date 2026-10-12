@@ -22,7 +22,7 @@
         <tr><th>Name</th><td>{{ $patient->first_name }} {{ $patient->last_name }}</td></tr>
         <tr><th>Patient ID</th><td>{{ $patient->id }}</td></tr>
         <tr><th>CNAMGS No.</th><td>{{ $patient->cnamgs_id ?? 'Not registered' }}</td></tr>
-        <tr><th>Generated</th><td>{{ now()->format('d M Y H:i') }} UTC</td></tr>
+        <tr><th>Generated</th><td>{{ now()->translatedFormat('d M Y H:i') }} UTC</td></tr>
     </table>
 
     @if($vitals->isNotEmpty())
@@ -31,7 +31,7 @@
         <tr><th>Date</th><th>Pulse</th><th>SpO2</th><th>Temp (°C)</th></tr>
         @foreach($vitals as $v)
         <tr>
-            <td>{{ $v->created_at->format('d M Y') }}</td>
+            <td>{{ $v->created_at->translatedFormat('d M Y') }}</td>
             <td>{{ $v->pulse_rate ?? '-' }}</td>
             <td>{{ $v->oxygen_saturation ?? '-' }}</td>
             <td>{{ $v->temperature ?? '-' }}</td>
@@ -49,7 +49,7 @@
             <td>{{ $r->parameter_name }}</td>
             <td>{{ $r->value }}</td>
             <td>{{ $r->unit }}</td>
-            <td>{{ $r->created_at->format('d M Y') }}</td>
+            <td>{{ $r->created_at->translatedFormat('d M Y') }}</td>
         </tr>
         @endforeach
     </table>

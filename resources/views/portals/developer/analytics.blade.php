@@ -25,7 +25,7 @@
         <div class="page-head__spacer"></div>
         @if($clients->count() > 1)
         <form method="GET" class="filter-bar filter-bar--flush">
-            <select name="app" class="filter-select" aria-label="{{ __('developer_ext.act_filter_aria') }}" onchange="this.form.submit()">
+            <select name="app" class="filter-select" aria-label="{{ __('developer_ext.act_filter_aria') }}" data-autosubmit>
                 <option value="">{{ __('developer_ext.act_filter_all') }}</option>
                 @foreach($clients as $c)
                     <option value="{{ $c->id }}" {{ $selected && $selected->id === $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
@@ -64,7 +64,7 @@
     <div class="panel mb-6">
         <div class="panel-header">
             <h3 class="panel-title"><i data-lucide="bar-chart-3"></i> {{ __('developer_ext.an_chart_title') }}</h3>
-            <span class="td-muted">{{ __('developer_ext.an_chart_range', ['from' => $since->format('d M'), 'to' => now()->format('d M Y')]) }}</span>
+            <span class="td-muted">{{ __('developer_ext.an_chart_range', ['from' => $since->translatedFormat('d M'), 'to' => now()->translatedFormat('d M Y')]) }}</span>
         </div>
         @if($totals['requests'] === 0)
             <div class="panel-body empty-state">

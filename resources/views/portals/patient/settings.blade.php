@@ -4,7 +4,7 @@
 
 @section('title', __('public.pat_settings_title', [], $l) . ' — OpesCare')
 
-@section('breadcrumb_home', __('public.portal.my_portal', [], $l) ?: 'My Portal')
+@section('breadcrumb_home', __('public.portal.my_portal', [], $l))
 @section('breadcrumb_home_url', route('portals.patient'))
 @section('breadcrumb_section', __('public.pat_settings_breadcrumb', [], $l))
 
@@ -32,8 +32,8 @@
         <div class="pf-qa__icon" style="margin:0 auto 12px;width:48px;height:48px;">
             @include('partials.finder.icon', ['name' => 'alert-triangle', 'size' => 24])
         </div>
-        <h2 style="font-size:1.125rem;font-weight:750;margin:0 0 6px;">{{ __('public.portal.no_profile_found_title', [], $l) ?: 'No Patient Profile Found' }}</h2>
-        <p class="f-muted" style="margin:0;">{{ __('public.portal.no_profile_found_desc', [], $l) ?: 'Your patient profile could not be loaded. Please contact support.' }}</p>
+        <h2 style="font-size:1.125rem;font-weight:750;margin:0 0 6px;">{{ __('public.portal.no_profile_found_title', [], $l) }}</h2>
+        <p class="f-muted" style="margin:0;">{{ __('public.portal.no_profile_found_desc', [], $l) }}</p>
     </div>
     @else
     <form method="POST" action="{{ route('portals.patient.settings.update') }}">
@@ -106,7 +106,7 @@
             <textarea id="report_reason" name="report_reason" class="f-input" rows="2" maxlength="500" required>{{ old('report_reason') }}</textarea>
             @error('report_reason')<p class="f-small" style="color:#b42318;margin:6px 0 0;">{{ $message }}</p>@enderror
         </div>
-        <button type="submit" class="f-btn f-btn--danger" onclick="return confirm(@json(__('public.pat_lost_card_confirm', [], $l)))">
+        <button type="submit" class="f-btn f-btn--danger" data-confirm="{{ __('public.pat_lost_card_confirm', [], $l) }}">
             @include('partials.finder.icon', ['name' => 'shield-alert', 'size' => 18])
             {{ __('public.pat_lost_card_btn', [], $l) }}
         </button>

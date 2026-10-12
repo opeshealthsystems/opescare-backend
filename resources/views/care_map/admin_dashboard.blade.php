@@ -8,7 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/portal.css') }}">
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+<script src="{{ asset('js/lucide.min.js') }}" defer></script>
+<script src="{{ asset('js/op-actions.js') }}?v={{ @filemtime(public_path('js/op-actions.js')) ?: '1' }}" defer></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -187,7 +188,7 @@ html,body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:va
 
 </div>{{-- /page-wrap --}}
 
-<script>
+<script @cspNonce>
 window.addEventListener('load', () => { if (window.lucide) lucide.createIcons(); });
 </script>
 </body>

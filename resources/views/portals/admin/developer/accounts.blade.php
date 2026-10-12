@@ -84,15 +84,15 @@
                     @endif
                 </td>
                 <td data-label="{{ __('public.adm_dev_acc_col_joined') }}">
-                    {{ $account->created_at->format('d M Y') }}
+                    {{ $account->created_at->translatedFormat('d M Y') }}
                     @if($account->api_terms_accepted)<div class="td-muted">{{ __('public.adm_dev_acc_terms_accepted') }}</div>@endif
                 </td>
                 <td class="row-actions" data-label="{{ __('public.adm_dev_acc_col_actions') }}">
                     @if($account->status !== 'suspended')
-                    <button type="button" class="btn btn-danger btn-sm" onclick="opOpenModal('suspend-{{ $account->id }}')">{{ __('public.adm_dev_acc_btn_suspend') }}</button>
+                    <button type="button" class="btn btn-danger btn-sm" data-call="opOpenModal" data-args="[&quot;suspend-{{ $account->id }}&quot;]">{{ __('public.adm_dev_acc_btn_suspend') }}</button>
                     @else
                     <span class="td-muted">{{ __('public.adm_dev_acc_label_suspended') }}</span>
-                    @if($account->suspended_at)<div class="td-muted">{{ $account->suspended_at->format('d M Y') }}</div>@endif
+                    @if($account->suspended_at)<div class="td-muted">{{ $account->suspended_at->translatedFormat('d M Y') }}</div>@endif
                     @endif
                 </td>
             </tr>
@@ -116,7 +116,7 @@
                     <textarea name="reason" rows="3" required placeholder="{{ __('public.adm_dev_acc_modal_ph_reason') }}" class="form-control"></textarea>
                 </div>
                 <div class="modal__footer">
-                    <button type="button" class="btn btn-ghost" onclick="opCloseModal('suspend-{{ $account->id }}')">{{ __('public.adm_dev_acc_modal_btn_cancel') }}</button>
+                    <button type="button" class="btn btn-ghost" data-call="opCloseModal" data-args="[&quot;suspend-{{ $account->id }}&quot;]">{{ __('public.adm_dev_acc_modal_btn_cancel') }}</button>
                     <button type="submit" class="btn btn-danger">{{ __('public.adm_dev_acc_modal_btn_confirm') }}</button>
                 </div>
             </form>
@@ -128,7 +128,7 @@
 
 @endsection
 @section('scripts')
-<script>
+<script @cspNonce>
 function opOpenModal(id){ document.getElementById(id).removeAttribute('hidden'); }
 function opCloseModal(id){ document.getElementById(id).setAttribute('hidden',''); }
 document.addEventListener('keydown', function(e){

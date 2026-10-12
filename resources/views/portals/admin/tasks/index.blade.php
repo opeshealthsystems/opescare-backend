@@ -2,7 +2,7 @@
 
 @section('title', __('tasks.admin_title') . ' — OpesCare')
 
-@section('breadcrumb_home', __('public.portal.nav_administration', [], app()->getLocale()) ?: 'Admin')
+@section('breadcrumb_home', __('public.portal.nav_administration', [], app()->getLocale()))
 @section('breadcrumb_home_url', route('portals.admin'))
 @section('breadcrumb_section', __('tasks.admin_title'))
 
@@ -15,7 +15,7 @@
         <h1 class="page-title">{{ __('tasks.admin_title') }}</h1>
         <p class="page-subtitle">{{ __('tasks.admin_subtitle') }}</p>
     </div>
-    <button type="button" class="btn btn-primary" onclick="document.getElementById('new-task').hidden = !document.getElementById('new-task').hidden">
+    <button type="button" class="btn btn-primary" data-toggle-hidden="new-task">
         <i data-lucide="plus"></i> {{ __('tasks.new_task') }}
     </button>
 </div>
@@ -58,7 +58,7 @@
     <div class="panel-header" style="display:flex;justify-content:space-between;align-items:center;">
         <h3 class="panel-title"><i data-lucide="clipboard-list"></i> {{ __('tasks.admin_title') }}</h3>
         <form method="GET" style="display:flex;gap:.4rem;align-items:center;">
-            <select name="status" class="form-control" style="width:auto;" onchange="this.form.submit()">
+            <select name="status" class="form-control" style="width:auto;" data-autosubmit>
                 <option value="">{{ __('tasks.all_statuses') }}</option>
                 @foreach(['open','acknowledged','escalated','completed'] as $st)
                     <option value="{{ $st }}" @selected($status===$st)>@enum($st)</option>

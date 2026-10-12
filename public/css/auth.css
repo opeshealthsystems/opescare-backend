@@ -16,7 +16,6 @@
     --auth-warning: #B45309;
     --auth-danger: #B91C1C;
     --auth-critical: #7F1D1D;
-    --auth-purple: #6D28D9;
 }
 
 * {
@@ -980,7 +979,7 @@ body.auth-body {
 }
 
 .notice-api i {
-    color: #6D28D9;
+    color: #0F4C81;
     width: 1.25rem;
     height: 1.25rem;
     flex-shrink: 0;
@@ -1419,8 +1418,6 @@ body.auth-body {
 .demo-btn-facility   { background: #F0FDF4; border-color: #BBF7D0; color: #15803D; }
 .demo-btn-facility:hover { background: #DCFCE7; border-color: #86EFAC; }
 
-.demo-btn-insurance  { background: #F5F3FF; border-color: #DDD6FE; color: #6D28D9; }
-.demo-btn-insurance:hover { background: #EDE9FE; border-color: #C4B5FD; }
 
 .demo-btn-patient    { background: #FFF7ED; border-color: #FED7AA; color: #C2410C; }
 .demo-btn-patient:hover { background: #FFEDD5; border-color: #FDBA74; }

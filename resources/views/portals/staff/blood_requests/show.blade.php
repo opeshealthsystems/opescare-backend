@@ -13,9 +13,9 @@
 
 @section('title', __('blood_desk.detail_title', ['reference' => $bloodRequest->reference]))
 
-@section('sidebar_user_role', __('public.staff_portal.role_clinical_staff', [], app()->getLocale()) ?: 'Clinical Staff')
+@section('sidebar_user_role', __('public.staff_portal.role_clinical_staff', [], app()->getLocale()))
 
-@section('breadcrumb_home', __('public.staff_portal.title', [], app()->getLocale()) ?: 'Staff Portal')
+@section('breadcrumb_home', __('public.staff_portal.title', [], app()->getLocale()))
 @section('breadcrumb_home_url', route('portals.staff'))
 @section('breadcrumb_section', __('blood_desk.breadcrumb'))
 
@@ -69,13 +69,13 @@
             <dd>{{ $bloodRequest->quantity }} {{ __('blood_desk.units_label') }}</dd>
 
             <dt>{{ __('blood_desk.lbl_needed_by') }}</dt>
-            <dd>{{ optional($bloodRequest->needed_by)->format('M d, Y H:i') ?: __('blood_desk.not_recorded') }}</dd>
+            <dd>{{ optional($bloodRequest->needed_by)->translatedFormat('M d, Y H:i') ?: __('blood_desk.not_recorded') }}</dd>
 
             <dt>{{ __('blood_desk.lbl_expires') }}</dt>
-            <dd>{{ optional($bloodRequest->expires_at)->format('M d, Y H:i') ?: __('blood_desk.not_recorded') }}</dd>
+            <dd>{{ optional($bloodRequest->expires_at)->translatedFormat('M d, Y H:i') ?: __('blood_desk.not_recorded') }}</dd>
 
             <dt>{{ __('blood_desk.lbl_filed') }}</dt>
-            <dd>{{ optional($bloodRequest->created_at)->format('M d, Y H:i') }}</dd>
+            <dd>{{ optional($bloodRequest->created_at)->translatedFormat('M d, Y H:i') }}</dd>
 
             <dt>{{ __('blood_desk.lbl_patient_note') }}</dt>
             <dd>{{ $bloodRequest->patient_note ?: __('blood_desk.not_recorded') }}</dd>
@@ -112,7 +112,7 @@
             <dd>{{ $bloodRequest->decided_by ?: __('blood_desk.not_recorded') }}</dd>
 
             <dt>{{ __('blood_desk.lbl_decided_at') }}</dt>
-            <dd>{{ optional($bloodRequest->decided_at)->format('M d, Y H:i') ?: __('blood_desk.not_recorded') }}</dd>
+            <dd>{{ optional($bloodRequest->decided_at)->translatedFormat('M d, Y H:i') ?: __('blood_desk.not_recorded') }}</dd>
 
             <dt>{{ __('blood_desk.lbl_facility_note') }}</dt>
             <dd>{{ $bloodRequest->facility_note ?: __('blood_desk.not_recorded') }}</dd>

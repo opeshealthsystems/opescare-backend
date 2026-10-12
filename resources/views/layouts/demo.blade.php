@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', __('public.demo.page_title') ?: 'OpesCare Demo Access')</title>
+    <title>@yield('title', __('public.demo.page_title'))</title>
     <meta name="theme-color" content="#0F4C81">
     @include('partials.favicons')
     <link rel="manifest" href="{{ asset('site.webmanifest') }}">
@@ -119,9 +119,9 @@
             flex-shrink: 0;
         }
         .demo-card-icon.teal   { background: #f0fdfa; color: #0d9488; }
-        .demo-card-icon.indigo { background: #eef2ff; color: #4f46e5; }
+        .demo-card-icon.indigo { background: #EAF2FA; color: #0F4C81; }
         .demo-card-icon.amber  { background: #fffbeb; color: #d97706; }
-        .demo-card-icon.purple { background: #faf5ff; color: #7c3aed; }
+        .demo-card-icon.purple { background: #EAF2FA; color: #1D6EA8; }
         .demo-card-icon.green  { background: #f0fdf4; color: #16a34a; }
         .demo-card-icon.rose   { background: #fff1f2; color: #e11d48; }
         .demo-card-role {
@@ -266,7 +266,8 @@
 </div>
 
 <script src="{{ asset('js/lucide.min.js') }}"></script>
-<script>if (typeof lucide !== 'undefined') lucide.createIcons();</script>
+<script src="{{ asset('js/op-actions.js') }}?v={{ @filemtime(public_path('js/op-actions.js')) ?: '1' }}" defer></script>
+<script @cspNonce>if (typeof lucide !== 'undefined') lucide.createIcons();</script>
 @yield('scripts')
 
 </body>

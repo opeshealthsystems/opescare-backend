@@ -2,7 +2,7 @@
 
 @section('title', __('broadcasts.title') . ' — OpesCare')
 
-@section('breadcrumb_home', __('public.portal.nav_administration', [], app()->getLocale()) ?: 'Admin')
+@section('breadcrumb_home', __('public.portal.nav_administration', [], app()->getLocale()))
 @section('breadcrumb_home_url', route('portals.admin'))
 @section('breadcrumb_section', __('broadcasts.title'))
 
@@ -15,7 +15,7 @@
         <h1 class="page-title">{{ __('broadcasts.title') }}</h1>
         <p class="page-subtitle">{{ __('broadcasts.subtitle') }}</p>
     </div>
-    <button type="button" class="btn btn-primary" onclick="document.getElementById('new-bc').hidden = !document.getElementById('new-bc').hidden">
+    <button type="button" class="btn btn-primary" data-toggle-hidden="new-bc">
         <i data-lucide="megaphone"></i> {{ __('broadcasts.new') }}
     </button>
 </div>
@@ -77,7 +77,7 @@
 <div class="panel">
     <div class="panel-header" style="display:flex;justify-content:space-between;align-items:center;">
         <h3 class="panel-title"><i data-lucide="radio"></i> {{ __('broadcasts.title') }}</h3>
-        <form method="GET"><select name="status" class="form-control" style="width:auto;" onchange="this.form.submit()">
+        <form method="GET"><select name="status" class="form-control" style="width:auto;" data-autosubmit>
             <option value="">{{ __('broadcasts.all_statuses') }}</option>
             @foreach(['draft','published','cancelled'] as $st)<option value="{{ $st }}" @selected($status===$st)>@enum($st)</option>@endforeach
         </select></form>
@@ -110,7 +110,7 @@
                             <button type="submit" class="btn btn-primary btn-sm"><i data-lucide="send"></i> {{ __('broadcasts.publish') }}</button></form>
                         @endif
                         @if(in_array($bc->status, ['draft','published']))
-                        <form method="POST" action="{{ route('portals.admin.broadcasts.cancel', $bc->uuid) }}" onsubmit="return confirm('{{ __('broadcasts.cancel_confirm') }}');">@csrf
+                        <form method="POST" action="{{ route('portals.admin.broadcasts.cancel', $bc->uuid) }}" data-confirm="{{ __('broadcasts.cancel_confirm') }}">@csrf
                             <button type="submit" class="btn btn-ghost btn-sm"><i data-lucide="x-circle"></i> {{ __('broadcasts.cancel') }}</button></form>
                         @endif
                     </td>

@@ -29,7 +29,7 @@
                             <td class="td-strong">{{ $a->substance ?: '—' }}</td>
                             <td>@if($a->severity)<span class="badge badge-danger">@enum($a->severity, 'severity')</span>@else <span class="td-muted">{{ __('chart.not_recorded') }}</span>@endif</td>
                             <td>@if($a->status)@enum($a->status)@else —@endif</td>
-                            <td class="td-muted">{{ $a->created_at?->format('d M Y') ?? '—' }}</td>
+                            <td class="td-muted">{{ $a->created_at?->translatedFormat('d M Y') ?? '—' }}</td>
                         </tr>
                     @endforeach
                     </tbody>
@@ -62,7 +62,7 @@
                         <tr>
                             <td class="td-strong">{{ $p->icd_code ?: '—' }}</td>
                             <td>{{ $p->description ?: '—' }}</td>
-                            <td class="td-muted">{{ $p->onset_date?->format('d M Y') ?? '—' }}</td>
+                            <td class="td-muted">{{ $p->onset_date?->translatedFormat('d M Y') ?? '—' }}</td>
                             <td>@if($p->status)<span class="badge {{ $p->status === 'active' ? 'badge-warning' : 'badge-neutral' }}">@enum($p->status)</span>@else —@endif</td>
                         </tr>
                     @endforeach
@@ -103,7 +103,7 @@
                             <td>{{ $m['route'] ?: '—' }}</td>
                             <td>{{ $m['frequency'] ?: '—' }}</td>
                             <td>{{ $m['duration_days'] !== null ? __('chart.duration_days', ['days' => $m['duration_days']]) : '—' }}</td>
-                            <td class="td-muted">{{ $m['prescribed_at']?->format('d M Y') ?? '—' }}</td>
+                            <td class="td-muted">{{ $m['prescribed_at']?->translatedFormat('d M Y') ?? '—' }}</td>
                             <td>{{ $m['prescribed_by'] ?: '—' }}</td>
                             <td><span class="badge badge-info">@enum($m['status'])</span></td>
                         </tr>

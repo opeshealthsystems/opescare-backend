@@ -122,7 +122,7 @@
                     </td>
                     <td data-label="{{ __('pharmacy_prices.col_last_changed') }}" class="td-muted">
                         @if($last)
-                            {{ $last->created_at?->format('d M Y H:i') }}
+                            {{ $last->created_at?->translatedFormat('d M Y H:i') }}
                             <div>{{ $actors[$last->changed_by] ?? __('pharmacy_prices.actor_unknown') }}</div>
                         @else
                             —

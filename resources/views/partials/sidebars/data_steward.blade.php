@@ -4,19 +4,19 @@
      feature block was empty), so the sidebar is just the dashboard. --}}
 <div class="sidebar-role-badge">
     <i data-lucide="database-zap"></i>
-    {{ __('portal.data_steward_role', [], $l) ?: 'Data Steward' }}
+    {{ __('portal.data_steward_role', [], $l) }}
 </div>
 <div class="sidebar-spacer"></div>
 
 <div class="sidebar-nav-section">
     <a href="{{ route('portals.staff') }}" class="sidebar-link {{ request()->routeIs('portals.staff') && !request()->routeIs('portals.staff.*') ? 'active' : '' }}">
-        <i data-lucide="layout-dashboard"></i><span>{{ __('public.portal.nav_dashboard', [], $l) ?: 'Dashboard' }}</span>
+        <i data-lucide="layout-dashboard"></i><span>{{ __('public.portal.nav_dashboard', [], $l) }}</span>
     </a>
     {{-- Global search (facilities, documents, medicines, lab tests, partners,
          messages — never patients). The screen existed, complete, with no
          route: the audit called it unreachable. --}}
     <a href="{{ route('portals.staff.search') }}" class="sidebar-link {{ request()->routeIs('portals.staff.search') ? 'active' : '' }}">
-        <i data-lucide="search"></i><span>{{ __('public.staff_portal.page_heading_search', [], $l) ?: 'Global Search' }}</span>
+        <i data-lucide="search"></i><span>{{ __('public.staff_portal.page_heading_search', [], $l) }}</span>
     </a>
 </div>
 

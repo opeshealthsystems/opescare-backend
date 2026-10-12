@@ -67,7 +67,7 @@
 
         <div class="f-field">
             <label class="f-label" for="context_type">{{ __('messaging.compose_about') }}</label>
-            <select id="context_type" name="context_type" class="f-input" onchange="pfFilterCtx(this.value)" @disabled($readOnly)>
+            <select id="context_type" name="context_type" class="f-input" data-call-change="pfFilterCtx" @disabled($readOnly)>
                 <option value="">{{ __('messaging.compose_about_none') }}</option>
                 <option value="appointment">{{ __('messaging.ctx_appt') }}</option>
                 <option value="lab_result">{{ __('messaging.ctx_lab') }}</option>
@@ -104,7 +104,7 @@
     </form>
 </div>
 
-<script>
+<script @cspNonce>
 function pfFilterCtx(type) {
     var wrap = document.getElementById('ctx-item-wrap');
     var sel  = document.getElementById('context_id');

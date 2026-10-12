@@ -36,7 +36,7 @@
                                 <span class="td-muted">{{ $reading->unit }}</span>
                             </td>
                             <td class="td-muted">
-                                {{ __('triage.measured_at') }}: {{ $reading->measured_at?->format('d M Y H:i') ?? '—' }}
+                                {{ __('triage.measured_at') }}: {{ $reading->measured_at?->translatedFormat('d M Y H:i') ?? '—' }}
                             </td>
                         </tr>
                     @endforeach

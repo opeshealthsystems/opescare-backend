@@ -61,7 +61,7 @@ class BloodStockSyncPersistsTest extends TestCase
         $this->headers = ['Authorization' => 'Bearer ' . $token];
     }
 
-    private function payload(array $items = null): array
+    private function payload(?array $items = null): array
     {
         return [
             'facility_reference' => 'BANK-YDE-001',

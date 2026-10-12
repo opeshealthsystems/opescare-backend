@@ -389,7 +389,7 @@
 <body>
 
 <div class="toolbar no-print">
-    <button type="button" class="tb-btn tb-btn--primary" onclick="window.print()">
+    <button type="button" class="tb-btn tb-btn--primary" data-print>
         {{-- Lucide "printer", inlined: a print sheet must not depend on a CDN icon font. --}}
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect width="12" height="8" x="6" y="14"></rect></svg>
         {{ __('prescriber.print_action') }}
@@ -486,14 +486,14 @@
                     @if($isNotValid)
                         {{ __('prescriber.print_void_detail', [
                             'status' => $label($rxStatus),
-                            'date'   => $rx->voided_at?->format('d M Y H:i') ?? ($rx->updated_at?->format('d M Y H:i') ?? '—'),
+                            'date'   => $rx->voided_at?->translatedFormat('d M Y H:i') ?? ($rx->updated_at?->translatedFormat('d M Y H:i') ?? '—'),
                         ]) }}
                         @if(filled($rx->void_reason))
                             <div>{{ __('prescriber.void_reason') }}: {{ $rx->void_reason }}</div>
                         @endif
                     @else
                         {{ __('prescriber.print_expired_detail', [
-                            'date' => $rx->expires_at?->format('d M Y') ?? '—',
+                            'date' => $rx->expires_at?->translatedFormat('d M Y') ?? '—',
                         ]) }}
                     @endif
                 </div>
@@ -517,7 +517,7 @@
                 </tr>
                 <tr>
                     <td>{{ __('prescriber.print_date_of_birth') }}</td>
-                    <td class="v">{{ $patient?->date_of_birth?->format('d M Y') ?: '—' }}</td>
+                    <td class="v">{{ $patient?->date_of_birth?->translatedFormat('d M Y') ?: '—' }}</td>
                 </tr>
                 <tr>
                     <td>{{ __('prescriber.print_sex') }}</td>
@@ -534,11 +534,11 @@
                 </tr>
                 <tr>
                     <td>{{ __('prescriber.issued_at') }}</td>
-                    <td class="v">{{ $rx->prescribed_at?->format('d M Y H:i') ?: '—' }}</td>
+                    <td class="v">{{ $rx->prescribed_at?->translatedFormat('d M Y H:i') ?: '—' }}</td>
                 </tr>
                 <tr>
                     <td>{{ __('prescriber.expires_at') }}</td>
-                    <td class="v">{{ $rx->expires_at?->format('d M Y') ?: '—' }}</td>
+                    <td class="v">{{ $rx->expires_at?->translatedFormat('d M Y') ?: '—' }}</td>
                 </tr>
                 <tr>
                     <td>{{ __('prescriber.col_prescriber') }}</td>
@@ -651,7 +651,7 @@
         <div class="foot__legal">{{ __('prescriber.print_footer') }}</div>
         <div class="foot__stamp">
             <div class="mono">{{ $ref !== '' ? $ref : '—' }}</div>
-            <div>{{ __('prescriber.print_generated', ['datetime' => now()->format('d M Y H:i')]) }}</div>
+            <div>{{ __('prescriber.print_generated', ['datetime' => now()->translatedFormat('d M Y H:i')]) }}</div>
         </div>
     </div>
 

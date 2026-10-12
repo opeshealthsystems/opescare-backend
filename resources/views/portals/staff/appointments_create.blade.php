@@ -1,12 +1,12 @@
 @extends('layouts.portal')
 
-@section('title', __('public.staff_portal.btn_book_appointment', [], app()->getLocale()) ?: 'Book Appointment')
+@section('title', __('public.staff_portal.btn_book_appointment', [], app()->getLocale()))
 
-@section('sidebar_user_role', __('public.staff_portal.role_clinical_staff', [], app()->getLocale()) ?: 'Clinical Staff')
+@section('sidebar_user_role', __('public.staff_portal.role_clinical_staff', [], app()->getLocale()))
 
-@section('breadcrumb_home', __('public.staff_portal.title', [], app()->getLocale()) ?: 'Staff Portal')
+@section('breadcrumb_home', __('public.staff_portal.title', [], app()->getLocale()))
 @section('breadcrumb_home_url', route('portals.staff'))
-@section('breadcrumb_section', __('public.staff_portal.btn_book_appointment', [], app()->getLocale()) ?: 'Book Appointment')
+@section('breadcrumb_section', __('public.staff_portal.btn_book_appointment', [], app()->getLocale()))
 
 @section('head')
 @include('portals.pharmacy._supply_styles')
@@ -16,8 +16,8 @@
 
 <div class="page-header">
     <div>
-        <h1 class="page-title">{{ __('public.staff_portal.btn_book_appointment', [], app()->getLocale()) ?: 'Book Appointment' }}</h1>
-        <p class="page-subtitle">{{ __('public.staff_portal.appointments_subtitle', [], app()->getLocale()) ?: 'Schedule a new patient appointment.' }}</p>
+        <h1 class="page-title">{{ __('public.staff_portal.btn_book_appointment', [], app()->getLocale()) }}</h1>
+        <p class="page-subtitle">{{ __('public.staff_portal.appointments_subtitle', [], app()->getLocale()) }}</p>
     </div>
     <a href="{{ route('portals.staff.appointments') }}" class="btn btn-ghost btn-sm">
         <i data-lucide="arrow-left"></i>
@@ -84,25 +84,25 @@
                     <label class="form-label">{{ __('public.stf_appt_type') }}</label>
                     <select name="appointment_type" class="form-control" required>
                         <option value="general" {{ old('appointment_type') === 'general' ? 'selected' : '' }}>
-                            {{ __('public.staff_portal.type_general', [], app()->getLocale()) ?: 'General' }}
+                            {{ __('public.staff_portal.type_general', [], app()->getLocale()) }}
                         </option>
                         <option value="follow_up" {{ old('appointment_type') === 'follow_up' ? 'selected' : '' }}>
-                            {{ __('public.staff_portal.type_followup', [], app()->getLocale()) ?: 'Follow-up' }}
+                            {{ __('public.staff_portal.type_followup', [], app()->getLocale()) }}
                         </option>
                         <option value="specialist" {{ old('appointment_type') === 'specialist' ? 'selected' : '' }}>
-                            {{ __('public.staff_portal.type_specialist', [], app()->getLocale()) ?: 'Specialist' }}
+                            {{ __('public.staff_portal.type_specialist', [], app()->getLocale()) }}
                         </option>
                         <option value="lab" {{ old('appointment_type') === 'lab' ? 'selected' : '' }}>
-                            {{ __('public.staff_portal.type_lab', [], app()->getLocale()) ?: 'Lab / Diagnostics' }}
+                            {{ __('public.staff_portal.type_lab', [], app()->getLocale()) }}
                         </option>
                         <option value="pharmacy" {{ old('appointment_type') === 'pharmacy' ? 'selected' : '' }}>
-                            {{ __('public.staff_portal.type_pharmacy', [], app()->getLocale()) ?: 'Pharmacy' }}
+                            {{ __('public.staff_portal.type_pharmacy', [], app()->getLocale()) }}
                         </option>
                         <option value="dental" {{ old('appointment_type') === 'dental' ? 'selected' : '' }}>
                             {{ __('public.appt_type_dental') }}
                         </option>
                         <option value="emergency" {{ old('appointment_type') === 'emergency' ? 'selected' : '' }}>
-                            {{ __('public.staff_portal.type_emergency', [], app()->getLocale()) ?: 'Emergency' }}
+                            {{ __('public.staff_portal.type_emergency', [], app()->getLocale()) }}
                         </option>
                         {{-- Maternity presets imported from the platform MaternityService. --}}
                         <optgroup label="{{ __('public.appt_preset_group_maternity') }}">
@@ -131,7 +131,7 @@
             <div class="row-actions-inline">
                 <button type="submit" class="btn btn-primary fs-tap">
                     <i data-lucide="calendar-plus"></i>
-                    {{ __('public.staff_portal.btn_book_appointment', [], app()->getLocale()) ?: 'Book Appointment' }}
+                    {{ __('public.staff_portal.btn_book_appointment', [], app()->getLocale()) }}
                 </button>
                 <a href="{{ route('portals.staff.appointments') }}" class="btn btn-ghost">{{ __('public.stf_cancel') }}</a>
             </div>

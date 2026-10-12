@@ -46,7 +46,7 @@
                 </div>
                 <div>
                     <h3 style="margin:0;color:{{ $ov['text'] }};font-size:1.125rem;">{{ $ov['title'] }}</h3>
-                    <p style="margin:.25rem 0 0;font-size:.875rem;color:{{ $ov['text'] }};">{{ __('public.status_page.last_updated') }} {{ $health['checked_at']->copy()->utc()->format('d M Y — H:i') }} {{ __('public.status_page.utc') }}</p>
+                    <p style="margin:.25rem 0 0;font-size:.875rem;color:{{ $ov['text'] }};">{{ __('public.status_page.last_updated') }} {{ $health['checked_at']->copy()->utc()->translatedFormat('d M Y — H:i') }} {{ __('public.status_page.utc') }}</p>
                 </div>
             </div>
 
@@ -83,7 +83,7 @@
                                 @if($m->message)<div style="font-size:.8125rem;color:#64748b;margin-bottom:.35rem;">{{ $m->message }}</div>@endif
                                 <div style="font-size:.75rem;color:#94a3b8;">
                                     {{ $upcoming ? __('public.status_page.scheduled') : __('public.status_page.in_progress') }}
-                                    @if($m->starts_at) · {{ $m->starts_at->copy()->utc()->format('d M Y H:i') }} {{ __('public.status_page.utc') }}@endif
+                                    @if($m->starts_at) · {{ $m->starts_at->copy()->utc()->translatedFormat('d M Y H:i') }} {{ __('public.status_page.utc') }}@endif
                                     @if($m->ends_at) → {{ $m->ends_at->copy()->utc()->format('H:i') }}@endif
                                 </div>
                             </div>
