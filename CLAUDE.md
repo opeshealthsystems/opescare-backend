@@ -7,6 +7,26 @@ Server-rendered **Laravel + Blade** with a REST API, on **PostgreSQL**.
 
 > If anything here disagrees with the code, trust the code and fix this doc.
 
+## Picking this project up — start here
+This folder is the whole project. Open a session **in `C:\laragon\www\opescare-finder`**,
+not in the platform monorepo.
+
+| What you need | Where it is |
+|---|---|
+| **State of the project, owner actions, open decisions** | `docs/HANDOVER.md` (and `docs/HANDOVER.html`, the same thing styled) |
+| **What these dashboards are and are NOT** | `docs/DASHBOARD_SCOPE.md` — the yardstick every audit used |
+| **Per-facility-type readiness** | `docs/FACILITY_READINESS.md`, `docs/audits/*_DASHBOARD_AUDIT_2.md` |
+| **Security status and what is still owed** | `docs/SECURITY_REMEDIATION.md` |
+| **Demo logins for every facility type** | `docs/DEMO_ACCOUNTS.md` |
+| **Decisions and traps across sessions** | project memory: `~/.claude/projects/C--laragon-www-opescare-finder/memory/MEMORY.md` (47 facts, split out of the monorepo's memory on 2026-10-12) |
+| **How to deploy** | `docs/HANDOVER.md` → "How to ship safely"; there is no CI and no git remote |
+| **The phone app** | sibling folder `C:\laragon\www\opescare-finder-mobile` — add it to a session with `/add-dir` when you need it; it ships through EAS, not with this repo |
+
+Two traps that have cost real time here: git history was rewritten on 2026-10-12,
+so **commit hashes quoted in older docs no longer resolve — find commits by their
+message**; and after any deploy the config cache must be rebuilt or prod serves the
+old config.
+
 ## Where it came from — and what that does NOT mean
 - Extracted from the OpesCare platform monorepo (`opescare@ff6aafc8`) on
   **2026-09-02**. Local git baseline: `f6e3053` (full tree before pruning).
