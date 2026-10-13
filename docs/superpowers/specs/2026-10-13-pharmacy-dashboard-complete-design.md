@@ -96,3 +96,33 @@ low/zero stock vs reorder rules. Nothing invented: empty tables stay empty.
 ## Out of scope
 Inventory ops beyond this desk (platform), insurance, subscriptions, e-prescribing
 network changes.
+
+## Visual standard (owner-supplied reference, 2026-10-13)
+Reference: `docs/superpowers/specs/assets/2026-10-13-pharmacy-dashboard-reference.webp`.
+Every pharmacy page inherits it through one stylesheet `public/css/pharmacy.css`
+(loaded by the portal layout for the pharmacy section only) — no page carries its
+own `<style>` block once this lands.
+
+- **Canvas** cool grey-blue `#EEF3F8`; **cards** white, radius 14px, 1px `#E3EAF2`
+  border, soft shadow; 16px gutters; sidebar deep brand blue `#0F4C81`→`#0B3A63`
+  gradient, white text, active item = white pill with brand-blue text, count
+  badges red `#E53935`; topbar = global search (patient / prescription / medicine
+  / barcode), bell with count, facility switcher, user menu.
+- **KPI tiles** (4 across, 1 on phones): tinted icon square (blue `#E8F1FB`, green
+  `#E6F6EC`, amber `#FFF4E0`, sky `#E6F2FF`), big number, delta/sub-line.
+- **Queue section** = the pattern every list reuses (prescriptions, stock, batches,
+  receipts, adjustments, suppliers, orders, controlled, dispensing register):
+  title + count, filter pills (All / Urgent / Normal / …), search box + Filter
+  button, table with avatar initials, reference + "n items" sub-line, **pill
+  badges** (urgent red `#FDE8E8`/`#C62828`, normal blue `#E8F1FB`/`#0F4C81`,
+  counselling violet is NOT used — purple is banned; use teal `#E0F2F1`/`#00695C`),
+  status pills (pending amber, verifying sky, ready green), a primary action
+  button per row (`Dispense`, `Open`, `Receive`…) and a kebab for secondary actions.
+- **Detail panel** (right column on desktop, stacked on phones): header with
+  avatar, name, reference, date; fact chips (age band, sex, phone, coverage);
+  tab strip (Prescription / History / Allergies / Notes); items table; prescriber
+  + type cards.
+- **Quick actions** row of 4 brand-blue tiles with icon + label + F-key hint.
+- **Alerts panels** (Stock alerts, Common medicines): compact rows, right-aligned
+  pills `Low` / `Reorder`.
+- Lucide icons only; `#0F4C81` primary; XAF; EN/FR; nonce CSP.
