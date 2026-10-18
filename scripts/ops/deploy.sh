@@ -3,6 +3,7 @@
 #
 #   scripts/ops/deploy.sh            # ship HEAD
 #   scripts/ops/deploy.sh <commit>   # ship a specific commit
+#   ALLOW_DIRTY=1 scripts/ops/deploy.sh   # ship the commit even though the working tree has uncommitted edits (they are never shipped)
 #
 # Ships only the files that changed since the commit recorded on the server
 # (/home/finder/.deployed-commit), removes files deleted in git, runs migrations
@@ -24,7 +25,7 @@ SSH=(ssh -o ConnectTimeout=15 -i "$KEY" "$HOST")
 
 say() { printf '\n== %s\n' "$*"; }
 
-if [ -n "$(git status --porcelain --untracked-files=no -- app bootstrap config database lang public resources routes)" ]; then
+if [ -z "${ALLOW_DIRTY:-}" ] && [ -n "$(git status --porcelain --untracked-files=no -- app bootstrap config database lang public resources routes)" ]; then
   echo "Uncommitted changes in shipped folders. Commit first; deploy ships commits only." >&2
   exit 1
 fi
