@@ -207,6 +207,11 @@ class AppServiceProvider extends ServiceProvider
         Route::middleware('api')
             ->group(base_path('routes/mobile_appointments_reschedule.php'));
 
+        // Patient record import (FHIR bundle / PDF / image, patient-provided and
+        // unverified) — its own file so parallel work cannot collide.
+        Route::middleware('api')
+            ->group(base_path('routes/mobile_record_import.php'));
+
         // Mobile doctor chart routes — loaded here rather than in routes/api.php so
         // parallel work on separate features cannot collide in one file.
         Route::middleware('api')
