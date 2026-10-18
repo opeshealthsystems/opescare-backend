@@ -16,7 +16,7 @@ HOST=root@187.124.48.135
 KEY="$HOME/.ssh/opescare_deploy_ed25519"
 APP=/home/finder/htdocs/finder.opescare.cloud
 SITE=https://opescare.com
-SMOKE_PATHS="/ /login /up /privacy /verify/health-id /finder/"
+SMOKE_PATHS="/ /login /up /privacy /verify/health-id /finder/ ${EXTRA_SMOKE:-}"
 
 cd "$(git rev-parse --show-toplevel)"
 TARGET=$(git rev-parse --short "${1:-HEAD}")
