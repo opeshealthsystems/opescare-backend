@@ -94,6 +94,30 @@ class SyncService
         });
     }
 
+    /**
+     * Server-side revocation: the device wiped its local copy (or the session
+     * ended) and the policy must stop accepting writes now, not when it lapses.
+     * Idempotent — revoking an already-revoked policy changes nothing and
+     * writes no second audit row.
+     */
+    public function revokeLocalCachePolicy(LocalCachePolicy $policy, ?string $actorId = null): LocalCachePolicy
+    {
+        if ($policy->status === 'revoked') {
+            return $policy;
+        }
+
+        $policy->forceFill([
+            'status' => 'revoked',
+            'revoked_at' => Carbon::now(),
+            'revoked_by' => $actorId,
+        ])->save();
+
+        $this->offlineAudit(null, $policy, 'policy_revoked');
+        $this->auditPolicy($policy, 'policy_revoke', $actorId);
+
+        return $policy;
+    }
+
     public function markSyncFailed(OfflineQueue $queue, string $error, ?string $actorId = null): OfflineQueue
     {
         $before = $queue->toArray();

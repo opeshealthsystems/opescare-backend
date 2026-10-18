@@ -203,6 +203,7 @@ Route::prefix('mobile')->group(function () {
         // (the facility-side worker was pruned) — the policy half is fully functional.
         Route::post('/offline/policies', [\App\Http\Controllers\Api\Mobile\OfflineSyncController::class, 'createPolicy']);
         Route::post('/offline/policies/{policy}/queue', [\App\Http\Controllers\Api\Mobile\OfflineSyncController::class, 'queue']);
+        Route::post('/offline/policies/{policy}/revoke', [\App\Http\Controllers\Api\Mobile\OfflineSyncController::class, 'revokePolicy']);
 
         // Prescriptions — the mobile app's /mobile/prescriptions calls had no
         // route, so the screen 404'd against this backend.

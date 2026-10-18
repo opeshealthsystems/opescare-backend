@@ -86,6 +86,29 @@ class OfflineSyncController extends Controller
     }
 
     /**
+     * Revoke the caller's own policy. Ownership comes from the authenticated
+     * patient attribute; a foreign or unknown id answers 404 so the endpoint
+     * never confirms another patient's policy exists. Idempotent: repeating
+     * the call returns 200 with the same revoked record.
+     */
+    public function revokePolicy(LocalCachePolicy $policy, Request $request, SyncService $service): JsonResponse
+    {
+        $patientId = $request->attributes->get('patient_id');
+
+        if (! $patientId) {
+            return response()->json(['message' => __('api.patient_not_found')], 404);
+        }
+
+        if ($policy->patient_id !== $patientId) {
+            return response()->json(['message' => __('api.not_found')], 404);
+        }
+
+        $policy = $service->revokeLocalCachePolicy($policy, $this->actorUserId($patientId));
+
+        return response()->json(['data' => $this->serializePolicy($policy)]);
+    }
+
+    /**
      * The audit actor for a patient-initiated action.
      *
      * local_cache_policies.created_by is a foreign key to `users`, and a
@@ -113,6 +136,7 @@ class OfflineSyncController extends Controller
             'review_required' => $policy->review_required,
             'status' => $policy->status,
             'expires_at' => optional($policy->expires_at)->toISOString(),
+            'revoked_at' => optional($policy->revoked_at)->toISOString(),
         ];
     }
 }

@@ -22,6 +22,8 @@ class LocalCachePolicy extends Model
         'status',
         'expires_at',
         'created_by',
+        'revoked_at',
+        'revoked_by',
     ];
 
     protected $casts = [
@@ -30,5 +32,6 @@ class LocalCachePolicy extends Model
         'emergency_access' => 'boolean',
         'review_required' => 'boolean',
         'expires_at' => 'datetime',
+        'revoked_at' => 'datetime',
     ];
 }
