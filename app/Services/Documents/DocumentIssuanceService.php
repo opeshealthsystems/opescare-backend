@@ -75,15 +75,27 @@ class DocumentIssuanceService
         $this->verificationService->issueToken($document->id, $identifiers['verification_token']);
 
         // 6. Audit log
-        AuditLogger::log(
-            $params['actor_id'] ?? $params['issuer_user_id'] ?? 'system',
-            'document_issued',
-            'document',
-            $document->id,
-            $params['patient_id'] ?? null,
-            false,
-            'Issued via DocumentIssuanceService'
-        );
+        // AuditLogger::log() takes a Request and records an integration
+        // client; it was called here with a user id string and threw a
+        // TypeError, so no document could be issued by a signed-in user. The
+        // issue is written directly with the real actor instead.
+        $actorId = $params['actor_id'] ?? $params['issuer_user_id'] ?? null;
+        \App\Models\AuditEvent::create([
+            'actor_id'      => $actorId,
+            'actor_role'    => $actorId ? 'user' : 'system',
+            'facility_id'   => $params['facility_id'] ?? null,
+            'patient_id'    => $params['patient_id'] ?? null,
+            'action_type'   => 'document_issued',
+            'resource_type' => 'document',
+            'resource_id'   => $document->id,
+            'emergency_override' => false,
+            'source_system' => 'opescare_finder',
+            'ip_address'    => request()?->ip(),
+            'reason'        => 'Issued via DocumentIssuanceService',
+            'before_state'  => [],
+            'after_state'   => ['document_type' => $params['document_type'], 'document_number' => $document->document_number],
+            'created_at'    => now(),
+        ]);
 
         // 7. Store code_mappings if provided
         if (! empty($params['code_mappings']) && is_array($params['code_mappings'])) {

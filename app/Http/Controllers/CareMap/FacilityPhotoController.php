@@ -7,7 +7,7 @@ use App\Models\CareFacility;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 /**
  * GET /facility/photo/{listing} — the facility photo / logo written by
@@ -18,7 +18,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  */
 class FacilityPhotoController extends Controller
 {
-    public function show(string $listing): BinaryFileResponse|JsonResponse
+    public function show(string $listing): HttpResponse
     {
         if (! Str::isUuid($listing)) {
             return response()->json(['message' => __('api.not_found')], 404);
@@ -26,11 +26,11 @@ class FacilityPhotoController extends Controller
 
         $row = CareFacility::query()->find($listing);
 
-        if (! $row || ! $row->logo_path || ! Storage::disk('local')->exists($row->logo_path)) {
+        if (! $row || ! $row->logo_path || ! Storage::disk(config('filesystems.private_disk', 'local'))->exists($row->logo_path)) {
             return response()->json(['message' => __('api.not_found')], 404);
         }
 
-        $response = response()->file(Storage::disk('local')->path($row->logo_path), [
+        $response = Storage::disk(config('filesystems.private_disk', 'local'))->response($row->logo_path, null, [
             'Content-Type'           => 'image/jpeg',
             'Content-Disposition'    => 'inline',
             'X-Content-Type-Options' => 'nosniff',

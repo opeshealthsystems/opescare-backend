@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="refresh" content="{{ $retryAfter > 0 && $retryAfter < 3600 ? min($retryAfter, 300) : 300 }}">
-    <title>OpesCare — Scheduled Maintenance</title>
+    <title>{{ __('maintenance.page_title') }}</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -129,48 +129,48 @@
         </div>
 
         <span class="badge">
-            <span class="status-dot"></span>Maintenance in Progress
+            <span class="status-dot"></span>{{ __('maintenance.badge') }}
         </span>
 
-        <h1>{{ $window->title ?? 'Scheduled Maintenance' }}</h1>
+        <h1>{{ $window->title ?? __('maintenance.default_title') }}</h1>
 
         <p class="message">
-            {{ $window->message ?? 'OpesCare is currently undergoing scheduled maintenance to improve your experience. We\'ll be back online shortly.' }}
+            {{ $window->message ?? __('maintenance.default_message') }}
         </p>
 
         <div class="times">
             @if($window->starts_at)
             <div class="row">
-                <span class="label">Started</span>
+                <span class="label">{{ __('maintenance.started') }}</span>
                 <span class="value">{{ $window->starts_at->translatedFormat('D, d M Y H:i') }} UTC</span>
             </div>
             @endif
             @if($window->ends_at)
             <div class="row">
-                <span class="label">Expected end</span>
+                <span class="label">{{ __('maintenance.expected_end') }}</span>
                 <span class="value">{{ $window->ends_at->translatedFormat('D, d M Y H:i') }} UTC</span>
             </div>
             <div class="row">
-                <span class="label">Time remaining</span>
+                <span class="label">{{ __('maintenance.time_remaining') }}</span>
                 <span class="value">~{{ $window->ends_at->diffForHumans(null, true) }}</span>
             </div>
             @else
             <div class="row">
-                <span class="label">Duration</span>
-                <span class="value">Until further notice</span>
+                <span class="label">{{ __('maintenance.duration') }}</span>
+                <span class="value">{{ __('maintenance.until_further') }}</span>
             </div>
             @endif
         </div>
 
         @if($window->allow_emergency_access)
         <p class="message message--emergency">
-            Emergency patient access remains available during this window.
+            {{ __('maintenance.emergency_access') }}
         </p>
         @endif
 
         <p class="footer">
-            This page refreshes automatically every 5 minutes.<br>
-            For urgent support contact <a href="mailto:support@opescare.com">support@opescare.com</a>
+            {{ __('maintenance.auto_refresh') }}<br>
+            {{ __('maintenance.urgent_support') }} <a href="mailto:support@opescare.com">support@opescare.com</a>
         </p>
     </div>
 </body>

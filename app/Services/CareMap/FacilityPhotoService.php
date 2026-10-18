@@ -105,7 +105,7 @@ class FacilityPhotoService
         $path     = self::DIRECTORY . '/' . $listing->id . '/' . Str::uuid() . '.jpg';
         $previous = $listing->logo_path;
 
-        Storage::disk('local')->put($path, $jpeg);
+        Storage::disk(config('filesystems.private_disk', 'local'))->put($path, $jpeg);
 
         DB::transaction(function () use ($listing, $path, $previous, $actorId): void {
             $listing->forceFill(['logo_path' => $path, 'last_profile_update_at' => now()])->save();
@@ -125,8 +125,8 @@ class FacilityPhotoService
         });
 
         // Only once the new file and the row are both in place.
-        if ($previous && $previous !== $path && Storage::disk('local')->exists($previous)) {
-            Storage::disk('local')->delete($previous);
+        if ($previous && $previous !== $path && Storage::disk(config('filesystems.private_disk', 'local'))->exists($previous)) {
+            Storage::disk(config('filesystems.private_disk', 'local'))->delete($previous);
         }
 
         return true;

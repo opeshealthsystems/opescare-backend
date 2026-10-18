@@ -19,6 +19,7 @@
         <tr><td class="k">{{ __('pharmacy_reports.register_month') }}</td><td class="v id">{{ $register['month'] }}</td></tr>
         <tr><td class="k">{{ __('pharmacy_reports.pdf_period') }}</td><td class="v">{{ $register['from'] }} → {{ $register['to'] }}</td></tr>
         <tr><td class="k">{{ __('pharmacy_reports.pdf_generated') }}</td><td class="v">{{ $issuedAt->translatedFormat('d M Y, H:i') }}</td></tr>
+        <tr><td class="k">{{ __('doc_ex_sheet.generated_by') }}</td><td class="v">{{ ($generatedBy ?? null) ?: __('doc_ex_sheet.not_recorded') }}</td></tr>
     </table>
 
     <h2>{{ __('pharmacy_reports.register_title') }}
@@ -47,4 +48,10 @@
             </tbody>
         </table>
     @endif
+@include('pdf.layouts.secure-signature', [
+    'name'  => $generatedBy ?? null,
+    'role'  => __('doc_ex_sheet.pharmacist_in_charge'),
+    'label' => __('doc_ex_sheet.pharmacist_signature'),
+])
+
 @endsection

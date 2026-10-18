@@ -53,7 +53,7 @@ class ImportService
 
         // Store privately
         $storedName = 'import_' . Str::uuid() . '.' . $ext;
-        $path = $file->storeAs('imports/private', $storedName, 'local');
+        $path = $file->storeAs('imports/private', $storedName, config('filesystems.private_disk', 'local'));
 
         // Parse headers
         $headers = $this->parseHeaders($path, $ext);
@@ -146,14 +146,15 @@ class ImportService
      */
     public function parseHeaders(string $storedPath, string $ext): array
     {
-        $fullPath = Storage::disk('local')->path($storedPath);
+        // readStream() works on any disk (local or S3); a local path would not.
+        $disk = Storage::disk(config('filesystems.private_disk', 'local'));
 
-        if (!file_exists($fullPath)) {
+        if (! $disk->exists($storedPath)) {
             return [];
         }
 
         if ($ext === 'csv') {
-            $handle = fopen($fullPath, 'r');
+            $handle = $disk->readStream($storedPath);
             if (!$handle) {
                 return [];
             }
@@ -173,13 +174,13 @@ class ImportService
      */
     public function readRows(string $storedPath, string $ext, array $headers, int $limit = 0): array
     {
-        $fullPath = Storage::disk('local')->path($storedPath);
+        $disk = Storage::disk(config('filesystems.private_disk', 'local'));
 
-        if (!file_exists($fullPath) || $ext !== 'csv') {
+        if ($ext !== 'csv' || ! $disk->exists($storedPath)) {
             return [];
         }
 
-        $handle = fopen($fullPath, 'r');
+        $handle = $disk->readStream($storedPath);
         if (!$handle) {
             return [];
         }

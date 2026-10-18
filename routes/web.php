@@ -641,6 +641,14 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access'])->group(funct
         Route::get('/facility/prescriptions/{id}',       [\App\Http\Controllers\MedicalId\PrescriberController::class, 'show'])->name('portals.prescriber.show');
         Route::get('/facility/prescriptions/{id}/print', [\App\Http\Controllers\MedicalId\PrescriptionPrintController::class, 'show'])->name('portals.prescriber.print');
         Route::post('/facility/prescriptions/{id}/void', [\App\Http\Controllers\MedicalId\PrescriberController::class, 'void'])->name('portals.prescriber.void');
+
+        // Certificate desk — medical certificate and sick note (arrêt de
+        // travail), issued through DocumentIssuanceService and printed on
+        // demand on the secure sheet. Same gate as prescribing: a medical act.
+        Route::get('/facility/certificates',              [\App\Http\Controllers\MedicalId\CertificateIssuanceController::class, 'index'])->name('portals.certificates.index');
+        Route::get('/facility/certificates/new',          [\App\Http\Controllers\MedicalId\CertificateIssuanceController::class, 'create'])->name('portals.certificates.create');
+        Route::post('/facility/certificates',             [\App\Http\Controllers\MedicalId\CertificateIssuanceController::class, 'store'])->name('portals.certificates.store');
+        Route::get('/facility/certificates/{id}/pdf',     [\App\Http\Controllers\MedicalId\CertificateIssuanceController::class, 'pdf'])->whereUuid('id')->name('portals.certificates.pdf');
     });
 
     // ── Pharmacy counter — dispensing against prescriptions (dispense).

@@ -122,6 +122,17 @@ class AddSecurityHeaders
             $response->headers->set('Pragma', 'no-cache');
         }
 
+        // ── Authenticated HTML/PDF: PHI must not persist in browser or proxy caches
+        // ASVS V8.2.1. A signed-in page (chart, desk, passport) is never cacheable;
+        // public finder pages keep their own caching headers.
+        if (
+            $request->user() !== null &&
+            (str_contains($contentType, 'text/html') || str_contains($contentType, 'application/pdf'))
+        ) {
+            $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+            $response->headers->set('Pragma', 'no-cache');
+        }
+
         return $response;
     }
 }

@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 /**
  * The patient's own photo — set from the app, shown on the Health ID card.
@@ -92,7 +92,7 @@ class MobilePatientPhotoController extends Controller
         $path     = PatientPhoto::DIRECTORY . '/' . $patient->id . '/' . Str::uuid() . '.jpg';
         $previous = $patient->photo_path;
 
-        Storage::disk('local')->put($path, $jpeg);
+        Storage::disk(config('filesystems.private_disk', 'local'))->put($path, $jpeg);
 
         $patient->forceFill([
             'photo_path'       => $path,
@@ -100,8 +100,8 @@ class MobilePatientPhotoController extends Controller
             'photo_updated_at' => now(),
         ])->save();
 
-        if ($previous && $previous !== $path && Storage::disk('local')->exists($previous)) {
-            Storage::disk('local')->delete($previous);
+        if ($previous && $previous !== $path && Storage::disk(config('filesystems.private_disk', 'local'))->exists($previous)) {
+            Storage::disk(config('filesystems.private_disk', 'local'))->delete($previous);
         }
 
         return response()->json(['photo_url' => PatientPhoto::urlFor($patient)]);
@@ -117,8 +117,8 @@ class MobilePatientPhotoController extends Controller
             return response()->json(['message' => __('api.patient_not_found')], 404);
         }
 
-        if ($patient->photo_path && Storage::disk('local')->exists($patient->photo_path)) {
-            Storage::disk('local')->delete($patient->photo_path);
+        if ($patient->photo_path && Storage::disk(config('filesystems.private_disk', 'local'))->exists($patient->photo_path)) {
+            Storage::disk(config('filesystems.private_disk', 'local'))->delete($patient->photo_path);
         }
 
         $patient->forceFill(['photo_path' => null, 'photo_mime' => null, 'photo_updated_at' => now()])->save();
@@ -134,7 +134,7 @@ class MobilePatientPhotoController extends Controller
      * `nosniff` stops a browser second-guessing it. The response is marked
      * private so a shared proxy never keeps a copy of a patient's face.
      */
-    public function show(string $patient): BinaryFileResponse|JsonResponse
+    public function show(string $patient): HttpResponse
     {
         if (! Str::isUuid($patient)) {
             return response()->json(['message' => __('api.not_found')], 404);
@@ -142,11 +142,11 @@ class MobilePatientPhotoController extends Controller
 
         $row = Patient::query()->withoutGlobalScopes()->find($patient);
 
-        if (! $row || ! $row->photo_path || ! Storage::disk('local')->exists($row->photo_path)) {
+        if (! $row || ! $row->photo_path || ! Storage::disk(config('filesystems.private_disk', 'local'))->exists($row->photo_path)) {
             return response()->json(['message' => __('api.not_found')], 404);
         }
 
-        $response = response()->file(Storage::disk('local')->path($row->photo_path), [
+        $response = Storage::disk(config('filesystems.private_disk', 'local'))->response($row->photo_path, null, [
             'Content-Type'           => $row->photo_mime ?: 'image/jpeg',
             'Content-Disposition'    => 'inline',
             'X-Content-Type-Options' => 'nosniff',

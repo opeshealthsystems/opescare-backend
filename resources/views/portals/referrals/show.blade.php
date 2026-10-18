@@ -31,6 +31,7 @@
         <h1 class="od-page__title">{{ __('referral_desk.show_title') }}</h1>
         <p class="od-page__sub">{{ __('referral_desk.direction_' . $direction) }}</p>
     </div>
+    <a href="{{ route('documents.new.referral', $referral->id) }}" class="od-btn od-btn--secondary" target="_blank" rel="noopener"><i data-lucide="file-text"></i> {{ __('doc_new_docs.btn_referral_letter') }}</a>
     <a href="{{ route('portals.referrals.index', ['tab' => $direction]) }}" class="od-btn od-btn--secondary"><i data-lucide="arrow-left"></i> {{ __('referral_desk.back') }}</a>
 </div>
 

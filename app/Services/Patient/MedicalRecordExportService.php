@@ -18,14 +18,20 @@ class MedicalRecordExportService
     }
 
     /**
-     * Generate a PDF medical record.
+     * Render the medical record PDF — in memory, never stored.
      *
      * Options: include_vitals, include_diagnoses, include_medications,
      *          include_labs, include_immunizations (all default true).
      *
-     * Returns absolute path to the generated PDF file.
+     * "Documents are never stored" (see PatientDocumentService): this used to
+     * Storage::put() every export "for audit/debugging". The audit trail is
+     * the document_verifications row (reference, sha256 of the exact bytes,
+     * who asked) plus the access log; a second copy of the whole record on
+     * disk was a liability, not an audit. Spec: docs/specs/documents/08-record-export.md.
+     *
+     * @return array{0: string, 1: string}  [PDF bytes, download filename]
      */
-    public function generatePdf(string $patientId, array $options = [], ?string $issuedByUserId = null): string
+    public function render(string $patientId, array $options = [], ?string $issuedByUserId = null): array
     {
         $defaults = [
             'include_vitals'        => true,
@@ -63,26 +69,17 @@ class MedicalRecordExportService
         // `true` merges with the package defaults. Without it setOptions()
         // replaces the whole Options object, the chroot falls back to
         // vendor/dompdf and every sheet image under public/ is refused.
-        $pdf = Pdf::loadView('exports.medical-record', compact('patient', 'options', 'issuedAt', 'verification', 'verifyQr'))
-            ->setPaper('a4', 'portrait')
-            ->setOptions([
-                'defaultFont'          => 'DejaVu Sans',
-                'isHtml5ParserEnabled' => true,
-                'isFontSubsettingEnabled' => true, // embed the glyphs used, not 1.5 MB of DejaVu
-                'dpi'                  => 96,
-            ], true);
-
-        // Include a random suffix so two exports for the same patient within the
-        // same second don't collide and overwrite each other.
-        $filename     = sprintf('medical-record-%s-%s-%s.pdf', $patientId, Carbon::now()->format('YmdHis'), \Illuminate\Support\Str::random(6));
-        $relativePath = $this->exportDir . '/' . $filename;
-
-        $bytes = $pdf->output();
+        $bytes = \App\Support\SecureSheet::render('exports.medical-record', compact('patient', 'options', 'issuedAt', 'verification', 'verifyQr'));
         $this->verifications->seal($verification, $bytes);
 
-        Storage::disk($this->diskName)->put($relativePath, $bytes);
+        // Names the record by Health ID and document reference, never by name.
+        $filename = sprintf(
+            'medical-record-%s-%s.pdf',
+            \Illuminate\Support\Str::slug((string) ($patient->health_id ?: 'patient')),
+            \Illuminate\Support\Str::slug((string) $verification->reference)
+        );
 
-        return Storage::disk($this->diskName)->path($relativePath);
+        return [$bytes, $filename];
     }
 
     /**
@@ -176,6 +173,9 @@ class MedicalRecordExportService
 
     /**
      * Delete export files older than N hours. Returns count of files deleted.
+     *
+     * Nothing writes here any more; this remains only to purge files left by
+     * the old store-on-export behaviour.
      */
     public function cleanupExports(int $hoursOld = 24): int
     {

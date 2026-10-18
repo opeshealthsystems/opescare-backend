@@ -30,6 +30,10 @@
                 {{ __('family.log_subtitle') }}
             </p>
         </div>
+        <a href="{{ route('documents.new.access_log') }}" class="f-btn" target="_blank" rel="noopener">
+            @include('partials.finder.icon', ['name' => 'download', 'size' => 18])
+            {{ __('doc_new_docs.btn_access_log') }}
+        </a>
         <a href="{{ route('portals.patient') }}" class="f-btn">
             @include('partials.finder.icon', ['name' => 'chevron-left', 'size' => 18])
             {{ __('family.back_to_dashboard') }}

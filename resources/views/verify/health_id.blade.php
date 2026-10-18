@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ __('verify.health_id_title', [], app()->getLocale()) }}</title>
-    <meta name="description" content="Verify a patient's OpesCare Health ID. For authorised healthcare providers only.">
+    <meta name="description" content="{{ __('verify.health_id_meta_description') }}">
     <meta name="theme-color" content="#0F4C81">
     @include('partials.favicons')
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -233,11 +233,23 @@
         }
         .verify-footer a { color: #0F4C81; text-decoration: none; font-weight: 600; }
 
+        /* Icon sizing + result helpers (were inline style attributes) */
+        .ic-xs { width: 0.75rem; height: 0.75rem; }
+        .ic-sm { width: 0.875rem; height: 0.875rem; }
+        .ic-md { width: 1rem; height: 1rem; }
+        .ic-lg { width: 1.125rem; height: 1.125rem; }
+        .ic-hero { width: 1.75rem; height: 1.75rem; color: #fff; }
+        .ic-fixed { flex-shrink: 0; }
+        .ic-danger { color: #DC2626; }
+        .ic-teal { color: #0F766E; }
+        .result-verified-label { font-weight: 800; font-size: 0.9375rem; color: #065F46; }
+        .result-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.75rem; }
+
         @media (max-width: 600px) {
             .topbar { padding: 0.75rem 1rem; }
             .verify-card-body { padding: 1.5rem 1.25rem; }
             .verify-card-header { padding: 1.75rem 1.25rem 1.5rem; }
-            .result-detail-grid { grid-template-columns: 1fr !important; }
+            .result-detail-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -249,7 +261,7 @@
         OpesCare
     </a>
     <div class="topbar-badge">
-        <i data-lucide="shield-check" style="width:0.75rem;height:0.75rem;"></i>
+        <i data-lucide="shield-check" class="ic-xs"></i>
         {{ __('verify.badge_provider_tool', [], app()->getLocale()) }}
     </div>
 </header>
@@ -259,7 +271,7 @@
     <div class="verify-card">
         <div class="verify-card-header">
             <div class="verify-icon-wrap">
-                <i data-lucide="id-card" style="width:1.75rem;height:1.75rem;color:#fff;"></i>
+                <i data-lucide="id-card" class="ic-hero"></i>
             </div>
             <h1>{{ __('verify.health_id_heading', [], app()->getLocale()) }}</h1>
             <p>{{ __('verify.health_id_subheading', [], app()->getLocale()) }}</p>
@@ -268,13 +280,13 @@
         <div class="verify-card-body">
 
             <div class="disclaimer" role="alert">
-                <i data-lucide="triangle-alert" style="width:1rem;height:1rem;flex-shrink:0;"></i>
+                <i data-lucide="triangle-alert" class="ic-md ic-fixed"></i>
                 <span>{{ __('verify.disclaimer', [], app()->getLocale()) }}</span>
             </div>
 
             @if($error)
             <div class="result-error" role="alert">
-                <i data-lucide="x-circle" style="width:1.125rem;height:1.125rem;flex-shrink:0;color:#DC2626;"></i>
+                <i data-lucide="x-circle" class="ic-lg ic-fixed ic-danger"></i>
                 <span>{{ $error }}</span>
             </div>
             @endif
@@ -322,18 +334,18 @@
                 </div>
 
                 <button type="submit" class="btn-verify">
-                    <i data-lucide="search" style="width:1rem;height:1rem;"></i>
+                    <i data-lucide="search" class="ic-md"></i>
                     {{ __('verify.btn_verify', [], app()->getLocale()) }}
                 </button>
             </form>
 
             @if($result)
-            <div class="result-success" role="region" aria-label="Verification result">
+            <div class="result-success" role="region" aria-label="{{ __('verify.result_region_label') }}">
                 <div class="result-row">
                     <div class="status-dot"></div>
-                    <span style="font-weight:800;font-size:0.9375rem;color:#065F46;">{{ __('verify.result_verified', [], app()->getLocale()) }}</span>
+                    <span class="result-verified-label">{{ __('verify.result_verified', [], app()->getLocale()) }}</span>
                 </div>
-                <div class="result-detail-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:0.75rem;">
+                <div class="result-detail-grid">
                     <div>
                         <div class="result-label">{{ __('verify.result_name', [], app()->getLocale()) }}</div>
                         <div class="result-value">{{ $result->name ?? '—' }}</div>
@@ -352,7 +364,7 @@
                     </div>
                 </div>
                 <div class="audit-note">
-                    <i data-lucide="shield-check" style="width:0.875rem;height:0.875rem;color:#0F766E;flex-shrink:0;"></i>
+                    <i data-lucide="shield-check" class="ic-sm ic-fixed ic-teal"></i>
                     {{ __('verify.audit_note', [], app()->getLocale()) }}
                 </div>
             </div>

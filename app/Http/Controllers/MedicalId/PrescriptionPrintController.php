@@ -6,8 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Facility;
 use App\Models\FacilityRegistry;
 use App\Models\Prescription;
-use App\Models\ProfessionalLicense;
-use App\Models\StaffProfile;
 use App\Services\Clinical\PrescriptionAccessService;
 use chillerlan\QRCode\Common\EccLevel;
 use chillerlan\QRCode\Output\QRMarkupSVG;
@@ -77,7 +75,11 @@ class PrescriptionPrintController extends Controller
             ? FacilityRegistry::where('claimed_facility_id', $facility->id)->first()
             : null;
 
-        [$credential, $licenseNumber] = $this->prescriberCredential($prescription);
+        // One source of facts for this sheet AND the patient's PDF, so the two
+        // prescriptions cannot disagree (docs/specs/documents/01-prescription.md).
+        $facts = app(\App\Services\Documents\PrescriptionSheetFacts::class)->for($prescription);
+        $credential    = $facts['credential'];
+        $licenseNumber = $facts['licenseNumber'];
 
         $status  = (string) ($prescription->status ?? '');
         $expired = $status === 'expired'
@@ -99,6 +101,7 @@ class PrescriptionPrintController extends Controller
             'isExpired'      => $expired,
             'verifyUrl'      => $verifyUrl,
             'qrSvg'          => $qrSvg,
+            'facts'          => $facts,
         ]);
     }
 
@@ -173,45 +176,20 @@ class PrescriptionPrintController extends Controller
     }
 
     /**
-     * What the prescriber is licensed as, if the record knows.
-     *
-     * A Cameroonian script is signed by a named, licensed prescriber, so the
-     * sheet prints the profession and licence number when a staff profile
-     * carries them and falls back to the job title. Nothing is invented: a user
-     * with no staff profile prints as a name alone.
-     *
-     * @return array{0: ?string, 1: ?string} [credential, licence number]
-     */
-    private function prescriberCredential(Prescription $prescription): array
-    {
-        if (! $prescription->prescribed_by) {
-            return [null, null];
-        }
-
-        $staff = StaffProfile::where('user_id', $prescription->prescribed_by)->first();
-
-        if (! $staff) {
-            return [null, null];
-        }
-
-        $license = ProfessionalLicense::where('staff_profile_id', $staff->id)
-            ->orderByDesc('created_at')
-            ->first();
-
-        $credential = $license?->profession ?: ($staff->job_title ?: null);
-
-        return [$credential, $license?->license_number ?: null];
-    }
-
-    /**
      * The facility this sheet is printed for. Mirrors PrescriberController's
      * resolution exactly — printing must not widen the scope of what is
      * readable at the desk.
      */
     private function facilityId(): ?string
     {
-        return session('active_facility_id')
-            ?? auth()->user()?->primary_facility_id
-            ?? Facility::value('id');
+        // Same resolver as PrescriberController. The old last resort was
+        // Facility::value('id') — the first facility in the table — which
+        // could print another facility's script for an account with no posting.
+        $id = request()->attributes->get('facility_id')
+            ?? app(\App\Services\Portal\DeskFacilityContext::class)->resolve();
+
+        abort_if($id === null || $id === '', 403, __('prescriber.no_facility'));
+
+        return (string) $id;
     }
 }

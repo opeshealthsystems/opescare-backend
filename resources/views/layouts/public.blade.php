@@ -101,8 +101,8 @@
                 <div class="nav-dropdown">
                     <a href="{{ route('public.developers') }}" class="nav-link dropdown-trigger">{{ __('landing.nav.developers', [], app()->getLocale()) }} <i data-lucide="chevron-down" class="icon-xs"></i></a>
                     <div class="dropdown-menu">
-                        <a href="{{ route('docs.index') }}" class="dropdown-item"><i data-lucide="book-open" class="nav-icon"></i>Developer Docs</a>
-                        <a href="{{ route('docs.playground') }}" class="dropdown-item"><i data-lucide="play-circle" class="nav-icon"></i>API Playground</a>
+                        <a href="{{ route('docs.index') }}" class="dropdown-item"><i data-lucide="book-open" class="nav-icon"></i>{{ __('ui_sweep.docs_nav.developer_docs') }}</a>
+                        <a href="{{ route('docs.playground') }}" class="dropdown-item"><i data-lucide="play-circle" class="nav-icon"></i>{{ __('ui_sweep.docs_nav.api_playground') }}</a>
                         <a href="{{ route('public.pricing') }}" class="dropdown-item"><i data-lucide="receipt" class="nav-icon"></i>{{ __('pricing.nav_label', [], app()->getLocale()) }}</a>
                     </div>
                 </div>

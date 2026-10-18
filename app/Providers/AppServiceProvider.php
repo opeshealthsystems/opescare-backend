@@ -351,6 +351,8 @@ class AppServiceProvider extends ServiceProvider
         // mobile API (docs/audits/{CLINIC,HOSPITAL,HEALTH_CENTRE}_DASHBOARD_AUDIT_2.md).
         Route::group([], base_path('routes/referral_desk.php'));
         Route::group([], base_path('routes/immunisation_desk.php'));
+        // Missing documents pass (docs/specs/documents/20-33): rendered on demand, never stored.
+        Route::group([], base_path('routes/documents_new.php'));
 
         // Public imaging-exam finder (docs/audits/IMAGING_DASHBOARD_AUDIT_2.md, I-1).
         Route::middleware('web')->group(base_path('routes/imaging_finder.php'));

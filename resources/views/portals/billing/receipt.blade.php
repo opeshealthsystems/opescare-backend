@@ -30,6 +30,7 @@
     <div class="odc-head-actions">
         <a href="{{ route('portals.billing.show', $invoice->id) }}" class="od-btn od-btn--secondary"><i data-lucide="arrow-left"></i> {{ __('billing_desk.receipt.back') }}</a>
         <button type="button" class="od-btn od-btn--primary" data-print><i data-lucide="printer"></i> {{ __('billing_desk.receipt.print') }}</button>
+        <a href="{{ route('documents.new.receipt', $receipt->id) }}" class="od-btn od-btn--secondary" target="_blank" rel="noopener"><i data-lucide="file-text"></i> {{ __('doc_new_docs.btn_receipt_pdf') }}</a>
     </div>
 </div>
 

@@ -13,7 +13,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 /**
  * Mobile Provider API — the clinician's OWN profile.
@@ -223,7 +223,7 @@ class MobileDoctorProfileController extends Controller
         // path this server writes to.
         $path = sprintf('doctor-photos/%s/%s.%s', $user->id, (string) Str::uuid(), $type['ext']);
 
-        Storage::disk('local')->put($path, file_get_contents($file->getRealPath()));
+        Storage::disk(config('filesystems.private_disk', 'local'))->put($path, file_get_contents($file->getRealPath()));
 
         $profile->photo_path = $path;
         $profile->photo_mime = $type['mime'];
@@ -232,7 +232,7 @@ class MobileDoctorProfileController extends Controller
         // Only after the new one is committed — a failed save must not leave the
         // clinician with no photo at all.
         if ($previous && $previous !== $path) {
-            Storage::disk('local')->delete($previous);
+            Storage::disk(config('filesystems.private_disk', 'local'))->delete($previous);
         }
 
         return response()->json([
@@ -256,7 +256,7 @@ class MobileDoctorProfileController extends Controller
      * The Content-Type is the one the SERVER determined at upload time, and
      * `nosniff` stops a browser second-guessing it.
      */
-    public function showPhoto(string $profileId): BinaryFileResponse|JsonResponse
+    public function showPhoto(string $profileId): HttpResponse
     {
         if (! Str::isUuid($profileId)) {
             return $this->photoMissing();
@@ -264,11 +264,11 @@ class MobileDoctorProfileController extends Controller
 
         $profile = ProviderProfile::find($profileId);
 
-        if (! $profile || ! $profile->photo_path || ! Storage::disk('local')->exists($profile->photo_path)) {
+        if (! $profile || ! $profile->photo_path || ! Storage::disk(config('filesystems.private_disk', 'local'))->exists($profile->photo_path)) {
             return $this->photoMissing();
         }
 
-        $response = response()->file(Storage::disk('local')->path($profile->photo_path), [
+        $response = Storage::disk(config('filesystems.private_disk', 'local'))->response($profile->photo_path, null, [
             'Content-Type'           => $profile->photo_mime ?: 'application/octet-stream',
             'Content-Disposition'    => 'inline',
             'X-Content-Type-Options' => 'nosniff',

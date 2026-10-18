@@ -117,6 +117,10 @@
                     @endif
                     @if($isActionable)
                     <div class="pf-appt__actions">
+                        <a href="{{ route('documents.new.appointment', $appt->id) }}" class="f-btn" target="_blank" rel="noopener">
+                            @include('partials.finder.icon', ['name' => 'download', 'size' => 16])
+                            {{ __('doc_new_docs.btn_appointment_slip') }}
+                        </a>
                         <a href="{{ route('portals.patient.appointments.reschedule', $appt->id) }}" class="f-btn">
                             @include('partials.finder.icon', ['name' => 'refresh-cw', 'size' => 16])
                             {{ __('public.appt_reschedule_btn') }}

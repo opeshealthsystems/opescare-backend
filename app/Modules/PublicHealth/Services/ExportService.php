@@ -42,22 +42,23 @@ class ExportService
             ];
         }
 
-        // Build temporary file path inside laravel storage
-        $filename = 'public_health_report_' . $report->id . '_' . time() . '.csv';
-        $directory = storage_path('app/public_health_exports');
-        if (!is_dir($directory)) {
-            mkdir($directory, 0755, true);
-        }
-        $filePath = $directory . '/' . $filename;
+        // Build the CSV in memory and hand it to the private disk, so the
+        // export lands on S3 (or any FILESYSTEM driver) when the app tier is
+        // stateless — never on one node's local disk.
+        $filePath = 'public_health_exports/public_health_report_' . $report->id . '_' . time() . '.csv';
 
-        $fp = fopen($filePath, 'w');
+        $fp = fopen('php://temp', 'w+');
         fputcsv($fp, ['Indicator Code', 'Indicator Name', 'Value']);
         foreach ($suppressedPayload as $row) {
-            fputcsv($fp, $row);
+            fputcsv($fp, \App\Support\CsvSafe::row($row));
         }
+        rewind($fp);
+        $csv = stream_get_contents($fp);
         fclose($fp);
 
-        $fileHash = hash_file('sha256', $filePath);
+        \Illuminate\Support\Facades\Storage::disk(config('filesystems.private_disk', 'local'))->put($filePath, $csv);
+
+        $fileHash = hash('sha256', $csv);
 
         return ExportFile::create([
             'report_id' => $report->id,

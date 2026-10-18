@@ -24,6 +24,7 @@
             <tr><td class="k">{{ __('pharmacy_reports.pdf_period') }}</td><td class="v">{{ $params['from'] }} → {{ $params['to'] }}</td></tr>
         @endif
         <tr><td class="k">{{ __('pharmacy_reports.pdf_generated') }}</td><td class="v">{{ $issuedAt->translatedFormat('d M Y, H:i') }}</td></tr>
+        <tr><td class="k">{{ __('doc_ex_sheet.generated_by') }}</td><td class="v">{{ ($generatedBy ?? null) ?: __('doc_ex_sheet.not_recorded') }}</td></tr>
     </table>
 
     <h2>{{ __('pharmacy_reports.card_' . $report) }} <span class="hint">{{ __('pharmacy_reports.rows_total', ['count' => count($table['rows'])]) }}</span></h2>

@@ -49,6 +49,7 @@
         @endcapability
         @endif
         <button type="button" class="od-btn od-btn--secondary" data-print><i data-lucide="printer"></i> {{ __('pharmacy_desk.btn_print', [], $l) }}</button>
+        @if($rx->items->contains(fn ($i) => $i->dispensed_at !== null))<a href="{{ route('documents.new.labels', $rx->id) }}" class="od-btn od-btn--secondary" target="_blank" rel="noopener"><i data-lucide="tag"></i> {{ __('doc_new_docs.btn_labels') }}</a>@endif
     </div>
 </div>
 

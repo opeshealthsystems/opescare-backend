@@ -123,9 +123,9 @@
     <div class="demo-panel" id="demoPanel">
         <div class="demo-panel-header open" id="demoPanelHeader" data-demo-panel-toggle>
             <div class="demo-panel-header-left">
-                <span class="demo-badge">DEMO</span>
+                <span class="demo-badge">{{ __('ui_sweep.login.demo_badge') }}</span>
                 <div>
-                    <strong>Try the Demo</strong>
+                    <strong>{{ __('ui_sweep.login.try_demo') }}</strong>
                     <span>One-click access — no password needed</span>
                 </div>
             </div>
@@ -171,7 +171,7 @@
                     <button type="button" class="demo-login-btn demo-btn-clinical" data-demo-role="pharmacist" data-demo-email="demo.pharmacist@opescare.test">
                         <i data-lucide="pill"></i>
                         <span>Aïcha Coulibaly</span>
-                        <small>Pharmacist</small>
+                        <small>{{ __('ui_sweep.login.pharmacist') }}</small>
                     </button>
                     <button type="button" class="demo-login-btn demo-btn-clinical" data-demo-role="pharmacy_manager" data-demo-email="demo.pharmacy.manager@opescare.test">
                         <i data-lucide="store"></i>
@@ -181,7 +181,7 @@
                     <button type="button" class="demo-login-btn demo-btn-clinical" data-demo-role="labtech" data-demo-email="demo.labtech@opescare.test">
                         <i data-lucide="flask-conical"></i>
                         <span>Lab Tech Boubacar Keïta</span>
-                        <small>Lab technician</small>
+                        <small>{{ __('ui_sweep.login.lab_technician') }}</small>
                     </button>
                     <button type="button" class="demo-login-btn demo-btn-clinical" data-demo-role="receptionist" data-demo-email="demo.receptionist@opescare.test">
                         <i data-lucide="monitor"></i>
@@ -196,12 +196,12 @@
                     <button type="button" class="demo-login-btn demo-btn-facility" data-demo-role="facility_admin" data-demo-email="demo.facility.admin@opescare.test">
                         <i data-lucide="building-2"></i>
                         <span>Admin Mariam Touré</span>
-                        <small>Facility Administrator</small>
+                        <small>{{ __('ui_sweep.login.facility_admin') }}</small>
                     </button>
                     <button type="button" class="demo-login-btn demo-btn-facility" data-demo-role="facility_ceo" data-demo-email="demo.facility.ceo@opescare.test">
                         <i data-lucide="briefcase"></i>
                         <span>CEO Seydou Ouédraogo</span>
-                        <small>Chief Executive Officer</small>
+                        <small>{{ __('ui_sweep.login.ceo') }}</small>
                     </button>
                 </div>
             </div>
@@ -234,32 +234,32 @@
                 <div class="demo-btn-grid">
                     <button type="button" class="demo-login-btn demo-btn-patient" data-demo-role="patient" data-demo-email="demo.patient@opescare.test">
                         <i data-lucide="user"></i>
-                        <span>Demo Patient</span>
+                        <span>{{ __('ui_sweep.login.demo_patient') }}</span>
                         <small>{{ __('public.demo.role_patient_provisional') }}</small>
                     </button>
                     <button type="button" class="demo-login-btn demo-btn-patient" data-demo-role="patient" data-demo-email="demo.reviewer@opescare.test">
                         <i data-lucide="shield-check"></i>
-                        <span>Demo Reviewer</span>
+                        <span>{{ __('ui_sweep.login.demo_reviewer') }}</span>
                         <small>{{ __('public.demo.role_patient_verified') }}</small>
                     </button>
                     <button type="button" class="demo-login-btn demo-btn-patient" data-demo-role="patient" data-demo-email="demo.boy@opescare.test">
                         <i data-lucide="baby"></i>
-                        <span>Demo Boy</span>
+                        <span>{{ __('ui_sweep.login.demo_boy') }}</span>
                         <small>{{ __('public.demo.role_child_boy') }}</small>
                     </button>
                     <button type="button" class="demo-login-btn demo-btn-patient" data-demo-role="patient" data-demo-email="demo.girl@opescare.test">
                         <i data-lucide="baby"></i>
-                        <span>Demo Girl</span>
+                        <span>{{ __('ui_sweep.login.demo_girl') }}</span>
                         <small>{{ __('public.demo.role_child_girl') }}</small>
                     </button>
                     <button type="button" class="demo-login-btn demo-btn-patient" data-demo-role="guardian" data-demo-email="demo.guardian@opescare.test">
                         <i data-lucide="users"></i>
-                        <span>Demo Guardian</span>
+                        <span>{{ __('ui_sweep.login.demo_guardian') }}</span>
                         <small>{{ __('public.demo.role_guardian_parent') }}</small>
                     </button>
                     <button type="button" class="demo-login-btn demo-btn-patient" data-demo-role="patient" data-demo-email="demo.grandmother@opescare.test">
                         <i data-lucide="user"></i>
-                        <span>Demo Grandmother</span>
+                        <span>{{ __('ui_sweep.login.demo_grandmother') }}</span>
                         <small>{{ __('public.demo.role_grandmother') }}</small>
                     </button>
                 </div>
@@ -270,12 +270,12 @@
                 <div class="demo-btn-grid">
                     <button type="button" class="demo-login-btn demo-btn-developer" data-demo-role="developer" data-demo-email="demo.developer@opescare.test">
                         <i data-lucide="code-2"></i>
-                        <span>API Developer</span>
-                        <small>Developer Portal</small>
+                        <span>{{ __('ui_sweep.login.api_developer') }}</span>
+                        <small>{{ __('ui_sweep.login.developer_portal') }}</small>
                     </button>
                 </div>
                 <div class="demo-sandbox-creds">
-                    <strong>Sandbox API Credentials</strong><br>
+                    <strong>{{ __('ui_sweep.login.sandbox_credentials') }}</strong><br>
                     <code>client_id: demo_dev_sandbox</code><br>
                     <code>client_secret: demo_secret_sandbox_2026</code><br>
                     <code>POST /api/v1/connect/auth/token</code>

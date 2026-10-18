@@ -173,7 +173,7 @@ class PharmacyReportsController extends Controller
             fwrite($out, "\xEF\xBB\xBF");
             fputcsv($out, $headers);
             foreach ($rows as $row) {
-                fputcsv($out, array_map(fn ($v) => $v ?? '', $row));
+                fputcsv($out, \App\Support\CsvSafe::row(array_map(fn ($v) => $v ?? '', $row)));
             }
             fclose($out);
         }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
@@ -183,7 +183,21 @@ class PharmacyReportsController extends Controller
     {
         // `true` merges with the package defaults; without it the chroot falls
         // back to vendor/dompdf and the sheet art under public/ is refused.
-        $pdf = Pdf::loadView($view, $data + ['issuedAt' => Carbon::now(), 'patient' => null, 'verification' => null, 'verifyQr' => null])
+        // A facility report carries the same /verify/doc QR as a patient
+        // document: the row is minted before render (the QR is on the page),
+        // the fingerprint of the bytes is sealed after.
+        $verifications = app(\App\Services\Patient\DocumentVerificationService::class);
+        $type          = $view === 'portals.pharmacy.reports.controlled_register_pdf' ? 'controlled_register' : 'pharmacy_report';
+        $issued        = $verifications->issueForFacility($this->facilityId(), $type, auth()->id() ? (string) auth()->id() : null);
+
+        $pdf = Pdf::loadView($view, $data + [
+            'issuedAt'     => Carbon::now(),
+            'patient'      => null,
+            'verification' => $issued['record'],
+            'verifyQr'     => \App\Support\QrSvg::pngDataUri($issued['verify_url']),
+            'generatedBy'  => auth()->user()?->name,
+            'pageStamp'    => true,
+        ])
             ->setPaper('a4', 'portrait')
             ->setOptions([
                 'defaultFont'             => 'DejaVu Sans',
@@ -192,7 +206,14 @@ class PharmacyReportsController extends Controller
                 'dpi'                     => 96,
             ], true);
 
-        return $pdf->download($filename);
+        $bytes = \App\Support\SecureSheet::output($pdf, true);
+        $verifications->seal($issued['record'], $bytes);
+
+        return response($bytes, 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control'       => 'no-store, no-cache, must-revalidate, private',
+        ]);
     }
 
     private function facilityId(): string

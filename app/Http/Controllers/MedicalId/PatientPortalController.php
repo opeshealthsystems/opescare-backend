@@ -893,6 +893,33 @@ class PatientPortalController extends Controller
      * it — including a guardian who has switched to a dependent — and the
      * service refuses any record that does not belong to them.
      */
+    /**
+     * The patient's whole record on the secure sheet, rendered on demand.
+     * Same service as the mobile export; nothing is written to disk.
+     * Spec: docs/specs/documents/08-record-export.md.
+     */
+    public function exportRecord(Request $request, \App\Services\Patient\MedicalRecordExportService $export)
+    {
+        $patient = $this->resolveViewingPatient();
+        abort_if(! $patient, 403);
+
+        $this->ctx->auditPatientAccess(
+            actionType:   'patient_document_generated',
+            resourceType: 'PatientDocument:medical_record',
+            resourceId:   null,
+            patientId:    $patient->id,
+        );
+
+        [$bytes, $filename] = $export->render((string) $patient->id, [], $request->user()?->id ? (string) $request->user()->id : null);
+
+        return response($bytes, 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control'       => 'no-store, no-cache, must-revalidate, private',
+            'Pragma'              => 'no-cache',
+        ]);
+    }
+
     public function renderDocument(Request $request, PatientDocumentService $documents, string $type, ?string $record = null)
     {
         $patient = $this->resolveViewingPatient();
@@ -900,8 +927,11 @@ class PatientPortalController extends Controller
 
         $this->ctx->auditPatientAccess(
             actionType:   'patient_document_generated',
-            resourceType: 'PatientDocument',
-            resourceId:   $record ?? $type,
+            resourceType: 'PatientDocument:' . $type,
+            // audit_events.resource_id is a uuid: a whole-record document
+            // (immunisation_record) has no record id, and writing the type
+            // name there failed the insert and lost the audit row.
+            resourceId:   $record,
             patientId:    $patient->id,
         );
 

@@ -28,6 +28,14 @@ return [
     |
     */
 
+    /*
+    | Private disk — every app write of patient/facility files goes through this
+    | disk name. 'local' on a single node; set PRIVATE_DISK=s3 when the app
+    | tier runs on more than one node so no node keeps state on local disk.
+    */
+
+    'private_disk' => env('PRIVATE_DISK', 'local'),
+
     'disks' => [
 
         'local' => [

@@ -53,8 +53,15 @@ class PrescriptionController extends Controller
         return response()->json(['data' => $prescription->load('items')], 201);
     }
 
-    public function show(Prescription $prescription): JsonResponse
+    public function show(Request $request, Prescription $prescription): JsonResponse
     {
+        // ASVS V4.2.1 (IDOR): an integration client may read only its own
+        // facility's prescriptions. 404, not 403, so ids are not an oracle.
+        $facilityId = $request->attributes->get('facility_id');
+        if (! $facilityId || (string) $prescription->facility_id !== (string) $facilityId) {
+            return response()->json(['message' => __('api.not_found')], 404);
+        }
+
         return response()->json(['data' => $prescription->load(['items', 'prescriber', 'patient'])]);
     }
 

@@ -30,6 +30,9 @@
     <a href="{{ route('portals.patient.health-id-card') }}" class="sidebar-link">
         <i data-lucide="printer"></i><span>{{ __('family.nav_print_card', [], $l) }}</span>
     </a>
+    <a href="{{ route('portals.patient.record-export') }}" class="sidebar-link">
+        <i data-lucide="file-down"></i><span>{{ __('doc_ex_export.nav', [], $l) }}</span>
+    </a>
 </div>
 
 <div class="sidebar-nav-section">

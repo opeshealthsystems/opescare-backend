@@ -250,6 +250,7 @@
     .kv .sub { font-weight: 400; font-size: 9pt; }
     .mono { font-family: "Courier New", Courier, monospace; letter-spacing: .5px; }
     .none { font-style: italic; font-weight: 400; }
+    .items .sub { font-weight: 400; font-size: 9pt; }
 
     /* ── Medicines ─────────────────────────────────────────────────────── */
     h2.section {
@@ -523,6 +524,25 @@
                     <td>{{ __('prescriber.print_sex') }}</td>
                     <td class="v">@if($patient && filled($patient->sex))@enum($patient->sex, 'sex')@else—@endif</td>
                 </tr>
+                <tr>
+                    <td>{{ __('doc_ex_rx.age') }}</td>
+                    <td class="v">{{ ($facts['patientAge'] ?? null) !== null ? __('doc_ex_rx.age_years', ['count' => $facts['patientAge']]) : $notRecorded }}</td>
+                </tr>
+                <tr>
+                    <td>{{ __('doc_ex_rx.weight') }}</td>
+                    <td class="v">
+                        @if(($facts['weightKg'] ?? null) !== null)
+                            {{ __('doc_ex_rx.weight_kg', ['kg' => $facts['weightKg']]) }}
+                            @if($facts['weightAt'])<div class="sub">{{ __('doc_ex_rx.measured_on', ['date' => $facts['weightAt']->translatedFormat('d M Y')]) }}</div>@endif
+                        @else
+                            <span class="none">{{ $notRecorded }}</span>
+                        @endif
+                    </td>
+                </tr>
+                <tr>
+                    <td>{{ __('doc_ex_rx.allergies') }}</td>
+                    <td class="v">{{ ! empty($facts['allergies']) ? implode(', ', $facts['allergies']) : __('doc_ex_rx.no_known_allergies') }}</td>
+                </tr>
             </table>
         </div>
         <div class="facts__col">
@@ -565,7 +585,8 @@
         <thead>
             <tr>
                 <th class="idx">#</th>
-                <th>{{ __('prescriber.drug_name') }}</th>
+                <th>{{ __('doc_ex_rx.inn') }}</th>
+                <th>{{ __('doc_ex_rx.strength_form') }}</th>
                 <th>{{ __('prescriber.dose') }}</th>
                 <th>{{ __('prescriber.frequency') }}</th>
                 <th>{{ __('prescriber.route') }}</th>
@@ -577,7 +598,9 @@
         @forelse($items as $i => $item)
             <tr>
                 <td class="idx">{{ $i + 1 }}</td>
-                <td class="drug">{{ $item->drug_name ?: '—' }}</td>
+                @php $line = $facts['lines'][$i] ?? []; @endphp
+                <td class="drug">{{ $line['inn'] ?? ($item->drug_name ?: '—') }}@if(! empty($line['brand']))<div class="sub">{{ $line['brand'] }}</div>@endif</td>
+                <td>{{ trim(($line['strength'] ?? '') . ' ' . ($line['form'] ?? '')) ?: '—' }}</td>
                 <td>{{ $item->dose ?: '—' }}</td>
                 <td>{{ $item->frequency ?: '—' }}</td>
                 <td>{{ $item->route ? \App\Support\Enums::label($item->route, 'route') : '—' }}</td>
@@ -585,7 +608,7 @@
                 <td class="num">{{ $item->quantity !== null ? $item->quantity : '—' }}</td>
             </tr>
         @empty
-            <tr><td colspan="7">{{ __('prescriber.print_no_items') }}</td></tr>
+            <tr><td colspan="8">{{ __('prescriber.print_no_items') }}</td></tr>
         @endforelse
         </tbody>
     </table>

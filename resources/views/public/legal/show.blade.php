@@ -42,14 +42,14 @@
 
                 @if($currentVersion)
                     <div class="f-card fs-legal-meta">
-                        <div class="fs-legal-meta__item"><strong>Version</strong>{{ $currentVersion->version }}</div>
+                        <div class="fs-legal-meta__item"><strong>{{ __('ui_sweep.legal_show.version') }}</strong>{{ $currentVersion->version }}</div>
                         @if($currentVersion->effective_at)
-                            <div class="fs-legal-meta__item"><strong>Effective</strong>{{ $currentVersion->effective_at->translatedFormat('d F Y') }}</div>
+                            <div class="fs-legal-meta__item"><strong>{{ __('ui_sweep.legal_show.effective') }}</strong>{{ $currentVersion->effective_at->translatedFormat('d F Y') }}</div>
                         @endif
                         @if($currentVersion->published_at)
-                            <div class="fs-legal-meta__item"><strong>Published</strong>{{ $currentVersion->published_at->translatedFormat('d F Y') }}</div>
+                            <div class="fs-legal-meta__item"><strong>{{ __('ui_sweep.legal_show.published') }}</strong>{{ $currentVersion->published_at->translatedFormat('d F Y') }}</div>
                         @endif
-                        <div class="fs-legal-meta__item"><strong>Language</strong>{{ strtoupper($document->language) }}</div>
+                        <div class="fs-legal-meta__item"><strong>{{ __('ui_sweep.legal_show.language') }}</strong>{{ strtoupper($document->language) }}</div>
                     </div>
 
                     <div class="f-card fs-legal-body">
@@ -57,8 +57,8 @@
                     </div>
                 @else
                     <div class="f-card fs-no-content">
-                        <p>This document has not been published yet.</p>
-                        <a href="{{ route('public.legal') }}">Legal Centre</a>
+                        <p>{{ __('ui_sweep.legal_show.not_published') }}</p>
+                        <a href="{{ route('public.legal') }}">{{ __('ui_sweep.legal_show.legal_centre') }}</a>
                     </div>
                 @endif
             </div>

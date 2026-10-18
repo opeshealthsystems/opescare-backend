@@ -164,16 +164,8 @@ class PatientDocumentService
         // `true` merges with the package defaults. Without it setOptions()
         // replaces the whole Options object, the chroot falls back to
         // vendor/dompdf and every sheet image under public/ is refused.
-        $pdf = Pdf::loadView($view, $data + compact('patient', 'issuedAt', 'verification', 'verifyQr'))
-            ->setPaper('a4', 'portrait')
-            ->setOptions([
-                'defaultFont'             => 'DejaVu Sans',
-                'isHtml5ParserEnabled'    => true,
-                'isFontSubsettingEnabled' => true,
-                'dpi'                     => 96,
-            ], true);
-
-        $bytes = $pdf->output();
+        $tone  = request()?->query('tone') === 'light' ? 'light' : 'standard';
+        $bytes = \App\Support\SecureSheet::render($view, $data + compact('patient', 'issuedAt', 'verification', 'verifyQr') + ['sheetTone' => $tone]);
         $this->verifications->seal($verification, $bytes);
 
         return [$bytes, $this->filename($patient, $type, $verification->reference ?? null)];
@@ -371,9 +363,9 @@ class PatientDocumentService
         return match ($type) {
             self::LABORATORY_REPORT => ['order' => $this->labOrder($patient, $recordId)],
             self::IMAGING_REPORT    => ['report' => $this->imagingReport($patient, $recordId)],
-            self::PRESCRIPTION      => ['prescription' => $this->prescription($patient, $recordId)],
-            self::DISCHARGE_SUMMARY => ['admission' => $this->admission($patient, $recordId)],
-            self::IMMUNISATION      => ['doses' => $this->doses($patient)],
+            self::PRESCRIPTION      => $this->prescriptionData($patient, $recordId),
+            self::DISCHARGE_SUMMARY => $this->dischargeData($patient, $recordId),
+            self::IMMUNISATION      => ['doses' => $this->doses($patient)->load(['facility', 'administeredBy'])],
             self::CERTIFICATE       => $this->certificate($patient, $recordId),
             default                 => [],
         };
@@ -402,7 +394,11 @@ class PatientDocumentService
                 ?? \App\Models\CareFacility::withoutGlobalScopes()->whereKey($document->facility_id)->value('facility_name'))
             : null;
 
-        return ['document' => $document, 'facilityName' => $facilityName];
+        $facility = $document->facility_id
+            ? \App\Models\Facility::withoutGlobalScope('isolate_demo')->whereKey($document->facility_id)->first()
+            : null;
+
+        return ['document' => $document, 'facilityName' => $facilityName, 'facility' => $facility];
     }
 
     private function labOrder(Patient $patient, ?string $id): LabOrder
@@ -459,6 +455,101 @@ class PatientDocumentService
         abort_if($prescription === null, 404, 'No such prescription.');
 
         return $prescription;
+    }
+
+    /** The prescription and the facts both prescription sheets share. */
+    private function prescriptionData(Patient $patient, ?string $id): array
+    {
+        $prescription = $this->prescription($patient, $id);
+
+        return [
+            'prescription' => $prescription,
+            'facts'        => app(\App\Services\Documents\PrescriptionSheetFacts::class)->for($prescription),
+        ];
+    }
+
+    /**
+     * A discharge summary from what the record holds — and nothing else.
+     *
+     * Every section below is read from a real row: diagnoses recorded on the
+     * admission's visit (or, when the admission has no visit, recorded for
+     * this patient during the stay), prescriptions issued during the stay,
+     * the discharge plan's follow-up and education notes, and the attending
+     * clinician. A section with no data prints empty; nothing is inferred.
+     * Spec: docs/specs/documents/04-discharge-summary.md.
+     */
+    private function dischargeData(Patient $patient, ?string $id): array
+    {
+        $admission = $this->admission($patient, $id);
+
+        $from = $admission->admitted_at ? Carbon::parse($admission->admitted_at) : null;
+        $to   = $admission->discharged_at ? Carbon::parse($admission->discharged_at) : null;
+
+        $inStay = function ($query, string $column) use ($from, $to) {
+            if ($from) {
+                $query->where($column, '>=', $from);
+            }
+            if ($to) {
+                $query->where($column, '<=', $to->copy()->endOfDay());
+            }
+        };
+
+        $diagnoses = \App\Models\Diagnosis::where('patient_id', $patient->id)
+            ->where(function ($q) use ($admission, $inStay) {
+                if ($admission->visit_id) {
+                    $q->where('visit_id', $admission->visit_id);
+                } else {
+                    $inStay($q, 'created_at');
+                }
+            })
+            ->orderByDesc('is_primary')
+            ->orderBy('created_at')
+            ->get();
+
+        $prescriptions = Prescription::with('items')
+            ->where('patient_id', $patient->id)
+            ->where(function ($q) use ($admission, $inStay) {
+                if ($admission->visit_id) {
+                    $q->where('visit_id', $admission->visit_id)
+                      ->orWhere(fn ($w) => $inStay($w, 'prescribed_at'));
+                } else {
+                    $inStay($q, 'prescribed_at');
+                }
+            })
+            ->whereNotIn('status', ['voided', 'entered_in_error', 'cancelled'])
+            ->orderBy('prescribed_at')
+            ->get();
+
+        $plan = \App\Models\DischargePlan::where('admission_id', $admission->id)
+            ->orderByDesc('created_at')
+            ->first();
+
+        $ward = null;
+        try {
+            $ward = $admission->bed?->ward?->name;
+        } catch (\Throwable) {
+            $ward = null;
+        }
+
+        $facility = $admission->facility_id
+            ? \App\Models\Facility::withoutGlobalScope('isolate_demo')->find($admission->facility_id)
+            : null;
+
+        $allergies = \App\Models\AllergyRecord::where('patient_id', $patient->id)
+            ->pluck('substance')->filter()->unique()->values()->all();
+
+        return [
+            'admission'     => $admission,
+            'diagnoses'     => $diagnoses,
+            'prescriptions' => $prescriptions,
+            'plan'          => $plan,
+            'ward'          => $ward,
+            'facility'      => $facility,
+            'allergies'     => $allergies,
+            'clinician'     => \App\Services\Documents\ClinicianCredential::for(
+                $admission->attending_physician_id ?? $plan?->approved_by ?? $admission->admitted_by
+            ),
+        ];
     }
 
     private function admission(Patient $patient, ?string $id): Admission

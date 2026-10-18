@@ -62,6 +62,10 @@
         <i data-lucide="file-text"></i>
         <span>{{ __('prescriber.nav', [], $l) }}</span>
     </a>
+    <a href="{{ route('portals.certificates.index') }}" class="sidebar-link {{ request()->routeIs('portals.certificates.*') ? 'active' : '' }}">
+        <i data-lucide="file-badge"></i>
+        <span>{{ __('doc_ex_cert.nav', [], $l) }}</span>
+    </a>
     @endcapability
     @capability('blood_inventory')
     <a href="{{ route('portals.staff.inventory.blood') }}" class="sidebar-link {{ request()->routeIs('portals.staff.inventory.blood*') ? 'active' : '' }}">

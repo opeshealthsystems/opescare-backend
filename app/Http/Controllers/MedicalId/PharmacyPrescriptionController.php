@@ -77,7 +77,7 @@ class PharmacyPrescriptionController extends Controller
                 __('pharmacy_desk.csv_notes'),
             ]);
             foreach ($this->dispensing->registerRows((string) $facility->id, $filters) as $row) {
-                fputcsv($out, $row);
+                fputcsv($out, \App\Support\CsvSafe::row($row));
             }
             fclose($out);
         }, $name, ['Content-Type' => 'text/csv; charset=UTF-8']);

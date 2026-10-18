@@ -56,6 +56,12 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'platform.adm
             ->middleware('throttle:portal.qr')
             ->name('portals.patient.documents.render-whole');
 
+        // The whole record as one secure-sheet PDF (same render as the app's
+        // POST /api/mobile/medical-records/export/pdf), never stored.
+        Route::get('/patient/record-export.pdf', [PatientPortalController::class, 'exportRecord'])
+            ->middleware('throttle:portal.qr')
+            ->name('portals.patient.record-export');
+
         Route::get('/patient/allergies',               [PatientPortalController::class, 'allergies'])->name('portals.patient.allergies');
         Route::get('/patient/clinical-history',        [PatientPortalController::class, 'clinicalHistory'])->name('portals.patient.clinical');
         Route::get('/patient/care-plans',              [PatientPortalController::class, 'carePlans'])->name('portals.patient.care-plans');

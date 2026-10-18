@@ -93,6 +93,8 @@ class PrescriberController extends Controller
             'items'                 => 'required|array|min:1',
             'items.*.drug_name'     => 'required|string|max:200',
             'items.*.medicine_id'   => 'nullable|uuid',
+            'items.*.strength'      => 'nullable|string|max:100',
+            'items.*.dosage_form'   => 'nullable|string|max:100',
             'items.*.dose'          => 'nullable|string|max:100',
             'items.*.frequency'     => 'nullable|string|max:100',
             'items.*.route'         => 'nullable|string|max:50',

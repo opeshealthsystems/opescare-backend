@@ -98,6 +98,8 @@ class ProfessionalRegistrationController extends Controller
         }
 
         Auth::login($user);
+        // ASVS V3.2.1: new session id on authentication (session fixation).
+        $request->session()->regenerate();
 
         return redirect()->route('professional.profile')
             ->with('success', __('professional.registered'));

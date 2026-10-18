@@ -36,6 +36,25 @@
         </a>
     </div>
 
+    {{-- The whole record on the secure sheet, rendered on demand, never stored. --}}
+    <div class="f-card ods-8e86974" data-section="record-export">
+        <h2 class="f-card__title ods-aa7841b">{{ __('doc_ex_export.title') }}</h2>
+        <p class="f-small f-muted ods-2280133">{{ __('doc_ex_export.hint') }}</p>
+        <a href="{{ route('portals.patient.record-export') }}" class="f-btn">
+            @include('partials.finder.icon', ['name' => 'download', 'size' => 18])
+            {{ __('doc_ex_export.download') }}
+        </a>
+    </div>
+
+    {{-- Printable documents from the missing-documents pass (docs/specs/documents/24, 25, 31, 32). Rendered on demand, never stored. --}}
+    <div class="f-card ods-8e86974" data-section="print-documents">
+        <h2 class="f-card__title ods-aa7841b">{{ __('doc_new_docs.docs_heading') }}</h2>
+        <a href="{{ route('documents.new.passport') }}" class="f-btn" target="_blank" rel="noopener">@include('partials.finder.icon', ['name' => 'download', 'size' => 18]) {{ __('doc_new_docs.btn_passport') }}</a>
+        <a href="{{ route('documents.new.emergency') }}" class="f-btn" target="_blank" rel="noopener">@include('partials.finder.icon', ['name' => 'download', 'size' => 18]) {{ __('doc_new_docs.btn_emergency') }}</a>
+        <a href="{{ route('documents.new.consents') }}" class="f-btn" target="_blank" rel="noopener">@include('partials.finder.icon', ['name' => 'download', 'size' => 18]) {{ __('doc_new_docs.btn_consents') }}</a>
+        <a href="{{ route('documents.new.access_log') }}" class="f-btn" target="_blank" rel="noopener">@include('partials.finder.icon', ['name' => 'download', 'size' => 18]) {{ __('doc_new_docs.btn_access_log') }}</a>
+    </div>
+
     {{-- Documents the record can produce on request. Each is rendered at the
          moment it is downloaded and never stored, so what the patient takes
          away is their record as it stands rather than a copy of how it once

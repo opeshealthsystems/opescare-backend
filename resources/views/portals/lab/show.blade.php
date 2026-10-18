@@ -61,6 +61,7 @@
         <a href="{{ route('portals.lab.index', ['status' => $status === 'cancelled' ? 'ordered' : $status]) }}" class="od-btn od-btn--secondary">
             <i data-lucide="arrow-left"></i> {{ __('lab_desk.back_to_worklist') }}
         </a>
+        <a href="{{ route('documents.new.lab_request', $order->id) }}" class="od-btn od-btn--secondary" target="_blank" rel="noopener"><i data-lucide="file-text"></i> {{ __('doc_new_docs.btn_lab_request') }}</a>
         @if($released)
         {{-- The patient's own Secure sheet, generated now — for the walk-in patient without a phone. --}}
         <a href="{{ route('portals.lab_manager.report', $order->id) }}" class="od-btn od-btn--primary" title="{{ __('lab_manager.print_report_hint') }}">

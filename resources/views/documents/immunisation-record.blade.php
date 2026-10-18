@@ -34,6 +34,7 @@
     <tr><td class="k">{{ __('document.issued_to') }}</td><td class="v">{{ trim($patient->first_name . ' ' . $patient->last_name) }}</td></tr>
     <tr><td class="k">{{ __('document.health_id') }}</td><td class="v id">{{ $patient->health_id ?? $dash }}</td></tr>
     <tr><td class="k">{{ __('document.date_of_birth') }}</td><td class="v">{{ $date($patient->date_of_birth) ?? $dash }}</td></tr>
+    <tr><td class="k">{{ __('document.sex') }}</td><td class="v">@if(filled($patient->sex))@enum($patient->sex, 'sex')@else{{ $dash }}@endif</td></tr>
     <tr><td class="k">{{ __('document.issued') }}</td><td class="v">{{ $stamp($issuedAt) }}</td></tr>
 </table>
 
@@ -45,16 +46,20 @@
             <th>{{ __('document.imm_vaccine') }}</th>
             <th>{{ __('document.imm_dose') }}</th>
             <th>{{ __('document.imm_given') }}</th>
+            <th>{{ __('doc_ex_imm.route_site') }}</th>
             <th>{{ __('document.imm_batch') }}</th>
+            <th>{{ __('doc_ex_imm.given_by') }}</th>
             <th>{{ __('document.status') }}</th>
         </tr>
     </thead>
     @foreach($doses as $dose)
     <tr>
-        <td><strong>{{ $dose->vaccine_name ?: $dash }}</strong></td>
+        <td><strong>{{ $dose->vaccine_name ?: $dash }}</strong>@if(filled($dose->vaccine_code))<br><span class="muted">{{ $dose->vaccine_code }}</span>@endif</td>
         <td class="muted">{{ $dose->dose_number ?: '' }}</td>
         <td>{{ $date($dose->administered_at) ?? $dash }}</td>
+        <td class="muted">{{ trim(($dose->route ? \App\Support\Enums::label($dose->route, 'route') : '') . ($dose->route && $dose->site ? ' / ' : '') . ($dose->site ?: '')) }}</td>
         <td class="muted">{{ $dose->lot_number ?: '' }}</td>
+        <td class="muted">{{ $dose->administeredBy?->name ?: '' }}@if($dose->facility?->name)<br>{{ $dose->facility->name }}@endif</td>
         <td>
             @if(filled($dose->status))
                 <span class="pill {{ $statusTone($dose->status) }}">@enum($dose->status)</span>
@@ -68,6 +73,7 @@
 @endif
 
 <p class="note">{{ __('document.imm_completeness') }}</p>
+<p class="note muted">{{ __('doc_ex_imm.not_icvp') }}</p>
 <p class="note muted">{{ __('document.generated_note') }}</p>
 
 @endsection

@@ -99,14 +99,14 @@ class PurgeExpiredDataCommand extends Command
         $deleted   = 0;
 
         try {
-            $files = Storage::disk('local')->files($exportDir);
+            $files = Storage::disk(config('filesystems.private_disk', 'local'))->files($exportDir);
 
             foreach ($files as $file) {
-                $lastModified = Storage::disk('local')->lastModified($file);
+                $lastModified = Storage::disk(config('filesystems.private_disk', 'local'))->lastModified($file);
 
                 if ($lastModified < $cutoff) {
                     if (! $dryRun) {
-                        Storage::disk('local')->delete($file);
+                        Storage::disk(config('filesystems.private_disk', 'local'))->delete($file);
                     }
                     $deleted++;
                 }

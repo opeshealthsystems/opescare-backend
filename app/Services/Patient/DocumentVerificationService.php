@@ -99,6 +99,39 @@ class DocumentVerificationService
         ];
     }
 
+    /**
+     * The same verification row for a FACILITY document — a pharmacy report,
+     * the controlled-substance register — which has no patient. The verifier
+     * page then shows the document type, reference, issue time and
+     * fingerprint, and no holder.
+     *
+     * @return array{record: DocumentVerification, raw_token: string, verify_url: string}
+     */
+    public function issueForFacility(string $facilityId, string $documentType, ?string $issuedByUserId = null): array
+    {
+        $lookupId = Str::random(12);
+        $secret   = Str::random(32);
+        $rawToken = "doc_{$lookupId}_{$secret}";
+
+        $record = DocumentVerification::create([
+            'patient_id'        => null,
+            'facility_id'       => $facilityId,
+            'document_type'     => $documentType,
+            'reference'         => $this->uniqueReference(),
+            'lookup_id'         => $lookupId,
+            'token_hash'        => Hash::make($secret),
+            'issued_by_user_id' => $issuedByUserId,
+            'issued_at'         => Carbon::now(),
+            'status'            => DocumentVerification::STATUS_VALID,
+        ]);
+
+        return [
+            'record'     => $record,
+            'raw_token'  => $rawToken,
+            'verify_url' => route('verify.document', ['token' => $rawToken]),
+        ];
+    }
+
     /** Record the fingerprint of the bytes that were actually issued. */
     public function seal(DocumentVerification $record, string $pdfBytes): void
     {

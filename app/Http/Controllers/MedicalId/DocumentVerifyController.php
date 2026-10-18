@@ -62,7 +62,18 @@ class DocumentVerifyController extends Controller
     {
         $key = 'verify.doc_type_' . $type;
 
-        return Lang::has($key) ? __($key) : __('verify.doc_type_unknown');
+        if (Lang::has($key)) {
+            return __($key);
+        }
+
+        // Document types labelled by the document templates themselves.
+        foreach (['doc_ex_sheet.type.' . $type, 'doc_new_types.' . $type] as $sheetKey) {
+            if (Lang::has($sheetKey)) {
+                return __($sheetKey);
+            }
+        }
+
+        return __('verify.doc_type_unknown');
     }
 
     /**

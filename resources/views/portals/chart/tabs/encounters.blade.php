@@ -10,6 +10,7 @@
                 @if($e['type']) &middot; @enum($e['type']) @endif
             </h2>
             @if($e['status'])<span class="od-pill od-pill--neutral">@enum($e['status'])</span>@endif
+            <a href="{{ route('documents.new.encounter', $e['id']) }}" class="od-btn od-btn--secondary od-btn--sm" target="_blank" rel="noopener"><i data-lucide="file-text"></i> {{ __('doc_new_docs.btn_encounter_report') }}</a>
         </div>
         <div class="od-card__body">
             <div class="od-muted">

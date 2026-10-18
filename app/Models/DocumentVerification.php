@@ -21,6 +21,7 @@ class DocumentVerification extends Model
 
     protected $fillable = [
         'patient_id',
+        'facility_id',
         'document_type',
         'reference',
         'lookup_id',

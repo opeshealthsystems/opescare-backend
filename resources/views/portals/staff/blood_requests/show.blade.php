@@ -54,6 +54,7 @@
         </p>
     </div>
     <div class="odc-head__actions">
+        <a href="{{ route('documents.new.blood_request', $bloodRequest->id) }}" class="od-btn od-btn--secondary" target="_blank" rel="noopener"><i data-lucide="file-text"></i> {{ __('doc_new_docs.btn_blood_slip') }}</a>
         <a href="{{ route('portals.staff.blood_requests.index') }}" class="od-btn od-btn--secondary">
             <i data-lucide="arrow-left"></i>
             {{ __('blood_desk.back_to_queue') }}

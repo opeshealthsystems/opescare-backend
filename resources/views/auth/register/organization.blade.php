@@ -32,20 +32,20 @@
 
             <div class="pending-status-card">
                 <div class="pending-meta-row">
-                    <span class="pending-meta-label">Organization Name</span>
+                    <span class="pending-meta-label">{{ __('ui_sweep.register.org_name') }}</span>
                     <span class="pending-meta-value">{{ $legal_name }}</span>
                 </div>
                 <div class="pending-meta-row">
-                    <span class="pending-meta-label">Reference ID</span>
+                    <span class="pending-meta-label">{{ __('ui_sweep.register.reference_id') }}</span>
                     <span class="pending-meta-value">{{ $ref_code }}</span>
                 </div>
                 <div class="pending-meta-row">
-                    <span class="pending-meta-label">Submission Date</span>
+                    <span class="pending-meta-label">{{ __('ui_sweep.register.submission_date') }}</span>
                     <span class="pending-meta-value">{{ now()->format('Y-m-d H:i') }}</span>
                 </div>
                 <div class="pending-meta-row">
-                    <span class="pending-meta-label">Current Status</span>
-                    <span class="badge-status badge-review">Under Review</span>
+                    <span class="pending-meta-label">{{ __('ui_sweep.register.current_status') }}</span>
+                    <span class="badge-status badge-review">{{ __('ui_sweep.register.under_review') }}</span>
                 </div>
             </div>
 
@@ -73,7 +73,7 @@
             <!-- Step Indicators -->
             <div class="stepper-header">
                 <span class="step-indicator" id="step-badge-label">Step 1 of 7</span>
-                <span class="step-title-label" id="step-title-label">Organization Type</span>
+                <span class="step-title-label" id="step-title-label">{{ __('ui_sweep.register.org_type') }}</span>
             </div>
             <div class="step-progress-bar">
                 <div class="step-progress-fill" id="step-progress" style="width:14%;"></div>
@@ -85,17 +85,17 @@
                 <!-- Pane 1: Organization Type -->
                 <div class="stepper-pane active" id="pane-1">
                     <div class="form-section">
-                        <div class="form-section-title">Organization Profile</div>
+                        <div class="form-section-title">{{ __('ui_sweep.register.org_profile') }}</div>
 
                         <div class="auth-form-group">
                             <label for="org_type" class="auth-label">{{ __('onboarding.org.type_lbl') }} *</label>
                             <select id="org_type" name="org_type" class="auth-input" required data-call-change="adaptOrgType" data-call-self>
-                                <option value="hospital"          {{ request('type') == 'hospital'          ? 'selected' : '' }}>Hospital</option>
-                                <option value="clinic"            {{ request('type') == 'clinic'            ? 'selected' : '' }}>Clinic</option>
-                                <option value="pharmacy"          {{ request('type') == 'pharmacy'          ? 'selected' : '' }}>Pharmacy</option>
-                                <option value="laboratory"        {{ request('type') == 'laboratory'        ? 'selected' : '' }}>Laboratory</option>
-                                <option value="insurance_company" {{ request('type') == 'insurance_company' ? 'selected' : '' }}>Insurance Company</option>
-                                <option value="public_health"     {{ request('type') == 'public_health'     ? 'selected' : '' }}>Public Health Organization</option>
+                                <option value="hospital"          {{ request('type') == 'hospital'          ? 'selected' : '' }}>{{ __('ui_sweep.register.type_hospital') }}</option>
+                                <option value="clinic"            {{ request('type') == 'clinic'            ? 'selected' : '' }}>{{ __('ui_sweep.register.type_clinic') }}</option>
+                                <option value="pharmacy"          {{ request('type') == 'pharmacy'          ? 'selected' : '' }}>{{ __('ui_sweep.register.type_pharmacy') }}</option>
+                                <option value="laboratory"        {{ request('type') == 'laboratory'        ? 'selected' : '' }}>{{ __('ui_sweep.register.type_laboratory') }}</option>
+                                <option value="insurance_company" {{ request('type') == 'insurance_company' ? 'selected' : '' }}>{{ __('ui_sweep.register.type_insurance') }}</option>
+                                <option value="public_health"     {{ request('type') == 'public_health'     ? 'selected' : '' }}>{{ __('ui_sweep.register.type_public_health') }}</option>
                             </select>
                         </div>
 
@@ -104,16 +104,16 @@
                         <div class="auth-form-group form-group-mt">
                             <label class="auth-label">{{ __('onboarding.org.software_sync_lbl') }}</label>
                             <div class="radio-group">
-                                <label class="radio-label"><input type="radio" name="has_software" value="yes"> Yes</label>
-                                <label class="radio-label"><input type="radio" name="has_software" value="no" checked> No</label>
+                                <label class="radio-label"><input type="radio" name="has_software" value="yes"> {{ __('ui_sweep.register.yes') }}</label>
+                                <label class="radio-label"><input type="radio" name="has_software" value="no" checked> {{ __('ui_sweep.register.no') }}</label>
                             </div>
                         </div>
 
                         <div class="auth-form-group">
                             <label class="auth-label">{{ __('onboarding.org.need_api_lbl') }}</label>
                             <div class="radio-group">
-                                <label class="radio-label"><input type="radio" name="need_api" value="yes"> Yes</label>
-                                <label class="radio-label"><input type="radio" name="need_api" value="no" checked> No</label>
+                                <label class="radio-label"><input type="radio" name="need_api" value="yes"> {{ __('ui_sweep.register.yes') }}</label>
+                                <label class="radio-label"><input type="radio" name="need_api" value="no" checked> {{ __('ui_sweep.register.no') }}</label>
                             </div>
                         </div>
                     </div>
@@ -122,7 +122,7 @@
                 <!-- Pane 2: Organization Info -->
                 <div class="stepper-pane" id="pane-2">
                     <div class="form-section">
-                        <div class="form-section-title">Facility Details</div>
+                        <div class="form-section-title">{{ __('ui_sweep.register.facility_details') }}</div>
 
                         <div class="auth-form-group">
                             <label for="legal_name" class="auth-label">{{ __('onboarding.org.legal_name') }} *</label>
@@ -166,7 +166,7 @@
                 <!-- Pane 3: Primary Contact -->
                 <div class="stepper-pane" id="pane-3">
                     <div class="form-section">
-                        <div class="form-section-title">Contact Information</div>
+                        <div class="form-section-title">{{ __('ui_sweep.register.contact_info') }}</div>
 
                         <div class="auth-form-group">
                             <label for="contact_name" class="auth-label">{{ __('onboarding.org.contact_name') }} *</label>
@@ -194,49 +194,49 @@
                 <!-- Pane 4: Services -->
                 <div class="stepper-pane" id="pane-4">
                     <div class="form-section">
-                        <div class="form-section-title" id="services-pane-headline">Clinical Options</div>
+                        <div class="form-section-title" id="services-pane-headline">{{ __('ui_sweep.register.clinical_options') }}</div>
 
                         <div class="services-block" id="services-hospital">
                             <div class="services-checkboxes">
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="outpatient"> Outpatient care</label>
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="emergency"> Emergency care</label>
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="inpatient"> Inpatient care</label>
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="laboratory"> Laboratory</label>
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="pharmacy"> Pharmacy</label>
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="radiology"> Imaging/Radiology</label>
+                                <label class="service-check-label"><input type="checkbox" name="services[]" value="outpatient"> {{ __('ui_sweep.register.svc_outpatient') }}</label>
+                                <label class="service-check-label"><input type="checkbox" name="services[]" value="emergency"> {{ __('ui_sweep.register.svc_emergency') }}</label>
+                                <label class="service-check-label"><input type="checkbox" name="services[]" value="inpatient"> {{ __('ui_sweep.register.svc_inpatient') }}</label>
+                                <label class="service-check-label"><input type="checkbox" name="services[]" value="laboratory"> {{ __('ui_sweep.register.type_laboratory') }}</label>
+                                <label class="service-check-label"><input type="checkbox" name="services[]" value="pharmacy"> {{ __('ui_sweep.register.type_pharmacy') }}</label>
+                                <label class="service-check-label"><input type="checkbox" name="services[]" value="radiology"> {{ __('ui_sweep.register.svc_radiology') }}</label>
                             </div>
                         </div>
 
                         <div class="services-block" id="services-pharmacy" style="display:none;">
                             <div class="services-checkboxes">
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="dispensing"> Prescription dispensing</label>
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="availability"> Medicine availability</label>
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="reservation"> Medication reservation</label>
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="billing"> Insurance billing</label>
+                                <label class="service-check-label"><input type="checkbox" name="services[]" value="dispensing"> {{ __('ui_sweep.register.svc_dispensing') }}</label>
+                                <label class="service-check-label"><input type="checkbox" name="services[]" value="availability"> {{ __('ui_sweep.register.svc_availability') }}</label>
+                                <label class="service-check-label"><input type="checkbox" name="services[]" value="reservation"> {{ __('ui_sweep.register.svc_reservation') }}</label>
+                                <label class="service-check-label"><input type="checkbox" name="services[]" value="billing"> {{ __('ui_sweep.register.svc_billing') }}</label>
                             </div>
                         </div>
 
                         <div class="services-block" id="services-laboratory" style="display:none;">
                             <div class="services-checkboxes">
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="collection"> Sample collection</label>
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="entry"> Result entry</label>
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="validation"> Result validation</label>
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="integration"> External lab integration</label>
+                                <label class="service-check-label"><input type="checkbox" name="services[]" value="collection"> {{ __('ui_sweep.register.svc_collection') }}</label>
+                                <label class="service-check-label"><input type="checkbox" name="services[]" value="entry"> {{ __('ui_sweep.register.svc_entry') }}</label>
+                                <label class="service-check-label"><input type="checkbox" name="services[]" value="validation"> {{ __('ui_sweep.register.svc_validation') }}</label>
+                                <label class="service-check-label"><input type="checkbox" name="services[]" value="integration"> {{ __('ui_sweep.register.svc_integration') }}</label>
                             </div>
                         </div>
 
                         <div class="services-block" id="services-insurer" style="display:none;">
                             <div class="services-checkboxes">
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="eligibility"> Eligibility checks</label>
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="preauth"> Preauthorization</label>
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="claims"> Claims processing</label>
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="network"> Provider network</label>
+                                <label class="service-check-label"><input type="checkbox" name="services[]" value="eligibility"> {{ __('ui_sweep.register.svc_eligibility') }}</label>
+                                <label class="service-check-label"><input type="checkbox" name="services[]" value="preauth"> {{ __('ui_sweep.register.svc_preauth') }}</label>
+                                <label class="service-check-label"><input type="checkbox" name="services[]" value="claims"> {{ __('ui_sweep.register.svc_claims') }}</label>
+                                <label class="service-check-label"><input type="checkbox" name="services[]" value="network"> {{ __('ui_sweep.register.svc_network') }}</label>
                             </div>
                         </div>
 
                         <div class="notice-warning notice-mt" id="safety-notice-box">
                             <i data-lucide="shield-alert"></i>
-                            <p id="safety-notice-text">Default Safety Disclaimer.</p>
+                            <p id="safety-notice-text">{{ __('ui_sweep.register.default_safety') }}</p>
                         </div>
                     </div>
                 </div>
@@ -244,7 +244,7 @@
                 <!-- Pane 5: Documents Upload -->
                 <div class="stepper-pane" id="pane-5">
                     <div class="form-section">
-                        <div class="form-section-title">Supporting Documents</div>
+                        <div class="form-section-title">{{ __('ui_sweep.register.supporting_docs') }}</div>
 
                         <div class="auth-form-group">
                             <label class="auth-label">{{ __('onboarding.org.doc_business') }} *</label>
@@ -289,7 +289,7 @@
                 <!-- Pane 6: Integration Context -->
                 <div class="stepper-pane" id="pane-6">
                     <div class="form-section">
-                        <div class="form-section-title">System Integration</div>
+                        <div class="form-section-title">{{ __('ui_sweep.register.system_integration') }}</div>
 
                         <div class="auth-form-group">
                             <label for="current_software" class="auth-label">{{ __('onboarding.org.software_name') }}</label>
@@ -309,7 +309,7 @@
 
                         <div class="auth-checkbox-group">
                             <input type="checkbox" id="sync_stock" name="sync_stock" value="1">
-                            <label for="sync_stock" class="auth-checkbox-label">Request Bridge Agent client synchronization support</label>
+                            <label for="sync_stock" class="auth-checkbox-label">{{ __('ui_sweep.register.bridge_sync') }}</label>
                         </div>
                     </div>
                 </div>
@@ -317,10 +317,10 @@
                 <!-- Pane 7: Review & Terms -->
                 <div class="stepper-pane" id="pane-7">
                     <div class="form-section">
-                        <div class="form-section-title">Governance Agreement</div>
+                        <div class="form-section-title">{{ __('ui_sweep.register.governance_agreement') }}</div>
 
                         <div class="notice-info notice-mb">
-                            <strong class="notice-strong">Review Application Information</strong>
+                            <strong class="notice-strong">{{ __('ui_sweep.register.review_application') }}</strong>
                             Please double-check all organization licenses, registry coordinates, and contact emails before submission. Applications are audited manually by OpesCare medical records governance staff.
                         </div>
 

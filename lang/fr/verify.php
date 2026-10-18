@@ -9,6 +9,8 @@ return [
 
     // Health ID lookup page
     'health_id_title'      => 'Vérification de l\'ID de Santé — OpesCare',
+    'health_id_meta_description' => "Vérifiez l'ID de Santé OpesCare d'un patient. Réservé aux professionnels de santé autorisés.",
+    'result_region_label'  => 'Résultat de la vérification',
     'badge_provider_tool'  => 'Outil de Vérification Prestataire',
     'health_id_heading'    => 'Vérification de l\'ID de Santé',
     'health_id_subheading' => 'Recherchez l\'identité vérifiée d\'un patient et le statut de ses dossiers actifs. Réservé aux prestataires de soins autorisés.',

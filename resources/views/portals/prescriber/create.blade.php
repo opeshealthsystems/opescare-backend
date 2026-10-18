@@ -120,6 +120,16 @@
                             <input type="hidden" class="rx-medicine-id" name="items[{{ $i }}][medicine_id]" value="{{ $row['medicine_id'] ?? '' }}">
                         </div>
 
+                        <div class="odc-grid">
+                            <div class="odc-field">
+                                <label class="odc-label">{{ __('doc_ex_rx.strength') }}</label>
+                                <input type="text" class="od-input" name="items[{{ $i }}][strength]" value="{{ $row['strength'] ?? '' }}" maxlength="100" placeholder="{{ __('doc_ex_rx.strength_ph') }}" aria-label="{{ __('doc_ex_rx.strength') }}">
+                            </div>
+                            <div class="odc-field">
+                                <label class="odc-label">{{ __('doc_ex_rx.form') }}</label>
+                                <input type="text" class="od-input" name="items[{{ $i }}][dosage_form]" value="{{ $row['dosage_form'] ?? '' }}" maxlength="100" placeholder="{{ __('doc_ex_rx.form_ph') }}" aria-label="{{ __('doc_ex_rx.form') }}">
+                            </div>
+                        </div>
                         <div class="odc-grid odc-grid--3">
                             <div class="odc-field">
                                 <label class="odc-label">{{ __('prescriber.dose') }}</label>

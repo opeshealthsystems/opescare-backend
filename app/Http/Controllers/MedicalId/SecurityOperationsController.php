@@ -236,7 +236,7 @@ class SecurityOperationsController extends Controller
         return response()->streamDownload(function () use ($rows) {
             $out = fopen('php://output', 'w');
             foreach ($rows as $row) {
-                fputcsv($out, $row);
+                fputcsv($out, \App\Support\CsvSafe::row($row));
             }
             fclose($out);
         }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);

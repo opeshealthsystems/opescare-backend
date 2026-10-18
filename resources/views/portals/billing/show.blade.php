@@ -46,6 +46,7 @@
         <h1 class="od-page__title">{{ __('billing_desk.invoice') }} {{ $invoice->invoice_number }}</h1>
         <p class="od-page__sub">{{ __('billing_desk.raised_on') }} {{ $invoice->created_at?->translatedFormat('d M Y H:i') }}@if($invoice->issued_at) · {{ __('billing_desk.issued_on') }} {{ $invoice->issued_at->translatedFormat('d M Y H:i') }}@endif</p>
     </div>
+    <a href="{{ route('documents.new.invoice', $invoice->id) }}" class="od-btn od-btn--secondary" target="_blank" rel="noopener"><i data-lucide="file-text"></i> {{ __('doc_new_docs.btn_invoice_pdf') }}</a>
     <a href="{{ route('portals.billing.index') }}" class="od-btn od-btn--secondary"><i data-lucide="arrow-left"></i> {{ __('billing_desk.back_to_list') }}</a>
 </div>
 
@@ -134,6 +135,7 @@
                         <td class="od-table__actions">
                             @if($receipt)
                                 <a href="{{ route('portals.billing.receipt', $receipt->id) }}" class="od-btn od-btn--secondary od-btn--sm"><i data-lucide="printer"></i> {{ $receipt->receipt_number }}</a>
+                                <a href="{{ route('documents.new.receipt', $receipt->id) }}" class="od-btn od-btn--secondary od-btn--sm" target="_blank" rel="noopener"><i data-lucide="file-text"></i> {{ __('doc_new_docs.btn_receipt_pdf') }}</a>
                             @endif
                         </td>
                     </tr>

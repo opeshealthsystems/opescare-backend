@@ -77,17 +77,17 @@ html,body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:va
     <div class="page-topbar-mark"><i data-lucide="heart-pulse"></i></div>
     <div>
       <span class="page-topbar-name">OpesCare</span>
-      <span class="page-topbar-tag">Care Map Admin</span>
+      <span class="page-topbar-tag">{{ __('ui_sweep.care_map_admin.tag') }}</span>
     </div>
   </a>
   <div class="page-topbar-spacer"></div>
-  <span class="page-topbar-user">Care Map Governance Officer</span>
+  <span class="page-topbar-user">{{ __('ui_sweep.care_map_admin.officer') }}</span>
 </header>
 
 <div class="page-wrap">
 
   <div class="page-head">
-    <h1>Care Map Moderation Desk</h1>
+    <h1>{{ __('ui_sweep.care_map_admin.title') }}</h1>
     <p>Clinical Listing Verification &amp; Quality Audit</p>
   </div>
 
@@ -95,15 +95,15 @@ html,body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:va
   <div class="stat-grid">
     <div class="stat-card">
       <div class="stat-card__value">{{ $pendingClaims->count() }}</div>
-      <div class="stat-card__label">Pending Claims</div>
+      <div class="stat-card__label">{{ __('ui_sweep.care_map_admin.pending_claims') }}</div>
     </div>
     <div class="stat-card">
       <div class="stat-card__value">{{ $reports->count() }}</div>
-      <div class="stat-card__label">Open Reports</div>
+      <div class="stat-card__label">{{ __('ui_sweep.care_map_admin.open_reports') }}</div>
     </div>
     <div class="stat-card">
       <div class="stat-card__value">{{ $staleStock->count() }}</div>
-      <div class="stat-card__label">Stale Stock Alerts</div>
+      <div class="stat-card__label">{{ __('ui_sweep.care_map_admin.stale_stock') }}</div>
     </div>
   </div>
 
@@ -112,8 +112,8 @@ html,body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:va
 
     <div class="panel">
       <div class="panel__head">
-        <span class="panel__title">Pending Claims Queue</span>
-        <span class="panel__sub">Ownership verifications</span>
+        <span class="panel__title">{{ __('ui_sweep.care_map_admin.claims_queue') }}</span>
+        <span class="panel__sub">{{ __('ui_sweep.care_map_admin.ownership') }}</span>
       </div>
       <div class="panel__body">
         @forelse($pendingClaims as $claim)
@@ -123,20 +123,20 @@ html,body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:va
               <div class="list-row__sub">Claimant: {{ $claim->claimant->name ?? 'User Request' }}</div>
             </div>
             <div class="list-row__actions">
-              <span class="badge-pill badge-pill--warn">SUBMITTED</span>
-              <a href="{{ route('admin.care-map.review') }}" class="btn-action"><i data-lucide="shield-check"></i> Review</a>
+              <span class="badge-pill badge-pill--warn">{{ __('ui_sweep.care_map_admin.submitted') }}</span>
+              <a href="{{ route('admin.care-map.review') }}" class="btn-action"><i data-lucide="shield-check"></i> {{ __('ui_sweep.care_map_admin.review') }}</a>
             </div>
           </div>
         @empty
-          <div class="empty-row">No pending listing ownership claims.</div>
+          <div class="empty-row">{{ __('ui_sweep.care_map_admin.no_claims') }}</div>
         @endforelse
       </div>
     </div>
 
     <div class="panel">
       <div class="panel__head">
-        <span class="panel__title">Listing Correction Warnings</span>
-        <span class="panel__sub">User-submitted reports</span>
+        <span class="panel__title">{{ __('ui_sweep.care_map_admin.correction_warnings') }}</span>
+        <span class="panel__sub">{{ __('ui_sweep.care_map_admin.user_reports') }}</span>
       </div>
       <div class="panel__body">
         @forelse($reports as $report)
@@ -146,12 +146,12 @@ html,body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:va
               <div class="list-row__sub">Type: {{ str_replace('_', ' ', $report->report_type) }}</div>
             </div>
             <div class="list-row__actions">
-              <span class="badge-pill badge-pill--danger">WARNING</span>
-              <button class="btn-action"><i data-lucide="search"></i> Investigate</button>
+              <span class="badge-pill badge-pill--danger">{{ __('ui_sweep.care_map_admin.warning') }}</span>
+              <button class="btn-action"><i data-lucide="search"></i> {{ __('ui_sweep.care_map_admin.investigate') }}</button>
             </div>
           </div>
         @empty
-          <div class="empty-row">No outstanding correction warnings.</div>
+          <div class="empty-row">{{ __('ui_sweep.care_map_admin.no_warnings') }}</div>
         @endforelse
       </div>
     </div>
@@ -161,7 +161,7 @@ html,body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:va
   {{-- Stale Stock --}}
   <div class="panel panel--full">
     <div class="panel__head">
-      <span class="panel__title">Stale Stock Alerts</span>
+      <span class="panel__title">{{ __('ui_sweep.care_map_admin.stale_stock') }}</span>
       <span class="panel__sub">Pharmacy &amp; blood bank entries exceeding 72h sync window</span>
     </div>
     <div class="panel__body">
@@ -177,11 +177,11 @@ html,body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:va
           <div class="list-row__actions">
             <span class="panel__sub">Last sync: {{ $stale->last_updated_at ? $stale->last_updated_at->diffForHumans() : 'Never' }}</span>
             <span class="badge-pill badge-pill--danger">STALE &gt; 72H</span>
-            <button class="btn-action"><i data-lucide="refresh-cw"></i> Force Re-sync</button>
+            <button class="btn-action"><i data-lucide="refresh-cw"></i> {{ __('ui_sweep.care_map_admin.force_resync') }}</button>
           </div>
         </div>
       @empty
-        <div class="empty-row">All partner stocks are fresh and within synchronization limits.</div>
+        <div class="empty-row">{{ __('ui_sweep.care_map_admin.stocks_fresh') }}</div>
       @endforelse
     </div>
   </div>

@@ -38,17 +38,17 @@
             <path d="M12 20 Q20 10 28 20 Q20 30 12 20Z" fill="white"/>
         </svg>
         OpesCare
-        <span class="badge">Dev Docs</span>
+        <span class="badge">{{ __('ui_sweep.docs_nav.dev_docs') }}</span>
     </a>
     <div class="docs-topbar-spacer"></div>
     <nav class="docs-topbar-links">
-        <a href="{{ route('docs.playground') }}">Playground</a>
-        <a href="{{ route('docs.changelog') }}">Changelog</a>
-        <a href="{{ route('public.developers') }}">Developer Hub</a>
-        <a href="{{ asset('openapi.json') }}" target="_blank">OpenAPI Spec</a>
+        <a href="{{ route('docs.playground') }}">{{ __('ui_sweep.docs_nav.playground') }}</a>
+        <a href="{{ route('docs.changelog') }}">{{ __('ui_sweep.docs_nav.changelog') }}</a>
+        <a href="{{ route('public.developers') }}">{{ __('ui_sweep.docs_nav.developer_hub') }}</a>
+        <a href="{{ asset('openapi.json') }}" target="_blank">{{ __('ui_sweep.docs_nav.openapi_spec') }}</a>
         <a href="{{ asset('opescare.postman_collection.json') }}" download>Postman</a>
-        <a href="{{ route('public.developers.pricing') }}">API Plans</a>
-        <a href="{{ route('public.status') }}">Status</a>
+        <a href="{{ route('public.developers.pricing') }}">{{ __('ui_sweep.docs_nav.api_plans') }}</a>
+        <a href="{{ route('public.status') }}">{{ __('ui_sweep.docs_nav.status') }}</a>
         <a href="{{ route('public.sla') }}">SLA</a>
     </nav>
 </header>
@@ -59,21 +59,21 @@
     <aside class="docs-sidebar" id="docsSidebar">
         <nav>
             <div class="docs-nav-section">
-                <div class="docs-nav-heading">Start Here</div>
+                <div class="docs-nav-heading">{{ __('ui_sweep.docs_nav.start_here') }}</div>
                 <a href="{{ route('docs.index') }}"
-                   class="docs-nav-link {{ request()->routeIs('docs.index') ? 'active' : '' }}">Getting Started</a>
+                   class="docs-nav-link {{ request()->routeIs('docs.index') ? 'active' : '' }}">{{ __('ui_sweep.docs_nav.getting_started') }}</a>
             </div>
 
             <div class="docs-nav-section">
-                <div class="docs-nav-heading">Concepts</div>
+                <div class="docs-nav-heading">{{ __('ui_sweep.docs_nav.concepts') }}</div>
                 <a href="{{ route('docs.authentication') }}"
-                   class="docs-nav-link {{ request()->routeIs('docs.authentication') ? 'active' : '' }}">Authentication</a>
+                   class="docs-nav-link {{ request()->routeIs('docs.authentication') ? 'active' : '' }}">{{ __('ui_sweep.docs_nav.authentication') }}</a>
                 <a href="{{ route('docs.errors') }}"
-                   class="docs-nav-link {{ request()->routeIs('docs.errors') ? 'active' : '' }}">Errors</a>
+                   class="docs-nav-link {{ request()->routeIs('docs.errors') ? 'active' : '' }}">{{ __('ui_sweep.docs_nav.errors') }}</a>
             </div>
 
             <div class="docs-nav-section">
-                <div class="docs-nav-heading">Integrations</div>
+                <div class="docs-nav-heading">{{ __('ui_sweep.docs_nav.integrations') }}</div>
                 <a href="{{ route('docs.api') }}"
                    class="docs-nav-link {{ request()->routeIs('docs.api') ? 'active' : '' }}">Connect API</a>
                 <a href="{{ route('docs.sdk') }}"
@@ -87,11 +87,11 @@
             </div>
 
             <div class="docs-nav-section">
-                <div class="docs-nav-heading">Reference</div>
+                <div class="docs-nav-heading">{{ __('ui_sweep.docs_nav.reference') }}</div>
                 <a href="{{ route('docs.playground') }}"
-                   class="docs-nav-link {{ request()->routeIs('docs.playground') ? 'active' : '' }}">Interactive Playground</a>
+                   class="docs-nav-link {{ request()->routeIs('docs.playground') ? 'active' : '' }}">{{ __('ui_sweep.docs_nav.interactive_playground') }}</a>
                 <a href="{{ route('docs.changelog') }}"
-                   class="docs-nav-link {{ request()->routeIs('docs.changelog') ? 'active' : '' }}">Changelog</a>
+                   class="docs-nav-link {{ request()->routeIs('docs.changelog') ? 'active' : '' }}">{{ __('ui_sweep.docs_nav.changelog') }}</a>
             </div>
         </nav>
     </aside>

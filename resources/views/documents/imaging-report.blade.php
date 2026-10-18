@@ -19,6 +19,12 @@
     $date  = fn ($d) => $d ? \Illuminate\Support\Carbon::parse($d)->translatedFormat('d M Y') : null;
     $stamp = fn ($d) => $d ? \Illuminate\Support\Carbon::parse($d)->translatedFormat('d M Y, H:i') : null;
     $order = $report->imagingOrder;
+    $radiologist = \App\Services\Documents\ClinicianCredential::for($report->reported_by);
+    $referrer    = $report->orderedBy?->name ?? $order?->orderedBy?->name ?? ($order?->referring_physician ?: null);
+    $age = null;
+    if ($patient->date_of_birth) {
+        try { $age = (int) \Illuminate\Support\Carbon::parse($patient->date_of_birth)->diffInYears($report->study_date ?? now()); } catch (\Throwable) { $age = null; }
+    }
 @endphp
 
 @section('content')
@@ -29,12 +35,15 @@
 <table class="kv">
     <tr><td class="k">{{ __('document.issued_to') }}</td><td class="v">{{ trim($patient->first_name . ' ' . $patient->last_name) }}</td></tr>
     <tr><td class="k">{{ __('document.health_id') }}</td><td class="v id">{{ $patient->health_id ?? $dash }}</td></tr>
-    <tr><td class="k">{{ __('document.date_of_birth') }}</td><td class="v">{{ $date($patient->date_of_birth) ?? $dash }}</td></tr>
+    <tr><td class="k">{{ __('document.date_of_birth') }}</td><td class="v">{{ $date($patient->date_of_birth) ?? $dash }}@if($age !== null)<span class="muted"> — {{ __('doc_ex_rx.age_years', ['count' => $age]) }}</span>@endif</td></tr>
+    <tr><td class="k">{{ __('document.sex') }}</td><td class="v">@if(filled($patient->sex))@enum($patient->sex, 'sex')@else{{ $dash }}@endif</td></tr>
+    <tr><td class="k">{{ __('doc_ex_img.referrer') }}</td><td class="v">{{ $referrer ?: $dash }}</td></tr>
     <tr><td class="k">{{ __('imaging_report.doc.modality') }}</td><td class="v">{{ __('imaging_report.modality.' . $report->modality) }}</td></tr>
     <tr><td class="k">{{ __('imaging_report.doc.body_part') }}</td><td class="v">{{ $report->body_part ?: $dash }}</td></tr>
     <tr><td class="k">{{ __('imaging_report.doc.accession') }}</td><td class="v id">{{ $order?->accession_number ?: $dash }}</td></tr>
     <tr><td class="k">{{ __('imaging_report.doc.study_date') }}</td><td class="v">{{ $date($report->study_date) ?? $dash }}</td></tr>
     <tr><td class="k">{{ __('imaging_report.doc.reported_by') }}</td><td class="v">{{ $report->reportedBy?->name ?? $dash }}</td></tr>
+    <tr><td class="k">{{ __('doc_ex_sheet.registration_no') }}</td><td class="v">{{ $radiologist['licence'] ?: $dash }}</td></tr>
     <tr><td class="k">{{ __('imaging_report.doc.finalized') }}</td><td class="v">{{ $stamp($report->finalized_at) ?? $dash }}</td></tr>
     <tr><td class="k">{{ __('imaging_report.doc.version') }}</td><td class="v">{{ __('imaging_report.doc.version_n', ['n' => (int) $report->version]) }}</td></tr>
     <tr><td class="k">{{ __('document.facility') }}</td><td class="v">{{ $report->facility->name ?? $dash }}</td></tr>
@@ -63,6 +72,13 @@
 <h2>{{ __('imaging_report.doc.recommendation') }}</h2>
 <p>{!! nl2br(e($report->recommendation)) !!}</p>
 @endif
+
+@include('pdf.layouts.secure-signature', [
+    'name'         => $report->reportedBy?->name,
+    'role'         => $radiologist['credential'],
+    'registration' => $radiologist['licence'],
+    'date'         => $report->finalized_at,
+])
 
 <p class="note">{{ __('imaging_report.doc.advice') }}</p>
 <p class="note muted">{{ __('document.generated_note') }}</p>

@@ -15,7 +15,7 @@
                 <i data-lucide="hospital"></i>
             </div>
             <h1 class="auth-step-title">{{ __('auth.register.hospital.title') }}</h1>
-            <p class="auth-step-sub">Onboard your facility to the OpesCare interoperability network.</p>
+            <p class="auth-step-sub">{{ __('ui_sweep.register.onboard_tagline') }}</p>
         </div>
 
         @if(session('error'))
@@ -38,7 +38,7 @@
             @csrf
 
             <div class="form-section">
-                <div class="form-section-title">Facility Details</div>
+                <div class="form-section-title">{{ __('ui_sweep.register.facility_details') }}</div>
 
                 <div class="auth-form-row">
                     <div class="auth-form-group">
@@ -52,10 +52,10 @@
                         <label for="facility_type" class="auth-label">{{ __('auth.register.hospital.type') }} *</label>
                         <select id="facility_type" name="facility_type"
                                 class="auth-input{{ $errors->has('facility_type') ? ' auth-input-error' : '' }}" required>
-                            <option value="hospital" {{ old('facility_type') == 'hospital' ? 'selected' : '' }}>Hospital</option>
-                            <option value="clinic"   {{ old('facility_type') == 'clinic'   ? 'selected' : '' }}>Clinic</option>
-                            <option value="lab"      {{ old('facility_type') == 'lab'      ? 'selected' : '' }}>Laboratory</option>
-                            <option value="pharmacy" {{ old('facility_type') == 'pharmacy' ? 'selected' : '' }}>Pharmacy</option>
+                            <option value="hospital" {{ old('facility_type') == 'hospital' ? 'selected' : '' }}>{{ __('ui_sweep.register.type_hospital') }}</option>
+                            <option value="clinic"   {{ old('facility_type') == 'clinic'   ? 'selected' : '' }}>{{ __('ui_sweep.register.type_clinic') }}</option>
+                            <option value="lab"      {{ old('facility_type') == 'lab'      ? 'selected' : '' }}>{{ __('ui_sweep.register.type_laboratory') }}</option>
+                            <option value="pharmacy" {{ old('facility_type') == 'pharmacy' ? 'selected' : '' }}>{{ __('ui_sweep.register.type_pharmacy') }}</option>
                         </select>
                         @error('facility_type')<div class="auth-field-error">{{ $message }}</div>@enderror
                     </div>
@@ -71,7 +71,7 @@
             </div>
 
             <div class="form-section">
-                <div class="form-section-title">Administrator Contact</div>
+                <div class="form-section-title">{{ __('ui_sweep.register.admin_contact') }}</div>
 
                 <div class="auth-form-group">
                     <label for="admin_name" class="auth-label">{{ __('auth.register.hospital.admin_name') }} *</label>

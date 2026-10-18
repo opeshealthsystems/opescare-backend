@@ -70,9 +70,9 @@ class MedicalRecordExportController extends Controller
      * Returns the generated PDF inline as base64 (`file_base64`) rather than
      * the server-side storage path — the mobile client has no way to reach
      * the `local` disk directly, and returning an absolute filesystem path
-     * to a client would leak server layout for no benefit. The file is also
-     * left on disk (see MedicalRecordExportService::cleanupExports) purely
-     * for audit/debugging; it is not re-served from there.
+     * to a client would leak server layout for no benefit. Nothing is written
+     * to disk: the PDF is rendered in memory and only its verification row
+     * (reference + sha256) is kept.
      */
     public function exportPdf(Request $request): JsonResponse
     {
@@ -90,15 +90,15 @@ class MedicalRecordExportController extends Controller
             'include_immunizations' => 'nullable|boolean',
         ]);
 
-        $path = $this->exportService->generatePdf($patientId, $validated, $request->attributes->get('patient_user_id'));
+        [$bytes, $filename] = $this->exportService->render($patientId, $validated, $request->attributes->get('patient_user_id'));
 
         $this->auditExport($request, $patientId, 'pdf');
 
         return response()->json([
             'message'     => __('api.pdf_generated'),
-            'filename'    => basename($path),
+            'filename'    => $filename,
             'mime_type'   => 'application/pdf',
-            'file_base64' => base64_encode(file_get_contents($path)),
+            'file_base64' => base64_encode($bytes),
         ]);
     }
 

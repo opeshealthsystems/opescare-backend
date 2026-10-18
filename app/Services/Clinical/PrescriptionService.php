@@ -358,6 +358,8 @@ class PrescriptionService
             'medicine_id'   => $medicine?->id,
             'drug_name'     => $item['drug_name'] ?? $medicine?->name,
             'drug_code'     => $item['drug_code'] ?? $medicine?->atc_code,
+            'strength'      => $item['strength'] ?? $medicine?->strength,
+            'dosage_form'   => $item['dosage_form'] ?? $item['form'] ?? $medicine?->form,
             'dose'          => $dose,
             'frequency'     => $item['frequency'] ?? null,
             'route'         => $item['route'] ?? null,

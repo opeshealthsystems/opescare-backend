@@ -9,6 +9,8 @@ return [
 
     // Health ID lookup page
     'health_id_title'      => 'Health ID Verification — OpesCare',
+    'health_id_meta_description' => "Verify a patient's OpesCare Health ID. For authorised healthcare providers only.",
+    'result_region_label'  => 'Verification result',
     'badge_provider_tool'  => 'Provider Verification Tool',
     'health_id_heading'    => 'Health ID Verification',
     'health_id_subheading' => 'Look up a patient\'s verified identity and active record status. For authorised clinical providers only.',

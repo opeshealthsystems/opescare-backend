@@ -330,7 +330,7 @@ class PlatformAdminService
 
     private function checkStorage(): bool
     {
-        try { Storage::disk('local')->put('health_check.tmp', 'ok'); Storage::disk('local')->delete('health_check.tmp'); return true; } catch (\Exception) { return false; }
+        try { Storage::disk(config('filesystems.private_disk', 'local'))->put('health_check.tmp', 'ok'); Storage::disk(config('filesystems.private_disk', 'local'))->delete('health_check.tmp'); return true; } catch (\Exception) { return false; }
     }
 
     private function checkQueue(): bool

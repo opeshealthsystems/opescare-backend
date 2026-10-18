@@ -173,7 +173,7 @@ class FacilityAdminDeskController extends Controller
             fwrite($out, "\xEF\xBB\xBF");
             fputcsv($out, $headers);
             foreach ($rows as $row) {
-                fputcsv($out, array_map(fn ($v) => $v ?? '', $row));
+                fputcsv($out, \App\Support\CsvSafe::row(array_map(fn ($v) => $v ?? '', $row)));
             }
             fclose($out);
         }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);

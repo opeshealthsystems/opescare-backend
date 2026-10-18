@@ -110,13 +110,13 @@
                         <select id="system_type" name="system_type"
                                 class="auth-input{{ $errors->has('system_type') ? ' auth-input-error' : '' }}" required>
                             <option value="" disabled selected>{{ __('onboarding.common.select_option') }}</option>
-                            <option value="HIS">Hospital Information System (HIS)</option>
-                            <option value="LIS">Laboratory Information System (LIS)</option>
-                            <option value="PHARMA">Pharmacy Stock / Dispensing System</option>
-                            <option value="INSURANCE">Insurance Claims Management Engine</option>
-                            <option value="BLOOD">Blood Bank Registry Platform</option>
-                            <option value="MOBILE">Consumer Health Mobile App</option>
-                            <option value="OTHER">Other Health Interoperability System</option>
+                            <option value="HIS">{{ __('ui_sweep.register.sys_his') }}</option>
+                            <option value="LIS">{{ __('ui_sweep.register.sys_lis') }}</option>
+                            <option value="PHARMA">{{ __('ui_sweep.register.sys_pharmacy') }}</option>
+                            <option value="INSURANCE">{{ __('ui_sweep.register.sys_insurance') }}</option>
+                            <option value="BLOOD">{{ __('ui_sweep.register.sys_blood') }}</option>
+                            <option value="MOBILE">{{ __('ui_sweep.register.sys_mobile') }}</option>
+                            <option value="OTHER">{{ __('ui_sweep.register.sys_other') }}</option>
                         </select>
                         @error('system_type')<div class="auth-field-error">{{ $message }}</div>@enderror
                     </div>
@@ -126,13 +126,13 @@
                         <select id="data_flow" name="data_flow"
                                 class="auth-input{{ $errors->has('data_flow') ? ' auth-input-error' : '' }}" required>
                             <option value="" disabled selected>{{ __('onboarding.common.select_option') }}</option>
-                            <option value="PULL_SUMMARY">Pull patient CCDA/FHIR summaries</option>
-                            <option value="PUSH_ENCOUNTERS">Push clinical encounters</option>
-                            <option value="PUSH_RESULTS">Push validated lab results</option>
-                            <option value="PUSH_PRESCRIPTIONS">Push validated prescriptions</option>
-                            <option value="SYNC_INVENTORY">Sync pharmacy/medicine stock</option>
-                            <option value="SYNC_BLOOD">Sync blood bank availability logs</option>
-                            <option value="WEBHOOKS">Receive webhook dispatch events</option>
+                            <option value="PULL_SUMMARY">{{ __('ui_sweep.register.flow_pull') }}</option>
+                            <option value="PUSH_ENCOUNTERS">{{ __('ui_sweep.register.flow_encounters') }}</option>
+                            <option value="PUSH_RESULTS">{{ __('ui_sweep.register.flow_results') }}</option>
+                            <option value="PUSH_PRESCRIPTIONS">{{ __('ui_sweep.register.flow_prescriptions') }}</option>
+                            <option value="SYNC_INVENTORY">{{ __('ui_sweep.register.flow_stock') }}</option>
+                            <option value="SYNC_BLOOD">{{ __('ui_sweep.register.flow_blood') }}</option>
+                            <option value="WEBHOOKS">{{ __('ui_sweep.register.flow_webhooks') }}</option>
                         </select>
                         @error('data_flow')<div class="auth-field-error">{{ $message }}</div>@enderror
                     </div>
@@ -150,15 +150,15 @@
                         <div class="auth-form-group">
                             <label class="auth-label">{{ __('onboarding.developer.sandbox_lbl') }}</label>
                             <div class="radio-group">
-                                <label class="radio-label"><input type="radio" name="sandbox" value="yes" checked> Yes</label>
-                                <label class="radio-label"><input type="radio" name="sandbox" value="no"> No</label>
+                                <label class="radio-label"><input type="radio" name="sandbox" value="yes" checked> {{ __('ui_sweep.register.yes') }}</label>
+                                <label class="radio-label"><input type="radio" name="sandbox" value="no"> {{ __('ui_sweep.register.no') }}</label>
                             </div>
                         </div>
                         <div class="auth-form-group">
                             <label class="auth-label">{{ __('onboarding.developer.production_lbl') }}</label>
                             <div class="radio-group">
-                                <label class="radio-label"><input type="radio" name="production" value="yes"> Yes</label>
-                                <label class="radio-label"><input type="radio" name="production" value="no" checked> No</label>
+                                <label class="radio-label"><input type="radio" name="production" value="yes"> {{ __('ui_sweep.register.yes') }}</label>
+                                <label class="radio-label"><input type="radio" name="production" value="no" checked> {{ __('ui_sweep.register.no') }}</label>
                             </div>
                         </div>
                     </div>

@@ -34,6 +34,7 @@
             <span class="od-muted">{{ $order->accession_number }}</span>
         </p>
     </div>
+    <a href="{{ route('documents.new.imaging_request', $order->id) }}" class="od-btn od-btn--secondary" target="_blank" rel="noopener"><i data-lucide="file-text"></i> {{ __('doc_new_docs.btn_imaging_request') }}</a>
     <a href="{{ route('portals.imaging.index') }}" class="od-btn od-btn--secondary">
         <i data-lucide="arrow-left"></i> {{ __('imaging_desk.back_to_worklist') }}
     </a>
