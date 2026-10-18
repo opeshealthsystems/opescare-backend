@@ -81,7 +81,7 @@ reverted:
 | One-off payments | Live. MTN MoMo / Orange Money against an invoice, `simulated` on demo hosts. This is *pay a bill for care*, NOT insurance or subscriptions — those stay out. |
 | Telemedicine | Still thin: book-to-consult only, no in-app video. |
 | DHIS2 monthly aggregate reporting | Live, admin-only (`routes/imports_dhis2.php`, `/admin/public-health/dhis2`, nav link in `_admin_nav`). This is *Finder reporting its own aggregates to MINSANTE* — a one-way push of counts, not the platform's DHIS2 data-exchange integration, which stays out. Recorded here 2026-10-12 so the "Deliberately absent" line above is not read as a reason to delete it. |
-| FHIR R4 / HL7 | Still absent. Interop stays in the platform. |
+| FHIR R4 / HL7 | **FHIR R4 inbound ingest is live** for partners (`routes/fhir.php`: bearer-scoped DiagnosticReport, Immunization, Observation, transaction; `tests/Feature/Fhir`) plus a patient FHIR export on mobile. Outbound FHIR server and HL7 v2 remain absent. Corrected 2026-10-18 — the code had shipped it. |
 
 ## Data invariants
 - **PostgreSQL** — never MySQL date functions (`DATE_FORMAT`); use
