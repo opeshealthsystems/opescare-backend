@@ -84,3 +84,14 @@ inline `on*=`, `<script @cspNonce>`, data-* via `op-actions.js`); no inline
 `style=`; facility from the portal context; never invent data — every number on
 a dashboard comes from an existing query, an empty state when there is none;
 XAF; every link goes to a real route.
+
+## Owner directive 2026-10-18 — ONE flat card, everywhere
+Every card on every desk page AND the landing page is identical: same background
+(`#FFFFFF` on canvas `#EEF3F9`), same radius (16px), same padding (20px), same
+title font (Inter 20/700 `#0F2340`), same body font (Inter 14/500 `#1F3654`).
+**No 3D: no box-shadow, no drop shadow, no inset, no gradient, no bevel, no
+coloured or thick borders, no hover lift/translate on cards.** Separation comes
+from the canvas colour only; at most a 1px `#E6ECF3` hairline where two white
+surfaces touch. KPI tiles, quick-action tiles and detail panels follow the same
+rule (quick-action tiles may be solid `#0F4C81` but flat). Buttons are flat too
+(no shadow). The sidebar gradient in the reference stays (it is a surface, not a card).
