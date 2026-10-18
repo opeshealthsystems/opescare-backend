@@ -94,7 +94,6 @@
                                 <option value="clinic"            {{ request('type') == 'clinic'            ? 'selected' : '' }}>{{ __('ui_sweep.register.type_clinic') }}</option>
                                 <option value="pharmacy"          {{ request('type') == 'pharmacy'          ? 'selected' : '' }}>{{ __('ui_sweep.register.type_pharmacy') }}</option>
                                 <option value="laboratory"        {{ request('type') == 'laboratory'        ? 'selected' : '' }}>{{ __('ui_sweep.register.type_laboratory') }}</option>
-                                <option value="insurance_company" {{ request('type') == 'insurance_company' ? 'selected' : '' }}>{{ __('ui_sweep.register.type_insurance') }}</option>
                                 <option value="public_health"     {{ request('type') == 'public_health'     ? 'selected' : '' }}>{{ __('ui_sweep.register.type_public_health') }}</option>
                             </select>
                         </div>
@@ -212,7 +211,6 @@
                                 <label class="service-check-label"><input type="checkbox" name="services[]" value="dispensing"> {{ __('ui_sweep.register.svc_dispensing') }}</label>
                                 <label class="service-check-label"><input type="checkbox" name="services[]" value="availability"> {{ __('ui_sweep.register.svc_availability') }}</label>
                                 <label class="service-check-label"><input type="checkbox" name="services[]" value="reservation"> {{ __('ui_sweep.register.svc_reservation') }}</label>
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="billing"> {{ __('ui_sweep.register.svc_billing') }}</label>
                             </div>
                         </div>
 
@@ -225,14 +223,6 @@
                             </div>
                         </div>
 
-                        <div class="services-block" id="services-insurer" style="display:none;">
-                            <div class="services-checkboxes">
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="eligibility"> {{ __('ui_sweep.register.svc_eligibility') }}</label>
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="preauth"> {{ __('ui_sweep.register.svc_preauth') }}</label>
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="claims"> {{ __('ui_sweep.register.svc_claims') }}</label>
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="network"> {{ __('ui_sweep.register.svc_network') }}</label>
-                            </div>
-                        </div>
 
                         <div class="notice-warning notice-mt" id="safety-notice-box">
                             <i data-lucide="shield-alert"></i>
@@ -367,7 +357,6 @@
             clinic: "{{ __('onboarding.org.variants.clinic_msg') }}",
             pharmacy: "{{ __('onboarding.org.variants.pharmacy_msg') }}",
             laboratory: "{{ __('onboarding.org.variants.laboratory_msg') }}",
-            insurance_company: "{{ __('onboarding.org.variants.insurer_msg') }}",
             public_health: "{{ __('onboarding.org.variants.public_health_msg') }}"
         };
 
@@ -376,7 +365,6 @@
             clinic: "Default clinic verification rules apply.",
             pharmacy: "{{ __('onboarding.org.variants.pharmacy_notice') }}",
             laboratory: "{{ __('onboarding.org.variants.laboratory_notice') }}",
-            insurance_company: "{{ __('onboarding.org.variants.insurance_notice') }}",
             public_health: "{{ __('onboarding.org.variants.public_health_notice') }}"
         };
 
@@ -402,7 +390,6 @@
             document.getElementById('services-hospital').style.display = (orgType === 'hospital' || orgType === 'clinic' || orgType === 'public_health') ? 'block' : 'none';
             document.getElementById('services-pharmacy').style.display = (orgType === 'pharmacy') ? 'block' : 'none';
             document.getElementById('services-laboratory').style.display = (orgType === 'laboratory') ? 'block' : 'none';
-            document.getElementById('services-insurer').style.display = (orgType === 'insurance_company') ? 'block' : 'none';
             document.getElementById('services-pane-headline').innerText = orgType.toUpperCase() + " SERVICE PROFILE OPTIONS";
         }
 

@@ -584,7 +584,7 @@ class PublicPageController extends Controller
     public function submitOrganizationRegister(Request $request)
     {
         $data = $request->validate([
-            'org_type'      => 'required|string|max:60',
+            'org_type'      => 'required|string|max:60|not_in:insurance_company,insurer',
             'legal_name'    => 'required|string|max:200',
             'trade_name'    => 'nullable|string|max:200',
             'reg_number'    => 'required|string|max:80',

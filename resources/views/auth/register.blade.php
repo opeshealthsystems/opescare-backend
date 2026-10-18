@@ -72,15 +72,6 @@
                     <span class="f-auth-choice__go">@include('partials.finder.icon', ['name' => 'chevron-right', 'size' => 18])</span>
                 </a>
 
-                {{-- Insurer --}}
-                <a href="{{ route('register.organization', ['type' => 'insurance_company']) }}" class="f-auth-choice">
-                    <span class="f-auth-choice__icon">@include('partials.finder.icon', ['name' => 'shield-check', 'size' => 20])</span>
-                    <span class="f-auth-choice__body">
-                        <span class="f-auth-choice__title">{{ __('onboarding.selector.cards.insurer_title') }}</span>
-                        <span class="f-auth-choice__desc">{{ __('onboarding.selector.cards.insurer_desc') }}</span>
-                    </span>
-                    <span class="f-auth-choice__go">@include('partials.finder.icon', ['name' => 'chevron-right', 'size' => 18])</span>
-                </a>
 
                 {{-- Developer API Access --}}
                 <a href="{{ route('register.developer') }}" class="f-auth-choice">

@@ -3,13 +3,16 @@
 namespace App\Http\Controllers\MedicalId;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\Mobile\MobileConsentRequestController;
 use App\Models\Patient;
+use App\Modules\Governance\Services\ConsentService;
 use App\Services\Chart\PatientChartAccess;
 use App\Services\Chart\PatientChartService;
 use App\Services\Portal\DeskFacilityContext;
 use App\Services\Portal\PortalContextService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -84,7 +87,66 @@ class PatientChartController extends Controller
         return view('portals.chart.index', [
             'healthId' => $healthId,
             'notFound' => $notFound,
+            'purposes' => MobileConsentRequestController::PURPOSES,
         ]);
+    }
+
+    /**
+     * Ask the patient for access, from the desk.
+     *
+     * Before this, a clinician with no basis met "No chart is available" and
+     * nothing else: the consent loop was reachable only from the phone app
+     * (POST /api/mobile/doctor/consent-requests). This is the same ask, through
+     * the same ConsentService, with the same closed vocabulary.
+     *
+     * The answer NEVER says whether the Health ID exists: an unknown ID, a
+     * patient already asked, and a fresh request all return the same message,
+     * so the form cannot be used to walk the register. The facility is the
+     * session's (DeskFacilityContext), the clinician is the session user.
+     */
+    public function requestConsent(Request $request, ConsentService $consents): RedirectResponse
+    {
+        $facilityId  = $this->facilityId();
+        $clinicianId = $this->clinicianId();
+
+        $validated = $request->validate([
+            'health_id'     => ['required', 'string', 'max:64'],
+            'purpose'       => ['required', 'string', 'in:' . implode(',', MobileConsentRequestController::PURPOSES)],
+            'justification' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $healthId = trim($validated['health_id']);
+        $patient  = Patient::resolveHealthId($healthId);
+
+        if ($patient !== null && $clinicianId !== null
+            && $consents->activeGrantFor($patient->id, $facilityId) === null) {
+            $consents->expireStaleRequests($patient->id, $facilityId);
+
+            if ($consents->openRequestFor($patient->id, $facilityId) === null) {
+                try {
+                    $consents->requestConsent(
+                        $patient->id,
+                        $facilityId,
+                        $clinicianId,
+                        $validated['purpose'],
+                        MobileConsentRequestController::SCOPES,
+                        24 * 60,
+                        now()->addHours(72),
+                        $validated['justification'] ?? null,
+                    );
+                } catch (QueryException $e) {
+                    // 23505: another clinician here asked in the same instant.
+                    // The partial unique index did its job; nothing to add.
+                    if (($e->errorInfo[0] ?? null) !== '23505') {
+                        throw $e;
+                    }
+                }
+            }
+        }
+
+        return redirect()
+            ->route('portals.chart.index', ['health_id' => $healthId])
+            ->with('success', __('chart.consent_requested'));
     }
 
     /** One tab of one chart. */

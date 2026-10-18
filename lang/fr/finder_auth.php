@@ -16,7 +16,7 @@ return [
         'secure_area'  => 'Espace de connexion sécurisé',
         'need_help'    => 'Besoin d\'aide ?',
         'contact_support' => 'Contacter l\'assistance',
-        'back_to_site' => 'Retour à OpesCare Finder',
+        'back_to_site' => 'Retour à OpesCare',
     ],
 
     // Bouton d'affichage du mot de passe (tous les champs mot de passe)

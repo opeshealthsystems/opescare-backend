@@ -65,6 +65,9 @@ class PharmacyReportsController extends Controller
         return $this->streamCsv($table['headers'], $table['rows'], $this->filename($facilityId, $report, $params, 'csv'));
     }
 
+    /** Rows a report PDF prints before pointing at the CSV for the rest. */
+    public const PDF_ROW_CAP = 500;
+
     public function pdf(Request $request, string $report): Response
     {
         $this->assertReport($report);
@@ -73,8 +76,18 @@ class PharmacyReportsController extends Controller
         $params     = $this->params($request);
         $table      = $this->reports->report($report, $facilityId, $params);
 
+        // dompdf lays a table out in memory, page by page; past a few hundred
+        // rows the render outgrows the request time limit. The PDF carries the
+        // first PDF_ROW_CAP rows and says so; the CSV always carries them all.
+        $totalRows = count($table['rows']);
+        if ($totalRows > self::PDF_ROW_CAP) {
+            $table['rows'] = array_slice($table['rows'], 0, self::PDF_ROW_CAP);
+        }
+
         return $this->renderPdf('portals.pharmacy.reports.pdf', [
-            'table'    => $table,
+            'table'     => $table,
+            'totalRows' => $totalRows,
+            'rowCap'    => self::PDF_ROW_CAP,
             'report'   => $report,
             'facility' => Facility::withoutGlobalScopes()->find($facilityId),
             'params'   => [

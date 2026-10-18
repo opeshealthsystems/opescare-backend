@@ -1,5 +1,5 @@
 {{--
-    OpesCare Finder — auth shell (mobile-first).
+    OpesCare — auth shell (mobile-first).
 
     Single-column card on --f-ground: slim header (brand + EN/FR switcher),
     centered content column, help footer. Styling comes from the foundation
@@ -26,7 +26,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    @hasSection('title')<title>@yield('title') — OpesCare Finder</title>@else<title>{{ __('finder_shell.meta.default_title') }}</title>@endif
+    @hasSection('title')<title>@yield('title') — OpesCare</title>@else<title>{{ __('finder_shell.meta.default_title') }}</title>@endif
     <meta name="description" content="{{ __('finder_shell.meta.default_description') }}">
     <meta name="robots" content="noindex,nofollow">
     <meta name="csrf-token" content="{{ csrf_token() }}">

@@ -81,6 +81,7 @@ return [
     'pdf_generated'         => "Generated",
     'pdf_total'             => "Total",
     'pdf_no_rows'           => "No entry for this report.",
+    'pdf_truncated'         => "Showing the first :shown of :total rows. Download the CSV for the full report.",
 
     // ── Controlled register ───────────────────────────────────────────────
     'register_title'        => "Controlled substances register",

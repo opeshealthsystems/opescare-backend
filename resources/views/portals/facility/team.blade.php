@@ -337,9 +337,9 @@
                         <td class="od-table__num">{{ $i + 1 }}</td>
                         <td data-label="{{ __('team.col_name') }}">
                             <div class="od-table__person">
-                                <span class="od-avatar od-tint--{{ $tone((string) ($member->name ?: $member->id)) }}" aria-hidden="true">{{ $initials($member->name) }}</span>
+                                <span class="od-avatar od-tint--{{ $tone((string) ($member->name ?: $member->id)) }}" aria-hidden="true">{{ $initials($member->name ?: $member->email) }}</span>
                                 <div>
-                                    <a href="{{ route('portals.facility.admin.member', $member->id) }}" class="od-table__name">{{ $member->name }}</a>
+                                    <a href="{{ route('portals.facility.admin.member', $member->id) }}" class="od-table__name">{{ filled($member->name) ? $member->name : \Illuminate\Support\Str::before((string) $member->email, '@') }}</a>
                                     <span class="od-table__sub">{{ $member->email }}</span>
                                 </div>
                             </div>

@@ -12,7 +12,7 @@ class AdminPortalController extends Controller
 {
     private function facilityId(): ?string
     {
-        return session('active_facility_id') ?? auth()->user()?->primary_facility_id ?? null;
+        return app(\App\Services\Portal\PortalContextService::class)->facilityId();
     }
 
     public function index(Request $request)
@@ -79,6 +79,19 @@ class AdminPortalController extends Controller
             ? null
             : \App\Models\MpiCandidate::where('status', 'pending_review')->count();
 
-        return view('portals.admin.index', compact('stats', 'recentLogs', 'platformStats', 'duplicatesPending'));
+        // Facility tier: this page is the facility's own admin home, not
+        // OpesCare's back office. The facility comes from the portal context
+        // (session tenant / primary posting), never from the request.
+        $facilityName = null;
+        $checklist    = null;
+        if (! $isPlatform && $facilityId !== null) {
+            $facility = \App\Models\Facility::withoutGlobalScope('isolate_demo')->find($facilityId);
+            $facilityName = $facility?->name;
+            if ($facility) {
+                $checklist = \App\Services\Facility\FacilityAdminChecklist::for((string) $facility->id, $request->user());
+            }
+        }
+
+        return view('portals.admin.index', compact('stats', 'recentLogs', 'platformStats', 'duplicatesPending', 'isPlatform', 'facilityName', 'checklist'));
     }
 }

@@ -235,11 +235,25 @@ class PharmacyReportsTest extends TestCase
         $pharmacist = $this->staff('pharmacist');
         $this->stock($this->facility, 'OURS-A', 10, now()->addDays(20)->toDateString(), 1500, 25, $pharmacist);
 
-        foreach (['expiry', 'valuation', 'dispensing', 'low_stock'] as $report) {
-            $res = $this->actingAsStaff($pharmacist)->get("/pharmacy/reports/{$report}/pdf");
+        $paths = [
+            '/pharmacy/reports/expiry/pdf',
+            '/pharmacy/reports/valuation/pdf',
+            '/pharmacy/reports/dispensing/pdf',
+            '/pharmacy/reports/low_stock/pdf',
+            '/pharmacy/controlled/register',
+        ];
+
+        foreach ($paths as $path) {
+            $started = microtime(true);
+            $res     = $this->actingAsStaff($pharmacist)->get($path);
+            $elapsed = microtime(true) - $started;
+
             $res->assertOk();
-            $this->assertSame('application/pdf', $res->headers->get('content-type'), $report);
-            $this->assertStringStartsWith('%PDF', $res->getContent(), $report);
+            $this->assertSame('application/pdf', $res->headers->get('content-type'), $path);
+            $this->assertStringStartsWith('%PDF-', $res->getContent(), $path);
+            // Generous ceiling (a warm render is ~1-2s): the audit saw these
+            // hit the 30s request limit, this keeps a regression loud.
+            $this->assertLessThan(15.0, $elapsed, "{$path} took {$elapsed}s");
         }
     }
 

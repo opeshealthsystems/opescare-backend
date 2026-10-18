@@ -2,7 +2,7 @@
 
 /*
 |--------------------------------------------------------------------------
-| Module Feature Flags — OpesCare Finder
+| Module Feature Flags — OpesCare
 |--------------------------------------------------------------------------
 |
 | This is the FINDER product: drug finder, blood finder, appointment

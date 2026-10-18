@@ -11,12 +11,12 @@
 return [
 
     'brand' => [
-        'name' => 'OpesCare Finder',
+        'name' => 'OpesCare',
         'tagline' => 'Trouvez médicaments, sang et soins partout au Cameroun.',
     ],
 
     'meta' => [
-        'default_title' => 'OpesCare Finder',
+        'default_title' => 'OpesCare',
         'default_description' => 'Trouvez des médicaments en stock en pharmacie, du sang disponible et des rendez-vous dans 2 728 établissements de santé des 10 régions du Cameroun.',
     ],
 
@@ -27,7 +27,7 @@ return [
         'main_navigation' => 'Navigation principale',
         'footer_navigation' => 'Pied de page',
         'language' => 'Langue',
-        'home' => 'Accueil OpesCare Finder',
+        'home' => 'Accueil OpesCare',
     ],
 
     'nav' => [

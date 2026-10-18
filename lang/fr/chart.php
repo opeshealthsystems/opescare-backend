@@ -214,4 +214,10 @@ return [
     'link_blood'      => 'Demandes de sang',
     'read_only'       => 'Lecture seule. Rien sur cette page n’écrit dans le dossier.',
     'partner_notice'  => 'Les données poussées par des systèmes partenaires via l’API d’interopérabilité ne sont pas affichées sur ce dossier.',
+    'consent_request_title' => "Demander l'accès au patient",
+    'consent_request_hint' => "Le patient reçoit la demande sur son téléphone et décide. S'il accepte, cet établissement peut ouvrir le dossier pendant 24 heures.",
+    'consent_purpose' => 'Motif',
+    'consent_justification' => 'Note pour le patient (facultatif)',
+    'consent_request_submit' => 'Envoyer la demande',
+    'consent_requested' => "Si cet identifiant santé est enregistré, la demande a été envoyée au patient. Recherchez à nouveau l'identifiant une fois qu'il a accepté.",
 ];

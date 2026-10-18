@@ -13,7 +13,7 @@ use Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumStorageInMegabytes;
 
 /*
 |--------------------------------------------------------------------------
-| OpesCare Finder — backup destinations
+| OpesCare — backup destinations
 |--------------------------------------------------------------------------
 |
 | Ops history (2026-09-06): the destination list used to be `['s3']` only.

@@ -14,11 +14,11 @@ return [
 
     // ── À propos — ce qu'est le Finder, l'origine des données, sans fard ───
     'about' => [
-        'page_title'       => "À propos d'OpesCare Finder",
-        'meta_description' => "Ce qu'est OpesCare Finder, d'où viennent ses données et à qui il s'adresse — un annuaire gratuit des pharmacies, hôpitaux, cliniques et laboratoires du Cameroun.",
+        'page_title'       => "À propos d'OpesCare",
+        'meta_description' => "Ce qu'est OpesCare, d'où viennent ses données et à qui il s'adresse — un annuaire gratuit des pharmacies, hôpitaux, cliniques et laboratoires du Cameroun.",
         'eyebrow'          => 'À propos',
         'title'            => 'Un moyen gratuit de trouver des soins au Cameroun',
-        'lead'             => "OpesCare Finder vous aide à localiser une pharmacie, un hôpital, du sang ou un rendez-vous — et vous donne un numéro de téléphone pour confirmer avant de vous déplacer.",
+        'lead'             => "OpesCare vous aide à localiser une pharmacie, un hôpital, du sang ou un rendez-vous — et vous donne un numéro de téléphone pour confirmer avant de vous déplacer.",
 
         'what_title' => "Ce qu'est le Finder",
         'what_p1'    => "Le Finder est un annuaire public des établissements de santé des dix régions du Cameroun — pharmacies, hôpitaux, cliniques et laboratoires — avec leurs coordonnées et, lorsque les établissements les déclarent, leurs horaires, services, stocks de médicaments et disponibilités de sang.",
@@ -55,7 +55,7 @@ return [
     // ── Comment ça marche — le parcours patient, limites honnêtes incluses ─
     'how' => [
         'page_title'       => 'Comment ça marche',
-        'meta_description' => "Comment trouver médicaments, sang, établissements et rendez-vous avec OpesCare Finder — et les limites honnêtes des données : les stocks sont déclarés par les pharmacies, appelez avant de vous déplacer.",
+        'meta_description' => "Comment trouver médicaments, sang, établissements et rendez-vous avec OpesCare — et les limites honnêtes des données : les stocks sont déclarés par les pharmacies, appelez avant de vous déplacer.",
         'eyebrow'          => 'Comment ça marche',
         'title'            => "De « il me faut… » à une visite confirmée",
         'lead'             => "Le Finder fait une seule chose : il vous montre les établissements près de chez vous, ce qu'ils ont déclaré, et vous donne un numéro à appeler. Voici chaque outil, étape par étape.",
@@ -94,14 +94,14 @@ return [
     // ── FAQ — les questions qu'on pose vraiment, répondues simplement ──────
     'faq' => [
         'page_title'       => 'Questions fréquentes',
-        'meta_description' => "OpesCare Finder est-il gratuit ? D'où viennent les données ? Les établissements sont-ils vérifiés ? Comment une pharmacie revendique-t-elle sa fiche ? Des réponses claires, en français et en anglais.",
+        'meta_description' => "OpesCare est-il gratuit ? D'où viennent les données ? Les établissements sont-ils vérifiés ? Comment une pharmacie revendique-t-elle sa fiche ? Des réponses claires, en français et en anglais.",
         'eyebrow'          => 'FAQ',
         'title'            => "Les questions qu'on nous pose vraiment",
         'lead'             => "Des réponses courtes et honnêtes. Si la vôtre n'y est pas, la page contact joint une vraie personne.",
 
         'items' => [
             [
-                'q' => 'OpesCare Finder est-il gratuit ?',
+                'q' => 'OpesCare est-il gratuit ?',
                 'a' => "Oui. Chercher un médicament, du sang ou un établissement, parcourir l'annuaire et prendre rendez-vous sont gratuits pour les patients et leurs familles. C'est gratuit pour les établissements aussi — revendiquer sa fiche et déclarer ses stocks ne coûtent rien.",
             ],
             [
@@ -176,7 +176,7 @@ return [
     // ── Pour les pharmacies — revendiquer sa fiche ─────────────────────────
     'pharmacies' => [
         'page_title'       => 'Pour les pharmacies',
-        'meta_description' => "Revendiquez votre pharmacie sur OpesCare Finder — gratuitement. Soyez trouvé par les patients qui cherchent un médicament, corrigez numéro et horaires, déclarez vos stocks depuis un téléphone.",
+        'meta_description' => "Revendiquez votre pharmacie sur OpesCare — gratuitement. Soyez trouvé par les patients qui cherchent un médicament, corrigez numéro et horaires, déclarez vos stocks depuis un téléphone.",
         'eyebrow'          => 'Pour les pharmacies',
         'title'            => 'Soyez la pharmacie que les patients trouvent',
         'lead'             => "Chaque jour, des patients cherchent des médicaments sur le Finder. Une fiche revendiquée, c'est vos vrais horaires, un numéro qui répond — et des patients qui savent que vous avez ce qu'il leur faut avant de se déplacer.",
@@ -205,7 +205,7 @@ return [
     // ── Pour les hôpitaux et cliniques — fiche + réservation + encart plateforme ─
     'hospitals' => [
         'page_title'       => 'Pour les hôpitaux et cliniques',
-        'meta_description' => "Revendiquez votre établissement sur OpesCare Finder — gratuitement. Gardez téléphone, horaires et services exacts, déclarez les disponibilités de sang, acceptez des rendez-vous.",
+        'meta_description' => "Revendiquez votre établissement sur OpesCare — gratuitement. Gardez téléphone, horaires et services exacts, déclarez les disponibilités de sang, acceptez des rendez-vous.",
         'eyebrow'          => 'Pour les hôpitaux et cliniques',
         'title'            => 'Restez joignable pour les patients',
         'lead'             => "Les patients utilisent le Finder pour choisir un établissement, vérifier les disponibilités de sang, réserver ou appeler. Une fiche revendiquée garde tout cela exact — et fait sonner votre téléphone pour les bonnes raisons.",
@@ -234,7 +234,7 @@ return [
     // ── Pour les patients — un court panneau indicateur vers les recherches ─
     'patients' => [
         'page_title'       => 'Pour les patients et leurs familles',
-        'meta_description' => "Ce que vous pouvez faire avec OpesCare Finder : trouver un médicament en pharmacie, du sang à l'hôpital, et des établissements à réserver ou appeler — gratuit, en français et en anglais.",
+        'meta_description' => "Ce que vous pouvez faire avec OpesCare : trouver un médicament en pharmacie, du sang à l'hôpital, et des établissements à réserver ou appeler — gratuit, en français et en anglais.",
         'eyebrow'          => 'Pour les patients et leurs familles',
         'title'            => 'Le Finder est fait pour vous',
         'lead'             => "Trouvez un médicament, du sang ou un établissement près de chez vous, voyez ce qui a été déclaré, et appelez avant de vous déplacer. Gratuit, sans compte pour chercher.",
@@ -243,10 +243,10 @@ return [
 
     // ── Pages plateforme qui n'ont plus leur place sur ce produit ──────────
     'redirect' => [
-        'meta_description' => "Cette page appartient à la plateforme de santé OpesCare pour les hôpitaux et institutions. OpesCare Finder est l'outil gratuit pour trouver des soins au Cameroun.",
-        'eyebrow'          => 'OpesCare Finder',
+        'meta_description' => "Cette page appartient à la plateforme de santé OpesCare pour les hôpitaux et institutions. OpesCare est l'outil gratuit pour trouver des soins au Cameroun.",
+        'eyebrow'          => 'OpesCare',
         'heading'          => 'Cette page appartient à la plateforme OpesCare',
-        'lead'             => "Vous êtes sur OpesCare Finder — l'outil gratuit pour trouver médicaments, sang et soins au Cameroun. Ce que vous cherchiez fait partie de la plateforme de santé OpesCare pour les hôpitaux et institutions, qui est un produit distinct.",
+        'lead'             => "Vous êtes sur OpesCare — l'outil gratuit pour trouver médicaments, sang et soins au Cameroun. Ce que vous cherchiez fait partie de la plateforme de santé OpesCare pour les hôpitaux et institutions, qui est un produit distinct.",
         'platform_title'   => 'Vous cherchez la plateforme OpesCare ?',
         'platform_p'       => "L'interopérabilité, les API et la documentation développeurs, les tarifs institutionnels, les démonstrations et les accords de service vivent sur le site de la plateforme.",
         'platform_cta'     => 'Aller sur opescare.cloud',

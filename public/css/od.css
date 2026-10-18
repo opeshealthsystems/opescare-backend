@@ -321,7 +321,7 @@ body.od .od-live { display: inline-flex; align-items: center; gap: 8px; font-siz
 body.od .od-live::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: #1E8E3E; box-shadow: 0 0 0 3px #E6F4EA; }
 
 /* ── Tabs ───────────────────────────────────────────────────────────────── */
-body.od .od-tabs { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 14px; padding: 0; list-style: none; }
+body.od .od-tabs { position: relative; min-width: 0; max-width: 100%; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 14px; padding: 0; list-style: none; }
 body.od .od-tab {
   height: 40px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--od-border); background: #fff;
   display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: var(--od-ink-h);
@@ -352,7 +352,10 @@ body.od .od-field > svg { position: absolute; left: 14px; width: 20px; height: 2
 body.od .od-field > .od-input { padding-left: 44px; }
 
 /* ── Table ──────────────────────────────────────────────────────────────── */
-body.od .od-table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+/* position: relative makes the wrap the containing block of anything absolute
+   inside the table (the .od-sr label in an actions header), so it is clipped by
+   the scroll and cannot widen the page at phone width (UI audit P1-3). */
+body.od .od-table-wrap { position: relative; width: 100%; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 body.od .od-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; font-weight: 500; color: var(--od-ink-h); }
 body.od .od-table thead th {
   height: 40px; padding: 0 10px; text-align: left; white-space: nowrap;
@@ -509,7 +512,7 @@ body.od .od-list__title { display: block; font-size: 14px; font-weight: 600; col
 body.od .od-list__sub { display: block; font-size: 12px; font-weight: 500; color: var(--od-muted); line-height: 1.35; }
 body.od .od-list__value { font-size: 14px; font-weight: 700; color: var(--od-ink-h); white-space: nowrap; font-variant-numeric: tabular-nums; }
 body.od .od-list__value.is-alert { color: var(--od-urgent); }
-body.od .od-list__meta { font-size: 12px; font-weight: 500; color: var(--od-muted); white-space: nowrap; }
+body.od .od-list__meta { font-size: 12px; font-weight: 500; color: var(--od-muted); white-space: nowrap; min-width: 0; max-width: 45%; overflow: hidden; text-overflow: ellipsis; flex-shrink: 1; }
 
 /* ── Donut ──────────────────────────────────────────────────────────────── */
 body.od .od-donut { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
@@ -545,7 +548,7 @@ body.od .od-empty__text { margin: 0 0 6px; font-size: 14px; font-weight: 500; co
 /* ── Utilities ──────────────────────────────────────────────────────────── */
 body.od .od-muted { color: var(--od-muted); }
 body.od .od-strong { font-weight: 700; color: var(--od-ink-h); }
-body.od .od-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+body.od .od-sr { position: absolute; top: 0; left: 0; margin: -1px; padding: 0; border: 0; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* ── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 1439px) {

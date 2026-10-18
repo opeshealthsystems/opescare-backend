@@ -218,4 +218,10 @@ return [
     'link_blood'      => 'Blood requests',
     'read_only'       => 'Read-only. Nothing on this page writes to the record.',
     'partner_notice'  => 'Data pushed by partner systems over the interoperability API is not shown on this chart.',
+    'consent_request_title' => 'Ask the patient for access',
+    'consent_request_hint' => 'The patient receives the request on their phone and decides. If they approve, this facility can open the chart for 24 hours.',
+    'consent_purpose' => 'Reason',
+    'consent_justification' => 'Note for the patient (optional)',
+    'consent_request_submit' => 'Send request',
+    'consent_requested' => 'If this Health ID is registered, the patient has been asked. Look the Health ID up again once they have approved.',
 ];

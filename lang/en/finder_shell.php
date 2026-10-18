@@ -11,12 +11,12 @@
 return [
 
     'brand' => [
-        'name' => 'OpesCare Finder',
+        'name' => 'OpesCare',
         'tagline' => 'Find medicine, blood and care across Cameroon.',
     ],
 
     'meta' => [
-        'default_title' => 'OpesCare Finder',
+        'default_title' => 'OpesCare',
         'default_description' => 'Find medicine in stock at a pharmacy, blood availability, and bookable appointments across 2,728 health facilities in all 10 regions of Cameroon.',
     ],
 
@@ -27,7 +27,7 @@ return [
         'main_navigation' => 'Main navigation',
         'footer_navigation' => 'Footer',
         'language' => 'Language',
-        'home' => 'OpesCare Finder home',
+        'home' => 'OpesCare home',
     ],
 
     'nav' => [

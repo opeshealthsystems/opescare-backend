@@ -81,6 +81,7 @@ return [
     'pdf_generated'         => "Généré le",
     'pdf_total'             => "Total",
     'pdf_no_rows'           => "Aucune entrée pour ce rapport.",
+    'pdf_truncated'         => "Affichage des :shown premières lignes sur :total. Téléchargez le CSV pour le rapport complet.",
 
     // ── Registre des stupéfiants ──────────────────────────────────────────
     'register_title'        => "Registre des stupéfiants",

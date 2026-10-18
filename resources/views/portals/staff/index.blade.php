@@ -196,7 +196,7 @@
                         <td>
                             <div class="od-table__person">
                                 <span class="od-avatar od-tint--{{ $tone($name) }}">{{ $initials($p?->first_name, $p?->last_name) }}</span>
-                                <span><span class="od-table__name">{{ $name }}</span><span class="od-table__sub">{{ $p?->health_id }}@if($age) · {{ $age }}@endif</span></span>
+                                <span><span class="od-table__name">{{ $name }}</span><span class="od-table__sub">{{ $p?->health_id }}@if($age) · {{ __('chart.age_bands.' . $age, [], $l) }}@endif</span></span>
                             </div>
                         </td>
                         <td>{{ $t->checked_in_at?->format('H:i') }}</td>
@@ -222,7 +222,7 @@
             <li class="od-list__row">
                 <span class="od-list__icon od-tint--rose"><i data-lucide="siren"></i></span>
                 <div class="od-list__text">
-                    <a href="{{ route('portals.queue.index') }}" class="od-list__title">{{ __('hospital_desk.dash_alert_urgent', [], $l) }}</a>
+                    @capability('queue')<a href="{{ route('portals.queue.index') }}" class="od-list__title">{{ __('hospital_desk.dash_alert_urgent', [], $l) }}</a>@else<span class="od-list__title">{{ __('hospital_desk.dash_alert_urgent', [], $l) }}</span>@endcapability
                     <span class="od-list__sub">{{ __('hospital_desk.dash_alert_urgent_sub', [], $l) }}</span>
                 </div>
                 <span class="od-pill od-pill--urgent">{{ $urgentWaiting }}</span>
@@ -339,7 +339,7 @@
                         <span class="od-avatar od-tint--{{ $tone($vName) }}">{{ $initials($vp->first_name, $vp->last_name) }}</span>
                         <div class="od-list__text">
                             <span class="od-list__title">{{ $vName }} <span class="od-pill od-pill--ready">@enum($vStatus ?? 'active', 'verification')</span></span>
-                            <span class="od-list__sub"><span class="mono">{{ $vp->health_id }}</span>@if($vp->date_of_birth) · {{ \App\Support\ResultFlagResolver::ageBand($vp->date_of_birth) }}@endif @if($vp->sex) · @enum($vp->sex)@endif</span>
+                            <span class="od-list__sub"><span class="mono">{{ $vp->health_id }}</span>@if($vp->date_of_birth) · {{ __('chart.age_bands.' . \App\Support\ResultFlagResolver::ageBand($vp->date_of_birth), [], $l) }}@endif @if($vp->sex) · @enum($vp->sex)@endif</span>
                             <span class="od-list__sub">{{ __('public.staff_portal.verification_logged', [], $l) }}</span>
                         </div>
                     </div>

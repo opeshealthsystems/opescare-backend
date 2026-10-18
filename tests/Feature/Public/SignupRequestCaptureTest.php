@@ -166,6 +166,14 @@ class SignupRequestCaptureTest extends TestCase
         $this->assertSame('Vendor Systems Sarl', $lead->organization_name);
     }
 
+    public function test_the_organisation_form_no_longer_accepts_insurers(): void
+    {
+        $this->get('/signup/organization')->assertOk()->assertDontSee('value="insurance_company"', false);
+
+        $this->post('/signup/organization', ['org_type' => 'insurance_company'])
+            ->assertSessionHasErrors('org_type');
+    }
+
     public function test_an_organisation_application_survives_a_mail_failure(): void
     {
         $payload = [

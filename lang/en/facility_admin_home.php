@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'page_meta_title'   => ':facility — Facility admin',
+    'page_title'        => ':facility — Facility admin',
+    'page_title_plain'  => 'Facility admin',
+    'breadcrumb_home'   => 'Facility admin',
+    'page_subtitle'     => 'Manage your facility, your team and its Health ID activity.',
+    'nav_verify_health_id' => 'Verify a Health ID',
+
+    'checklist_title'   => 'Get started',
+    'checklist_intro'   => 'You manage the facility. Doctors and nurses open patient records — invite them so they can start caring for patients.',
+    'checklist_progress' => ':done of :total done',
+    'step_done'         => 'Done',
+    'step_todo'         => 'To do',
+    'step_team_title'   => 'Invite your team',
+    'step_team_body'    => 'Invite at least one doctor, nurse or other staff member. This step is done once someone accepts.',
+    'step_team_action'  => 'Open team',
+    'step_profile_title' => 'Complete your facility profile',
+    'step_profile_body' => 'Add a phone number and your map position so patients can find and reach you.',
+    'step_profile_action' => 'Open settings',
+    'step_verify_title' => 'Verify a Health ID',
+    'step_verify_body'  => 'Check a patient\'s Health ID card from their QR code. Done once your facility has verified one.',
+    'step_verify_action' => 'Verify a Health ID',
+];

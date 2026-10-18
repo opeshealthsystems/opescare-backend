@@ -1,17 +1,17 @@
 <?php
 
 /*
-| Couche méta SEO d'OpesCare Finder — miroir 1:1 de lang/en/finder_seo.php.
+| Couche méta SEO d'OpesCare — miroir 1:1 de lang/en/finder_seo.php.
 | Les titres de pages sont SANS le nom du site (le gabarit ajoute
-| « — OpesCare Finder ») ; les titres de fiches sont complets.
+| « — OpesCare ») ; les titres de fiches sont complets.
 */
 
 return [
 
     'site' => [
-        'title' => 'OpesCare Finder',
+        'title' => 'OpesCare',
         'description' => 'Trouvez des médicaments en stock, la disponibilité du sang et les établissements de santé du Cameroun — gratuit, en français et en anglais.',
-        'org_description' => 'OpesCare Finder est un annuaire de santé gratuit et bilingue pour le Cameroun : stock des pharmacies, disponibilité du sang et registre national des établissements de santé. La disponibilité est déclarée par les établissements et horodatée, jamais une garantie vérifiée de stock.',
+        'org_description' => 'OpesCare est un annuaire de santé gratuit et bilingue pour le Cameroun : stock des pharmacies, disponibilité du sang et registre national des établissements de santé. La disponibilité est déclarée par les établissements et horodatée, jamais une garantie vérifiée de stock.',
     ],
 
     'pages' => [
@@ -37,15 +37,15 @@ return [
         ],
         'profile' => [
             'title' => 'Fiche établissement',
-            'description' => 'Adresse, téléphone, horaires et services des établissements de santé du Cameroun, sur OpesCare Finder.',
+            'description' => 'Adresse, téléphone, horaires et services des établissements de santé du Cameroun, sur OpesCare.',
         ],
         'about' => [
             'title' => 'À propos',
-            'description' => 'Ce qu\'est OpesCare Finder, d\'où viennent les données de l\'annuaire, et ce que la disponibilité déclarée signifie — et ne signifie pas.',
+            'description' => 'Ce qu\'est OpesCare, d\'où viennent les données de l\'annuaire, et ce que la disponibilité déclarée signifie — et ne signifie pas.',
         ],
         'how_it_works' => [
             'title' => 'Comment ça marche',
-            'description' => 'Comment fonctionne OpesCare Finder : les pharmacies déclarent leur stock, les hôpitaux la disponibilité du sang, l\'annuaire suit le registre national.',
+            'description' => 'Comment fonctionne OpesCare : les pharmacies déclarent leur stock, les hôpitaux la disponibilité du sang, l\'annuaire suit le registre national.',
         ],
         'faq' => [
             'title' => 'Questions fréquentes',
@@ -53,7 +53,7 @@ return [
         ],
         'contact' => [
             'title' => 'Nous contacter',
-            'description' => 'Contactez l\'équipe OpesCare Finder — questions, corrections d\'une fiche d\'établissement, ou partenariats pharmacies et hôpitaux.',
+            'description' => 'Contactez l\'équipe OpesCare — questions, corrections d\'une fiche d\'établissement, ou partenariats pharmacies et hôpitaux.',
         ],
         'help' => [
             'title' => 'Centre d\'aide',
@@ -61,32 +61,32 @@ return [
         ],
         'privacy' => [
             'title' => 'Politique de confidentialité',
-            'description' => 'Comment OpesCare Finder traite les données personnelles : ce que nous collectons, ce que nous ne collectons jamais, et vos choix.',
+            'description' => 'Comment OpesCare traite les données personnelles : ce que nous collectons, ce que nous ne collectons jamais, et vos choix.',
         ],
         'terms' => [
             'title' => 'Conditions d\'utilisation',
-            'description' => 'Les conditions d\'utilisation d\'OpesCare Finder, y compris ce que la disponibilité déclarée signifie et ne signifie pas.',
+            'description' => 'Les conditions d\'utilisation d\'OpesCare, y compris ce que la disponibilité déclarée signifie et ne signifie pas.',
         ],
         'consent' => [
             'title' => 'Consentement et choix de données',
-            'description' => 'Vos choix de consentement et de données sur OpesCare Finder, expliqués simplement.',
+            'description' => 'Vos choix de consentement et de données sur OpesCare, expliqués simplement.',
         ],
         'status' => [
             'title' => 'État du service',
-            'description' => 'État opérationnel en direct des services OpesCare Finder.',
+            'description' => 'État opérationnel en direct des services OpesCare.',
         ],
         'sla' => [
             'title' => 'Niveaux de service',
-            'description' => 'Engagements de niveau de service pour les partenaires intégrant OpesCare Finder.',
+            'description' => 'Engagements de niveau de service pour les partenaires intégrant OpesCare.',
         ],
     ],
 
     'profile' => [
-        'title'            => ':name — :city, :region | OpesCare Finder',
-        'title_city'       => ':name — :city | OpesCare Finder',
-        'title_bare'       => ':name | OpesCare Finder',
-        'description'      => ':name — :type à :city, Cameroun. Adresse, numéro de téléphone, horaires d\'ouverture et services sur OpesCare Finder.',
-        'description_bare' => ':name — :type au Cameroun. Adresse, numéro de téléphone, horaires d\'ouverture et services sur OpesCare Finder.',
+        'title'            => ':name — :city, :region | OpesCare',
+        'title_city'       => ':name — :city | OpesCare',
+        'title_bare'       => ':name | OpesCare',
+        'description'      => ':name — :type à :city, Cameroun. Adresse, numéro de téléphone, horaires d\'ouverture et services sur OpesCare.',
+        'description_bare' => ':name — :type au Cameroun. Adresse, numéro de téléphone, horaires d\'ouverture et services sur OpesCare.',
     ],
 
     'breadcrumbs' => [

@@ -2,7 +2,7 @@
 
 /*
 |--------------------------------------------------------------------------
-| OpesCare Finder — SEO / AEO / GEO configuration
+| OpesCare — SEO / AEO / GEO configuration
 |--------------------------------------------------------------------------
 | Owned by the SEO layer. Per-route meta defaults resolve through
 | App\Support\FinderSeo against lang/{en,fr}/finder_seo.php (kept 1:1),
@@ -17,7 +17,7 @@ return [
 
     // The social-card image. A text-logo card generated into public/assets/;
     // 1200x630, referenced by partials/finder/schema/site + facility-meta.
-    'og_image' => 'og-image.png', // the OpesCare logo card; assets/og.png was the retired text-only 'OpesCare Finder' card
+    'og_image' => 'og-image.png', // the OpesCare logo card; assets/og.png was the retired text-only 'OpesCare' card
 
     'sitemap' => [
         // ≤2,000 facility URLs per sitemap file (2,728 active listings → 2

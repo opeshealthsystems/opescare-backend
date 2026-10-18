@@ -18,11 +18,11 @@ return [
 
     // ── About — what Finder is, the data story told honestly ───────────────
     'about' => [
-        'page_title'       => 'About OpesCare Finder',
-        'meta_description' => 'What OpesCare Finder is, where its facility data comes from, and who it serves — a free directory of pharmacies, hospitals, clinics and laboratories across Cameroon.',
+        'page_title'       => 'About OpesCare',
+        'meta_description' => 'What OpesCare is, where its facility data comes from, and who it serves — a free directory of pharmacies, hospitals, clinics and laboratories across Cameroon.',
         'eyebrow'          => 'About',
         'title'            => 'A free way to find care in Cameroon',
-        'lead'             => 'OpesCare Finder helps you locate a pharmacy, a hospital, blood or an appointment — and gives you a phone number so you can confirm before you travel.',
+        'lead'             => 'OpesCare helps you locate a pharmacy, a hospital, blood or an appointment — and gives you a phone number so you can confirm before you travel.',
 
         'what_title' => 'What Finder is',
         'what_p1'    => 'Finder is a public directory of health facilities across all ten regions of Cameroon — pharmacies, hospitals, clinics and laboratories — each with its contact details and, where facilities report them, opening hours, services, medicine stock and blood availability.',
@@ -59,7 +59,7 @@ return [
     // ── How it works — the patient walkthrough, honest limits included ─────
     'how' => [
         'page_title'       => 'How it works',
-        'meta_description' => 'How to find medicine, blood, facilities and appointments with OpesCare Finder — and the honest limits of the data: stock is reported by pharmacies, so call ahead.',
+        'meta_description' => 'How to find medicine, blood, facilities and appointments with OpesCare — and the honest limits of the data: stock is reported by pharmacies, so call ahead.',
         'eyebrow'          => 'How it works',
         'title'            => 'From "I need…" to a confirmed visit',
         'lead'             => 'Finder does one job: it shows you facilities near you, tells you what they have reported, and gives you a number to call. Here is each tool, step by step.',
@@ -98,14 +98,14 @@ return [
     // ── FAQ — a consumer's questions, answered plainly ─────────────────────
     'faq' => [
         'page_title'       => 'Frequently asked questions',
-        'meta_description' => 'Is OpesCare Finder free? Where does the facility data come from? Are facilities verified? How do pharmacies claim a listing? Plain answers, in English and French.',
+        'meta_description' => 'Is OpesCare free? Where does the facility data come from? Are facilities verified? How do pharmacies claim a listing? Plain answers, in English and French.',
         'eyebrow'          => 'FAQ',
         'title'            => 'Questions people actually ask',
         'lead'             => 'Short, honest answers. If yours is not here, the contact page reaches a person.',
 
         'items' => [
             [
-                'q' => 'Is OpesCare Finder free?',
+                'q' => 'Is OpesCare free?',
                 'a' => 'Yes. Searching for medicine, blood and facilities, browsing the directory and booking appointments are free for patients and families. Listing is free for facilities too — claiming a page and reporting stock cost nothing.',
             ],
             [
@@ -180,7 +180,7 @@ return [
     // ── For pharmacies — the claim-your-listing pitch ──────────────────────
     'pharmacies' => [
         'page_title'       => 'For pharmacies',
-        'meta_description' => 'Claim your pharmacy on OpesCare Finder — free. Be found by patients searching for medicine, correct your phone number and hours, and report stock from any phone.',
+        'meta_description' => 'Claim your pharmacy on OpesCare — free. Be found by patients searching for medicine, correct your phone number and hours, and report stock from any phone.',
         'eyebrow'          => 'For pharmacies',
         'title'            => 'Be the pharmacy patients find',
         'lead'             => 'Patients search Finder for medicines every day. A claimed listing means they see your real hours, call a number that answers — and know you have what they need before they travel.',
@@ -209,7 +209,7 @@ return [
     // ── For hospitals & clinics — listing + booking + the platform box ─────
     'hospitals' => [
         'page_title'       => 'For hospitals and clinics',
-        'meta_description' => 'Claim your facility on OpesCare Finder — free. Keep your phone, hours and services accurate, report blood availability, and take appointment bookings.',
+        'meta_description' => 'Claim your facility on OpesCare — free. Keep your phone, hours and services accurate, report blood availability, and take appointment bookings.',
         'eyebrow'          => 'For hospitals and clinics',
         'title'            => 'Keep your facility reachable',
         'lead'             => 'Patients use Finder to choose a facility, check blood availability and book or call. A claimed listing keeps what they see accurate — and keeps your phone ringing for the right reasons.',
@@ -238,7 +238,7 @@ return [
     // ── For patients — a short signpost to the finders ─────────────────────
     'patients' => [
         'page_title'       => 'For patients and families',
-        'meta_description' => 'What you can do with OpesCare Finder: find medicine at pharmacies, blood at hospitals, and facilities you can book or call — free, in French and English.',
+        'meta_description' => 'What you can do with OpesCare: find medicine at pharmacies, blood at hospitals, and facilities you can book or call — free, in French and English.',
         'eyebrow'          => 'For patients and families',
         'title'            => 'Finder is built for you',
         'lead'             => 'Find a medicine, blood or a facility near you, see what it has reported, and call before you travel. Free, with no account needed to search.',
@@ -247,10 +247,10 @@ return [
 
     // ── Platform pages that no longer belong on this product ───────────────
     'redirect' => [
-        'meta_description' => 'This page belongs to the OpesCare health platform for hospitals and institutions. OpesCare Finder is the free tool for finding care in Cameroon.',
-        'eyebrow'          => 'OpesCare Finder',
+        'meta_description' => 'This page belongs to the OpesCare health platform for hospitals and institutions. OpesCare is the free tool for finding care in Cameroon.',
+        'eyebrow'          => 'OpesCare',
         'heading'          => 'This page belongs to the OpesCare platform',
-        'lead'             => 'You have reached OpesCare Finder — the free tool for finding medicine, blood and care in Cameroon. What you were looking for is part of the OpesCare health platform for hospitals and institutions, which is a separate product.',
+        'lead'             => 'You have reached OpesCare — the free tool for finding medicine, blood and care in Cameroon. What you were looking for is part of the OpesCare health platform for hospitals and institutions, which is a separate product.',
         'platform_title'   => 'Looking for the OpesCare platform?',
         'platform_p'       => 'Interoperability, developer APIs and documentation, institutional pricing, demos and service agreements live on the platform site.',
         'platform_cta'     => 'Visit opescare.cloud',

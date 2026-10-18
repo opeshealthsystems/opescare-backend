@@ -43,6 +43,13 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'capability:c
     // One patient, one tab per request (?tab=summary|encounters|vitals|
     // diagnoses|labs|immunizations|preconsult|triage|documents). Each tab is
     // its own access-log row carrying the data category actually shown.
+    // Ask the patient for access when no basis holds. The one write here: it
+    // touches consent_requests, never a clinical table. Literal path, declared
+    // before {id}. Same role gate as the app's ask (capability:request_access).
+    Route::post('/facility/patients/consent-request', [\App\Http\Controllers\MedicalId\PatientChartController::class, 'requestConsent'])
+        ->middleware(['capability:request_access', 'throttle:20,1'])
+        ->name('portals.chart.consent_request');
+
     Route::get('/facility/patients/{id}', [\App\Http\Controllers\MedicalId\PatientChartController::class, 'show'])
         ->name('portals.chart.show');
 });

@@ -91,6 +91,12 @@ class DatabaseSeeder extends Seeder
             $this->call(DemoClinicalCoreSeeder::class);
             $this->call(DemoCarePathwaySeeder::class);
 
+            // The family demo: demo.guardian@ gets her own Patient row, a completed
+            // profile and active links to the two demo children. Without it the
+            // guardian-role account is bounced to /portals/guardian/complete-profile
+            // by RequireCompleteGuardianProfile on every page. Idempotent.
+            $this->call(DemoFamilySeeder::class);
+
             // LAST in the demo block, deliberately. Several older demo seeders
             // still write against five invented facilities ("Demo Central
             // Hospital" and friends), and those names rendered straight into

@@ -27,7 +27,11 @@
         <tr><td class="k">{{ __('doc_ex_sheet.generated_by') }}</td><td class="v">{{ ($generatedBy ?? null) ?: __('doc_ex_sheet.not_recorded') }}</td></tr>
     </table>
 
-    <h2>{{ __('pharmacy_reports.card_' . $report) }} <span class="hint">{{ __('pharmacy_reports.rows_total', ['count' => count($table['rows'])]) }}</span></h2>
+    <h2>{{ __('pharmacy_reports.card_' . $report) }} <span class="hint">{{ __('pharmacy_reports.rows_total', ['count' => $totalRows ?? count($table['rows'])]) }}</span></h2>
+
+    @if(isset($totalRows, $rowCap) && $totalRows > count($table['rows']))
+        <p class="empty">{{ __('pharmacy_reports.pdf_truncated', ['shown' => count($table['rows']), 'total' => $totalRows]) }}</p>
+    @endif
 
     @if($table['rows'] === [])
         <p class="empty">{{ __('pharmacy_reports.pdf_no_rows') }}</p>

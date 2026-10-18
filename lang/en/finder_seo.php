@@ -1,21 +1,21 @@
 <?php
 
 /*
-| SEO meta layer for OpesCare Finder (see config/finder-seo.php and
+| SEO meta layer for OpesCare (see config/finder-seo.php and
 | App\Support\FinderSeo). Kept 1:1 with lang/fr/finder_seo.php.
 |
 | Page titles are written WITHOUT the site name — the layout appends
-| " — OpesCare Finder". Profile titles are full strings (the profile page
+| " — OpesCare". Profile titles are full strings (the profile page
 | renders its own <head>). Titles aim ≤60 rendered chars, descriptions ≤155.
 */
 
 return [
 
     'site' => [
-        'title' => 'OpesCare Finder',
+        'title' => 'OpesCare',
         'description' => 'Find medicine in stock, blood availability and healthcare facilities across Cameroon — free, bilingual English and French.',
         // Quotable by answer engines: what it is AND what the data is not.
-        'org_description' => 'OpesCare Finder is a free bilingual health finder for Cameroon: live pharmacy stock, blood availability and the national health facility directory. Availability is reported by facilities and timestamped, never a verified guarantee of stock.',
+        'org_description' => 'OpesCare is a free bilingual health finder for Cameroon: live pharmacy stock, blood availability and the national health facility directory. Availability is reported by facilities and timestamped, never a verified guarantee of stock.',
     ],
 
     'pages' => [
@@ -41,15 +41,15 @@ return [
         ],
         'profile' => [
             'title' => 'Facility Profile',
-            'description' => 'Address, phone number, opening hours and services for healthcare facilities across Cameroon, on OpesCare Finder.',
+            'description' => 'Address, phone number, opening hours and services for healthcare facilities across Cameroon, on OpesCare.',
         ],
         'about' => [
             'title' => 'About Us',
-            'description' => 'What OpesCare Finder is, where the directory data comes from, and what reported availability does and does not mean.',
+            'description' => 'What OpesCare is, where the directory data comes from, and what reported availability does and does not mean.',
         ],
         'how_it_works' => [
             'title' => 'How It Works',
-            'description' => 'How OpesCare Finder works: pharmacies report stock, hospitals report blood availability, and the directory follows the national facility registry.',
+            'description' => 'How OpesCare works: pharmacies report stock, hospitals report blood availability, and the directory follows the national facility registry.',
         ],
         'faq' => [
             'title' => 'Frequently Asked Questions',
@@ -57,7 +57,7 @@ return [
         ],
         'contact' => [
             'title' => 'Contact Us',
-            'description' => 'Contact the OpesCare Finder team — questions, corrections to a facility listing, or partnership requests from pharmacies and hospitals.',
+            'description' => 'Contact the OpesCare team — questions, corrections to a facility listing, or partnership requests from pharmacies and hospitals.',
         ],
         'help' => [
             'title' => 'Help Centre',
@@ -65,33 +65,33 @@ return [
         ],
         'privacy' => [
             'title' => 'Privacy Policy',
-            'description' => 'How OpesCare Finder handles personal data: what we collect, what we never collect, and the choices you have.',
+            'description' => 'How OpesCare handles personal data: what we collect, what we never collect, and the choices you have.',
         ],
         'terms' => [
             'title' => 'Terms of Use',
-            'description' => 'The terms that govern using OpesCare Finder, including what reported availability means and does not mean.',
+            'description' => 'The terms that govern using OpesCare, including what reported availability means and does not mean.',
         ],
         'consent' => [
             'title' => 'Consent & Data Choices',
-            'description' => 'Your consent and data choices on OpesCare Finder, explained in plain language.',
+            'description' => 'Your consent and data choices on OpesCare, explained in plain language.',
         ],
         'status' => [
             'title' => 'Service Status',
-            'description' => 'Live operational status of OpesCare Finder services.',
+            'description' => 'Live operational status of OpesCare services.',
         ],
         'sla' => [
             'title' => 'Service Levels',
-            'description' => 'Service level commitments for partners integrating with OpesCare Finder.',
+            'description' => 'Service level commitments for partners integrating with OpesCare.',
         ],
     ],
 
     // Facility profile pages — locality words in the title are the GEO signal.
     'profile' => [
-        'title'            => ':name — :city, :region | OpesCare Finder',
-        'title_city'       => ':name — :city | OpesCare Finder',
-        'title_bare'       => ':name | OpesCare Finder',
-        'description'      => ':name — :type in :city, Cameroon. See the address, phone number, opening hours and services on OpesCare Finder.',
-        'description_bare' => ':name — :type in Cameroon. See the address, phone number, opening hours and services on OpesCare Finder.',
+        'title'            => ':name — :city, :region | OpesCare',
+        'title_city'       => ':name — :city | OpesCare',
+        'title_bare'       => ':name | OpesCare',
+        'description'      => ':name — :type in :city, Cameroon. See the address, phone number, opening hours and services on OpesCare.',
+        'description_bare' => ':name — :type in Cameroon. See the address, phone number, opening hours and services on OpesCare.',
     ],
 
     'breadcrumbs' => [

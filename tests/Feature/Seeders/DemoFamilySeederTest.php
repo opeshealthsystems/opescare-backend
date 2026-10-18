@@ -179,4 +179,30 @@ class DemoFamilySeederTest extends TestCase
         $this->assertSame($before, $snapshot());
         $this->assertEquals($consented, FamilyLink::where('created_by', 'invite_accepted')->value('dependent_consented_at'), 'Consent is stamped once.');
     }
+
+    public function test_the_seeded_demo_guardian_reaches_her_portal_not_the_complete_profile_gate(): void
+    {
+        $this->seed(DemoFamilySeeder::class);
+
+        $user = User::withoutGlobalScopes()->where('email', DemoFamilySeeder::GUARDIAN_EMAIL)->firstOrFail();
+        $this->assertSame('guardian', $user->role?->name);
+
+        foreach (['/patient', '/patient/family'] as $path) {
+            $response = $this->actingAs($user)->get($path);
+            $this->assertFalse(
+                $response->isRedirect(route('portals.guardian.complete-profile'))
+                    || $response->isRedirect(route('portals.guardian.pending')),
+                "{$path} bounced the seeded demo guardian to the profile gate."
+            );
+            $response->assertOk();
+        }
+    }
+
+    public function test_the_demo_seed_chain_runs_the_family_seeder(): void
+    {
+        // A fresh `db:seed` in demo mode must produce a complete guardian; the
+        // family seeder used to be reachable only by hand (P0-1, 2026-10-18).
+        $source = file_get_contents(database_path('seeders/DatabaseSeeder.php'));
+        $this->assertStringContainsString('DemoFamilySeeder::class', $source);
+    }
 }

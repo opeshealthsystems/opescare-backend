@@ -16,7 +16,7 @@ return [
         'secure_area'  => 'Secure sign-in area',
         'need_help'    => 'Need help?',
         'contact_support' => 'Contact support',
-        'back_to_site' => 'Back to OpesCare Finder',
+        'back_to_site' => 'Back to OpesCare',
     ],
 
     // Password visibility toggle (all password fields)

@@ -1,10 +1,10 @@
 {{--
-    OpesCare Finder — shared public shell (mobile-first).
+    OpesCare — shared public shell (mobile-first).
 
     Every redesigned public page extends THIS layout:
 
         @extends('layouts.finder')
-        @section('title', __('...'))            → <title>{title} — OpesCare Finder</title>
+        @section('title', __('...'))            → <title>{title} — OpesCare</title>
         @section('description', __('...'))      → meta description
         @section('content') ... @endsection
         @push('head')    extra <head> tags (per-page CSS, preloads)
@@ -19,7 +19,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    @hasSection('title')<title>@yield('title') — OpesCare Finder</title>@else<title>{{ __('finder_shell.meta.default_title') }}</title>@endif
+    @hasSection('title')<title>@yield('title') — OpesCare</title>@else<title>{{ __('finder_shell.meta.default_title') }}</title>@endif
     <meta name="description" content="@yield('description', __('finder_shell.meta.default_description'))">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 

@@ -73,6 +73,9 @@
     {{-- "What we offer": the facility's own service list, drawn from the
          institutional code dictionary. Self-gates on the same capability the
          route does, so a role without it sees no dead link. --}}
+    <a href="{{ route('verify.health-id') }}" class="sidebar-link {{ request()->routeIs('verify.health-id*') ? 'active' : '' }}">
+        <i data-lucide="scan-line"></i><span>{{ __('facility_admin_home.nav_verify_health_id', [], $l) }}</span>
+    </a>
     @capability('service_catalogue')
     <a href="{{ route('portals.facility.catalogue') }}" class="sidebar-link {{ request()->routeIs('portals.facility.catalogue*') ? 'active' : '' }}">
         <i data-lucide="clipboard-list"></i><span>{{ __('catalogue.nav', [], $l) }}</span>

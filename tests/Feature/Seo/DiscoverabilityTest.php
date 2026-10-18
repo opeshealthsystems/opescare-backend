@@ -188,7 +188,7 @@ class DiscoverabilityTest extends TestCase
         // can send a sick person to a closed pharmacy.
         $body = $this->get('/llms.txt')->assertOk()->getContent();
 
-        $this->assertStringContainsString('OpesCare Finder', $body);
+        $this->assertStringContainsString('OpesCare', $body);
         $this->assertStringContainsString('MINSANTE', $body);
         $this->assertStringContainsString('OpenStreetMap', $body);
         $this->assertStringContainsString('never a guarantee', $body);

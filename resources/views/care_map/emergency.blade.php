@@ -27,7 +27,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>{{ __('finder_seo.pages.emergency.title') }} — OpesCare Finder</title>
+<title>{{ __('finder_seo.pages.emergency.title') }} — OpesCare</title>
 <meta name="description" content="{{ __('finder_seo.pages.emergency.description') }}">
 <link rel="canonical" href="{{ route('public.care-map.emergency') . (app()->getLocale() === 'en' ? '' : '?lang=' . app()->getLocale()) }}">
 <link rel="alternate" hreflang="en" href="{{ route('public.care-map.emergency') }}">

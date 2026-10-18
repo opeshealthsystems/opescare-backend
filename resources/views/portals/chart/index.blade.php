@@ -30,6 +30,13 @@
     </div>
     <div class="od-card__body">
 
+        @if(session('success'))
+        <div class="odc-note" role="status">
+            <i data-lucide="send"></i>
+            <div>{{ session('success') }}</div>
+        </div>
+        @endif
+
         @if($notFound)
         <div class="odc-note odc-note--urgent" role="alert">
             <i data-lucide="user-x"></i>
@@ -50,6 +57,37 @@
                 </button>
             </div>
         </form>
+
+        {{-- No basis? Ask the patient. The form is offered for every lookup
+             that did not open a chart, and the answer is the same whether or
+             not the Health ID exists, so it confirms nothing. --}}
+        @if($notFound)
+        @capability('request_access')
+        <form method="POST" action="{{ route('portals.chart.consent_request') }}" class="odc-mt">
+            @csrf
+            <input type="hidden" name="health_id" value="{{ $healthId }}">
+            <h3 class="od-card__title">{{ __('chart.consent_request_title') }}</h3>
+            <div class="odc-hint">{{ __('chart.consent_request_hint') }}</div>
+            <div class="odc-field">
+                <label class="odc-label odc-label--req" for="chart-consent-purpose">{{ __('chart.consent_purpose') }}</label>
+                <select id="chart-consent-purpose" name="purpose" class="od-input" required>
+                    @foreach($purposes as $purpose)
+                    <option value="{{ $purpose }}">{{ __('consent_requests.purpose.' . $purpose) }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="odc-field">
+                <label class="odc-label" for="chart-consent-justification">{{ __('chart.consent_justification') }}</label>
+                <textarea id="chart-consent-justification" name="justification" class="od-input" maxlength="1000" rows="2"></textarea>
+            </div>
+            <div class="odc-actions">
+                <button type="submit" class="od-btn od-btn--primary">
+                    <i data-lucide="key-round"></i> {{ __('chart.consent_request_submit') }}
+                </button>
+            </div>
+        </form>
+        @endcapability
+        @endif
 
         <p class="odc-hint odc-mt">
             <a href="{{ route('portals.staff') }}">{{ __('chart.landing_hint') }}</a>

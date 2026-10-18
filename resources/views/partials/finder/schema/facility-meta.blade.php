@@ -5,7 +5,7 @@
 
         @include('partials.finder.schema.facility-meta', ['facility' => $facility])
 
-    Ships: locality-bearing title ("Name — City, Region | OpesCare Finder" —
+    Ships: locality-bearing title ("Name — City, Region | OpesCare" —
     the words "pharmacie douala" queries are made of), meta description,
     canonical + hreflang (?lang=fr is a real crawlable address), geo.* / ICBM
     from the row's coordinates, and OG/Twitter cards.
@@ -35,7 +35,7 @@
 <meta name="ICBM" content="{{ $facility->latitude }}, {{ $facility->longitude }}">
 @endif
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="OpesCare Finder">
+<meta property="og:site_name" content="OpesCare">
 <meta property="og:title" content="{{ $fmTitle }}">
 <meta property="og:description" content="{{ $fmDesc }}">
 <meta property="og:url" content="{{ $fmCanonical }}">
@@ -44,7 +44,7 @@
 <meta property="og:image" content="{{ $fmOgImage }}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="OpesCare Finder">
+<meta property="og:image:alt" content="OpesCare">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{ $fmTitle }}">
 <meta name="twitter:description" content="{{ $fmDesc }}">

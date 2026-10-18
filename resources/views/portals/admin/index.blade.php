@@ -1,8 +1,15 @@
 @extends('layouts.portal')
 
-@section('title', __('public.admin_governance.page_meta_title', [], app()->getLocale()))
+{{-- Facility tier sees its own facility's admin home, never OpesCare's
+     governance back office; platform admins keep the governance title. --}}
+@php $facilityTier = isset($isPlatform) && ! $isPlatform; @endphp
+@section('title', $facilityTier
+    ? ($facilityName ? __('facility_admin_home.page_meta_title', ['facility' => $facilityName]) : __('facility_admin_home.page_title_plain'))
+    : __('public.admin_governance.page_meta_title', [], app()->getLocale()))
 
-@section('breadcrumb_home', __('public.admin_governance.breadcrumb_home', [], app()->getLocale()))
+@section('breadcrumb_home', $facilityTier
+    ? __('facility_admin_home.breadcrumb_home')
+    : __('public.admin_governance.breadcrumb_home', [], app()->getLocale()))
 @section('breadcrumb_home_url', route('portals.admin'))
 
 @section('head')
@@ -28,8 +35,13 @@
 <section class="od-greeting oda-welcome">
     <div>
         <div class="od-greeting__hello">{{ __('admin_desk.home_hello', [], $l) }}</div>
+        @if($facilityTier)
+        <h1 class="od-greeting__name" data-testid="facility-admin-title">{{ $facilityName ? __('facility_admin_home.page_title', ['facility' => $facilityName]) : __('facility_admin_home.page_title_plain') }}</h1>
+        <div class="od-greeting__meta">{{ __('facility_admin_home.page_subtitle') }} · {{ now()->translatedFormat('l j F Y') }}</div>
+        @else
         <h1 class="od-greeting__name">{{ $myName !== '' ? $myName : __('public.admin_governance.page_title', [], $l) }}</h1>
         <div class="od-greeting__meta">{{ __('public.admin_governance.page_subtitle', [], $l) }} · {{ now()->translatedFormat('l j F Y') }}</div>
+        @endif
     </div>
     <div class="od-row">
         {{-- Scrolls to the duplicates panel, which is platform tier — so the
@@ -42,6 +54,51 @@
         @endplatformadmin
     </div>
 </section>
+
+@if($facilityTier && is_array($checklist ?? null) && in_array(false, $checklist, true))
+@php
+    $steps = [
+        'team'    => ['icon' => 'user-plus',   'url' => route('portals.facility.team')],
+        'profile' => ['icon' => 'building-2',  'url' => \App\Support\StaffCapabilities::can($me, 'service_catalogue') ? route('portals.facility.settings.index') : null],
+        'verify'  => ['icon' => 'scan-line',   'url' => route('verify.health-id')],
+    ];
+    $doneCount = count(array_filter($checklist));
+@endphp
+<section class="od-card" id="get-started" data-testid="get-started" aria-labelledby="oda-start-title">
+    <div class="od-card__head">
+        <h2 class="od-card__title" id="oda-start-title">{{ __('facility_admin_home.checklist_title') }}
+            <span class="od-card__count">({{ __('facility_admin_home.checklist_progress', ['done' => $doneCount, 'total' => count($checklist)]) }})</span></h2>
+    </div>
+    <p class="oda-start__intro">{{ __('facility_admin_home.checklist_intro') }}</p>
+    <ul class="oda-start__list">
+        @foreach($steps as $key => $step)
+        @php $done = (bool) ($checklist[$key] ?? false); @endphp
+        <li class="oda-start__item {{ $done ? 'is-done' : '' }}" data-step="{{ $key }}" data-done="{{ $done ? '1' : '0' }}">
+            <i data-lucide="{{ $done ? 'check-circle-2' : $step['icon'] }}" aria-hidden="true"></i>
+            <div class="oda-start__text">
+                <strong>{{ __('facility_admin_home.step_' . $key . '_title') }}</strong>
+                <span class="oda-start__status">{{ $done ? __('facility_admin_home.step_done') : __('facility_admin_home.step_todo') }}</span>
+                <div>{{ __('facility_admin_home.step_' . $key . '_body') }}</div>
+            </div>
+            @if(! $done && $step['url'])
+            <a href="{{ $step['url'] }}" class="od-btn od-btn--secondary">{{ __('facility_admin_home.step_' . $key . '_action') }}</a>
+            @endif
+        </li>
+        @endforeach
+    </ul>
+</section>
+<style @cspNonce>
+    .oda-start__intro { margin: 0 0 12px; color: #334155; }
+    .oda-start__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+    .oda-start__item { display: flex; gap: 12px; align-items: flex-start; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; }
+    .oda-start__item > i { color: #0F4C81; flex: 0 0 auto; margin-top: 2px; }
+    .oda-start__item.is-done > i { color: #15803d; }
+    .oda-start__text { flex: 1 1 auto; min-width: 0; }
+    .oda-start__status { margin-left: 8px; font-size: 12px; color: #64748b; }
+    .oda-start__item .od-btn { flex: 0 0 auto; }
+    @media (max-width: 600px) { .oda-start__item { flex-wrap: wrap; } }
+</style>
+@endif
 
 {{-- KPI row. Platform tier: the platform's four headline figures. Every number
      comes from AdminPortalController@index; nothing here is computed. --}}

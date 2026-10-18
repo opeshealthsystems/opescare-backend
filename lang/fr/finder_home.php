@@ -12,7 +12,7 @@
 
 return [
 
-    // Le layout ajoute « — OpesCare Finder » à chaque titre ; pas de marque ici.
+    // Le layout ajoute « — OpesCare » à chaque titre ; pas de marque ici.
     'page_title' => 'Trouvez médicaments, sang et rendez-vous près de chez vous',
     'page_desc'  => 'Recherchez parmi :count établissements de santé dans les 10 régions du Cameroun — pharmacies, hôpitaux, cliniques et laboratoires. Gratuit, en français et en anglais.',
 

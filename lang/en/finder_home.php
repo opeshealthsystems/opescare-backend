@@ -15,7 +15,7 @@
 
 return [
 
-    // The layout suffixes every title with "— OpesCare Finder"; no brand here.
+    // The layout suffixes every title with "— OpesCare"; no brand here.
     'page_title' => 'Find medicine, blood and appointments near you',
     'page_desc'  => 'Search :count health facilities across all 10 regions of Cameroon — pharmacies, hospitals, clinics and laboratories. Free to use, in English and French.',
 

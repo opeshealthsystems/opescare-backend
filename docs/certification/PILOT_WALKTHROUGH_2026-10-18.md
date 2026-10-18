@@ -22,3 +22,45 @@ Walked the exact path a pilot hospital takes, on the local dev app with test dat
 5. **Invite mail goes out from `noreply@opescare.cloud`** until the opescare.com mail records are added at Namecheap and `MAIL_FROM_ADDRESS` is switched.
 
 Not yet walked: a clinician's first Health ID lookup and consent request end to end, and the patient approving consent on the phone.
+
+## Clinical journey (agent)
+
+Driven end to end over the real HTTP routes by
+`tests/Feature/Pilot/PilotClinicalJourneyTest.php` (passes, 69 assertions).
+Only the platform admin and the patient's record are created directly; every
+other step is the route the product uses.
+
+| Step | Route | Result |
+|---|---|---|
+| 1. OpesCare converts the hospital lead | `POST /admin/leads/{lead}/convert` (`LeadConversionService`) | **Works.** Facility + listing created, real invite link issued. |
+| 2. Hospital contact accepts invite, signs in | `GET/POST /invite/{token}`, `POST /login` | **Works.** Account is `facility_admin` at the new hospital. |
+| 3. Hospital admin invites a doctor | `GET /facility/team`, `POST /facility/team/invites` | **Works.** |
+| 4. Doctor accepts, signs in (web + app) | `POST /invite/{token}`, `POST /login`, `POST /api/mobile/auth/provider/login` | **Works.** One posting, so no facility selector; `/facility` opens; sidebar shows "Patient chart" (`/facility/patients`). |
+| 5. Health ID lookup, no relationship | `GET /facility/patients?health_id=`, `GET /api/mobile/doctor/patients/lookup` | **Works, nothing leaks.** Web says "No chart is available", chart URL 404s, the refusal is in `access_logs`; the app confirms identity only and the chart API answers 403. |
+| 6. Doctor asks for consent | `POST /facility/patients/consent-request` (**new**) | **Was broken on the web: dead end.** The desk had no way to ask; asking existed only in the phone app. Fixed (see below). Request carries the session's facility and the doctor; an unknown Health ID gets the identical answer and writes nothing. Also visible in the app outbox `GET /api/mobile/doctor/consent-requests`. |
+| 7. Patient approves on the phone | `GET /api/mobile/consent-requests`, `POST /api/mobile/consent-requests/{id}/approve` | **Works.** Active grant created. |
+| 8. Doctor opens the chart | `GET /facility/patients?health_id=` → `/facility/patients/{id}` (summary + encounters tab), `GET /api/mobile/doctor/patients/{id}` | **Works.** |
+| 9. Patient sees who read the record | `GET /api/mobile/access-logs` | **Works.** Row names the hospital; purpose `treatment:consent_grant`. |
+| 10. Patient revokes | `POST /api/mobile/consents/{id}/revoke` | **Works.** Web chart 404s again, app chart 403. |
+| 11. Grant expires | (second ask + approve, then `expires_at` in the past) | **Works.** Chart closes at expiry. |
+| 12. Break-glass | `POST /api/mobile/doctor/emergency-access`, `GET .../{grant}/profile`, patient `GET /api/mobile/emergency-access` | **Works.** Profile opens, access log row written, `EmergencyAccessAlertNotification` sent to the patient, the patient sees the override. Break-glass is app-only; there is no web desk button. |
+
+### Fixes made
+
+1. **Web desk could not ask for consent.** Added `POST /facility/patients/consent-request`
+   (`portals.chart.consent_request`, `routes/chart.php`, behind `capability:request_access`
+   + throttle) and `PatientChartController::requestConsent`, which calls the same
+   `ConsentService` with the app's closed purpose/scope vocabulary (grant 24 h, ask
+   stands 72 h). Facility from `DeskFacilityContext`, clinician from the session.
+   The answer never says whether the Health ID exists. The form appears on the
+   lookup page under "No chart is available" (`resources/views/portals/chart/index.blade.php`);
+   6 new keys in `lang/{en,fr}/chart.php`.
+
+### Notes (not changed)
+
+- The patient-side consent approval is in the app only; there is no web approve
+  screen for patients.
+- There is no web outbox of a facility's consent requests; the app has one.
+- Test-only trap: the app's provider login runs `Auth::attempt` + `Auth::logout`,
+  which in a single test process ends the web session; in production they are
+  separate requests.

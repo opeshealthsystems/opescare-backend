@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'page_meta_title'   => ':facility — Administration de l\'établissement',
+    'page_title'        => ':facility — Administration de l\'établissement',
+    'page_title_plain'  => 'Administration de l\'établissement',
+    'breadcrumb_home'   => 'Administration de l\'établissement',
+    'page_subtitle'     => 'Gérez votre établissement, votre équipe et son activité Health ID.',
+    'nav_verify_health_id' => 'Vérifier un Health ID',
+
+    'checklist_title'   => 'Pour bien démarrer',
+    'checklist_intro'   => 'Vous gérez l\'établissement. Ce sont les médecins et les infirmiers qui ouvrent les dossiers des patients : invitez-les pour qu\'ils puissent commencer à soigner.',
+    'checklist_progress' => ':done sur :total terminé(s)',
+    'step_done'         => 'Terminé',
+    'step_todo'         => 'À faire',
+    'step_team_title'   => 'Invitez votre équipe',
+    'step_team_body'    => 'Invitez au moins un médecin, un infirmier ou un autre membre du personnel. Cette étape est terminée dès qu\'une invitation est acceptée.',
+    'step_team_action'  => 'Ouvrir l\'équipe',
+    'step_profile_title' => 'Complétez le profil de l\'établissement',
+    'step_profile_body' => 'Ajoutez un numéro de téléphone et votre position sur la carte pour que les patients puissent vous trouver et vous joindre.',
+    'step_profile_action' => 'Ouvrir les paramètres',
+    'step_verify_title' => 'Vérifiez un Health ID',
+    'step_verify_body'  => 'Contrôlez la carte Health ID d\'un patient à partir de son code QR. Terminé dès que votre établissement en a vérifié un.',
+    'step_verify_action' => 'Vérifier un Health ID',
+];
