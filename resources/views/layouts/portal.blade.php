@@ -16,13 +16,21 @@
     @endif
     <link rel="stylesheet" href="{{ asset('css/portal.css') }}">
     <link rel="stylesheet" href="{{ asset('css/helix-v2.css') }}">
+    @if (request()->is('pharmacy', 'pharmacy/*'))
+        {{-- The pharmacy desk's visual standard (docs/superpowers/specs/…pharmacy-dashboard…): scoped to body.section-pharmacy. --}}
+        <link rel="stylesheet" href="{{ asset('css/pharmacy.css') }}?v={{ @filemtime(public_path('css/pharmacy.css')) ?: '1' }}">
+    @endif
+    @if (request()->is('admin', 'admin/*', 'portals/admin', 'portals/admin/*'))
+        {{-- The admin console's own rules (public/css/admin.css): scoped to body.section-admin, same pattern as pharmacy.css. --}}
+        <link rel="stylesheet" href="{{ asset('css/admin.css') }}?v={{ @filemtime(public_path('css/admin.css')) ?: '1' }}">
+    @endif
     <style>
         .sidebar-spacer{margin-bottom:var(--p-space-3,.75rem)}
         .min-w-0{min-width:0}
     </style>
     @yield('head')
 </head>
-<body class="portal-body">
+<body class="portal-body{{ request()->is('pharmacy', 'pharmacy/*') ? ' section-pharmacy' : '' }}{{ request()->is('admin', 'admin/*', 'portals/admin', 'portals/admin/*') ? ' section-admin' : '' }}">
 
 <div class="portal-wrap">
 

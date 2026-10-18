@@ -5,10 +5,6 @@
 @section('breadcrumb_home_url', route('portals.pharmacy.dashboard'))
 @section('breadcrumb_section', __('public.pharmacy_portal.breadcrumb_section_stock', [], app()->getLocale()))
 
-@section('head')
-@include('portals.pharmacy._supply_styles')
-@endsection
-
 @php
     $l = app()->getLocale();
     // Availability semantics on the segmented control — colors only ever mean
@@ -19,6 +15,7 @@
         'out_of_stock' => 'fs-seg__opt--danger',
         default        => '',
     };
+    $stockCount = $stocks ? (method_exists($stocks, 'total') ? $stocks->total() : $stocks->count()) : 0;
 @endphp
 
 @section('content')
@@ -30,6 +27,8 @@
     @feature('inventory_ops')
         @endfeature
 </div>
+
+@include('portals.pharmacy.stock_ops._nav')
 
 @if($errors->any())
 <div class="banner banner--danger">
@@ -73,35 +72,12 @@
 
 @if($listing)
 
-{{-- Search YOUR catalog first: behind a counter the question is always
-     "do we already report this one?" — so the search leads the screen. --}}
-<form method="GET" class="fs-search" role="search">
-    <label class="fs-search__box">
-        @include('partials.finder.icon', ['name' => 'search', 'size' => 18])
-        <input type="text" name="search" class="fs-search__input" inputmode="search" autocomplete="off"
-               placeholder="{{ __('public.pharmacy_portal.ph_search_drug', [], $l) }}"
-               value="{{ request('search') }}" aria-label="{{ __('public.aria_search_drugs') }}">
-    </label>
-    <select name="stock_status" class="filter-select" aria-label="{{ __('public.aria_stock_status') }}" data-autosubmit>
-        <option value="">{{ __('public.pharmacy_portal.filter_all_stock', [], $l) }}</option>
-        @foreach($statuses as $s)
-        <option value="{{ $s->value }}" {{ request('stock_status') === $s->value ? 'selected' : '' }}>@enum($s->value, 'stock_status')</option>
-        @endforeach
-    </select>
-    <button type="submit" class="btn btn-secondary btn-sm fs-tap"><i data-lucide="filter"></i> {{ __('public.pharmacy_portal.btn_filter', [], $l) }}</button>
-    @if(request()->hasAny(['stock_status','search']))
-        <a href="{{ route('portals.pharmacy.stock') }}" class="btn btn-ghost btn-sm fs-tap">{{ __('public.pharmacy_portal.btn_clear', [], $l) }}</a>
-    @endif
-</form>
-
 {{-- Coverage: the number a pharmacist reads. Same corrected semantics
      (`coverage['reported']` of `coverage['total']`), restyled only. --}}
 @php $covPct = $coverage['total'] > 0 ? (int) round($coverage['reported'] / $coverage['total'] * 100) : 0; @endphp
 <div class="fs-cov">
-    <div class="fs-cov__head">
-        @include('partials.finder.icon', ['name' => 'pill', 'size' => 14])
-        {{ __('finder_supply.cov_title') }}
-    </div>
+    <div class="fs-cov__icon"><i data-lucide="pill"></i></div>
+    <div class="fs-cov__head">{{ __('finder_supply.cov_title') }}</div>
     <div class="fs-cov__count">
         <strong>{{ $listing->facility_name }}</strong> —
         {{ __('public.pharmacy_portal.stock_cov_summary', [
@@ -109,15 +85,13 @@
             'total'    => $coverage['total'],
         ], $l) }}
     </div>
-    <div class="fs-cov__bar" role="img" aria-label="{{ $covPct }}%">
-        <div class="fs-cov__fill" style="width:{{ $covPct }}%"></div>
-    </div>
+    <progress class="fs-cov__bar" value="{{ $coverage['reported'] }}" max="{{ max(1, $coverage['total']) }}" aria-label="{{ $covPct }}%"></progress>
     <p class="fs-cov__hint">{{ __('finder_supply.cov_hint') }}</p>
 </div>
 
 {{-- Report a medicine this pharmacy has never published availability for. --}}
-<details class="panel" @if(old('medicine_id')) open @endif>
-    <summary class="panel-header" style="cursor:pointer;">
+<details class="panel" id="stock-add" @if(old('medicine_id')) open @endif>
+    <summary class="panel-header">
         <i data-lucide="plus-circle"></i>
         {{ __('public.pharmacy_portal.stock_add_title', [], $l) }}
     </summary>
@@ -177,7 +151,40 @@
     </div>
 </details>
 
+{{-- The queue: what this pharmacy tells patients it has, one row per medicine. --}}
 <div class="panel">
+    <div class="panel-header">
+        <h3 class="panel-title"><i data-lucide="megaphone"></i> {{ __('pharmacy_ops.nav_public_stock') }} <span class="ph-count-inline">({{ $stockCount }})</span></h3>
+        <a href="#stock-add" class="btn btn-primary btn-sm"><i data-lucide="plus"></i> {{ __('public.pharmacy_portal.stock_add_title', [], $l) }}</a>
+    </div>
+    <div class="ph-toolbar">
+        <div class="ph-pills" role="tablist">
+            <a href="{{ route('portals.pharmacy.stock', array_filter(['search' => request('search')])) }}" class="ph-pill{{ request('stock_status') === null || request('stock_status') === '' ? ' active' : '' }}" role="tab">{{ __('public.pharmacy_portal.filter_all_stock', [], $l) }}</a>
+            @foreach($statuses as $s)
+            <a href="{{ route('portals.pharmacy.stock', array_filter(['search' => request('search'), 'stock_status' => $s->value])) }}" class="ph-pill{{ request('stock_status') === $s->value ? ' active' : '' }}" role="tab"><span class="ph-dot"></span>@enum($s->value, 'stock_status')</a>
+            @endforeach
+        </div>
+        {{-- Search YOUR catalog first: behind a counter the question is always
+             "do we already report this one?" — so the search leads the list. --}}
+        <form method="GET" class="fs-search" role="search">
+            <label class="fs-search__box">
+                @include('partials.finder.icon', ['name' => 'search', 'size' => 18])
+                <input type="text" name="search" class="fs-search__input" inputmode="search" autocomplete="off"
+                       placeholder="{{ __('public.pharmacy_portal.ph_search_drug', [], $l) }}"
+                       value="{{ request('search') }}" aria-label="{{ __('public.aria_search_drugs') }}">
+            </label>
+            <select name="stock_status" class="filter-select" aria-label="{{ __('public.aria_stock_status') }}" data-autosubmit>
+                <option value="">{{ __('public.pharmacy_portal.filter_all_stock', [], $l) }}</option>
+                @foreach($statuses as $s)
+                <option value="{{ $s->value }}" {{ request('stock_status') === $s->value ? 'selected' : '' }}>@enum($s->value, 'stock_status')</option>
+                @endforeach
+            </select>
+            <button type="submit" class="btn btn-secondary btn-sm fs-tap"><i data-lucide="filter"></i> {{ __('public.pharmacy_portal.btn_filter', [], $l) }}</button>
+            @if(request()->hasAny(['stock_status','search']))
+                <a href="{{ route('portals.pharmacy.stock') }}" class="btn btn-ghost btn-sm fs-tap">{{ __('public.pharmacy_portal.btn_clear', [], $l) }}</a>
+            @endif
+        </form>
+    </div>
     <div class="table-wrapper">
         <table class="data-table">
             <thead>
@@ -194,11 +201,26 @@
             </thead>
             <tbody>
                 @forelse($stocks as $stock)
-                @php $med = $stock->medicine; @endphp
+                @php
+                    $med     = $stock->medicine;
+                    $ledger  = isset($ledgerItems) && $ledgerItems->has($stock->medicine_id) ? $ledgerItems->get($stock->medicine_id) : null;
+                    $stVal   = $stock->stock_status instanceof \BackedEnum ? $stock->stock_status->value : (string) $stock->stock_status;
+                    $tone    = match ($stVal) { 'in_stock' => 'green', 'low_stock' => 'amber', 'out_of_stock' => 'red', default => 'grey' };
+                @endphp
                 <tr>
                     <td data-label="{{ __('public.pharmacy_portal.stock_col_medicine', [], $l) }}">
-                        <span class="td-strong">{{ $med?->name ?? '—' }}</span>
-                        <div class="td-muted">{{ $med?->generic_name }} {{ $med?->strength }}</div>
+                        <div class="ph-cell">
+                            @include('portals.pharmacy.stock_ops._avatar', ['name' => $med?->name, 'tone' => $tone])
+                            <div>
+                                @if($ledger)
+                                    <div class="ph-cell__title"><a href="{{ route('portals.pharmacy.stock.items.show', $ledger) }}" class="td-strong">{{ $med?->name ?? '—' }}</a></div>
+                                    <div class="ph-cell__sub">{{ $med?->generic_name }} {{ $med?->strength }} · <a href="{{ route('portals.pharmacy.stock.items.show', $ledger) }}">{{ __('pharmacy_stock_desk.link_ledger') }}</a></div>
+                                @else
+                                    <div class="ph-cell__title"><span class="td-strong">{{ $med?->name ?? '—' }}</span></div>
+                                    <div class="ph-cell__sub">{{ $med?->generic_name }} {{ $med?->strength }}</div>
+                                @endif
+                            </div>
+                        </div>
                     </td>
                     <td data-label="{{ __('public.pharmacy_portal.stock_col_status', [], $l) }}">
                         {{-- Tap 1: pick the availability. Tap 2: Save. Same field
@@ -244,14 +266,22 @@
                             <input type="hidden" name="medicine_id" value="{{ $stock->medicine_id }}">
                             <input type="hidden" name="search" value="{{ request('search') }}">
                             <input type="hidden" name="stock_status_filter" value="{{ request('stock_status') }}">
-                            <button type="submit" class="btn btn-primary fs-tap">
+                            <button type="submit" class="btn btn-primary btn-sm fs-tap">
                                 @include('partials.finder.icon', ['name' => 'check', 'size' => 16]) {{ __('public.pharmacy_portal.stock_btn_save', [], $l) }}
                             </button>
                         </form>
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="8" class="td-muted empty-cell">{{ __('public.pharmacy_portal.stock_none', [], $l) }}</td></tr>
+                <tr><td colspan="8" class="empty-cell">
+                    <div class="empty-state">
+                        <i data-lucide="package-search"></i>
+                        <p>{{ __('public.pharmacy_portal.stock_none', [], $l) }}</p>
+                        @if(! $catalog->isEmpty())
+                        <a href="#stock-add" class="btn btn-primary btn-sm"><i data-lucide="plus"></i> {{ __('public.pharmacy_portal.stock_add_title', [], $l) }}</a>
+                        @endif
+                    </div>
+                </td></tr>
                 @endforelse
             </tbody>
         </table>

@@ -156,7 +156,7 @@
                             </td>
                             <td>
                                 @if($rec->status !== 'entered_in_error' && $rec->facility_id === $facilityId)
-                                    <form method="POST" action="{{ route('portals.immunisations.void', [$patient->id, $rec->id]) }}">
+                                    <form method="POST" action="{{ route('portals.immunisations.void', [$patient->id, $rec->id]) }}" data-confirm="{{ __('hospital_desk.confirm_immunisation_void') }}">
                                         @csrf
                                         <input type="text" name="reason" class="form-control mb-2" required maxlength="2000"
                                                aria-label="{{ __('immunisation_desk.void_reason_label') }}" placeholder="{{ __('immunisation_desk.void_reason_label') }}">

@@ -100,10 +100,9 @@ class LabTestAvailability extends Model
 
         return $query->where(function (Builder $q) use ($column) {
             $q->whereNull($column)
-                ->orWhereNotIn($column, \Illuminate\Support\Facades\DB::table('clinical_code_dictionary')
-                    ->select('code')
-                    ->where('system', 'LOINC')
-                    ->where('common_reason', 'like', \App\Services\Imaging\ImagingExamSearch::IMAGING_REASON_PREFIX . '%'));
+                // LOINC imaging terms AND ICHI diagnostic-imaging stems (I-3):
+                // one shared subquery, so this and the imaging finder agree.
+                ->orWhereNotIn($column, \App\Services\Imaging\ImagingExamSearch::imagingCodesQuery());
         });
     }
 }

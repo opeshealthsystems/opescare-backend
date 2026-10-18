@@ -645,6 +645,11 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access'])->group(funct
     Route::middleware('capability:dispense')->group(function () {
         Route::get('/pharmacy/prescriptions',               [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'prescriptions'])->name('portals.pharmacy.prescriptions');
         Route::get('/pharmacy/prescriptions/lookup', [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'prescriptionLookup'])->name('portals.pharmacy.prescriptions.lookup');
+        // Detail + the dispensing register (reads; the write stays on `dispense` below).
+        // `lookup` is registered first so the literal path wins over {id}.
+        Route::get('/pharmacy/prescriptions/{id}',          [\App\Http\Controllers\MedicalId\PharmacyPrescriptionController::class, 'show'])->whereUuid('id')->name('portals.pharmacy.prescriptions.show');
+        Route::get('/pharmacy/dispensing',                  [\App\Http\Controllers\MedicalId\PharmacyPrescriptionController::class, 'dispensing'])->name('portals.pharmacy.dispensing');
+        Route::get('/pharmacy/dispensing/export',           [\App\Http\Controllers\MedicalId\PharmacyPrescriptionController::class, 'dispensingExport'])->name('portals.pharmacy.dispensing.export');
         Route::post('/pharmacy/prescriptions/{id}/dispense',[\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'dispense'])->name('portals.pharmacy.dispense');
     });
 
@@ -657,6 +662,21 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access'])->group(funct
         Route::post('/pharmacy/stock',                      [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'reportStock'])->name('portals.pharmacy.stock.report');
         Route::get('/pharmacy/controlled',                  [\App\Http\Controllers\MedicalId\PharmacyPortalController::class, 'controlled'])->name('portals.pharmacy.controlled');
     });
+});
+
+// ── Pharmacy reports + controlled register export (capability:pharmacy_stock).
+// Same gate as routes/pharmacy_ops.php, in the same order: the capability is
+// judged BEFORE portal.access so a wrong-bucket role (a receptionist under
+// /pharmacy) gets the 403 `role_forbidden`, not a redirect that hides it.
+Route::middleware(['web', 'auth', 'mfa.verified', 'capability:pharmacy_stock', 'portal.access'])->group(function () {
+    // The month's controlled register as the secure-sheet PDF (?format=csv for the file).
+    Route::get('/pharmacy/controlled/register',             [\App\Http\Controllers\MedicalId\PharmacyReportsController::class, 'controlledRegister'])->name('portals.pharmacy.controlled.register');
+
+    // Reports: expiring stock, valuation, dispensing volume (counts only — no
+    // patient), low stock — one page, each exportable as CSV or secure-sheet PDF.
+    Route::get('/pharmacy/reports',                         [\App\Http\Controllers\MedicalId\PharmacyReportsController::class, 'index'])->name('portals.pharmacy.reports');
+    Route::get('/pharmacy/reports/{report}/csv',            [\App\Http\Controllers\MedicalId\PharmacyReportsController::class, 'csv'])->whereIn('report', \App\Services\Pharmacy\PharmacyReportService::REPORTS)->name('portals.pharmacy.reports.csv');
+    Route::get('/pharmacy/reports/{report}/pdf',            [\App\Http\Controllers\MedicalId\PharmacyReportsController::class, 'pdf'])->whereIn('report', \App\Services\Pharmacy\PharmacyReportService::REPORTS)->name('portals.pharmacy.reports.pdf');
 });
 
 /*
@@ -1022,4 +1042,40 @@ Route::middleware(['web', 'auth', 'platform.admin'])->group(function () {
     Route::get('/admin/governance/corrections/{id}',          [\App\Http\Controllers\MedicalId\GovernanceRequestsController::class, 'showCorrection'])->whereUuid('id')->name('portals.admin.governance.corrections.show');
     Route::post('/admin/governance/corrections/{id}/approve', [\App\Http\Controllers\MedicalId\GovernanceRequestsController::class, 'approveCorrection'])->whereUuid('id')->name('portals.admin.governance.corrections.approve');
     Route::post('/admin/governance/corrections/{id}/refuse',  [\App\Http\Controllers\MedicalId\GovernanceRequestsController::class, 'refuseCorrection'])->whereUuid('id')->name('portals.admin.governance.corrections.refuse');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Imaging report desk — the radiologist's report on a completed study
+|--------------------------------------------------------------------------
+|
+| docs/superpowers/specs/2026-10-13-diagnostic-centre-dashboard-design.md.
+| The intake/worklist/detail routes live in routes/imaging_desk.php under
+| `capability:imaging`; this block is the WRITE side of a report and is gated
+| on `capability:imaging_report` (radiologist, lab_manager). The queue page
+| `portals.imaging.reports.index` is declared there too (same gate) so the
+| sidebar link and the detail page's report panel resolve on either load
+| order.
+|
+| Draft -> finalize -> amend (a NEW version, the old kept) -> distribute (the
+| patient's documents list + bell). The PDF the patient downloads is rendered
+| on demand and never stored; `attachment` streams the one uploaded file.
+|
+| Facility from PortalContextService only; another facility's order 404s.
+| ROUTE ORDER: every path adds a segment after `orders/{id}`, so nothing in
+| routes/imaging_desk.php can swallow it.
+*/
+Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'capability:imaging_report'])->group(function () {
+    Route::get('/facility/imaging/orders/{id}/report', [\App\Http\Controllers\MedicalId\ImagingReportController::class, 'edit'])
+        ->whereUuid('id')->name('portals.imaging.report.edit');
+    Route::post('/facility/imaging/orders/{id}/report', [\App\Http\Controllers\MedicalId\ImagingReportController::class, 'save'])
+        ->whereUuid('id')->name('portals.imaging.report.save');
+    Route::post('/facility/imaging/orders/{id}/report/finalize', [\App\Http\Controllers\MedicalId\ImagingReportController::class, 'finalize'])
+        ->whereUuid('id')->name('portals.imaging.report.finalize');
+    Route::post('/facility/imaging/orders/{id}/report/amend', [\App\Http\Controllers\MedicalId\ImagingReportController::class, 'amend'])
+        ->whereUuid('id')->name('portals.imaging.report.amend');
+    Route::post('/facility/imaging/orders/{id}/report/distribute', [\App\Http\Controllers\MedicalId\ImagingReportController::class, 'distribute'])
+        ->whereUuid('id')->name('portals.imaging.report.distribute');
+    Route::get('/facility/imaging/orders/{id}/report/attachment', [\App\Http\Controllers\MedicalId\ImagingReportController::class, 'attachment'])
+        ->whereUuid('id')->name('portals.imaging.report.attachment');
 });

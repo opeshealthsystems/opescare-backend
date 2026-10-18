@@ -46,6 +46,8 @@ class FacilityStaffInvite extends Model
         'receptionist', 'front_desk', 'records_officer',
         // Laboratory
         'labtech', 'lab_scientist', 'lab_manager', 'sample_collection',
+        // Imaging
+        'imaging_tech', 'radiologist',
         // Pharmacy
         'pharmacist', 'pharmacy_technician', 'pharmacy_manager',
         // Billing

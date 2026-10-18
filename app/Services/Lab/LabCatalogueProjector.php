@@ -7,6 +7,7 @@ use App\Models\ClinicalCodeDictionary;
 use App\Models\Facility;
 use App\Models\FacilityCatalogueItem;
 use App\Models\LabTestAvailability;
+use App\Services\Imaging\ImagingExamSearch;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -25,9 +26,14 @@ use Illuminate\Support\Facades\Log;
  *   - the tenant (`facilities`) must be linked to a listing through
  *     `care_facilities.facility_id`. An unlinked tenant projects NOTHING and
  *     is logged — linking is an admin decision, never done here;
- *   - one availability row per (listing, LOINC code). Only LOINC items are
- *     lab tests; ICHI procedures, HL7 service types and CVX vaccines stay in
- *     the catalogue and are not offered to the lab finder;
+ *   - one availability row per (listing, code). LOINC items are lab tests
+ *     (or imaging exams, when the dictionary files them so — ImagingExamSearch
+ *     reads those). Since 2026-10-13 (I-3) an ICHI diagnostic-imaging stem
+ *     (action `BA`, ImagingExamSearch::isImagingProcedureCode) is projected
+ *     too, into the same table, and reaches ONLY the imaging finder: the lab
+ *     finder excludes it (LabTestAvailability::scopeExcludingImaging). Other
+ *     ICHI procedures, HL7 service types and CVX vaccines stay in the
+ *     catalogue and reach no finder;
  *   - a retired catalogue item marks its row `unavailable`. Never deleted:
  *     the price a patient was quoted last week stays accountable;
  *   - every row is stamped `source_system = 'portal'`, which is what the
@@ -42,8 +48,23 @@ class LabCatalogueProjector
     /** The catalogue `system` that means "a laboratory test". */
     public const LAB_TEST_SYSTEM = 'LOINC';
 
+    /** The catalogue systems this projector can publish (LOINC, and ICHI imaging stems only). */
+    public const PUBLISHED_SYSTEMS = [self::LAB_TEST_SYSTEM, ImagingExamSearch::ICHI_SYSTEM];
+
     /**
-     * Publish every LOINC catalogue item of this tenant to its public listing.
+     * Whether a catalogue item is one the finders can carry: any LOINC test,
+     * or an ICHI diagnostic-imaging procedure. The controller asks this before
+     * re-projecting after a write.
+     */
+    public static function publishes(FacilityCatalogueItem $item): bool
+    {
+        return $item->system === self::LAB_TEST_SYSTEM
+            || ($item->system === ImagingExamSearch::ICHI_SYSTEM && ImagingExamSearch::isImagingProcedureCode($item->code));
+    }
+
+    /**
+     * Publish every LOINC catalogue item — and every ICHI diagnostic-imaging
+     * procedure — of this tenant to its public listing.
      *
      * @return int  Rows written (created or updated). 0 when unlinked or when
      *              the catalogue holds no lab test.
@@ -62,9 +83,11 @@ class LabCatalogueProjector
 
         $items = FacilityCatalogueItem::query()
             ->where('facility_id', $tenant->id)
-            ->where('system', self::LAB_TEST_SYSTEM)
+            ->whereIn('system', self::PUBLISHED_SYSTEMS)
             ->orderBy('code')
-            ->get();
+            ->get()
+            ->filter(fn (FacilityCatalogueItem $item) => self::publishes($item))
+            ->values();
 
         if ($items->isEmpty()) {
             return 0;
@@ -148,7 +171,7 @@ class LabCatalogueProjector
     public function tenantIdsWithLabCatalogue(): iterable
     {
         return FacilityCatalogueItem::query()
-            ->where('system', self::LAB_TEST_SYSTEM)
+            ->whereIn('system', self::PUBLISHED_SYSTEMS)
             ->distinct()
             ->orderBy('facility_id')
             ->pluck('facility_id');

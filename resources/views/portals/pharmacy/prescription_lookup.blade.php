@@ -5,22 +5,21 @@
 @section('title', __('prescriber.counter_title', [], $l))
 
 @section('content')
-<div class="page-header">
-    <div>
-        <h1 class="page-title">{{ __('prescriber.counter_title', [], $l) }}</h1>
-        <p class="page-subtitle">{{ __('prescriber.counter_sub', [], $l) }}</p>
-    </div>
-    <a href="{{ route('portals.pharmacy.prescriptions') }}" class="btn btn-secondary">
+<div class="page-head">
+    <h2>{{ __('prescriber.counter_title', [], $l) }}</h2>
+    <p class="page-subtitle">{{ __('prescriber.counter_sub', [], $l) }}</p>
+    <div class="page-head__spacer"></div>
+    <a href="{{ route('portals.pharmacy.prescriptions') }}" class="btn btn-secondary btn-sm">
         <i data-lucide="list"></i>
         <span>{{ __('prescriber.title', [], $l) }}</span>
     </a>
 </div>
 
 @if(session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
+    <div class="alert alert-success mb-6"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>
 @endif
 @if(session('error'))
-    <div class="alert alert-danger">{{ session('error') }}</div>
+    <div class="alert alert-danger mb-6"><i data-lucide="alert-triangle"></i><div>{{ session('error') }}</div></div>
 @endif
 
 {{--
@@ -30,10 +29,11 @@
     patient names are never searchable and a reference resolves to one
     prescription or to none, never to a list.
 --}}
-<div class="panel">
+<div class="panel mb-6">
+    <div class="panel-header"><h3 class="panel-title"><i data-lucide="scan-line"></i> {{ __('prescriber.counter_title', [], $l) }}</h3></div>
     <div class="panel-body">
-        <form method="GET" action="{{ route('portals.pharmacy.prescriptions.lookup') }}" class="form-row">
-            <div class="form-group" style="flex:1 1 300px">
+        <form method="GET" action="{{ route('portals.pharmacy.prescriptions.lookup') }}" class="ph-lookup">
+            <div class="form-group">
                 <label class="form-label" for="q">{{ __('prescriber.counter_query', [], $l) }}</label>
                 <input type="text" id="q" name="q" class="form-control"
                        value="{{ $query }}" autocomplete="off" autocapitalize="characters"
@@ -41,7 +41,7 @@
                        placeholder="CM-HID-XXXX-XXXX-XXXX  /  RX-XXXX-XXXX">
                 <p class="form-hint">{{ __('prescriber.counter_query_hint', [], $l) }}</p>
             </div>
-            <div class="form-group" style="align-self:flex-start">
+            <div class="form-group ph-lookup__go">
                 <button type="submit" class="btn btn-primary">
                     <i data-lucide="search"></i>
                     <span>{{ __('prescriber.counter_lookup', [], $l) }}</span>
@@ -53,12 +53,12 @@
 
 {{-- Nothing found. The two paths fail differently, so they say different things. --}}
 @if($searched && $results->isEmpty() && $mode === 'reference')
-    <div class="alert alert-danger">
+    <div class="alert alert-danger mb-6">
         <i data-lucide="file-question"></i>
         <div>{{ __('prescriber.counter_norx', ['reference' => $reference], $l) }}</div>
     </div>
 @elseif($searched && ! $patient)
-    <div class="alert alert-danger">
+    <div class="alert alert-danger mb-6">
         <i data-lucide="user-x"></i>
         <div>{{ __('prescriber.counter_nopat', [], $l) }}</div>
     </div>
@@ -94,16 +94,17 @@
     <div class="panel">
         <div class="panel-header">
             <div class="panel-title">
-                <i data-lucide="user"></i>
+                <span class="ph-avatar" aria-hidden="true">{{ $patientName !== '' ? mb_strtoupper(mb_substr((string) ($patient->first_name ?? ''), 0, 1) . mb_substr((string) ($patient->last_name ?? ''), 0, 1)) : '—' }}</span>
                 {{ $patientName !== '' ? $patientName : (__('prescriber.counter_nopatrow', [], $l)) }}
             </div>
             <span class="badge badge-neutral mono">{{ $patient?->health_id ?? '—' }}</span>
+            <span class="badge badge-info">{{ __('pharmacy_desk.count_paren', ['count' => $results->count()], $l) }}</span>
         </div>
 
         @if($results->isEmpty())
             <div class="panel-body">
                 <div class="empty-state">
-                    <i data-lucide="file-x" style="width:32px;height:32px"></i>
+                    <i data-lucide="file-x"></i>
                     <p>{{ __('prescriber.counter_none', [], $l) }}</p>
                 </div>
             </div>
@@ -152,19 +153,20 @@
                     $prescriberName = trim((string) ($rx->prescriber->name ?? ''));
                 @endphp
 
-                <div class="panel-body" style="border-top:1px solid var(--p-border,#e5e7eb)">
-                    <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start">
-                        <div style="min-width:0">
-                            <div style="font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-                                <span class="mono">{{ $rx->reference ?: '—' }}</span>
+                <div class="panel-body ph-result">
+                    <div class="ph-result__head">
+                        <div class="ph-result__body">
+                            <div class="ph-result__title">
+                                <a href="{{ route('portals.pharmacy.prescriptions.show', $rx->id) }}" class="mono">{{ $rx->reference ?: '—' }}</a>
                                 <span class="badge {{ $rxBadge }} badge-sm">{{ $label($rxStatus) }}</span>
+                                <a href="{{ route('portals.pharmacy.prescriptions.show', $rx->id) }}" class="btn {{ $canDispense ? 'btn-ghost' : 'btn-primary' }} btn-sm"><i data-lucide="chevron-right"></i> {{ __('pharmacy_desk.btn_open_rx', [], $l) }}</a>
                                 {{-- A script can sit at 'active' and still be long lapsed; say so next to the status. --}}
                                 @if($expired && ! $terminal && $rxStatus !== 'expired')
                                     <span class="badge badge-danger badge-sm">{{ __('prescriber.st_expired', [], $l) }}</span>
                                 @endif
                             </div>
 
-                            <table class="kv-table" style="margin-top:8px">
+                            <table class="kv-table">
                                 <tr>
                                     <td>{{ __('prescriber.counter_from', [], $l) }}</td>
                                     <td class="kv-strong">{{ $rx->facility->name ?? '—' }}</td>
@@ -200,27 +202,26 @@
                             </table>
 
                             @if(filled($rx->notes))
-                                <div class="td-muted" style="font-size:.85rem;margin-top:8px">{{ $rx->notes }}</div>
+                                <div class="ph-note">{{ $rx->notes }}</div>
                             @endif
                         </div>
 
                         @if($canDispense)
-                            <form method="POST" action="{{ route('portals.pharmacy.dispense', $rx->id) }}"
-                                  style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap">
+                            <form method="POST" action="{{ route('portals.pharmacy.dispense', $rx->id) }}" class="ph-result__form">
                                 @csrf
                                 @php $owed = $rx->items->filter(fn ($it) => $it->isOutstanding()); @endphp
                                 @if($owed->count() > 1)
-                                    <fieldset style="flex-basis:100%;border:0;padding:0;margin:0">
+                                    <fieldset>
                                         <legend class="form-hint">{{ __('pharmacy_ops.dispense_lines_hint') }}</legend>
                                         @foreach($owed as $it)
-                                            <label style="display:inline-flex;gap:6px;align-items:center;margin-right:12px;min-height:44px">
+                                            <label class="ph-check">
                                                 <input type="checkbox" name="item_ids[]" value="{{ $it->id }}">
                                                 <span>{{ $it->drug_name ?: '—' }}</span>
                                             </label>
                                         @endforeach
                                     </fieldset>
                                 @endif
-                                <input type="text" name="dispense_notes" class="form-control" style="min-width:180px"
+                                <input type="text" name="dispense_notes" class="form-control"
                                        placeholder="{{ __('prescriber.counter_notes', [], $l) }}">
                                 <button type="submit" class="btn btn-primary">
                                     <i data-lucide="check"></i>
@@ -237,7 +238,7 @@
                         mistake this screen exists to prevent.
                     --}}
                     @if($refusal)
-                        <div class="alert {{ $rxStatus === 'dispensed' ? 'alert-warning' : 'alert-danger' }}" style="margin-top:10px">
+                        <div class="alert {{ $rxStatus === 'dispensed' ? 'alert-warning' : 'alert-danger' }}">
                             <i data-lucide="{{ $rxStatus === 'dispensed' ? 'check-circle' : 'shield-alert' }}"></i>
                             <div>
                                 <strong>{{ $rxStatus === 'dispensed'
@@ -245,7 +246,7 @@
                                     : (__('prescriber.counter_blocked_title', [], $l)) }}</strong>
                                 <div>{{ $refusal }}</div>
                                 @if(filled($rx->void_reason))
-                                    <div class="td-muted" style="font-size:.85rem">
+                                    <div class="ph-note">
                                         {{ __('prescriber.void_reason', [], $l) }}: {{ $rx->void_reason }}
                                     </div>
                                 @endif
@@ -253,7 +254,7 @@
                         </div>
                     @endif
 
-                    <div class="table-wrapper" style="margin-top:10px">
+                    <div class="table-wrapper">
                         <table class="data-table">
                             <thead>
                                 <tr>
@@ -284,7 +285,7 @@
                                         <td data-label="{{ __('prescriber.item_status', [], $l) }}">
                                             <span class="badge {{ $itemBadge }} badge-sm">{{ $label($itemStatus) }}</span>
                                             @if($item->dispensed_at)
-                                                <div class="td-muted" style="font-size:.8rem">{{ $item->dispensed_at->translatedFormat('d M Y H:i') }}</div>
+                                                <div class="ph-cell__sub">{{ $item->dispensed_at->translatedFormat('d M Y H:i') }}</div>
                                             @endif
                                         </td>
                                     </tr>

@@ -207,11 +207,16 @@ class PharmacyStockOpsController extends Controller
         ]);
     }
 
-    public function createReceipt(): View
+    public function createReceipt(Request $request): View
     {
         $facilityId = $this->facilityId();
 
+        // `?medicine_id=` from the item page prefills the first line; an id
+        // that is not in the catalogue is simply ignored.
+        $prefill = (string) $request->query('medicine_id');
+
         return view('portals.pharmacy.stock_ops.receipt_new', [
+            'prefillMedicineId' => \Illuminate\Support\Str::isUuid($prefill) && Medicine::query()->active()->whereKey($prefill)->exists() ? $prefill : null,
             'suppliers' => Supplier::query()->where('facility_id', $facilityId)->where('status', 'active')->orderBy('name')->get(),
             'orders'    => PurchaseOrder::query()->where('facility_id', $facilityId)
                 ->whereIn('status', ['approved', 'sent', 'partial'])
@@ -302,7 +307,13 @@ class PharmacyStockOpsController extends Controller
 
         $supplier = $this->ops->createSupplier($facilityId, $data, $this->context->actorId());
 
-        return redirect()->route('portals.pharmacy.stock.receipts.create')
+        // Added from the receipt form: back to the receipt. Added from the
+        // register: straight to the new supplier's card.
+        $target = $request->input('return') === 'receipt'
+            ? route('portals.pharmacy.stock.receipts.create')
+            : route('portals.pharmacy.stock.suppliers.show', $supplier->id);
+
+        return redirect()->to($target)
             ->with('success', __('pharmacy_ops.flash_supplier_added', ['name' => $supplier->name]));
     }
 

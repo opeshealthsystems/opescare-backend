@@ -191,8 +191,10 @@ class StaffPortalController extends Controller
             ->with('patient:id,health_id,first_name,last_name')
             ->orderByRaw("CASE urgency WHEN 'urgent' THEN 0 ELSE 1 END")
             ->orderBy('created_at')
-            ->limit(200)
-            ->get();
+            // Paginated (H-14): `limit(200)` silently dropped the rest of the
+            // list with no "more" indicator — a lying list on a busy day.
+            ->paginate(50)
+            ->withQueryString();
 
         return view('portals.staff.appointments_waitlist', compact('entries'));
     }

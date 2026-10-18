@@ -183,6 +183,8 @@ return [
         'lab_scientist'       => 'Biologiste de laboratoire',
         'lab_manager'         => 'Responsable de laboratoire',
         'sample_collection'   => 'Agent de prélèvement',
+        'imaging_tech'        => 'Technologue en imagerie',
+        'radiologist'         => 'Radiologue',
         'pharmacist'          => 'Pharmacien',
         'pharmacy_technician' => 'Technicien en pharmacie',
         'pharmacy_manager'    => 'Responsable de pharmacie',

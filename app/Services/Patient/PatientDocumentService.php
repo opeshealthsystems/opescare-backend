@@ -8,6 +8,7 @@ use App\Models\LabOrder;
 use App\Models\OfficialDocument;
 use App\Models\Patient;
 use App\Models\Prescription;
+use App\Models\RadiologyReport;
 use App\Support\QrSvg;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -45,6 +46,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class PatientDocumentService
 {
     public const LABORATORY_REPORT  = 'laboratory_report';
+    /** A distributed radiology report (the current version of it). */
+    public const IMAGING_REPORT     = 'imaging_report';
     public const PRESCRIPTION       = 'prescription';
     public const IMMUNISATION       = 'immunisation_record';
     public const DISCHARGE_SUMMARY  = 'discharge_summary';
@@ -54,6 +57,7 @@ class PatientDocumentService
     /** Document type → the Blade that draws it on the secure sheet. */
     private const VIEWS = [
         self::LABORATORY_REPORT => 'documents.laboratory-report',
+        self::IMAGING_REPORT    => 'documents.imaging-report',
         self::PRESCRIPTION      => 'documents.prescription',
         self::IMMUNISATION      => 'documents.immunisation-record',
         self::DISCHARGE_SUMMARY => 'documents.discharge-summary',
@@ -213,6 +217,26 @@ class PatientDocumentService
             ];
         }
 
+        // A radiology report the radiologist distributed: the CURRENT version
+        // only (an amendment supersedes its predecessor and is released again
+        // as its own act), so the patient is never handed a withdrawn text.
+        foreach (
+            RadiologyReport::where('patient_id', $patient->id)
+                ->current()
+                ->whereIn('status', RadiologyReport::RELEASED_STATUSES)
+                ->whereNotNull('distributed_at')
+                ->orderByDesc('distributed_at')
+                ->get() as $report
+        ) {
+            $out[] = [
+                'type'      => self::IMAGING_REPORT,
+                'record'    => (string) $report->id,
+                'title'     => __('imaging_report.doc.title') . ' — ' . trim(__('imaging_report.modality.' . $report->modality) . ' ' . ($report->body_part ?: '')),
+                'reference' => $report->imagingOrder?->accession_number,
+                'date'      => $report->distributed_at ?? $report->finalized_at,
+            ];
+        }
+
         foreach (
             Prescription::where('patient_id', $patient->id)
                 ->orderByDesc('prescribed_at')
@@ -289,8 +313,11 @@ class PatientDocumentService
         $prescription = $payload['prescription_id'] ?? null;
         $labOrder     = $payload['lab_order_id'] ?? ($payload['order_id'] ?? null);
         $admission    = $payload['admission_id'] ?? null;
+        $radiology    = $payload['radiology_report_id'] ?? null;
 
         return match (true) {
+            in_array($type, ['imaging_report', 'radiology_report'], true) && $radiology
+                => [self::IMAGING_REPORT, (string) $radiology],
             in_array($type, ['rx', 'prescription'], true) && $prescription
                 => [self::PRESCRIPTION, (string) $prescription],
             in_array($type, ['lab_report', 'laboratory_report'], true) && $labOrder
@@ -343,6 +370,7 @@ class PatientDocumentService
     {
         return match ($type) {
             self::LABORATORY_REPORT => ['order' => $this->labOrder($patient, $recordId)],
+            self::IMAGING_REPORT    => ['report' => $this->imagingReport($patient, $recordId)],
             self::PRESCRIPTION      => ['prescription' => $this->prescription($patient, $recordId)],
             self::DISCHARGE_SUMMARY => ['admission' => $this->admission($patient, $recordId)],
             self::IMMUNISATION      => ['doses' => $this->doses($patient)],
@@ -396,6 +424,29 @@ class PatientDocumentService
         );
 
         return $order;
+    }
+
+    /**
+     * One distributed radiology report. A draft, an undistributed final or a
+     * superseded version is "no such report": only what the radiologist
+     * released to this patient, as it stands now, is printable.
+     */
+    private function imagingReport(Patient $patient, ?string $id): RadiologyReport
+    {
+        $report = RadiologyReport::with(['facility', 'reportedBy', 'imagingOrder'])
+            ->where('patient_id', $patient->id)
+            ->where('id', $id)
+            ->first();
+
+        abort_if($report === null, 404, 'No such imaging report.');
+
+        abort_unless(
+            $report->isReleased() && $report->isDistributed() && $report->superseded_at === null,
+            404,
+            'This report has not been released yet.'
+        );
+
+        return $report;
     }
 
     private function prescription(Patient $patient, ?string $id): Prescription

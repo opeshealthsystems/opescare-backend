@@ -5,10 +5,6 @@
 @section('breadcrumb_home_url', route('portals.pharmacy.dashboard'))
 @section('breadcrumb_section', __('pharmacy_ops.nav_adjustments'))
 
-@section('head')
-@include('portals.pharmacy._supply_styles')
-@endsection
-
 @section('content')
 
 <div class="page-head">
@@ -25,8 +21,8 @@
 </div>
 @endif
 
-<details class="panel" @if($errors->any() || old('batch_id')) open @endif>
-    <summary class="panel-header" style="cursor:pointer;">
+<details class="panel" id="adj-form" @if($errors->any() || old('batch_id')) open @endif>
+    <summary class="panel-header">
         <i data-lucide="plus-circle"></i> {{ __('pharmacy_ops.adj_form_title') }}
     </summary>
     <div class="panel-body">
@@ -80,22 +76,32 @@
     </div>
 </details>
 
-<form method="GET" class="fs-search" role="search">
-    <select name="reason" class="filter-select" data-autosubmit aria-label="{{ __('pharmacy_ops.lbl_reason') }}">
-        <option value="">{{ __('pharmacy_ops.filter_all') }}</option>
-        @foreach($reasons as $r)
-        <option value="{{ $r }}" {{ $filter === $r ? 'selected' : '' }}>{{ __('pharmacy_ops.reason.' . $r) }}</option>
-        @endforeach
-    </select>
-    <button type="submit" class="btn btn-secondary btn-sm fs-tap"><i data-lucide="filter"></i> {{ __('pharmacy_ops.btn_filter') }}</button>
-    @if($filter !== '')
-        <a href="{{ route('portals.pharmacy.stock.adjustments') }}" class="btn btn-ghost btn-sm fs-tap">{{ __('pharmacy_ops.btn_clear') }}</a>
-    @endif
-</form>
-
-<div class="fs-note"><i data-lucide="lock"></i><div>{{ __('pharmacy_ops.adj_append_only') }}</div></div>
-
 <div class="panel">
+    <div class="panel-header">
+        <h3 class="panel-title"><i data-lucide="arrow-left-right"></i> {{ __('pharmacy_ops.nav_adjustments') }} <span class="ph-count-inline">({{ $movements->total() }})</span></h3>
+        <a href="#adj-form" class="btn btn-primary btn-sm"><i data-lucide="plus"></i> {{ __('pharmacy_ops.btn_record') }}</a>
+    </div>
+    <div class="ph-toolbar">
+        <div class="ph-pills" role="tablist">
+            <a href="{{ route('portals.pharmacy.stock.adjustments') }}" class="ph-pill{{ $filter === '' ? ' active' : '' }}" role="tab">{{ __('pharmacy_ops.filter_all') }}</a>
+            @foreach($reasons as $r)
+            <a href="{{ route('portals.pharmacy.stock.adjustments', ['reason' => $r]) }}" class="ph-pill{{ $filter === $r ? ' active' : '' }}" role="tab">{{ __('pharmacy_ops.reason.' . $r) }}</a>
+            @endforeach
+        </div>
+        <form method="GET" class="fs-search" role="search">
+            <select name="reason" class="filter-select" data-autosubmit aria-label="{{ __('pharmacy_ops.lbl_reason') }}">
+                <option value="">{{ __('pharmacy_ops.filter_all') }}</option>
+                @foreach($reasons as $r)
+                <option value="{{ $r }}" {{ $filter === $r ? 'selected' : '' }}>{{ __('pharmacy_ops.reason.' . $r) }}</option>
+                @endforeach
+            </select>
+            <button type="submit" class="btn btn-secondary btn-sm fs-tap"><i data-lucide="filter"></i> {{ __('pharmacy_ops.btn_filter') }}</button>
+            @if($filter !== '')
+                <a href="{{ route('portals.pharmacy.stock.adjustments') }}" class="btn btn-ghost btn-sm fs-tap">{{ __('pharmacy_ops.btn_clear') }}</a>
+            @endif
+        </form>
+    </div>
+    <div class="fs-note"><i data-lucide="lock"></i><div>{{ __('pharmacy_ops.adj_append_only') }}</div></div>
     <div class="table-wrapper">
         <table class="data-table">
             <thead><tr>
@@ -106,21 +112,48 @@
                 <th>{{ __('pharmacy_ops.col_reason') }}</th>
                 <th>{{ __('pharmacy_ops.col_note') }}</th>
                 <th>{{ __('pharmacy_ops.col_by') }}</th>
+                <th></th>
             </tr></thead>
             <tbody>
             @forelse($movements as $m)
-                @php [$code, $note] = \App\Services\Pharmacy\PharmacyStockOpsService::decodeReason($m->reason); @endphp
+                @php
+                    [$code, $note] = \App\Services\Pharmacy\PharmacyStockOpsService::decodeReason($m->reason);
+                    $mName = $m->item?->medicine?->name ?? $m->item?->name ?? '—';
+                @endphp
                 <tr>
-                    <td data-label="{{ __('pharmacy_ops.col_when') }}" class="td-muted">{{ ($m->performed_at ?? $m->created_at)?->translatedFormat('d M Y H:i') }}</td>
-                    <td data-label="{{ __('pharmacy_ops.col_medicine') }}" class="td-strong">{{ $m->item?->medicine?->name ?? $m->item?->name ?? '—' }}</td>
+                    <td data-label="{{ __('pharmacy_ops.col_when') }}" class="td-muted"><a href="{{ route('portals.pharmacy.stock.adjustments.show', $m->id) }}">{{ ($m->performed_at ?? $m->created_at)?->translatedFormat('d M Y H:i') }}</a></td>
+                    <td data-label="{{ __('pharmacy_ops.col_medicine') }}">
+                        <div class="ph-cell">
+                            @include('portals.pharmacy.stock_ops._avatar', ['name' => $mName, 'tone' => $m->quantity >= 0 ? 'green' : 'red'])
+                            <div>
+                                <div class="ph-cell__title">
+                                    @if($m->inventory_item_id)
+                                        <a href="{{ route('portals.pharmacy.stock.items.show', $m->inventory_item_id) }}">{{ $mName }}</a>
+                                    @else
+                                        {{ $mName }}
+                                    @endif
+                                </div>
+                                <div class="ph-cell__sub">{{ __('pharmacy_stock_desk.movement_type.' . $m->movement_type) }}</div>
+                            </div>
+                        </div>
+                    </td>
                     <td data-label="{{ __('pharmacy_ops.col_lot') }}" class="fs-mono">{{ $m->batch?->lot_number ?? '—' }}</td>
                     <td data-label="{{ __('pharmacy_ops.col_change') }}" class="fs-mono {{ $m->quantity >= 0 ? 'fs-delta--in' : 'fs-delta--out' }}">{{ $m->quantity > 0 ? '+' : '' }}{{ $m->quantity }}</td>
                     <td data-label="{{ __('pharmacy_ops.col_reason') }}"><span class="badge badge-neutral">{{ __('pharmacy_ops.reason.' . $code) }}</span></td>
                     <td data-label="{{ __('pharmacy_ops.col_note') }}" class="td-muted">{{ $note ?? '' }}</td>
                     <td data-label="{{ __('pharmacy_ops.col_by') }}" class="td-muted">{{ $actors[$m->performed_by] ?? '—' }}</td>
+                    <td class="row-actions"><a href="{{ route('portals.pharmacy.stock.adjustments.show', $m->id) }}" class="btn btn-primary btn-sm">{{ __('pharmacy_stock_desk.btn_open') }}</a></td>
                 </tr>
             @empty
-                <tr><td colspan="7" class="td-muted empty-cell">{{ __('pharmacy_ops.adj_empty') }}</td></tr>
+                <tr><td colspan="8" class="empty-cell">
+                    <div class="empty-state">
+                        <i data-lucide="arrow-left-right"></i>
+                        <p>{{ __('pharmacy_ops.adj_empty') }}</p>
+                        @if(! $batches->isEmpty())
+                        <a href="#adj-form" class="btn btn-primary btn-sm"><i data-lucide="plus"></i> {{ __('pharmacy_ops.btn_record') }}</a>
+                        @endif
+                    </div>
+                </td></tr>
             @endforelse
             </tbody>
         </table>

@@ -21,6 +21,14 @@ use Illuminate\Support\Facades\DB;
  * `common_reason` (first sighting wins) and is not recognised as imaging
  * here. Nothing is guessed from a title.
  *
+ * ICHI (added 2026-10-13, I-3): a diagnostic centre may also list its imaging
+ * procedures as WHO ICHI interventions. ICHI codes its action axis in the
+ * second segment, and action `BA` is "Diagnostic imaging" (every
+ * radiography, ultrasound, CT, MRI, mammography and scintigraphy stem code
+ * carries it; nothing else does). LabCatalogueProjector publishes those rows
+ * into the same table and this reads them through the same gates. The rule
+ * is the code's own structure, never a title.
+ *
  * Not a patient search. Never reads or gates on payment.
  */
 class ImagingExamSearch
@@ -28,6 +36,43 @@ class ImagingExamSearch
     public const MAX_ROWS = 200;
 
     public const IMAGING_REASON_PREFIX = 'Imaging:';
+
+    /** The catalogue `system` of WHO ICHI interventions. */
+    public const ICHI_SYSTEM = 'ICHI';
+
+    /** ICHI action axis value "Diagnostic imaging" (the second code segment). */
+    public const ICHI_IMAGING_ACTION = 'BA';
+
+    /** SQL LIKE pattern for an ICHI stem code whose action is diagnostic imaging. */
+    public const ICHI_IMAGING_CODE_LIKE = '___.' . self::ICHI_IMAGING_ACTION . '.%';
+
+    /** Whether an ICHI stem code is a diagnostic-imaging procedure (AAA.BA.AA). */
+    public static function isImagingProcedureCode(?string $code): bool
+    {
+        return $code !== null
+            && preg_match('/^[A-Z]{3}\.' . self::ICHI_IMAGING_ACTION . '\.[A-Z0-9]{2}$/', $code) === 1;
+    }
+
+    /**
+     * The dictionary codes that reach the imaging finder: LOINC terms the
+     * dictionary files as imaging, plus ICHI diagnostic-imaging stems. One
+     * subquery, shared by the lab finder's exclusion, the catalogue mix and
+     * the publication counts, so every reader draws the same line.
+     */
+    public static function imagingCodesQuery(): \Illuminate\Database\Query\Builder
+    {
+        return DB::table('clinical_code_dictionary')
+            ->select('code')
+            ->where(function ($q) {
+                $q->where(function ($loinc) {
+                    $loinc->where('system', 'LOINC')
+                        ->where('common_reason', 'like', self::IMAGING_REASON_PREFIX . '%');
+                })->orWhere(function ($ichi) {
+                    $ichi->where('system', self::ICHI_SYSTEM)
+                        ->where('code', 'like', self::ICHI_IMAGING_CODE_LIKE);
+                });
+            });
+    }
 
     /**
      * @return Collection<int, \App\Models\CareFacility>  each with ->matched_test and ->distance
@@ -41,15 +86,9 @@ class ImagingExamSearch
 
         $like = '%' . addcslashes($term, '%_\\') . '%';
 
-        $imagingCodes = DB::table('clinical_code_dictionary')
-            ->select('code')
-            ->where('system', 'LOINC')
-            ->where('common_reason', 'like', self::IMAGING_REASON_PREFIX . '%');
+        $imagingCodes = self::imagingCodesQuery();
 
-        $matchingCodes = DB::table('clinical_code_dictionary')
-            ->select('code')
-            ->where('system', 'LOINC')
-            ->where('common_reason', 'like', self::IMAGING_REASON_PREFIX . '%')
+        $matchingCodes = self::imagingCodesQuery()
             ->where(function ($q) use ($like) {
                 $q->where('display', 'ilike', $like)
                     ->orWhere('display_fr', 'ilike', $like)

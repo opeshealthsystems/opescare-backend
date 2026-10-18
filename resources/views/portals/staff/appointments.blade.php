@@ -110,6 +110,7 @@
                 </div>
                 <h3>{{ __('public.staff_portal.no_appointments_title', [], app()->getLocale()) }}</h3>
                 <p>{{ __('public.staff_portal.no_appointments_desc', [], app()->getLocale()) }}</p>
+                <a href="{{ route('portals.staff.appointments.create') }}" class="btn btn-primary btn-sm mt-6"><i data-lucide="calendar-plus"></i> {{ __('hospital_desk.empty_appointments_action') }}</a>
             </div>
         </div>
     </div>

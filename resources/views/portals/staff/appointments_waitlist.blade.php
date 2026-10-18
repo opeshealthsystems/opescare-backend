@@ -12,7 +12,8 @@
 
 @php
     $lApp   = app()->getLocale();
-    $canAct = \App\Support\StaffCapabilities::can(auth()->user(), 'front_desk', 'schedule');
+    $canAct   = \App\Support\StaffCapabilities::can(auth()->user(), 'front_desk', 'schedule');
+    $canChart = \App\Support\StaffCapabilities::can(auth()->user(), 'clinical_chart');
 @endphp
 
 @section('content')
@@ -44,6 +45,12 @@
                 </div>
                 <h3>{{ __('waitlist.staff_empty_title') }}</h3>
                 <p>{{ __('waitlist.staff_empty_desc') }}</p>
+                <p class="td-muted">{{ __('hospital_desk.empty_waitlist_hint') }}</p>
+                @if($canAct)
+                <a href="{{ route('portals.staff.appointments.create') }}" class="btn btn-primary btn-sm mt-6">
+                    <i data-lucide="calendar-plus"></i> {{ __('hospital_desk.empty_appointments_action') }}
+                </a>
+                @endif
             </div>
         </div>
     </div>
@@ -77,6 +84,9 @@
                             <td data-label="{{ __('waitlist.col_patient') }}">
                                 <span class="td-strong">{{ $name !== '' ? $name : '—' }}</span>
                                 <div><span class="mono">{{ $healthId }}</span></div>
+                                @if($canChart && $entry->patient?->health_id)
+                                    <div><a href="{{ route('portals.chart.index', ['health_id' => $entry->patient->health_id]) }}" class="td-muted">{{ __('hospital_desk.open_chart') }}</a></div>
+                                @endif
                             </td>
                             <td data-label="{{ __('public.staff_portal.col_type', [], $lApp) }}">
                                 <span class="badge badge-primary">@enum($entry->appointment_type)</span>
@@ -118,6 +128,12 @@
             </div>
         </div>
     </div>
+    @if($entries->hasPages())
+    <div class="mb-6">
+        <p class="td-muted">{{ __('hospital_desk.waitlist_showing', ['from' => $entries->firstItem(), 'to' => $entries->lastItem(), 'total' => $entries->total()]) }}</p>
+        {{ $entries->links() }}
+    </div>
+    @endif
 @endif
 
 @endsection

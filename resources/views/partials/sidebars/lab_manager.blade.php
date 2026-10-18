@@ -24,6 +24,17 @@
 
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_lab', [], $l) }}</div>
+    {{-- The centre landing (routes/diagnostic.php): lab + imaging on one page.
+         Only where the facility IS a centre — a lab-only facility would be
+         redirected straight back, so the link would be noise. --}}
+    @php $__diagFid = app(\App\Services\Portal\PortalContextService::class)->facilityId(); @endphp
+    @if(\App\Services\DiagnosticCentre\DiagnosticCentreDashboardService::appliesTo($__diagFid))
+    @capability('lab_results', 'imaging')
+    <a href="{{ route('portals.diagnostic.dashboard') }}" class="sidebar-link {{ request()->routeIs('portals.diagnostic.dashboard') ? 'active' : '' }}">
+        <i data-lucide="layout-grid"></i><span>{{ __('diagnostic_desk.nav', [], $l) }}</span>
+    </a>
+    @endcapability
+    @endif
     {{-- The bench: worklist, result entry, release, validation. Same gate as routes/lab.php. --}}
     @capability('lab_results')
     <a href="{{ route('portals.lab_manager.dashboard') }}" class="sidebar-link {{ request()->routeIs('portals.lab_manager.dashboard') ? 'active' : '' }}">
@@ -41,6 +52,12 @@
     @capability('lab_results', 'sample_collection')
     <a href="{{ route('portals.lab.collection') }}" class="sidebar-link {{ request()->routeIs('portals.lab.collection') ? 'active' : '' }}">
         <i data-lucide="test-tube-2"></i><span>{{ __('lab_desk.nav_collection', [], $l) }}</span>
+    </a>
+    @endcapability
+    {{-- The imaging half of a diagnostic centre (routes/imaging_desk.php). --}}
+    @capability('imaging')
+    <a href="{{ route('portals.imaging.index') }}" class="sidebar-link {{ request()->routeIs('portals.imaging.*') ? 'active' : '' }}">
+        <i data-lucide="scan"></i><span>{{ __('imaging_desk.title', [], $l) }}</span>
     </a>
     @endcapability
     {{-- Blood Bank is NOT behind @feature('inventory_ops'). It is carved out of

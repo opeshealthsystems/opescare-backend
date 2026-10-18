@@ -29,6 +29,9 @@
     <a href="{{ route('portals.pharmacy.prescriptions.lookup') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.prescriptions.lookup') ? 'active' : '' }}">
         <i data-lucide="scan-line"></i><span>{{ __('prescriber.counter_link', [], $l) }}</span>
     </a>
+    <a href="{{ route('portals.pharmacy.dispensing') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.dispensing*') ? 'active' : '' }}">
+        <i data-lucide="clipboard-check"></i><span>{{ __('pharmacy_desk.nav_dispensing', [], ) }}</span>
+    </a>
     @endcapability
     @capability('pharmacy_stock')
     <a href="{{ route('portals.pharmacy.controlled') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.controlled*') ? 'active' : '' }}">
@@ -69,6 +72,12 @@
     </a>
     <a href="{{ route('portals.pharmacy.stock.reorder') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.stock.reorder*') ? 'active' : '' }}">
         <i data-lucide="trending-down"></i><span>{{ __('pharmacy_ops.nav_reorder', [], $l) }}</span>
+    </a>
+    <a href="{{ route('portals.pharmacy.stock.suppliers') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.stock.suppliers*') ? 'active' : '' }}">
+        <i data-lucide="building-2"></i><span>{{ __('pharmacy_stock_desk.nav_suppliers', [], ) }}</span>
+    </a>
+    <a href="{{ route('portals.pharmacy.reports') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.reports*') ? 'active' : '' }}">
+        <i data-lucide="bar-chart-3"></i><span>{{ __('pharmacy_reports.nav_reports', [], ) }}</span>
     </a>
     <a href="{{ route('portals.pharmacy.stock.receipts') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.stock.receipts*') ? 'active' : '' }}">
         <i data-lucide="truck"></i><span>{{ __('pharmacy_ops.nav_receipts', [], $l) }}</span>

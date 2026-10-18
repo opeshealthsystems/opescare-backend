@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ImagingOrderStatus;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -26,12 +27,18 @@ class ImagingOrder extends Model
         'ordered_at',
         'scheduled_at',
         'completed_at',
+        'cancelled_at',
+        'cancel_reason',
+        'started_at',
     ];
 
     protected $casts = [
+        'status'        => ImagingOrderStatus::class,
         'ordered_at'    => 'datetime',
         'scheduled_at'  => 'datetime',
         'completed_at'  => 'datetime',
+        'started_at'    => 'datetime',
+        'cancelled_at'  => 'datetime',
     ];
 
     public function patient(): \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -61,7 +68,7 @@ class ImagingOrder extends Model
 
     public function isPending(): bool
     {
-        return $this->status === 'pending';
+        return $this->status === ImagingOrderStatus::Pending;
     }
 
     public function isStat(): bool
@@ -72,11 +79,11 @@ class ImagingOrder extends Model
     public function statusColor(): string
     {
         return match ($this->status) {
-            'completed'   => 'success',
-            'in_progress' => 'info',
-            'scheduled'   => 'warning',
-            'cancelled'   => 'default',
-            default       => 'secondary',
+            ImagingOrderStatus::Completed  => 'success',
+            ImagingOrderStatus::InProgress => 'info',
+            ImagingOrderStatus::Scheduled  => 'warning',
+            ImagingOrderStatus::Cancelled  => 'default',
+            default                        => 'secondary',
         };
     }
 

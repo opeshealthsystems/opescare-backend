@@ -98,7 +98,7 @@
         @else
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;">
                 @if($assignment)
-                    <form method="POST" action="{{ route('portals.facility.admin.member.role', $member->id) }}">
+                    <form method="POST" action="{{ route('portals.facility.admin.member.role', $member->id) }}" data-confirm="{{ __('hospital_desk.confirm_member_role') }}">
                         @csrf
                         <h4 style="margin:0 0 .35rem;">{{ __('facility_admin.change_role_title') }}</h4>
                         <p class="page-subtitle" style="margin:0 0 .75rem;">{{ __('facility_admin.change_role_help') }}</p>
@@ -114,7 +114,7 @@
                         </button>
                     </form>
 
-                    <form method="POST" action="{{ route('portals.facility.admin.member.deactivate', $member->id) }}">
+                    <form method="POST" action="{{ route('portals.facility.admin.member.deactivate', $member->id) }}" data-confirm="{{ __('hospital_desk.confirm_member_deactivate') }}">
                         @csrf
                         <h4 style="margin:0 0 .35rem;">{{ __('facility_admin.deactivate_title') }}</h4>
                         <p class="page-subtitle" style="margin:0 0 .75rem;">{{ __('facility_admin.deactivate_help') }}</p>
@@ -123,7 +123,7 @@
                         </button>
                     </form>
                 @else
-                    <form method="POST" action="{{ route('portals.facility.admin.member.reactivate', $member->id) }}">
+                    <form method="POST" action="{{ route('portals.facility.admin.member.reactivate', $member->id) }}" data-confirm="{{ __('hospital_desk.confirm_member_reactivate') }}">
                         @csrf
                         <h4 style="margin:0 0 .35rem;">{{ __('facility_admin.reactivate_title') }}</h4>
                         <p class="page-subtitle" style="margin:0 0 .75rem;">{{ __('facility_admin.reactivate_help') }}</p>

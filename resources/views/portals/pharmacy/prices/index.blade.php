@@ -5,16 +5,6 @@
 @section('breadcrumb_home_url', route('portals.pharmacy.dashboard'))
 @section('breadcrumb_section', __('pharmacy_prices.nav_prices'))
 
-@section('head')
-@include('portals.pharmacy._supply_styles')
-<style>
-.fs-price{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
-.fs-price .form-control{width:9.5rem}
-.fs-price__unit{font-size:.8rem;font-weight:700;color:var(--p-text-muted,#64748B)}
-.fs-price .fs-reason{width:11rem}
-</style>
-@endsection
-
 @section('content')
 
 <div class="page-head">
@@ -39,35 +29,40 @@
 </div>
 @endunless
 
-<div class="fs-kpis">
-    <div class="fs-kpi fs-kpi--neutral">
-        <div class="fs-kpi__label">{{ __('pharmacy_prices.sum_items') }}</div>
-        <div class="fs-kpi__value">{{ $items->count() }}</div>
+<div class="ph-kpis">
+    <div class="stat-card stat-card--info">
+        <div class="stat-card__icon"><i data-lucide="tags"></i></div>
+        <div class="stat-card__label">{{ __('pharmacy_prices.sum_items') }}</div>
+        <div class="stat-card__value">{{ $items->count() }}</div>
     </div>
-    <div class="fs-kpi {{ $unpriced > 0 ? 'fs-kpi--warn' : 'fs-kpi--neutral' }}">
-        <div class="fs-kpi__label">{{ __('pharmacy_prices.sum_unpriced') }}</div>
-        <div class="fs-kpi__value">{{ $unpriced }}</div>
-        <div class="fs-kpi__sub">{{ __('pharmacy_prices.sum_unpriced_hint') }}</div>
+    <div class="stat-card {{ $unpriced > 0 ? 'stat-card--warning' : 'stat-card--success' }}">
+        <div class="stat-card__icon"><i data-lucide="{{ $unpriced > 0 ? 'alert-circle' : 'check' }}"></i></div>
+        <div class="stat-card__label">{{ __('pharmacy_prices.sum_unpriced') }}</div>
+        <div class="stat-card__value">{{ $unpriced }}</div>
+        <div class="stat-card__sub">{{ __('pharmacy_prices.sum_unpriced_hint') }}</div>
     </div>
 </div>
 
 <div class="fs-note"><i data-lucide="coins"></i><div>{{ __('pharmacy_prices.whole_francs_hint') }}</div></div>
 
-<form method="GET" class="fs-search" role="search" action="{{ route('portals.pharmacy.prices.index') }}">
-    <div class="fs-search__box">
-        <i data-lucide="search" class="f-icon"></i>
-        <input type="search" name="q" class="form-control" value="{{ $search }}" placeholder="{{ __('pharmacy_prices.search_placeholder') }}" aria-label="{{ __('pharmacy_prices.search_placeholder') }}" maxlength="80">
-    </div>
-    <button type="submit" class="btn btn-secondary btn-sm fs-tap"><i data-lucide="filter"></i> {{ __('pharmacy_prices.btn_search') }}</button>
-    @if($search !== '')
-        <a href="{{ route('portals.pharmacy.prices.index') }}" class="btn btn-ghost btn-sm fs-tap">{{ __('pharmacy_prices.btn_clear') }}</a>
-    @endif
-</form>
-
 <div class="panel">
     <div class="panel-header">
-        <h3 class="panel-title"><i data-lucide="tags"></i> {{ __('pharmacy_prices.nav_prices') }}</h3>
+        <h3 class="panel-title"><i data-lucide="tags"></i> {{ __('pharmacy_prices.nav_prices') }} <span class="ph-count-inline">{{ __('pharmacy_desk.count_paren', ['count' => $items->count()]) }}</span></h3>
     </div>
+
+    <div class="ph-tools">
+        <form method="GET" class="ph-toolbar" role="search" action="{{ route('portals.pharmacy.prices.index') }}">
+            <label class="ph-search">
+                <i data-lucide="search"></i>
+                <input type="search" name="q" value="{{ $search }}" placeholder="{{ __('pharmacy_prices.search_placeholder') }}" aria-label="{{ __('pharmacy_prices.search_placeholder') }}" maxlength="80">
+            </label>
+            <button type="submit" class="btn btn-secondary btn-sm fs-tap"><i data-lucide="filter"></i> {{ __('pharmacy_prices.btn_search') }}</button>
+            @if($search !== '')
+                <a href="{{ route('portals.pharmacy.prices.index') }}" class="btn btn-ghost btn-sm fs-tap">{{ __('pharmacy_prices.btn_clear') }}</a>
+            @endif
+        </form>
+    </div>
+
     <div class="table-wrapper">
         <table class="data-table">
             <thead><tr>
@@ -75,7 +70,7 @@
                 <th>{{ __('pharmacy_prices.col_price') }}</th>
                 <th>{{ __('pharmacy_prices.col_published') }}</th>
                 <th>{{ __('pharmacy_prices.col_last_changed') }}</th>
-                <th>{{ __('pharmacy_prices.col_history') }}</th>
+                <th class="row-actions">{{ __('pharmacy_prices.col_history') }}</th>
             </tr></thead>
             <tbody>
             @forelse($items as $item)
@@ -87,18 +82,23 @@
                     $differs = $row && $item->selling_price_xaf !== null && $shown !== $item->selling_price_xaf;
                 @endphp
                 <tr>
-                    <td data-label="{{ __('pharmacy_prices.col_medicine') }}" class="td-strong">
-                        {{ $med?->name ?? $item->name }}
-                        <div class="td-muted">{{ $med?->generic_name }} {{ $med?->strength }} {{ $med?->form }}</div>
+                    <td data-label="{{ __('pharmacy_prices.col_medicine') }}">
+                        <div class="ph-cell">
+                            <span class="ph-avatar ph-avatar--teal" aria-hidden="true"><i data-lucide="pill"></i></span>
+                            <div>
+                                <span class="ph-cell__title">{{ $med?->name ?? $item->name }}</span>
+                                <div class="ph-cell__sub">{{ $med?->generic_name }} {{ $med?->strength }} {{ $med?->form }}</div>
+                            </div>
+                        </div>
                     </td>
                     <td data-label="{{ __('pharmacy_prices.col_price') }}">
-                        <form method="POST" action="{{ route('portals.pharmacy.prices.update', $item->id) }}" class="fs-price">
+                        <form method="POST" action="{{ route('portals.pharmacy.prices.update', $item->id) }}" class="ph-price">
                             @csrf
                             @if($search !== '')<input type="hidden" name="q" value="{{ $search }}">@endif
                             <input type="number" name="price_xaf" class="form-control fs-num" step="1" min="0" max="{{ $maxPrice }}" inputmode="numeric" required
                                    value="{{ old('price_xaf', $item->selling_price_xaf) }}" aria-label="{{ __('pharmacy_prices.col_price') }}">
-                            <span class="fs-price__unit">FCFA</span>
-                            <input type="text" name="reason" class="form-control fs-reason" maxlength="120" placeholder="{{ __('pharmacy_prices.lbl_reason') }}" aria-label="{{ __('pharmacy_prices.lbl_reason') }}">
+                            <span class="ph-price__unit">FCFA</span>
+                            <input type="text" name="reason" class="form-control ph-reason" maxlength="120" placeholder="{{ __('pharmacy_prices.lbl_reason') }}" aria-label="{{ __('pharmacy_prices.lbl_reason') }}">
                             <button type="submit" class="btn btn-primary btn-sm fs-tap"><i data-lucide="save"></i> {{ __('pharmacy_prices.btn_save') }}</button>
                         </form>
                         @if($item->selling_price_xaf === null)
@@ -128,12 +128,20 @@
                             —
                         @endif
                     </td>
-                    <td data-label="{{ __('pharmacy_prices.col_history') }}">
+                    <td class="row-actions" data-label="{{ __('pharmacy_prices.col_history') }}">
                         <a href="{{ route('portals.pharmacy.prices.history', $item->id) }}" class="btn btn-ghost btn-sm fs-tap"><i data-lucide="history"></i> {{ __('pharmacy_prices.btn_history') }}</a>
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="5" class="td-muted empty-cell">{{ $search !== '' ? __('pharmacy_prices.search_empty') : __('pharmacy_prices.index_empty') }}</td></tr>
+                <tr><td colspan="5" class="empty-cell">
+                    <div class="empty-state">
+                        <i data-lucide="tags"></i>
+                        <p>{{ $search !== '' ? __('pharmacy_prices.search_empty') : __('pharmacy_prices.index_empty') }}</p>
+                        @if($search !== '')
+                            <a href="{{ route('portals.pharmacy.prices.index') }}" class="btn btn-secondary btn-sm">{{ __('pharmacy_prices.btn_clear') }}</a>
+                        @endif
+                    </div>
+                </td></tr>
             @endforelse
             </tbody>
         </table>

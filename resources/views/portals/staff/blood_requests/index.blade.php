@@ -107,6 +107,7 @@
                 <div class="empty-state-icon"><i data-lucide="inbox"></i></div>
                 <h3>{{ __('blood_desk.empty_title') }}</h3>
                 <p>{{ __('blood_desk.empty_desc') }}</p>
+                <a href="{{ route('portals.staff.blood_requests.create') }}" class="btn btn-primary btn-sm mt-6"><i data-lucide="plus"></i> {{ __('hospital_desk.empty_blood_requests_action') }}</a>
             </div>
         @else
             <div class="table-wrapper">

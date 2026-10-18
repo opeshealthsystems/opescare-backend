@@ -32,6 +32,16 @@ class DashboardProfileService
             return url('/professional/profile');
         }
 
+        // A laboratory manager posted at a diagnostic or imaging centre lands
+        // on the centre page (lab + imaging). A lab-only facility keeps the
+        // profile's landing. The facility judged is the active one, then the
+        // primary posting — the same resolution the capability gate applies.
+        if ($user->role?->name === 'lab_manager'
+            && \App\Services\DiagnosticCentre\DiagnosticCentreDashboardService::appliesTo($this->landingFacilityId($user))
+            && \Illuminate\Support\Facades\Route::has('portals.diagnostic.dashboard')) {
+            return route('portals.diagnostic.dashboard');
+        }
+
         $profile = $this->profileForUser($user);
 
         $url = $profile ? $profile->landingUrl() : url('/portals/patient');
@@ -81,6 +91,18 @@ class DashboardProfileService
         } catch (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException|\Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException) {
             return false;
         }
+    }
+
+    /** The facility a landing is judged for: the session's active one, then the primary posting. */
+    private function landingFacilityId(User $user): ?string
+    {
+        $active = session('active_facility_id');
+
+        if (is_string($active) && $active !== '') {
+            return $active;
+        }
+
+        return $user->primary_facility_id ? (string) $user->primary_facility_id : null;
     }
 
     private function hasFacilityContext(User $user): bool

@@ -44,6 +44,12 @@
         <i data-lucide="test-tube-2"></i><span>{{ __('lab_desk.nav_collection', [], $l) }}</span>
     </a>
     @endcapability
+    {{-- The imaging half of a diagnostic centre (routes/imaging_desk.php). --}}
+    @capability('imaging')
+    <a href="{{ route('portals.imaging.index') }}" class="sidebar-link {{ request()->routeIs('portals.imaging.*') ? 'active' : '' }}">
+        <i data-lucide="scan"></i><span>{{ __('imaging_desk.title', [], $l) }}</span>
+    </a>
+    @endcapability
     {{-- Blood Bank is NOT behind @feature('inventory_ops'). It is carved out of
          that freeze because it is the only reachable writer of the public Blood
          Finder's data — see the 'inventory_ops' block in bootstrap/app.php.

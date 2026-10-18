@@ -16,9 +16,12 @@ use App\Services\Lab\LabCatalogueProjector;
  * catalogue. Both are LOINC codes, both are projected into
  * `lab_test_availability`, and nothing on the catalogue screen said which
  * finder a row ends up on. This class answers that from the dictionary alone
- * (`common_reason` starting "Imaging:", the same rule ImagingExamSearch uses).
- * Nothing is guessed from titles: a LOINC code the dictionary does not mark as
- * imaging is a lab test, and a non-LOINC code reaches no finder at all.
+ * (`common_reason` starting "Imaging:", the same rule ImagingExamSearch uses)
+ * and, for WHO ICHI procedures, from the code's own action axis (`BA`,
+ * diagnostic imaging — ImagingExamSearch::isImagingProcedureCode). Nothing is
+ * guessed from titles: a LOINC code the dictionary does not mark as imaging is
+ * a lab test, an ICHI code that is not a diagnostic-imaging stem reaches no
+ * finder, and any other system reaches no finder at all.
  *
  * Read-only. No schema.
  */
@@ -28,8 +31,12 @@ class ServiceMix
     public const IMAGING = 'imaging';
 
     /** Which finder a catalogue row reaches: lab, imaging, or null (none). */
-    public static function finderFor(string $system, ?ClinicalCodeDictionary $entry): ?string
+    public static function finderFor(string $system, ?ClinicalCodeDictionary $entry, ?string $code = null): ?string
     {
+        if ($system === ImagingExamSearch::ICHI_SYSTEM) {
+            return ImagingExamSearch::isImagingProcedureCode($code ?? $entry?->code) ? self::IMAGING : null;
+        }
+
         if ($system !== LabCatalogueProjector::LAB_TEST_SYSTEM) {
             return null;
         }
@@ -50,14 +57,18 @@ class ServiceMix
      */
     public function forFacility(string $tenantFacilityId): array
     {
-        $imagingCodes = ClinicalCodeDictionary::query()
-            ->where('system', LabCatalogueProjector::LAB_TEST_SYSTEM)
-            ->where('common_reason', 'like', ImagingExamSearch::IMAGING_REASON_PREFIX . '%')
-            ->select('code');
+        $imagingCodes = ImagingExamSearch::imagingCodesQuery();
 
+        // Every item the projector can publish: LOINC tests and ICHI
+        // diagnostic-imaging procedures. Other ICHI stems reach no finder and
+        // are not counted on either side.
         $catalogue = FacilityCatalogueItem::query()
             ->where('facility_id', $tenantFacilityId)
-            ->where('system', LabCatalogueProjector::LAB_TEST_SYSTEM)
+            ->whereIn('system', LabCatalogueProjector::PUBLISHED_SYSTEMS)
+            ->where(function ($q) {
+                $q->where('system', LabCatalogueProjector::LAB_TEST_SYSTEM)
+                    ->orWhere('code', 'like', ImagingExamSearch::ICHI_IMAGING_CODE_LIKE);
+            })
             ->where('is_active', true);
 
         $total   = (clone $catalogue)->count();

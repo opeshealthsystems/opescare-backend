@@ -38,6 +38,8 @@
             <div class="empty-state">
                 <div class="empty-state-icon"><i data-lucide="siren"></i></div>
                 <h3>{{ __('triage.empty_queue') }}</h3>
+                <p>{{ __('hospital_desk.empty_triage_hint') }}</p>
+                <a href="{{ route('portals.triage.create') }}" class="btn btn-primary btn-sm mt-6"><i data-lucide="plus"></i> {{ __('hospital_desk.empty_triage_action') }}</a>
             </div>
         </div>
     @else

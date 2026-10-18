@@ -57,7 +57,7 @@ class EnsurePortalAccess
             // Seeded 2026-09-14 (RolesSeeder); they render the admin sidebars,
             // whose Team / overview links land here.
             'department_manager', 'multi_facility_admin',
-            'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection',
+            'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection', 'imaging_tech', 'radiologist',
             'pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'medicine_stock', 'dispensing_officer',
         ],
         // The facility's own service catalogue ("what we offer"). Listed
@@ -85,7 +85,7 @@ class EnsurePortalAccess
             'nurse', 'triage_nurse', 'ward_nurse', 'midwife', 'nurse_supervisor',
             'student_doctor', 'student_nurse', 'intern', 'medical_supervisor',
             'receptionist', 'front_desk', 'appointment_coordinator', 'queue_manager', 'records_officer',
-            'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection',
+            'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection', 'imaging_tech', 'radiologist',
             'pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'medicine_stock', 'dispensing_officer',
             'cashier', 'billing_officer', 'finance_manager', 'refund_approver', 'wallet_ops',
             'data_steward', 'reconciliation_officer', 'data_import_officer', 'data_quality_reviewer',
@@ -104,7 +104,7 @@ class EnsurePortalAccess
             'nurse', 'triage_nurse', 'ward_nurse', 'midwife', 'nurse_supervisor',
             'student_doctor', 'student_nurse', 'intern', 'medical_supervisor',
             'receptionist', 'front_desk', 'appointment_coordinator', 'queue_manager', 'records_officer',
-            'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection',
+            'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection', 'imaging_tech', 'radiologist',
             'pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'medicine_stock', 'dispensing_officer',
             'cashier', 'billing_officer', 'finance_manager', 'refund_approver', 'wallet_ops',
             'data_steward', 'reconciliation_officer', 'data_import_officer', 'data_quality_reviewer',
@@ -128,7 +128,43 @@ class EnsurePortalAccess
             'nurse', 'triage_nurse', 'ward_nurse', 'midwife', 'nurse_supervisor',
             'student_doctor', 'student_nurse', 'intern', 'medical_supervisor',
             'receptionist', 'front_desk', 'appointment_coordinator', 'queue_manager', 'records_officer',
-            'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection',
+            'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection', 'imaging_tech', 'radiologist',
+            'pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'medicine_stock', 'dispensing_officer',
+            'cashier', 'billing_officer', 'finance_manager', 'refund_approver', 'wallet_ops',
+            'data_steward', 'reconciliation_officer', 'data_import_officer', 'data_quality_reviewer',
+        ],
+        // The imaging desk (/facility/imaging). Same shape and reasoning as
+        // 'facility/queue': the desk is worked from inside the operations desk
+        // (imaging_tech, radiologist, the lab roles, doctors for intake), but a
+        // facility administrator at an imaging or diagnostic centre answers
+        // for it and is closed out of the desk. Wider than the permitted set:
+        // `capability:imaging` decides who may act, and a refusal is a 403
+        // that names the reason — never a redirect elsewhere.
+        // The diagnostic centre landing (/facility/diagnostic). Same shape and
+        // reasoning as 'facility/imaging' below: a lab manager works it from
+        // inside the desk, a facility administrator at a centre answers for
+        // it from outside. `capability:lab_results,imaging` decides who may
+        // act; a refusal is a 403, never a redirect.
+        'facility/diagnostic' => [
+            'facility_admin', 'clinic_admin', 'hospital_admin', 'facility_ceo', 'branch_admin',
+            'department_manager', 'multi_facility_admin',
+            'doctor', 'multi_doctor', 'specialist', 'consultant', 'resident', 'visiting_doctor',
+            'nurse', 'triage_nurse', 'ward_nurse', 'midwife', 'nurse_supervisor',
+            'student_doctor', 'student_nurse', 'intern', 'medical_supervisor',
+            'receptionist', 'front_desk', 'appointment_coordinator', 'queue_manager', 'records_officer',
+            'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection', 'imaging_tech', 'radiologist',
+            'pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'medicine_stock', 'dispensing_officer',
+            'cashier', 'billing_officer', 'finance_manager', 'refund_approver', 'wallet_ops',
+            'data_steward', 'reconciliation_officer', 'data_import_officer', 'data_quality_reviewer',
+        ],
+        'facility/imaging' => [
+            'facility_admin', 'clinic_admin', 'hospital_admin', 'facility_ceo', 'branch_admin',
+            'department_manager', 'multi_facility_admin',
+            'doctor', 'multi_doctor', 'specialist', 'consultant', 'resident', 'visiting_doctor',
+            'nurse', 'triage_nurse', 'ward_nurse', 'midwife', 'nurse_supervisor',
+            'student_doctor', 'student_nurse', 'intern', 'medical_supervisor',
+            'receptionist', 'front_desk', 'appointment_coordinator', 'queue_manager', 'records_officer',
+            'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection', 'imaging_tech', 'radiologist',
             'pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'medicine_stock', 'dispensing_officer',
             'cashier', 'billing_officer', 'finance_manager', 'refund_approver', 'wallet_ops',
             'data_steward', 'reconciliation_officer', 'data_import_officer', 'data_quality_reviewer',
@@ -145,7 +181,7 @@ class EnsurePortalAccess
             'nurse', 'triage_nurse', 'ward_nurse', 'midwife', 'nurse_supervisor',
             'student_doctor', 'student_nurse', 'intern', 'medical_supervisor',
             'receptionist', 'front_desk', 'appointment_coordinator', 'queue_manager', 'records_officer',
-            'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection',
+            'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection', 'imaging_tech', 'radiologist',
             'pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'medicine_stock', 'dispensing_officer',
             'cashier', 'billing_officer', 'finance_manager', 'refund_approver', 'wallet_ops',
             'data_steward', 'reconciliation_officer', 'data_import_officer', 'data_quality_reviewer',
@@ -157,7 +193,7 @@ class EnsurePortalAccess
             'nurse', 'triage_nurse', 'ward_nurse', 'midwife', 'nurse_supervisor',
             'student_doctor', 'student_nurse', 'intern', 'medical_supervisor',
             'receptionist', 'front_desk', 'appointment_coordinator', 'queue_manager', 'records_officer',
-            'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection',
+            'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection', 'imaging_tech', 'radiologist',
             'pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'medicine_stock', 'dispensing_officer',
             'cashier', 'billing_officer', 'finance_manager', 'refund_approver', 'wallet_ops',
             'data_steward', 'reconciliation_officer', 'data_import_officer', 'data_quality_reviewer',
@@ -173,7 +209,7 @@ class EnsurePortalAccess
             // Front desk & operations
             'receptionist', 'front_desk', 'appointment_coordinator', 'queue_manager', 'records_officer',
             // Lab
-            'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection',
+            'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection', 'imaging_tech', 'radiologist',
             // Pharmacy
             'pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'medicine_stock', 'dispensing_officer',
             // Billing. 'finance' sat under 'admin' only, yet it renders the
@@ -228,7 +264,7 @@ class EnsurePortalAccess
         ],
         // Phantom portals (modules removed) — see 'insurance' note above.
         'lab' => [
-            'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection',
+            'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection', 'imaging_tech', 'radiologist',
         ],
         'healthorg' => [
             'ngo_admin', 'health_program_manager', 'outreach_team', 'mobile_clinic_team',

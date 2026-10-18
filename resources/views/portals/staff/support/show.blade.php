@@ -56,7 +56,7 @@
             <textarea id="body" name="body" class="form-control" rows="3" minlength="2" maxlength="2000" required></textarea>
             <div style="margin-top:.75rem;"><button type="submit" class="btn btn-primary"><i data-lucide="send"></i> {{ __('support.send_reply') }}</button></div>
         </form>
-        <form method="POST" action="{{ route('portals.staff.support.close', $ticket->id) }}" style="margin-top:1rem;">
+        <form method="POST" action="{{ route('portals.staff.support.close', $ticket->id) }}" style="margin-top:1rem;" data-confirm="{{ __('hospital_desk.confirm_support_close') }}">
             @csrf
             <button type="submit" class="btn btn-ghost btn-sm"><i data-lucide="check-circle-2"></i> {{ __('support.mark_resolved') }}</button>
         </form>

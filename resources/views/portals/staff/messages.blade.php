@@ -32,6 +32,7 @@
                 <i data-lucide="message-square"></i>
                 <h3>{{ __('messaging.empty_title') }}</h3>
                 <p>{{ __('messaging.staff_empty_body') }}</p>
+                <p class="td-muted">{{ __('hospital_desk.empty_messages_hint') }}</p>
             </div>
         @else
             <ul style="list-style:none;padding:0;margin:0;display:grid;gap:.5rem;">

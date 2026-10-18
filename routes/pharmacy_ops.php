@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\MedicalId\PharmacyStockItemController;
 use App\Http\Controllers\MedicalId\PharmacyStockOpsController;
+use App\Http\Controllers\MedicalId\PharmacySupplierController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -79,4 +81,18 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'capability:pharmacy_stock', '
         ->name('portals.pharmacy.stock.suppliers.store');
     Route::get('/pharmacy/stock/receipts/{id}', [PharmacyStockOpsController::class, 'showReceipt'])
         ->name('portals.pharmacy.stock.receipts.show');
+
+    // ── Detail pages (read-only; every write posts to the routes above) ──
+    Route::get('/pharmacy/stock/items/{item}', [PharmacyStockItemController::class, 'show'])
+        ->name('portals.pharmacy.stock.items.show');
+    Route::get('/pharmacy/stock/adjustments/{id}', [PharmacyStockItemController::class, 'showAdjustment'])
+        ->name('portals.pharmacy.stock.adjustments.show');
+
+    // ── Suppliers (register, card, edit — POST, never PUT: see above) ────
+    Route::get('/pharmacy/stock/suppliers', [PharmacySupplierController::class, 'index'])
+        ->name('portals.pharmacy.stock.suppliers');
+    Route::get('/pharmacy/stock/suppliers/{id}', [PharmacySupplierController::class, 'show'])
+        ->name('portals.pharmacy.stock.suppliers.show');
+    Route::post('/pharmacy/stock/suppliers/{id}', [PharmacySupplierController::class, 'update'])
+        ->name('portals.pharmacy.stock.suppliers.update');
 });

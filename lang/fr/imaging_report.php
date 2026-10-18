@@ -1,0 +1,171 @@
+<?php
+
+/*
+|--------------------------------------------------------------------------
+| Bureau des comptes rendus d’imagerie (portail web, /facility/imaging/reports,
+| /facility/imaging/orders/{id}/report) et la fiche IMAGING_REPORT du patient
+|--------------------------------------------------------------------------
+| Doit rester 1:1 avec lang/en/imaging_report.php (scripts/i18n-audit.php).
+*/
+
+return [
+
+    'nav_reports' => 'Comptes rendus',
+    'no_facility' => 'Aucun établissement actif pour cette session.',
+
+    // ── File d’attente ────────────────────────────────────────────────────
+    'queue_title'          => 'Comptes rendus d’imagerie',
+    'queue_subtitle'       => 'Examens terminés dans cet établissement en attente d’un radiologue, et comptes rendus signés pas encore remis au patient.',
+    'queue_awaiting'       => 'En attente de compte rendu',
+    'queue_awaiting_hint'  => 'Examen terminé le plus ancien en premier. Un examen avec un brouillon reste ici jusqu’à la finalisation.',
+    'queue_undistributed'  => 'Signés, pas encore remis',
+    'queue_undistributed_hint' => 'Le patient ne voit un compte rendu qu’une fois celui-ci remis.',
+    'queue_empty'          => 'Aucun examen n’attend de compte rendu.',
+    'queue_undistributed_empty' => 'Chaque compte rendu signé a été remis à son patient.',
+    'col_patient'          => 'Patient',
+    'col_study'            => 'Examen',
+    'col_accession'        => 'Numéro d’accession',
+    'col_completed'        => 'Terminé',
+    'col_report'           => 'Compte rendu',
+    'col_author'           => 'Auteur',
+    'col_finalized'        => 'Finalisé',
+    'col_actions'          => '',
+    'open_report'          => 'Ouvrir le compte rendu',
+    'write_report'         => 'Rédiger le compte rendu',
+    'back_to_queue'        => 'Retour aux comptes rendus',
+    'back_to_order'        => 'Retour à la demande',
+    'back_to_worklist'     => 'Retour à la liste de travail',
+    'unknown'              => 'Inconnu',
+    'not_yet'              => 'Pas encore',
+
+    // ── Page du compte rendu ──────────────────────────────────────────────
+    'page_title'           => 'Compte rendu de radiologie',
+    'page_subtitle'        => ':modality · :body_part',
+    'order_facts'          => 'L’examen',
+    'patient'              => 'Patient',
+    'age_band'             => 'Tranche d’âge',
+    'sex'                  => 'Sexe',
+    'health_id'            => 'Identifiant santé',
+    'modality_label'       => 'Modalité',
+    'body_part'            => 'Région anatomique',
+    'accession'            => 'Numéro d’accession',
+    'urgency'              => 'Urgence',
+    'ordered_by'           => 'Demandé par',
+    'referring'            => 'Médecin prescripteur',
+    'completed_at'         => 'Examen terminé',
+    'order_status'         => 'Statut de la demande',
+    'order_not_completed'  => 'Cet examen n’est pas encore marqué terminé. Un brouillon peut être rédigé, mais le compte rendu s’écrit en général une fois les images acquises.',
+
+    'form_title'           => 'Compte rendu',
+    'form_amend_title'     => 'Modifier ce compte rendu',
+    'form_amend_hint'      => 'Une modification crée une nouvelle version. Le texte signé que vous remplacez est conservé et reste lisible ci-dessous ; le patient ne voit que la version courante une fois que vous la lui remettez à nouveau.',
+    'indication'           => 'Indication clinique',
+    'findings'             => 'Constatations',
+    'findings_hint'        => 'Ce que montrent les images, comme vous le dicteriez.',
+    'impression'           => 'Conclusion',
+    'impression_hint'      => 'Votre conclusion. C’est ce que le clinicien prescripteur lit en premier.',
+    'recommendation'       => 'Recommandation',
+    'recommendation_hint'  => 'Facultatif. Imagerie de suivi, corrélation, orientation.',
+    'reason'               => 'Motif de la modification',
+    'attachment'           => 'Joindre un PDF (facultatif)',
+    'attachment_hint'      => 'PDF uniquement, 10 Mo au plus. Le patient reçoit de toute façon le texte signé sous forme de fiche vérifiable ; le fichier est un complément, remis avec le compte rendu.',
+    'attachment_current'   => 'Fichier joint',
+    'attachment_replace'   => 'Téléverser un autre fichier le remplace.',
+    'download_attachment'  => 'Télécharger la pièce jointe',
+    'save_draft'           => 'Enregistrer le brouillon',
+    'finalize'             => 'Finaliser et signer',
+    'finalize_confirm'     => 'Signer ce compte rendu ? Une fois final, il ne peut être changé que par une modification, qui conserve cette version.',
+    'amend'                => 'Émettre la modification',
+    'amend_confirm'        => 'Émettre une nouvelle version de ce compte rendu ? La version signée actuelle est conservée.',
+    'distribute'           => 'Remettre au patient',
+    'distribute_confirm'   => 'Remettre ce compte rendu au patient ? Il apparaît dans ses documents et le patient est notifié.',
+    'redistribute_hint'    => 'Cette version n’a pas encore été remise au patient. La version précédente l’avait été.',
+    'readonly_note'        => 'Ce compte rendu est signé. Pour le changer, émettez une modification.',
+
+    // ── Panneau (sur la page de la demande) ───────────────────────────────
+    'panel_title'          => 'Compte rendu de radiologie',
+    'panel_none'           => 'Pas encore de compte rendu.',
+    'panel_none_hint'      => 'Un radiologue le rédige une fois l’examen terminé.',
+    'panel_status'         => 'Statut',
+    'panel_version'        => 'Version',
+    'panel_author'         => 'Auteur',
+    'panel_finalized'      => 'Finalisé',
+    'panel_distributed'    => 'Remis au patient',
+    'panel_not_distributed' => 'Pas encore remis',
+    'panel_open'           => 'Ouvrir le compte rendu',
+    'panel_versions'       => 'Versions antérieures',
+    'panel_version_row'    => 'Version :n · :status · :date',
+    'panel_impression'     => 'Conclusion',
+
+    'status' => [
+        'none'        => 'Pas de compte rendu',
+        'draft'       => 'Brouillon',
+        'preliminary' => 'Préliminaire',
+        'final'       => 'Final',
+        'amended'     => 'Modifié',
+        'corrected'   => 'Corrigé',
+        'superseded'  => 'Remplacé',
+    ],
+
+    'version_n' => 'v:n',
+
+    'modality' => [
+        'xray'        => 'Radiographie',
+        'ct'          => 'Scanner',
+        'mri'         => 'IRM',
+        'ultrasound'  => 'Échographie',
+        'echo'        => 'Échocardiographie',
+        'nuclear'     => 'Médecine nucléaire',
+        'pet'         => 'TEP',
+        'fluoroscopy' => 'Fluoroscopie',
+        'mammography' => 'Mammographie',
+        'other'       => 'Autre',
+    ],
+
+    'urgency_label' => [
+        'routine' => 'Routine',
+        'urgent'  => 'Urgent',
+        'stat'    => 'STAT',
+    ],
+
+    'age_bands' => [
+        'neonate'    => 'Nouveau-né',
+        'infant'     => 'Nourrisson',
+        'child'      => 'Enfant',
+        'adolescent' => 'Adolescent',
+        'adult'      => 'Adulte',
+        'geriatric'  => 'Personne âgée',
+        'unknown'    => 'Non renseigné',
+    ],
+
+    'flash' => [
+        'draft_saved'       => 'Brouillon enregistré.',
+        'finalized'         => 'Compte rendu finalisé et signé.',
+        'amended'           => 'Modification émise en version :n. Remettez-la pour que le patient reçoive le texte courant.',
+        'distributed'       => 'Compte rendu remis au patient.',
+        'not_editable'      => 'Ce compte rendu est signé et ne peut pas être modifié directement. Émettez une modification.',
+        'cannot_finalize'   => 'Le compte rendu n’a pas pu être finalisé. Il lui faut des constatations et une conclusion, et il ne doit pas déjà être signé.',
+        'cannot_amend'      => 'Seul un compte rendu signé et courant peut être modifié.',
+        'cannot_distribute' => 'Seul un compte rendu signé et courant peut être remis.',
+    ],
+
+    // ── La fiche du patient (documents/imaging-report.blade.php) ──────────
+    'doc' => [
+        'title'          => 'Compte rendu d’imagerie',
+        'subtitle'       => 'Compte rendu tel que signé par le radiologue',
+        'modality'       => 'Modalité',
+        'body_part'      => 'Région anatomique',
+        'accession'      => 'Accession',
+        'study_date'     => 'Date de l’examen',
+        'reported_by'    => 'Rédigé par',
+        'finalized'      => 'Signé',
+        'version'        => 'Version',
+        'version_n'      => 'Version :n',
+        'amended_note'   => 'Ce compte rendu a été modifié le :date et remplace une version antérieure.',
+        'indication'     => 'Indication clinique',
+        'findings'       => 'Constatations',
+        'impression'     => 'Conclusion',
+        'recommendation' => 'Recommandation',
+        'advice'         => 'Discutez de ce compte rendu avec le clinicien qui a demandé l’examen. Un compte rendu de radiologie est une interprétation d’images, pas un diagnostic à lui seul.',
+    ],
+];

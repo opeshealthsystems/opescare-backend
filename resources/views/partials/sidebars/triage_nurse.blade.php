@@ -52,6 +52,9 @@
     <a href="{{ route('portals.staff.appointments') }}" class="sidebar-link {{ request()->routeIs('portals.staff.appointments*') ? 'active' : '' }}">
         <i data-lucide="calendar-check-2"></i><span>{{ __('public.portal.nav_appointments', [], $l) }}</span>
     </a>
+    <a href="{{ route('portals.staff.appointments.waitlist') }}" class="sidebar-link {{ request()->routeIs('portals.staff.appointments.waitlist') ? 'active' : '' }}">
+        <i data-lucide="list-ordered"></i><span>{{ __('waitlist.staff_title', [], $l) }}</span>
+    </a>
     @endcapability
     @capability('blood_inventory')
     <a href="{{ route('portals.staff.inventory.blood') }}" class="sidebar-link {{ request()->routeIs('portals.staff.inventory.blood*') ? 'active' : '' }}">
@@ -71,6 +74,19 @@
 </div>
 @endcapability
 
+
+{{-- Tasks + Help (routes/imports_tasks.php). No capability gates these
+     routes: every operational role has an inbox and may raise a ticket, so
+     the links are not gated either (EnsurePortalAccess admits this role to
+     facility/tasks and facility/support). --}}
+<div class="sidebar-nav-section">
+    <a href="{{ route('portals.staff.tasks') }}" class="sidebar-link {{ request()->routeIs('portals.staff.tasks*') ? 'active' : '' }}">
+        <i data-lucide="check-square"></i><span>{{ __('tasks.nav', [], $l) }}</span>
+    </a>
+    <a href="{{ route('portals.staff.support') }}" class="sidebar-link {{ request()->routeIs('portals.staff.support*') ? 'active' : '' }}">
+        <i data-lucide="life-buoy"></i><span>{{ __('support.nav', [], $l) }}</span>
+    </a>
+</div>
 
 {{-- Facility switching for clinicians posted at more than one facility.
      Self-gating: renders nothing unless this user holds more than one active

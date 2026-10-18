@@ -43,7 +43,14 @@
     </div>
     <div class="panel-body">
         @if($referrals->isEmpty())
-            <p class="td-muted">{{ __('referral_desk.none') }}</p>
+            <div class="empty-state">
+                <div class="empty-state-icon"><i data-lucide="{{ $tab === 'sent' ? 'send' : 'inbox' }}"></i></div>
+                <h3>{{ __('referral_desk.none') }}</h3>
+                <p>{{ __('hospital_desk.empty_referrals_' . $tab . '_hint') }}</p>
+                @if($tab === 'sent')
+                <a href="{{ route('portals.referrals.create') }}" class="btn btn-primary btn-sm mt-6"><i data-lucide="plus"></i> {{ __('hospital_desk.empty_referrals_action') }}</a>
+                @endif
+            </div>
         @else
             <div class="table-wrapper">
                 <table class="data-table">

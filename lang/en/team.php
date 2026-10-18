@@ -183,6 +183,8 @@ return [
         'lab_scientist'       => 'Lab scientist',
         'lab_manager'         => 'Lab manager',
         'sample_collection'   => 'Sample collection officer',
+        'imaging_tech'        => 'Imaging technologist',
+        'radiologist'         => 'Radiologist',
         'pharmacist'          => 'Pharmacist',
         'pharmacy_technician' => 'Pharmacy technician',
         'pharmacy_manager'    => 'Pharmacy manager',

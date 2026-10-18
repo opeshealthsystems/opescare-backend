@@ -66,6 +66,7 @@
             <i data-lucide="check-circle-2"></i>
             <h3>{{ __('tasks.empty_title') }}</h3>
             <p>{{ __('tasks.empty_body') }}</p>
+            <p class="td-muted">{{ __('hospital_desk.empty_tasks_hint') }}</p>
         </div>
     @else
     <div class="table-wrapper">
@@ -100,10 +101,10 @@
                             <button type="submit" class="btn btn-secondary btn-sm"><i data-lucide="eye"></i> {{ __('tasks.acknowledge') }}</button>
                         </form>
                         @endif
-                        <form method="POST" action="{{ route('portals.staff.tasks.complete', $task->uuid) }}">@csrf
+                        <form method="POST" action="{{ route('portals.staff.tasks.complete', $task->uuid) }}" data-confirm="{{ __('hospital_desk.confirm_task_complete') }}">@csrf
                             <button type="submit" class="btn btn-primary btn-sm"><i data-lucide="check"></i> {{ __('tasks.complete') }}</button>
                         </form>
-                        <form method="POST" action="{{ route('portals.staff.tasks.escalate', $task->uuid) }}">@csrf
+                        <form method="POST" action="{{ route('portals.staff.tasks.escalate', $task->uuid) }}" data-confirm="{{ __('hospital_desk.confirm_task_escalate') }}">@csrf
                             <button type="submit" class="btn btn-ghost btn-sm"><i data-lucide="arrow-up-circle"></i> {{ __('tasks.escalate') }}</button>
                         </form>
                         @endif

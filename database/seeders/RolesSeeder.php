@@ -97,6 +97,10 @@ class RolesSeeder extends Seeder
         ['lab_manager',          'laboratory',              'lab_manager',          'Lab Manager'],
         ['lab_validator',        'laboratory',              'lab_manager',          'Lab Result Validator'],
         ['sample_collection',    'laboratory',              'sample_collection',    'Sample Collection Officer'],
+        // Imaging (2026-10-13): the imaging half of a diagnostic centre. Under
+        // the laboratory category because that is the tenant they belong to.
+        ['imaging_tech',         'laboratory',              'imaging_tech',         'Imaging Technologist'],
+        ['radiologist',          'laboratory',              'radiologist',          'Radiologist'],
 
         // Pharmacy
         ['pharmacist',           'pharmacy',                'pharmacist',           'Pharmacist'],

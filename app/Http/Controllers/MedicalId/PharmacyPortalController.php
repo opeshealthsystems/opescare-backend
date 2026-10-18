@@ -151,7 +151,10 @@ class PharmacyPortalController extends Controller
                 ->count()
             : 0;
 
-        return view('portals.pharmacy.dashboard', compact('stats', 'pendingRx', 'alerts', 'pendingOrders'));
+        // Finder rows link to their ledger page when this pharmacy keeps one.
+        $ledgerItems = $facilityId ? app(\App\Services\Pharmacy\PharmacyStockDetailService::class)->itemIdsByMedicine($facilityId) : collect();
+
+        return view('portals.pharmacy.dashboard', compact('stats', 'pendingRx', 'alerts', 'pendingOrders', 'ledgerItems'));
     }
 
     // ------------------------------------------------------------------
@@ -395,6 +398,13 @@ class PharmacyPortalController extends Controller
                 ->with('error', __('flash.prescription_not_dispensable'));
         }
 
+        // The detail page posts here too and wants to land back on the script
+        // it was looking at, not on the queue.
+        if ($req->input('return_to') === 'detail' && \Illuminate\Support\Facades\Route::has('portals.pharmacy.prescriptions.show')) {
+            return redirect()->route('portals.pharmacy.prescriptions.show', $rx->id)
+                ->with('success', __('flash.prescription_dispensed'));
+        }
+
         return redirect()->route('portals.pharmacy.prescriptions')
             ->with('success', __('flash.prescription_dispensed'));
     }
@@ -479,6 +489,10 @@ class PharmacyPortalController extends Controller
             'coverage'     => $coverage,
             'statuses'     => PharmacyStockStatus::cases(),
             'portalSource' => PharmacyStockReportService::SOURCE_PORTAL,
+            // Finder rows link to their ledger page when this pharmacy keeps one.
+            'ledgerItems'  => ($ledgerFacility = $this->writableFacilityId())
+                ? app(\App\Services\Pharmacy\PharmacyStockDetailService::class)->itemIdsByMedicine($ledgerFacility)
+                : collect(),
         ]);
     }
 

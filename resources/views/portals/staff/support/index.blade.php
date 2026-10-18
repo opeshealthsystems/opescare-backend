@@ -73,6 +73,7 @@
                 <i data-lucide="inbox"></i>
                 <h3>{{ __('support.empty_title') }}</h3>
                 <p>{{ __('support.empty_body') }}</p>
+                <p class="td-muted">{{ __('hospital_desk.empty_support_hint') }}</p>
             </div>
         @else
             <div class="table-wrapper">

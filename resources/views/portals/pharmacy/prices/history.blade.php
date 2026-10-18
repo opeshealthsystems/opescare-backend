@@ -5,10 +5,6 @@
 @section('breadcrumb_home_url', route('portals.pharmacy.dashboard'))
 @section('breadcrumb_section', __('pharmacy_prices.nav_prices'))
 
-@section('head')
-@include('portals.pharmacy._supply_styles')
-@endsection
-
 @section('content')
 
 @php $name = $item->medicine?->name ?? $item->name; @endphp
@@ -22,21 +18,23 @@
 
 @include('portals.pharmacy.stock_ops._nav')
 
-<div class="fs-kpis">
-    <div class="fs-kpi fs-kpi--neutral">
-        <div class="fs-kpi__label">{{ __('pharmacy_prices.col_price') }}</div>
-        <div class="fs-kpi__value fs-mono">
+<div class="ph-kpis">
+    <div class="stat-card stat-card--info">
+        <div class="stat-card__icon"><i data-lucide="coins"></i></div>
+        <div class="stat-card__label">{{ __('pharmacy_prices.col_price') }}</div>
+        <div class="stat-card__value fs-mono">
             @if($item->selling_price_xaf !== null)
                 {{ number_format($item->selling_price_xaf, 0, ',', ' ') }} FCFA
             @else
                 —
             @endif
         </div>
-        <div class="fs-kpi__sub">{{ $name }}</div>
+        <div class="stat-card__sub">{{ $name }}</div>
     </div>
-    <div class="fs-kpi fs-kpi--neutral">
-        <div class="fs-kpi__label">{{ __('pharmacy_prices.sum_changes') }}</div>
-        <div class="fs-kpi__value">{{ $changes->total() }}</div>
+    <div class="stat-card">
+        <div class="stat-card__icon"><i data-lucide="history"></i></div>
+        <div class="stat-card__label">{{ __('pharmacy_prices.sum_changes') }}</div>
+        <div class="stat-card__value">{{ $changes->total() }}</div>
     </div>
 </div>
 
@@ -44,7 +42,7 @@
 
 <div class="panel">
     <div class="panel-header">
-        <h3 class="panel-title"><i data-lucide="history"></i> {{ __('pharmacy_prices.col_history') }}</h3>
+        <h3 class="panel-title"><i data-lucide="history"></i> {{ __('pharmacy_prices.col_history') }} <span class="ph-count-inline">{{ __('pharmacy_desk.count_paren', ['count' => $changes->total()]) }}</span></h3>
     </div>
     <div class="table-wrapper">
         <table class="data-table">
@@ -77,7 +75,12 @@
                     <td data-label="{{ __('pharmacy_prices.lbl_reason') }}" class="td-muted">{{ $c->reason ?? '—' }}</td>
                 </tr>
             @empty
-                <tr><td colspan="5" class="td-muted empty-cell">{{ __('pharmacy_prices.history_empty') }}</td></tr>
+                <tr><td colspan="5" class="empty-cell">
+                    <div class="empty-state">
+                        <i data-lucide="history"></i>
+                        <p>{{ __('pharmacy_prices.history_empty') }}</p>
+                    </div>
+                </td></tr>
             @endforelse
             </tbody>
         </table>

@@ -141,13 +141,13 @@
 
                 <div class="row-actions-inline">
                     @if(in_array('confirmed', $moves, true))
-                        <button type="submit" name="decision" value="confirmed" class="btn btn-primary btn-sm fs-tap">
+                        <button type="submit" name="decision" value="confirmed" class="btn btn-primary btn-sm fs-tap" data-confirm="{{ __('hospital_desk.confirm_blood_confirm') }}">
                             <i data-lucide="check-circle"></i>
                             {{ __('blood_desk.action_confirm') }}
                         </button>
                     @endif
                     @if(in_array('rejected', $moves, true))
-                        <button type="submit" name="decision" value="rejected" class="btn btn-danger btn-sm fs-tap">
+                        <button type="submit" name="decision" value="rejected" class="btn btn-danger btn-sm fs-tap" data-confirm="{{ __('hospital_desk.confirm_blood_reject') }}">
                             <i data-lucide="x-circle"></i>
                             {{ __('blood_desk.action_reject') }}
                         </button>
@@ -160,7 +160,7 @@
                  makes. Both still travel through the one enum transition. --}}
             <div class="row-actions-inline mt-6">
                 @if(in_array('ready', $moves, true))
-                    <form method="POST" action="{{ route('portals.staff.blood_requests.ready', $bloodRequest->id) }}">
+                    <form method="POST" action="{{ route('portals.staff.blood_requests.ready', $bloodRequest->id) }}" data-confirm="{{ __('hospital_desk.confirm_blood_ready') }}">
                         @csrf
                         <button type="submit" class="btn btn-primary btn-sm fs-tap">
                             <i data-lucide="package-check"></i>
@@ -169,7 +169,7 @@
                     </form>
                 @endif
                 @if(in_array('fulfilled', $moves, true))
-                    <form method="POST" action="{{ route('portals.staff.blood_requests.fulfil', $bloodRequest->id) }}">
+                    <form method="POST" action="{{ route('portals.staff.blood_requests.fulfil', $bloodRequest->id) }}" data-confirm="{{ __('hospital_desk.confirm_blood_fulfil') }}">
                         @csrf
                         <button type="submit" class="btn btn-success btn-sm fs-tap">
                             <i data-lucide="hand-heart"></i>

@@ -178,6 +178,20 @@ class DashboardProfilesSeeder extends Seeder
                 'landing_route' => 'portals.staff',
                 'description'   => 'Sample collection and chain-of-custody workflow',
             ],
+            [
+                'key'           => 'imaging_tech',
+                'name'          => 'Imaging Technologist Dashboard',
+                'portal_prefix' => 'staff',
+                'landing_route' => 'portals.staff',
+                'description'   => 'Imaging worklist, intake, scheduling and acquisition',
+            ],
+            [
+                'key'           => 'radiologist',
+                'name'          => 'Radiologist Dashboard',
+                'portal_prefix' => 'staff',
+                'landing_route' => 'portals.staff',
+                'description'   => 'Imaging worklist and radiology reporting',
+            ],
 
             // ── Pharmacy ──────────────────────────────────────────────────────
             [

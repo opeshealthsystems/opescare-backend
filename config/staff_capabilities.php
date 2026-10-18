@@ -23,6 +23,9 @@ $supervisors = ['medical_supervisor'];
 $frontDesk = ['receptionist', 'front_desk', 'appointment_coordinator', 'queue_manager', 'records_officer'];
 $lab = ['labtech', 'lab_scientist', 'lab_manager', 'lab_validator'];
 $labCollection = ['sample_collection'];
+// Imaging desk (2026-10-13): the two roles a diagnostic centre's imaging half
+// is run by. Seeded by RolesSeeder under the laboratory account category.
+$imaging = ['imaging_tech', 'radiologist'];
 $pharmacy = ['pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'dispensing_officer'];
 $pharmacyStock = ['medicine_stock'];
 $billing = ['cashier', 'billing_officer', 'finance_manager', 'finance', 'refund_approver', 'wallet_ops'];
@@ -39,7 +42,7 @@ return [
     'capabilities' => [
         // Identify a patient by exact Health ID or by scanning their code —
         // demographics only. Every professional at a facility needs this.
-        'identify_patient' => [...$clinical, ...$frontDesk, ...$lab, ...$labCollection, ...$pharmacy, ...$pharmacyStock],
+        'identify_patient' => [...$clinical, ...$frontDesk, ...$lab, ...$labCollection, ...$imaging, ...$pharmacy, ...$pharmacyStock],
 
         // Read a patient's clinical record (chart, vitals, diagnoses, results)
         // — subject to consent / clinical relationship.
@@ -97,6 +100,21 @@ return [
         // Sample collection workflow.
         'sample_collection' => [...$lab, ...$labCollection],
 
+        // The imaging desk (/facility/imaging): worklist, intake, scheduling,
+        // start and completion of an imaging order. The technologist and the
+        // radiologist because it is their bench; the lab manager and lab
+        // technician because a diagnostic centre is lab + imaging under one
+        // roof and one team; the facility administrator because they answer
+        // for the centre; the doctor for intake only — a referral is written
+        // by the clinician who wants the image. Deliberately NOT the front
+        // desk and NOT students/interns.
+        'imaging' => [...$imaging, 'lab_manager', 'labtech', 'facility_admin', 'doctor'],
+
+        // Write, finalise, amend and distribute a radiology report. The
+        // radiologist signs it; the lab manager answers for the centre's
+        // output. A technologist acquires images and never reports them.
+        'imaging_report' => ['radiologist', 'lab_manager'],
+
         // Appointment book, check-in, queue, front-desk operations.
         'front_desk' => $frontDesk,
 
@@ -104,7 +122,7 @@ return [
         'schedule' => [...$clinical, ...$frontDesk],
 
         // Secure messaging with patients and colleagues.
-        'messaging' => [...$clinical, ...$frontDesk, ...$lab, ...$labCollection, ...$pharmacy],
+        'messaging' => [...$clinical, ...$frontDesk, ...$lab, ...$labCollection, ...$imaging, ...$pharmacy],
 
         // Blood bank inventory.
         'blood_inventory' => [...$doctors, ...$nurses, ...$supervisors, ...$frontDesk, ...$lab],

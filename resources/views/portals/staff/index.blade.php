@@ -14,12 +14,22 @@
 
 {{-- KPI Cards --}}
 <div class="stat-grid">
+    {{-- The door to today's appointment book for roles holding `front_desk`
+         or `schedule` (the route's gate); a plain figure for anyone else. --}}
+    @capability('front_desk', 'schedule')
+    <a href="{{ route('portals.staff.appointments', ['date' => now()->toDateString()]) }}" class="stat-card stat-card--primary">
+    @else
     <div class="stat-card stat-card--primary">
+    @endcapability
         <div class="stat-card__head"><i data-lucide="calendar-check-2"></i></div>
         <div class="stat-card__label">{{ __('public.staff_portal.kpi_todays_appointments', [], app()->getLocale()) }}</div>
         <div class="stat-card__value">{{ $kpis['todays_appointments'] ?? 0 }}</div>
         <div class="stat-card__hint">{{ __('public.staff_portal.kpi_scheduled_today', [], app()->getLocale()) }}</div>
+    @capability('front_desk', 'schedule')
+    </a>
+    @else
     </div>
+    @endcapability
     {{-- The tile is the door to the queue desk for roles that hold the
          `queue` capability (the same gate as the route); for anyone else it
          stays a plain figure rather than a link that would 403. --}}
@@ -53,12 +63,22 @@
     @else
     </div>
     @endcapability
+    {{-- The door to the billing desk for roles holding `billing`; a plain
+         figure for the clinicians who see the number but do not bill. --}}
+    @capability('billing')
+    <a href="{{ route('portals.billing.index') }}" class="stat-card stat-card--primary">
+    @else
     <div class="stat-card stat-card--primary">
+    @endcapability
         <div class="stat-card__head"><i data-lucide="receipt"></i></div>
         <div class="stat-card__label">{{ __('public.staff_portal.kpi_open_invoices', [], app()->getLocale()) }}</div>
         <div class="stat-card__value">{{ $kpis['open_invoices'] ?? 0 }}</div>
         <div class="stat-card__hint">{{ __('public.staff_portal.kpi_unpaid_balance', [], app()->getLocale()) }}</div>
+    @capability('billing')
+    </a>
+    @else
     </div>
+    @endcapability
 </div>
 
 <div class="grid-main-side mt-6">

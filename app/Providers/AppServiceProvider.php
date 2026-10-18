@@ -369,6 +369,15 @@ class AppServiceProvider extends ServiceProvider
         // it gates.
         Route::group([], base_path('routes/lab.php'));
 
+        // Imaging desk (web portal) — the imaging half of a diagnostic centre,
+        // behind `capability:imaging`. Its own file, same rationale as lab.php.
+        Route::group([], base_path('routes/imaging_desk.php'));
+
+        // Diagnostic centre landing (/facility/diagnostic) — lab + imaging on
+        // one page, behind `capability:lab_results,imaging` (any-of). Its own
+        // file, same rationale.
+        Route::group([], base_path('routes/diagnostic.php'));
+
         // Patient chart (web portal) — the read-only record behind
         // `capability:clinical_chart`, which every clinical role held and
         // which gated no web screen until this file. Its own file, same

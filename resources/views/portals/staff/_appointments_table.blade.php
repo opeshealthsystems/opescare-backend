@@ -101,7 +101,7 @@
                             @if($canConfirm || $canNoShow || $canCancel || $canCheckIn)
                             <div class="fs-act">
                                 @if($canCheckIn)
-                                <form method="POST" action="{{ route('portals.staff.appointments.check-in', $appointment->id) }}">
+                                <form method="POST" action="{{ route('portals.staff.appointments.check-in', $appointment->id) }}" data-confirm="{{ __('hospital_desk.confirm_appt_check_in') }}">
                                     @csrf
                                     <button type="submit" class="fs-act-btn fs-act-btn--good">
                                         @include('partials.finder.icon', ['name' => 'log-in', 'size' => 15])
@@ -110,7 +110,7 @@
                                 </form>
                                 @endif
                                 @if($canConfirm)
-                                <form method="POST" action="{{ route('portals.staff.appointments.confirm', $appointment->id) }}">
+                                <form method="POST" action="{{ route('portals.staff.appointments.confirm', $appointment->id) }}" data-confirm="{{ __('hospital_desk.confirm_appt_confirm') }}">
                                     @csrf
                                     <button type="submit" class="fs-act-btn fs-act-btn--good">
                                         @include('partials.finder.icon', ['name' => 'check', 'size' => 15])
@@ -119,7 +119,7 @@
                                 </form>
                                 @endif
                                 @if($canNoShow)
-                                <form method="POST" action="{{ route('portals.staff.appointments.no-show', $appointment->id) }}">
+                                <form method="POST" action="{{ route('portals.staff.appointments.no-show', $appointment->id) }}" data-confirm="{{ __('hospital_desk.confirm_appt_no_show') }}">
                                     @csrf
                                     <button type="submit" class="fs-act-btn fs-act-btn--muted">
                                         @include('partials.finder.icon', ['name' => 'clock', 'size' => 15])

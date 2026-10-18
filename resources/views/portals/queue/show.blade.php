@@ -88,6 +88,43 @@
     </div>
 </div>
 
+{{-- ── Next steps for this patient: the chart (consent-gated inside), triage
+     for this visit, and the booking the ticket came from. Each link is gated
+     by the same capability as its route so nothing here 403s. ─────────── --}}
+@capability('clinical_chart', 'triage')
+<div class="panel mb-6" data-panel="next-steps">
+    <div class="panel-header">
+        <h2 class="panel-title"><i data-lucide="route"></i> {{ __('hospital_desk.patient_next_steps') }}</h2>
+    </div>
+    <div class="panel-body">
+        <p class="td-muted mb-4">{{ __('hospital_desk.patient_next_steps_hint') }}</p>
+        <div class="row-actions-inline">
+            @capability('clinical_chart')
+            @if($qPatient?->health_id)
+            <a href="{{ route('portals.chart.index', ['health_id' => $qPatient->health_id]) }}" class="btn btn-primary btn-sm">
+                <i data-lucide="folder-heart"></i> {{ __('hospital_desk.open_chart') }}
+            </a>
+            @endif
+            @endcapability
+            @capability('triage')
+            @if($isOpen && $qPatient?->health_id)
+            <a href="{{ route('portals.triage.create', ['health_id' => $qPatient->health_id]) }}" class="btn btn-secondary btn-sm">
+                <i data-lucide="siren"></i> {{ __('hospital_desk.open_triage') }}
+            </a>
+            @endif
+            @endcapability
+            @capability('front_desk', 'schedule')
+            @if($ticket->appointment_id)
+            <a href="{{ route('portals.staff.appointments', ['date' => $ticket->appointment?->scheduled_at?->toDateString()]) }}" class="btn btn-secondary btn-sm">
+                <i data-lucide="calendar-check-2"></i> {{ __('hospital_desk.open_appointment') }}
+            </a>
+            @endif
+            @endcapability
+        </div>
+    </div>
+</div>
+@endcapability
+
 {{-- ── Cancel, with a mandatory reason. Only while the ticket is open and
      not mid-consultation: a consultation that began is completed, not
      cancelled. ──────────────────────────────────────────────────────────── --}}
@@ -97,7 +134,7 @@
         <h2 class="panel-title"><i data-lucide="x-circle"></i> {{ __('queue_desk.action_cancel') }}</h2>
     </div>
     <div class="panel-body">
-        <form method="POST" action="{{ route('portals.queue.cancel', $ticket->id) }}">
+        <form method="POST" action="{{ route('portals.queue.cancel', $ticket->id) }}" data-confirm="{{ __('hospital_desk.confirm_queue_cancel') }}">
             @csrf
             <div class="form-group mb-4">
                 <label class="form-label form-label-required" for="queue-cancel-reason">{{ __('queue_desk.cancel_reason') }}</label>

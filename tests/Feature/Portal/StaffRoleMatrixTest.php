@@ -158,6 +158,36 @@ class StaffRoleMatrixTest extends TestCase
                 'GET /facility/team'                 => 403,
             ] + $facilityOnly],
 
+            // Imaging desk roles (2026-10-13): the imaging half of a diagnostic
+            // centre. The worklist is theirs; prescriptions and the blood bank
+            // are not. Both are in the facility bucket, so every refusal is
+            // the capability layer's 403.
+            'imaging_tech' => ['imaging_tech', [
+                'GET /facility'                      => 200,
+                'GET /facility/imaging'              => 200,
+                'GET /facility/imaging/orders/new'   => 200,
+                'GET /facility/imaging/reports'      => 403,
+                'GET /facility/prescriptions'        => 403,
+                'GET /facility/inventory/blood'      => 403,
+                'GET /facility/appointments'         => 403,
+                'GET /facility/messages'             => 200,
+                // In the facility/team portal bucket (like the lab roles), so
+                // the refusal is the capability layer's 403, not a bounce.
+                'GET /facility/team'                 => 403,
+            ] + $facilityOnly],
+
+            'radiologist' => ['radiologist', [
+                'GET /facility'                      => 200,
+                'GET /facility/imaging'              => 200,
+                'GET /facility/imaging/orders/new'   => 200,
+                'GET /facility/imaging/reports'      => 200,
+                'GET /facility/prescriptions'        => 403,
+                'GET /facility/inventory/blood'      => 403,
+                'GET /facility/appointments'         => 403,
+                'GET /facility/messages'             => 200,
+                'GET /facility/team'                 => 403,
+            ] + $facilityOnly],
+
             // The pharmacist lives in TWO portal buckets (facility + pharmacy):
             // portal.access lets it into /facility/*, so every refusal there is
             // the capability layer's — and its own portal answers 200.
@@ -311,6 +341,9 @@ class StaffRoleMatrixTest extends TestCase
         'sample_collection'   => 'portals.lab.collection',
         'clinical_chart'      => 'portals.chart.index',
         'billing'             => 'portals.billing.index',
+        // 'imaging' is deliberately NOT here yet: doctor and facility_admin hold
+        // it (intake by referral; the centre's administrator) but their
+        // sidebars do not link the desk until the centre landing ships.
     ];
 
     public static function linkedRoles(): array
@@ -322,6 +355,7 @@ class StaffRoleMatrixTest extends TestCase
             'records_officer', 'pharmacy_manager', 'medicine_stock',
             'lab_manager', 'sample_collection', 'student_doctor',
             'specialist', 'resident', 'facility_admin',
+            'imaging_tech', 'radiologist',
         ]);
     }
 

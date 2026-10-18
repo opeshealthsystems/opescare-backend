@@ -74,14 +74,15 @@ class FacilityCatalogueController extends Controller
     /**
      * Push this facility's lab tests to the public finder after a write.
      *
-     * Only LOINC items are lab tests, so only a LOINC write re-projects; a
-     * procedure or a vaccine changes nothing the lab finder shows. The
+     * Only LOINC items and ICHI diagnostic-imaging procedures reach a finder
+     * (LabCatalogueProjector::publishes), so only those writes re-project; any
+     * other procedure or a vaccine changes nothing either finder shows. The
      * projector itself refuses (and logs) when the tenant has no linked
      * public listing — the page says so in a banner; nothing here links one.
      */
     private function publish(FacilityCatalogueItem $item): void
     {
-        if ($item->system !== LabCatalogueProjector::LAB_TEST_SYSTEM) {
+        if (! LabCatalogueProjector::publishes($item)) {
             return;
         }
 

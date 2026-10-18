@@ -50,6 +50,7 @@
                 <div class="empty-state-icon"><i data-lucide="file-text"></i></div>
                 <h3>{{ __('prescriber.empty') }}</h3>
                 <p>{{ __('prescriber.empty_desc') }}</p>
+                <a href="{{ route('portals.prescriber.create') }}" class="btn btn-primary btn-sm mt-6"><i data-lucide="plus"></i> {{ __('hospital_desk.empty_prescriber_action') }}</a>
             </div>
         </div>
     @else

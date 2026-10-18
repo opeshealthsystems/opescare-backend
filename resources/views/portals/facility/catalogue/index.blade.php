@@ -108,11 +108,16 @@
                 <td>
                     <code>{{ $item->code }}</code>
                     <div><span class="pill pill--muted">{{ $item->system }}</span></div>
-                    @php $finder = \App\Services\DiagnosticCentre\ServiceMix::finderFor($item->system, $entry); @endphp
+                    {{-- Which public finder this row reaches: lab, imaging
+                         (a LOINC imaging term OR an ICHI diagnostic-imaging
+                         stem), or none. A retired row reaches neither. --}}
+                    @php $finder = $item->is_active ? \App\Services\DiagnosticCentre\ServiceMix::finderFor($item->system, $entry, $item->code) : null; @endphp
                     @if($finder === \App\Services\DiagnosticCentre\ServiceMix::IMAGING)
                         <div class="text-muted text-sm" data-finder="imaging"><i data-lucide="scan-line"></i> {{ __('catalogue.mix_badge_imaging') }}</div>
                     @elseif($finder === \App\Services\DiagnosticCentre\ServiceMix::LAB)
                         <div class="text-muted text-sm" data-finder="lab"><i data-lucide="flask-conical"></i> {{ __('catalogue.mix_badge_lab') }}</div>
+                    @else
+                        <div class="text-muted text-sm" data-finder="none"><i data-lucide="eye-off"></i> {{ __('diagnostic_desk.badge_not_published') }}</div>
                     @endif
                 </td>
                 <td>

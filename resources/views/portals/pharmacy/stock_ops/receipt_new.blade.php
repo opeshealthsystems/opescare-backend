@@ -5,25 +5,8 @@
 @section('breadcrumb_home_url', route('portals.pharmacy.dashboard'))
 @section('breadcrumb_section', __('pharmacy_ops.nav_receipts'))
 
-@section('head')
-@include('portals.pharmacy._supply_styles')
-<style>
-.gr-lines{width:100%;border-collapse:collapse}
-.gr-lines th,.gr-lines td{padding:.35rem .35rem;vertical-align:top}
-.gr-lines .form-control{min-height:44px}
-.gr-lines .fs-num{max-width:8rem}
-@media (max-width:760px){
-  .gr-lines thead{display:none}
-  .gr-lines tr{display:block;border:1px solid var(--p-border,#E2E8F0);border-radius:.5rem;padding:.5rem;margin-bottom:.6rem}
-  .gr-lines td{display:block}
-  .gr-lines td::before{content:attr(data-label);display:block;font-size:.75rem;font-weight:700;color:var(--p-text-muted,#64748B);margin-bottom:.15rem}
-  .gr-lines .fs-num{max-width:none}
-}
-</style>
-@endsection
-
 @php
-    $oldLines = old('lines', [['medicine_id' => '', 'quantity' => '', 'lot_number' => '', 'expiry_date' => '', 'unit_cost' => '']]);
+    $oldLines = old('lines', [['medicine_id' => $prefillMedicineId ?? '', 'quantity' => '', 'lot_number' => '', 'expiry_date' => '', 'unit_cost' => '']]);
 @endphp
 
 @section('content')
@@ -47,6 +30,9 @@
 <form method="POST" action="{{ route('portals.pharmacy.stock.receipts.store') }}" id="gr-form">
     @csrf
     <div class="panel">
+        <div class="panel-header">
+            <h3 class="panel-title"><i data-lucide="truck"></i> {{ __('pharmacy_ops.receipt_new_title') }}</h3>
+        </div>
         <div class="panel-body">
             <div class="form-row">
                 <div class="form-group">
@@ -130,12 +116,13 @@
 </form>
 
 <details class="panel">
-    <summary class="panel-header" style="cursor:pointer;">
+    <summary class="panel-header">
         <i data-lucide="building-2"></i> {{ __('pharmacy_ops.supplier_form_title') }}
     </summary>
     <div class="panel-body">
         <form method="POST" action="{{ route('portals.pharmacy.stock.suppliers.store') }}">
             @csrf
+            <input type="hidden" name="return" value="receipt">
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label" for="sp-name">{{ __('pharmacy_ops.lbl_name') }}</label>

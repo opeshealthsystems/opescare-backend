@@ -115,6 +115,9 @@
                         <td data-label="{{ __('queue_desk.col_patient') }}">
                             <span class="td-strong">{{ $qName !== '' ? $qName : '—' }}</span>
                             @if($qPatient?->health_id)<div class="td-muted">{{ $qPatient->health_id }}</div>@endif
+                            @capability('clinical_chart')
+                            @if($qPatient?->health_id)<div><a href="{{ route('portals.chart.index', ['health_id' => $qPatient->health_id]) }}" class="td-muted">{{ __('hospital_desk.open_chart') }}</a></div>@endif
+                            @endcapability
                         </td>
                         <td data-label="{{ __('queue_desk.col_priority') }}">@include('portals.queue._priority_badge', ['ticket' => $ticket])</td>
                         <td data-label="{{ __('queue_desk.col_status') }}">
@@ -145,12 +148,12 @@
                                     </form>
                                 @endif
                                 @if($ticket->status === Q::STATUS_STARTED)
-                                    <form method="POST" action="{{ route('portals.queue.complete', $ticket->id) }}" class="inline-form">@csrf
+                                    <form method="POST" action="{{ route('portals.queue.complete', $ticket->id) }}" class="inline-form" data-confirm="{{ __('hospital_desk.confirm_queue_complete') }}">@csrf
                                         <button type="submit" class="btn btn-primary btn-sm"><i data-lucide="check"></i> {{ __('queue_desk.action_complete') }}</button>
                                     </form>
                                 @endif
                                 @if($ticket->status === Q::STATUS_CALLED)
-                                    <form method="POST" action="{{ route('portals.queue.no_show', $ticket->id) }}" class="inline-form">@csrf
+                                    <form method="POST" action="{{ route('portals.queue.no_show', $ticket->id) }}" class="inline-form" data-confirm="{{ __('hospital_desk.confirm_queue_no_show') }}">@csrf
                                         <button type="submit" class="btn btn-secondary btn-sm"><i data-lucide="user-x"></i> {{ __('queue_desk.action_no_show') }}</button>
                                     </form>
                                 @endif

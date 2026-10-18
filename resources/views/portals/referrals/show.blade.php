@@ -123,7 +123,7 @@
                             <textarea id="ref-feedback" name="feedback" class="form-control" rows="3" maxlength="8000"></textarea>
                         </div>
                     @endif
-                    <button type="submit" class="btn {{ in_array($action, ['reject', 'cancel'], true) ? 'btn-secondary' : 'btn-primary' }}">
+                    <button type="submit" class="btn {{ in_array($action, ['reject', 'cancel'], true) ? 'btn-secondary' : 'btn-primary' }}" data-confirm="{{ __('hospital_desk.confirm_referral_' . $action) }}">
                         <i data-lucide="{{ match($action) { 'send' => 'send', 'accept' => 'check', 'reject' => 'x', 'complete' => 'check-check', default => 'ban' } }}"></i>
                         {{ __('referral_desk.action.' . $action) }}
                     </button>

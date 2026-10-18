@@ -169,7 +169,7 @@
                         <td data-label="{{ __('team.join_col_submitted') }}">{{ $req->created_at?->isoFormat('LLL') }}</td>
                         <td data-label="{{ __('team.join_col_decision') }}">
                             @if($req->isPending())
-                                <form method="POST" action="{{ route('portals.facility.team.join.approve', $req->id) }}"
+                                <form method="POST" action="{{ route('portals.facility.team.join.approve', $req->id) }}" data-confirm="{{ __('hospital_desk.confirm_team_approve') }}"
                                       style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin:0 0 .5rem;">
                                     @csrf
                                     <select name="role" class="form-control" required style="min-width:11rem;"
@@ -183,7 +183,7 @@
                                         <i data-lucide="user-check"></i> {{ __('team.join_action_approve') }}
                                     </button>
                                 </form>
-                                <form method="POST" action="{{ route('portals.facility.team.join.decline', $req->id) }}" style="display:inline;">
+                                <form method="POST" action="{{ route('portals.facility.team.join.decline', $req->id) }}" style="display:inline;" data-confirm="{{ __('hospital_desk.confirm_team_decline') }}">
                                     @csrf
                                     <button type="submit" class="btn btn-danger btn-sm fs-tap">
                                         <i data-lucide="user-x"></i> {{ __('team.join_action_decline') }}
@@ -252,14 +252,14 @@
                         <td data-label="{{ __('team.col_invited_by') }}">{{ $invite->inviter?->name ?? '—' }}</td>
                         <td data-label="{{ __('team.col_actions') }}" style="white-space:nowrap;">
                             @unless($invite->isAccepted())
-                                <form method="POST" action="{{ route('portals.facility.team.invite.reissue', $invite->id) }}" style="display:inline;">
+                                <form method="POST" action="{{ route('portals.facility.team.invite.reissue', $invite->id) }}" style="display:inline;" data-confirm="{{ __('hospital_desk.confirm_invite_reissue') }}">
                                     @csrf
                                     <button type="submit" class="btn btn-secondary btn-sm fs-tap">
                                         <i data-lucide="refresh-cw"></i> {{ __('team.action_reissue') }}
                                     </button>
                                 </form>
                                 @unless($invite->isRevoked())
-                                    <form method="POST" action="{{ route('portals.facility.team.invite.revoke', $invite->id) }}" style="display:inline;">
+                                    <form method="POST" action="{{ route('portals.facility.team.invite.revoke', $invite->id) }}" style="display:inline;" data-confirm="{{ __('hospital_desk.confirm_invite_revoke') }}">
                                         @csrf
                                         <button type="submit" class="btn btn-danger btn-sm fs-tap">
                                             <i data-lucide="ban"></i> {{ __('team.action_revoke') }}
