@@ -3,6 +3,8 @@
 namespace App\Support;
 
 use App\Models\Patient;
+use App\Services\Identity\QrTokenService;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * The Health ID card as the mobile app renders it.
@@ -13,8 +15,8 @@ use App\Models\Patient;
  * screens change together, or not at all.
  *
  *   health_id, display_name, sex, dob (YYYY-MM-DD), blood_type, photo_url
- *   (signed, short-lived, or null), qr_payload (base64 JSON, or null when the
- *   reader may not present the card), status (identity status value).
+ *   (signed, short-lived, or null), qr_payload (verification URL, or null when
+ *   the reader may not present the card), status (identity status value).
  */
 final class HealthIdCardPayload
 {
@@ -35,20 +37,36 @@ final class HealthIdCardPayload
         ];
     }
 
+    /** How long one card QR stays valid. Re-served from cache within that window. */
+    private const CARD_QR_MINUTES = 1440;
+
     /**
-     * The static card QR: the Health ID plus just enough to eyeball a match,
-     * stamped with when it was minted. The temporary-access QR is a different
-     * thing (MobileQrController) and carries a server-side token instead.
+     * The card QR: the OpesCare Secure verification URL (/verify/qr/qrx_…),
+     * minted by the same QrTokenService the web verifier and the clinician
+     * scanner read.
+     *
+     * It used to be base64 JSON of the Health ID, first name, DOB and sex. A
+     * phone camera showed that as raw characters, the clinician scanner
+     * (MobileProviderScanController::extractToken) rejected it, and base64 is
+     * not encryption — anyone could decode a patient's name and birth date
+     * from a photo of the card. Now the code is only a link; what the verifier
+     * shows is decided server-side, per scan.
+     *
+     * One token per patient per day: the raw token (a string, never an object
+     * — see the never-cache-objects rule) is cached so every card fetch does
+     * not mint a new database row. A cache miss mints a fresh one.
      */
     public static function qrPayload(Patient $patient): string
     {
-        return base64_encode(json_encode([
-            'hid' => $patient->health_id,
-            'fn'  => $patient->first_name,
-            'ln'  => substr((string) $patient->last_name, 0, 1),
-            'dob' => $patient->date_of_birth?->toDateString(),
-            'sex' => $patient->sex,
-            'ts'  => now()->toIso8601String(),
-        ]));
+        $key = 'health_id_card_qr:' . $patient->id;
+
+        $raw = Cache::get($key);
+        if (!is_string($raw) || app(QrTokenService::class)->verifyToken($raw) === null) {
+            $raw = app(QrTokenService::class)
+                ->generateToken($patient->id, 'static_identity_qr', self::CARD_QR_MINUTES)['raw_token'];
+            Cache::put($key, $raw, now()->addMinutes(self::CARD_QR_MINUTES - 5));
+        }
+
+        return route('verify.qr', ['token' => $raw]);
     }
 }

@@ -109,12 +109,11 @@ class FamilyMemberDetailTest extends FamilyTestCase
             $this->assertSame($card[$field], $detail[$field], "Field {$field} must match /mobile/health-id-card.");
         }
 
-        // The QR carries a mint timestamp, so compare what it encodes.
-        $cardQr   = json_decode(base64_decode($card['qr_payload']), true);
-        $detailQr = json_decode(base64_decode($detail['qr_payload']), true);
-        $this->assertSame($cardQr['hid'], $detailQr['hid']);
-        $this->assertSame($child->health_id, $detailQr['hid']);
-        $this->assertSame('2017-03-12', $detailQr['dob']);
+        // Both readers serve the same card QR: a verification URL for this child.
+        $this->assertSame($card['qr_payload'], $detail['qr_payload']);
+        $this->assertMatchesRegularExpression('~/verify/qr/qrx_[A-Za-z0-9]+_[A-Za-z0-9]+$~', $detail['qr_payload']);
+        $token = \App\Http\Controllers\Api\Mobile\MobileProviderScanController::extractToken($detail['qr_payload']);
+        $this->assertSame($child->id, app(\App\Services\Identity\QrTokenService::class)->verifyToken($token)?->patient_id);
     }
 
     public function test_a_read_only_link_hides_the_qr_payload(): void
