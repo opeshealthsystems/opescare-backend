@@ -135,6 +135,7 @@ own test database. Phase 7 last.
 ## Execution log
 - 2026-10-18 `2045ccd5` — pharmacy, lab, imaging, diagnostic desks + landing rebuilt to the design contract; hospital + admin completeness; suite 2474/2474.
 - 2026-10-18 (in progress) — wave R: every remaining surface onto the same design: (1) shell for all portal areas + all sidebars + auth/public layouts, (2) hospital/clinic desk pages, (3) admin pages, (4) patient/guardian/professional/developer, (5) public pages, finders, verify, errors.
-- Next, in order: wave S — screenshot audit of every page at 1440/390 against the contract (one agent per area, fixes in place); then certification phases 2→7 above.
+- 2026-10-19 `d7fc2257` — wave R done: every surface on one design; suite 2475/2475. Legal-page sanitizer hotfixed on prod.
+- In progress: wave S — UI audit of every page × role (docs/certification/UI_AUDIT_2026-10-19.md), functional certification tests (every GET/write route, every document), database audit, security ASVS L2 audit, scale work + load test. Then phase 6 (OPES headers, docblocks, PHPStan) and phase 7 (certificate + deploy).
 - Resume recipe after an interruption: read this log, `git status --short | grep -v vendor/`, relaunch each wave-R area whose files are still uncommitted with "resume — partial work is in the tree", then continue at the first unfinished step.
 - Defect queue for phase 2 (found during wave R): `portals/staff/blood_requests/index` throws `"packed_red_cells" is not a valid backing value for enum BloodComponentType` (data vs enum mismatch); privacy/terms/maintenance pages contain hard-coded English (i18n rule); verify/health_id keeps 9 inline styles.
