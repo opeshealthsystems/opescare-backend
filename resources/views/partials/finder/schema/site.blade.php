@@ -28,7 +28,7 @@
     $fsTitle     = $fsSection !== '' ? $fsSection . ' — OpesCare Finder' : __('finder_seo.site.title');
     $fsDesc      = trim($__env->yieldContent('description'));
     $fsDesc      = $fsDesc !== '' ? $fsDesc : \App\Support\FinderSeo::description();
-    $fsOgImage   = asset(config('finder-seo.og_image', 'assets/og.png'));
+    $fsOgImage   = asset(config('finder-seo.og_image', 'og-image.png'));
 
     // Built inside this @php block ON PURPOSE: Blade compiles directives
     // before echos, and "@context" outside a protected @php block is eaten

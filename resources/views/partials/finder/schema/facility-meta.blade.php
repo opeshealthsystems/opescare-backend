@@ -18,7 +18,7 @@
     $fmCanonical = $fmUrl . ($fmLocale === 'en' ? '' : '?lang=' . $fmLocale);
     $fmCity      = \App\Models\CareFacility::realValue($facility->city);
     $fmRegion    = \App\Models\CareFacility::realValue($facility->region);
-    $fmOgImage   = asset(config('finder-seo.og_image', 'assets/og.png'));
+    $fmOgImage   = asset(config('finder-seo.og_image', 'og-image.png'));
 @endphp
 <title>{{ $fmTitle }}</title>
 <meta name="description" content="{{ $fmDesc }}">

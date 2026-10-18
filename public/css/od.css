@@ -560,7 +560,7 @@ body.od .od-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; 
   body.od .od-topbar__actions { gap: 12px; }
   body.od .od-facility { max-width: 200px; }
   body.od .od-user__meta { display: none; }
-  body.od .od-brand__mark { width: 56px; height: 56px; }
+  body.od .od-brand__mark { width: 56px !important; height: 56px !important; }
   body.od .od-brand__opes { font-size: 23px; }
   body.od .od-brand__product { font-size: 17px; }
 }
@@ -639,7 +639,7 @@ body.od .sidebar-link.active, body.od .sidebar-link[aria-current="page"] {
   border-left: 0 !important; padding-left: 14px !important; color: #fff !important;
 }
 body.od .sidebar-nav-label { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #8FB1D9; padding: 10px 14px 8px; }
-body.od .od-brand__mark { width: 72px; height: 72px; }
+body.od .od-brand__mark { width: 72px !important; height: 72px !important; }
 
 /* Sidebar: always the full column, own scroll, gradient at any page length. */
 body.od .portal-sidebar {

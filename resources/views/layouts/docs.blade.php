@@ -33,10 +33,7 @@
         <i data-lucide="menu" class="docs-icon-lg"></i>
     </button>
     <a href="{{ route('docs.index') }}" class="docs-topbar-logo">
-        <svg width="24" height="24" viewBox="0 0 40 40" fill="none">
-            <circle cx="20" cy="20" r="20" fill="#0F4C81"/>
-            <path d="M12 20 Q20 10 28 20 Q20 30 12 20Z" fill="white"/>
-        </svg>
+        <x-brand-logo :size="24" />
         OpesCare
         <span class="badge">{{ __('ui_sweep.docs_nav.dev_docs') }}</span>
     </a>

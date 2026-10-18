@@ -71,7 +71,10 @@ class AddSecurityHeaders
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('X-Frame-Options', $isEmbed ? 'SAMEORIGIN' : 'DENY');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
-        $response->headers->set('Permissions-Policy', $isEmbed ? 'camera=(), microphone=(), geolocation=(self)' : 'camera=(), microphone=(), geolocation=()');
+        // The sign-in page may use the camera, same-origin only, for the
+        // OPESCARD scanner; every other page keeps it switched off.
+        $camera = $request->is('login') ? 'camera=(self)' : 'camera=()';
+        $response->headers->set('Permissions-Policy', $isEmbed ? "{$camera}, microphone=(), geolocation=(self)" : "{$camera}, microphone=(), geolocation=()");
 
         // HSTS — ISO 27001 A.14.1 / OWASP A05 (was missing)
         // Only meaningful over HTTPS; harmless over HTTP in development.

@@ -105,11 +105,7 @@
             }])
         @else
         <a href="{{ url('/') }}" class="sidebar-brand" aria-label="OpesCare Home">
-            <div class="sidebar-brand-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18">
-                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-                </svg>
-            </div>
+            <x-brand-logo :size="32" tile />
             <div>
                 <div class="sidebar-brand-name">OpesCare</div>
                 <div class="sidebar-brand-sub">

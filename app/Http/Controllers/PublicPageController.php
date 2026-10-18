@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Modules\Auth\Services\TwoFactorService;
 use App\Notifications\PasswordChangedNotification;
 use App\Notifications\PasswordResetLinkNotification;
+use App\Services\Auth\HealthIdLogin;
 use App\Services\Dashboard\DashboardProfileService;
 use App\Services\Identity\HealthIdGeneratorService;
 use App\Services\Portal\FacilityMembershipService;
@@ -22,6 +23,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
@@ -326,23 +329,57 @@ class PublicPageController extends Controller
 
     public function submitLogin(Request $request)
     {
+        // `login` is "email address or Health ID"; `email` is the legacy field
+        // name and is still accepted so older forms and clients keep working.
+        $field = $request->filled('login') ? 'login' : 'email';
+
         $request->validate([
-            'email'    => 'required|email',
+            $field     => 'required|string|max:180',
             'password' => 'required|string',
         ]);
 
-        $credentials = $request->only('email', 'password');
-        $remember    = $request->boolean('remember');
+        $identifier = trim((string) $request->input($field));
+        $remember   = $request->boolean('remember');
+        $isEmail    = filter_var($identifier, FILTER_VALIDATE_EMAIL) !== false;
+        $healthId   = $isEmail ? null : HealthIdLogin::normalise($identifier);
 
-        // Attempt real authentication
-        if (!Auth::attempt($credentials, $remember)) {
+        // Per-identifier limiter on top of the route's per-IP throttle, keyed
+        // on the NORMALISED identifier so "cm-hid-…" and "CM HID …" share it.
+        $limiterKey = 'web-login:' . sha1(strtolower($healthId ?? $identifier)) . '|' . $request->ip();
+
+        if (RateLimiter::tooManyAttempts($limiterKey, 5)) {
             return back()
-                ->withInput($request->only('email'))
-                ->withErrors(['email' => __('onboarding.login.errors.invalid_credentials', [], app()->getLocale())
-                    ?: 'The email or password you entered is incorrect.']);
+                ->withInput($request->only($field))
+                ->withErrors([$field => __('opescard.login.throttled', ['seconds' => RateLimiter::availableIn($limiterKey)])]);
         }
 
+        // A Health ID only names the account; the password is checked against
+        // that account exactly as an email sign-in would be. Unknown ID, wrong
+        // password and malformed input all get the same generic error.
+        $email = $isEmail ? $identifier : null;
+        if ($healthId !== null) {
+            $email = app(HealthIdLogin::class)->userForHealthId($healthId)?->email;
+        }
+
+        if ($email === null || ! Auth::attempt(['email' => $email, 'password' => (string) $request->input('password')], $remember)) {
+            RateLimiter::hit($limiterKey, 60);
+
+            if ($healthId !== null) {
+                Log::info('auth.login_health_id', ['result' => 'failure', 'health_id' => $healthId, 'ip' => $request->ip()]);
+            }
+
+            return back()
+                ->withInput($request->only($field))
+                ->withErrors([$field => __('onboarding.login.errors.invalid_credentials')]);
+        }
+
+        RateLimiter::clear($limiterKey);
+
         $user = Auth::user();
+
+        if ($healthId !== null) {
+            Log::info('auth.login_health_id', ['result' => 'success', 'health_id' => $healthId, 'user_id' => $user->id, 'ip' => $request->ip()]);
+        }
 
         // Suspended account
         if ($user->status === 'suspended') {

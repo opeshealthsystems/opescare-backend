@@ -257,7 +257,7 @@
 
 <header class="topbar">
     <a href="{{ url('/') }}" class="topbar-brand">
-        <img src="{{ asset('brand/opescare-favicon.png') }}" alt="OpesCare">
+        <img src="{{ asset('brand/opescare-mark-128.png') }}" alt="OpesCare">
         OpesCare
     </a>
     <div class="topbar-badge">

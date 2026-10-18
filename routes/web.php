@@ -163,6 +163,9 @@ Route::post('/select-facility', [PublicPageController::class, 'submitSelectFacil
 Route::get('/login', [PublicPageController::class, 'showLogin'])->name('login');
 // Rate-limit the web login to blunt credential brute-force / password spraying.
 Route::post('/login', [PublicPageController::class, 'submitLogin'])->middleware('throttle:5,1')->name('login.submit');
+// OPESCARD: a scanned card QR fills the identifier box only — never a credential.
+Route::post('/login/opescard/resolve', [\App\Http\Controllers\Auth\OpescardController::class, 'resolve'])
+    ->middleware(['guest', 'throttle:10,1'])->name('login.opescard.resolve');
 Route::get('/mfa/challenge', [PublicPageController::class, 'showMfaChallenge'])->name('mfa.challenge');
 Route::post('/mfa/challenge', [PublicPageController::class, 'submitMfaChallenge'])->middleware('throttle:auth-code')->name('mfa.challenge.submit');
 

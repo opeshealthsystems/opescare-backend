@@ -246,9 +246,7 @@
 
     <div class="demo-topbar">
         <a href="{{ url('/') }}" class="demo-brand">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="22" height="22" aria-hidden="true">
-                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-            </svg>
+            <x-brand-logo :size="26" />
             OpesCare
         </a>
         <div class="demo-topbar-actions">

@@ -119,7 +119,7 @@
 
 <header class="topbar">
     <a href="{{ url('/') }}" class="brand">
-        <img src="{{ asset('brand/opescare-favicon.png') }}" alt="">
+        <img src="{{ asset('brand/opescare-mark-128.png') }}" alt="">
         <span>OpesCare<small>{{ __('verify.secure_eyebrow') }}</small></span>
     </a>
     <span class="eyebrow">{{ __('verify.badge_provider_tool') }}</span>

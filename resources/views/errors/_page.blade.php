@@ -59,7 +59,7 @@
 <body>
 <div class="err-wrap">
     <a href="{{ url('/') }}" class="logo-link">
-        <img src="{{ asset('brand/opescare-favicon.png') }}" alt="">
+        <x-brand-logo :size="26" />
         OpesCare
     </a>
 

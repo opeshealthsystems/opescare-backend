@@ -1,0 +1,190 @@
+/* ==========================================================================
+   OpesCare sign-in page (resources/views/auth/login.blade.php)
+   Redesigned 2026-10-18 to docs/design/login-2026-10-18.
+   Loaded only by that page, after finder.css / auth.css / od-public.css,
+   so selectors are prefixed with body.f-login to win over the shared layer.
+   Brand: #0F4C81 primary, lighter brand blue #1C7ED6 for the gradient only.
+   ========================================================================== */
+
+body.f-login {
+  --lg-brand: #0F4C81;
+  --lg-brand-ink: #0B3A66;
+  --lg-brand-2: #1C6FB8;
+  --lg-ink: #0F172A;
+  --lg-soft: #334155;
+  --lg-muted: #475569;
+  --lg-line: #D5DFEB;
+  background-color: #EAF2FB;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, .35), rgba(255, 255, 255, .35)),
+    url("../brand/login/background.webp");
+  background-size: cover;
+  background-position: left center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: var(--lg-ink);
+  overflow-x: hidden;
+}
+body.f-login .f-auth__main { padding: 0; }
+
+.lg-page { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; padding: 16px 16px 20px; box-sizing: border-box; }
+.lg-page *, .lg-page *::before, .lg-page *::after { box-sizing: border-box; }
+
+/* Language pill ------------------------------------------------------------ */
+.lg-topbar { display: flex; justify-content: flex-end; }
+.lg-lang {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 14px; min-height: 40px;
+  background: rgba(255, 255, 255, .94); border: 1px solid var(--lg-line);
+  border-radius: 999px; box-shadow: 0 4px 14px rgba(15, 76, 129, .10);
+  color: var(--lg-brand); font-size: .875rem;
+}
+.lg-lang a { color: var(--lg-soft); text-decoration: none; font-weight: 600; padding: 4px 2px; border-radius: 6px; }
+.lg-lang a.is-active { color: var(--lg-brand); font-weight: 800; }
+.lg-lang a:hover { color: var(--lg-brand); text-decoration: underline; }
+.lg-lang span { color: #94A3B8; }
+
+/* Grid --------------------------------------------------------------------- */
+.lg-grid { flex: 1; display: grid; grid-template-columns: 1fr; gap: 16px; align-items: center; width: 100%; max-width: 1240px; margin: 8px auto 0; }
+@media (min-width: 1024px) {
+  .lg-page { padding: 20px 32px 18px; }
+  .lg-grid { grid-template-columns: minmax(0, 1.1fr) minmax(0, 520px); gap: 48px; margin-top: 0; }
+}
+
+/* Brand panel -------------------------------------------------------------- */
+.lg-brand {
+  text-align: center; padding: 8px 4px 0;
+  display: flex; flex-direction: column; align-items: center;
+}
+.lg-caps { display: none; }
+.lg-mark { display: inline-flex; border-radius: 50%; }
+.lg-mark img { width: 84px; height: 84px; display: block; filter: drop-shadow(0 6px 18px rgba(15, 76, 129, .25)); }
+.lg-wordmark {
+  margin: 6px 0 0; font-size: 2.5rem; line-height: 1; font-weight: 900; letter-spacing: -.035em;
+  color: var(--lg-brand);
+}
+.lg-wordmark span {
+  background: linear-gradient(90deg, var(--lg-brand-2), #2B8FD9);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.lg-tagline { margin: 6px 0 0; font-size: 1.125rem; font-weight: 600; color: var(--lg-brand-ink); }
+.lg-rule { display: block; width: 44px; height: 3px; border-radius: 3px; background: linear-gradient(90deg, var(--lg-brand), var(--lg-brand-2)); margin: 10px 0; }
+.lg-rule--center { margin-inline: auto; }
+.lg-lead, .lg-features, .lg-values { display: none; }
+
+@media (min-width: 1024px) {
+  .lg-brand {
+    position: relative; padding: 36px 32px 32px;
+    background: rgba(255, 255, 255, .80);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, .9); border-radius: 24px;
+    box-shadow: 0 10px 40px rgba(15, 76, 129, .10);
+  }
+  .lg-caps { display: block; align-self: stretch; text-align: left; margin-bottom: 8px; }
+  .lg-caps p { margin: 0; font-size: .75rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--lg-soft); }
+  .lg-mark img { width: 132px; height: 132px; }
+  .lg-wordmark { font-size: 4.25rem; margin-top: 10px; }
+  .lg-tagline { font-size: 1.5rem; }
+  .lg-lead { display: block; margin: 0 0 22px; font-size: .8125rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--lg-soft); max-width: 34em; }
+  .lg-features, .lg-values { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); list-style: none; margin: 0; padding: 0; width: 100%; }
+  .lg-features li, .lg-values li { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 4px 8px; color: var(--lg-brand-ink); font-weight: 650; line-height: 1.25; }
+  .lg-features li + li, .lg-values li + li { border-left: 1px solid var(--lg-line); }
+  .lg-features li { font-size: .9375rem; }
+  .lg-features .f-icon { color: var(--lg-brand-2); }
+  .lg-values { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--lg-line); }
+  .lg-values li { font-size: .8125rem; flex-direction: row; justify-content: center; gap: 6px; }
+  .lg-values .f-icon { color: var(--lg-brand); flex-shrink: 0; }
+}
+
+/* Card --------------------------------------------------------------------- */
+body.f-login .lg-card {
+  background: #FFFFFF; border: 1px solid var(--lg-line); border-radius: 20px;
+  box-shadow: 0 18px 50px rgba(15, 76, 129, .16);
+  padding: 24px 18px; width: 100%; max-width: 520px; margin-inline: auto; min-width: 0;
+}
+@media (min-width: 480px) { body.f-login .lg-card { padding: 32px 32px 28px; } }
+@media (min-width: 1024px) { body.f-login .lg-card { padding: 40px 44px 32px; } }
+
+body.f-login .lg-title { margin: 0; font-size: 1.75rem; line-height: 1.2; font-weight: 800; color: var(--lg-ink); letter-spacing: -.02em; }
+body.f-login .lg-sub { margin: 6px 0 22px; font-size: 1rem; color: var(--lg-muted); line-height: 1.5; }
+@media (min-width: 1024px) { body.f-login .lg-title { font-size: 2rem; } }
+
+.lg-field { margin-bottom: 16px; }
+.lg-label { display: block; margin-bottom: 6px; font-size: .875rem; font-weight: 700; color: var(--lg-soft); }
+.lg-control { position: relative; }
+.lg-control__icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #64748B; pointer-events: none; }
+body.f-login input.lg-input {
+  display: block; width: 100%; min-height: 52px; padding: 0 14px 0 46px;
+  font-size: 1rem; color: var(--lg-ink); background: #FFFFFF;
+  border: 1px solid #C7D3E2; border-radius: 12px; box-shadow: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+body.f-login .f-auth-pass input.lg-input { padding-right: 52px; }
+body.f-login input.lg-input::placeholder { color: #64748B; }
+body.f-login input.lg-input:focus { outline: 0; border-color: var(--lg-brand); box-shadow: 0 0 0 3px rgba(15, 76, 129, .22); }
+body.f-login input.lg-input.is-invalid { border-color: #B42318; }
+body.f-login .f-auth-pass .f-auth-toggle { top: 6px; right: 6px; }
+body.f-login .f-auth-toggle:focus-visible { outline: 3px solid var(--lg-brand); outline-offset: 1px; }
+.lg-hint { margin: 6px 0 0; font-size: .8125rem; color: var(--lg-muted); overflow-wrap: anywhere; }
+.lg-error { display: flex; align-items: flex-start; gap: 6px; margin: 6px 0 0; font-size: .8125rem; font-weight: 600; color: #B42318; }
+.lg-error .f-icon { margin-top: 2px; flex-shrink: 0; }
+
+.lg-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px; margin: 4px 0 18px; }
+.lg-check { display: inline-flex; align-items: center; gap: 10px; font-size: .9375rem; color: var(--lg-soft); cursor: pointer; min-height: 32px; }
+.lg-check input { width: 18px; height: 18px; margin: 0; accent-color: var(--lg-brand); }
+body.f-login .lg-link { color: var(--lg-brand); font-weight: 700; text-decoration: none; border-radius: 4px; }
+body.f-login .lg-link:hover { text-decoration: underline; color: var(--lg-brand-ink); }
+
+body.f-login .lg-submit {
+  display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;
+  min-height: 54px; border: 0; border-radius: 12px; cursor: pointer;
+  background: linear-gradient(90deg, var(--lg-brand) 0%, var(--lg-brand-2) 100%);
+  color: #FFFFFF; font-size: 1.0625rem; font-weight: 700;
+  box-shadow: 0 8px 20px rgba(15, 76, 129, .25);
+  transition: filter .15s ease, transform .05s ease;
+}
+body.f-login .lg-submit:hover { filter: brightness(1.08); }
+body.f-login .lg-submit:active { transform: translateY(1px); }
+
+body.f-login a:focus-visible, body.f-login button:focus-visible, body.f-login input:focus-visible {
+  outline: 3px solid var(--lg-brand); outline-offset: 2px;
+}
+body.f-login input.lg-input:focus-visible { outline: 0; }
+
+.lg-or { display: flex; align-items: center; gap: 14px; margin: 20px 0 16px; color: var(--lg-muted); font-size: .8125rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+.lg-or::before, .lg-or::after { content: ""; flex: 1; height: 1px; background: var(--lg-line); }
+
+.lg-alt { margin: 16px 0 0; text-align: center; font-size: .9375rem; color: var(--lg-muted); }
+.lg-app { margin-top: 16px; }
+
+.lg-badges { list-style: none; margin: 22px 0 0; padding: 18px 0 0; border-top: 1px solid var(--lg-line); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.lg-badges li { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; font-size: .75rem; font-weight: 700; line-height: 1.25; color: var(--lg-soft); text-transform: uppercase; letter-spacing: .03em; min-width: 0; overflow-wrap: anywhere; }
+.lg-badge__ring { width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--lg-brand); background: #EEF4FB; border: 2px solid #BFD3EA; }
+
+/* Footer ------------------------------------------------------------------- */
+.lg-footer {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 20px;
+  width: 100%; max-width: 1240px; margin: 20px auto 0; padding: 10px 16px;
+  font-size: .8125rem; color: var(--lg-soft);
+  background: rgba(255, 255, 255, .82); border-radius: 12px;
+}
+.lg-footer p { margin: 0; }
+.lg-footer nav { display: flex; align-items: center; gap: 10px; }
+.lg-footer nav span { color: #94A3B8; }
+body.f-login .lg-footer a { color: var(--lg-brand-ink); font-weight: 600; text-decoration: none; }
+body.f-login .lg-footer a:hover { text-decoration: underline; }
+@media (max-width: 560px) { .lg-footer { justify-content: center; text-align: center; } }
+
+/* Demo panel sits under the grid, centred */
+body.f-login .demo-panel { max-width: 520px; margin: 20px auto 0; }
+@media (min-width: 1024px) { body.f-login .demo-panel { margin-right: max(0px, calc((100% - 1240px) / 2)); } }
+
+@media (prefers-reduced-motion: reduce) {
+  body.f-login .lg-submit, body.f-login input.lg-input { transition: none; }
+}
+
+/* Phone: soft white halo behind the brand header so the wordmark stays AA
+   over the busier top-left of the background. */
+@media (max-width: 1023px) {
+  .lg-brand { background: radial-gradient(ellipse at center, rgba(255, 255, 255, .85) 0%, rgba(255, 255, 255, .6) 55%, rgba(255, 255, 255, 0) 75%); border-radius: 24px; }
+}

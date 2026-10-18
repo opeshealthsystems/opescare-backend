@@ -74,7 +74,7 @@ html,body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:va
 
 <header class="page-topbar">
   <a href="{{ route('public.care-map') }}" class="page-topbar-logo">
-    <div class="page-topbar-mark"><i data-lucide="heart-pulse"></i></div>
+    <x-brand-logo :size="32" />
     <div>
       <span class="page-topbar-name">OpesCare</span>
       <span class="page-topbar-tag">{{ __('ui_sweep.care_map_admin.tag') }}</span>

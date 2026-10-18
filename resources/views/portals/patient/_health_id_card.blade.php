@@ -29,7 +29,7 @@
         <div class="hc__top">
             <div class="hc__brand">
                 <span class="hc__logo" aria-hidden="true">
-                    <svg width="20" height="20" viewBox="0 0 34 34"><circle cx="17" cy="17" r="15.5" fill="none" stroke="#0F4C81" stroke-width="2.6"/><path d="M17 9.5v15M9.5 17h15" stroke="#0F4C81" stroke-width="3.4" stroke-linecap="round"/></svg>
+                    <x-brand-logo :size="20" />
                 </span>
                 <span>
                     <span class="hc__word">Opes<b>Care</b></span>

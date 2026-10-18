@@ -47,7 +47,7 @@
     <header class="header">
         <div class="container header-inner">
             <a href="/" class="logo" style="display:flex;align-items:center;gap:0.5rem;text-decoration:none;">
-                <img src="{{ asset('brand/opescare-favicon.png') }}" alt="" width="28" height="28" class="flex-shrink-0">
+                <x-brand-logo :size="28" />
                 <span>OpesCare</span>
             </a>
 
@@ -143,7 +143,7 @@
             <div class="container">
                 <div class="mobile-drawer-header">
                     <span class="logo" style="display:flex;align-items:center;gap:0.5rem;">
-                        <img src="{{ asset('brand/opescare-favicon.png') }}" alt="" width="24" height="24" class="flex-shrink-0">
+                        <x-brand-logo :size="24" />
                         <span>OpesCare</span>
                     </span>
                     <button id="closeMenu" style="background: none; border: none; color: var(--color-text-primary);">
@@ -216,7 +216,7 @@
             <!-- Brand col -->
             <div class="footer-logo">
                 <a href="{{ route('public.landing') }}" class="logo" style="display:flex;align-items:center;gap:0.5rem;text-decoration:none;">
-                    <img src="{{ asset('brand/opescare-favicon.png') }}" alt="OpesCare" width="26" height="26" class="flex-shrink-0">
+                    <x-brand-logo :size="26" alt="OpesCare" />
                     <span>OpesCare</span>
                 </a>
                 <p class="text-muted text-sm" style="margin-top:1rem;line-height:1.6;">{{ __('landing.footer.desc', [], app()->getLocale()) }}</p>

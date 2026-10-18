@@ -47,8 +47,8 @@
     <header class="f-header">
         <div class="f-container f-header__row">
             <a href="{{ route('public.landing') }}" class="f-brand" aria-label="{{ __('finder_shell.a11y.home') }}">
-                @include('partials.finder.icon', ['name' => 'heart-pulse', 'size' => 22, 'class' => 'f-brand__mark'])
-                <span>OpesCare&nbsp;<span class="f-brand__finder">Finder</span></span>
+                <x-brand-logo :size="22" class="f-brand__mark" />
+                <span>OpesCare</span>
             </a>
 
             <nav class="f-nav" aria-label="{{ __('finder_shell.a11y.main_navigation') }}">
@@ -128,8 +128,8 @@
             <div class="f-footer__grid">
                 <div>
                     <a href="{{ route('public.landing') }}" class="f-brand" aria-label="{{ __('finder_shell.a11y.home') }}">
-                        @include('partials.finder.icon', ['name' => 'heart-pulse', 'size' => 20, 'class' => 'f-brand__mark'])
-                        <span>OpesCare&nbsp;<span class="f-brand__finder">Finder</span></span>
+                        <x-brand-logo :size="20" class="f-brand__mark" />
+                        <span>OpesCare</span>
                     </a>
                     <p class="f-footer__tagline">{{ __('finder_shell.brand.tagline') }}</p>
                 </div>

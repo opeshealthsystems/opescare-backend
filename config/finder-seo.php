@@ -17,7 +17,7 @@ return [
 
     // The social-card image. A text-logo card generated into public/assets/;
     // 1200x630, referenced by partials/finder/schema/site + facility-meta.
-    'og_image' => 'assets/og.png',
+    'og_image' => 'og-image.png', // the OpesCare logo card; assets/og.png was the retired text-only 'OpesCare Finder' card
 
     'sitemap' => [
         // ≤2,000 facility URLs per sitemap file (2,728 active listings → 2

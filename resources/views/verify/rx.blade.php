@@ -549,7 +549,7 @@
 
 <header class="topbar">
     <a href="{{ url('/') }}" class="topbar-brand">
-        <img src="{{ asset('brand/opescare-favicon.png') }}" alt="" width="24" height="24">
+        <img src="{{ asset('brand/opescare-mark-128.png') }}" alt="" width="24" height="24">
         <span>OpesCare</span>
     </a>
     <span class="topbar-tag">{!! $icon('scan-line', '0.875rem') !!}{{ __('verify.rx_doc_kicker') }}</span>
@@ -563,7 +563,7 @@
              verified, which also keeps every refusal byte-identical. --}}
         <div class="doc-letterhead">
             <div class="doc-ident">
-                <img class="doc-crest" src="{{ asset('brand/opescare-favicon.png') }}" alt="" width="46" height="46">
+                <img class="doc-crest" src="{{ asset('brand/opescare-mark-128.png') }}" alt="" width="46" height="46">
                 <div class="doc-org">
                     <div class="doc-org-name">OpesCare</div>
                     <div class="doc-org-sub">{{ __('verify.rx_platform_line') }}</div>

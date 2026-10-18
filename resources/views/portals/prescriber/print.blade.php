@@ -426,7 +426,7 @@
         <div class="head__issuer">
             <div class="brandmark">
                 {{-- The platform mark the rest of the app uses (layouts/public, verify/qr). --}}
-                <img class="brandmark__logo" src="{{ asset('brand/opescare-favicon.png') }}" alt="" width="44" height="44">
+                <img class="brandmark__logo" src="{{ asset('brand/opescare-mark-192.png') }}" alt="" width="44" height="44">
                 <div>
                     <div class="brandmark__name">{{ __('prescriber.print_brand') }}</div>
                     <div class="brandmark__strap">{{ __('prescriber.print_platform_strap') }}</div>

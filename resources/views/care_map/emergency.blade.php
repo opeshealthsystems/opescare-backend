@@ -73,7 +73,7 @@
 <header class="em-header">
     <div class="f-container em-header__row">
         <a href="{{ route('public.landing') }}" class="f-brand" aria-label="OpesCare">
-            @include('partials.finder.icon', ['name' => 'heart-pulse', 'size' => 22, 'class' => 'f-brand__mark'])
+            <x-brand-logo :size="22" class="f-brand__mark" />
             <span>OpesCare</span>
         </a>
         <a href="{{ route('public.care-map') }}" class="f-btn f-btn--ghost">

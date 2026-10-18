@@ -191,16 +191,21 @@
     </style>
     {{-- Landing-page language for the public + auth shells (Inter, #EEF3F9, one accent, flat cards). Loads last. --}}
     <link rel="stylesheet" href="{{ asset('css/od-public.css') }}?v={{ @filemtime(public_path('css/od-public.css')) ?: '1' }}">
+    {{-- Page-specific stylesheet, loaded last (the sign-in page uses it). --}}
+    @stack('head')
 </head>
-<body class="f-auth">
+<body class="f-auth @yield('body_class')">
 
     <a class="f-skip" href="#f-main">{{ __('finder_shell.a11y.skip_to_content') }}</a>
 
+    {{-- A page that draws its own full-bleed chrome (the sign-in page) sets
+         @section('auth_bare', '1') and skips the slim header/footer. --}}
+    @unless(View::hasSection('auth_bare'))
     <header class="f-auth__header">
         <div class="f-container f-auth__row">
             <a href="{{ route('public.landing') }}" class="f-brand" aria-label="{{ __('finder_shell.a11y.home') }}">
-                @include('partials.finder.icon', ['name' => 'heart-pulse', 'size' => 22, 'class' => 'f-brand__mark'])
-                <span>OpesCare&nbsp;<span class="f-brand__finder">Finder</span></span>
+                <x-brand-logo :size="22" class="f-brand__mark" />
+                <span>OpesCare</span>
             </a>
 
             <div class="f-lang" aria-label="{{ __('finder_shell.a11y.language') }}">
@@ -209,16 +214,19 @@
             </div>
         </div>
     </header>
+    @endunless
 
     <main id="f-main" class="f-auth__main">
         @yield('content')
     </main>
 
+    @unless(View::hasSection('auth_bare'))
     <footer class="f-auth__footer">
         <p>{{ __('finder_auth.chrome.need_help') }}
             <a href="{{ route('public.contact') }}">{{ __('finder_auth.chrome.contact_support') }}</a>
         </p>
     </footer>
+    @endunless
 
     @yield('scripts')
 
