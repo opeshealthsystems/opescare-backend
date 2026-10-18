@@ -82,93 +82,209 @@ class MedicalRecordExportService
         return [$bytes, $filename];
     }
 
+    /** FHIR code-system URIs used by the export (HL7-registered). */
+    public const FHIR_SYSTEM_ICD10    = 'http://hl7.org/fhir/sid/icd-10';
+    public const FHIR_SYSTEM_SNOMED   = 'http://snomed.info/sct';
+    public const FHIR_SYSTEM_LOINC    = 'http://loinc.org';
+    public const FHIR_SYSTEM_HEALTHID = 'https://opescare.cloud/fhir/sid/health-id';
+
     /**
-     * Generate a FHIR R4 Bundle for the patient.
+     * Generate a FHIR R4 (4.0.1) Bundle of type "collection" for the patient.
+     *
+     * Validated against the official HL7 validator, see
+     * docs/certification/FHIR_EXPORT_VALIDATION.md. Rules:
+     *  - every entry has fullUrl urn:uuid:{id}; every reference points at a
+     *    fullUrl inside the bundle;
+     *  - nothing is invented: a field we do not hold is omitted, never filled
+     *    with a placeholder ("Unknown", "Prescription", created_at as onset);
+     *  - a prescription line is one MedicationRequest (the medicine lives on
+     *    the item, not on the prescription's free-text notes).
      */
     public function generateFhirBundle(string $patientId): array
     {
         $patient = Patient::with([
             'allergies',
             'diagnoses',
-            'prescriptions',
-            'vitals',
-            'labResults',
-            'immunizations',
+            'prescriptions.items',
         ])->findOrFail($patientId);
 
+        $subject = ['reference' => 'urn:uuid:' . $patient->id];
         $entries = [];
 
-        // Patient resource
-        $entries[] = [
-            'resource' => [
-                'resourceType' => 'Patient',
-                'id'           => $patient->id,
-                'name'         => [[
-                    'use'    => 'official',
-                    'family' => $patient->last_name,
-                    'given'  => [$patient->first_name],
-                ]],
-                'gender'       => $patient->sex ?? 'unknown',
-                'birthDate'    => $patient->date_of_birth?->toDateString(),
-                'identifier'   => [[
-                    'system' => 'urn:opescare:patient-id',
-                    'value'  => $patient->health_id ?? $patient->id,
-                ]],
-            ],
-        ];
+        $name = array_filter([
+            'use'    => 'official',
+            'family' => $patient->last_name ?: null,
+            'given'  => $patient->first_name ? [$patient->first_name] : null,
+        ]);
 
-        // AllergyIntolerance resources
+        $entries[] = $this->fhirEntry(array_filter([
+            'resourceType' => 'Patient',
+            'id'           => (string) $patient->id,
+            'identifier'   => $patient->health_id ? [[
+                'system' => self::FHIR_SYSTEM_HEALTHID,
+                'value'  => (string) $patient->health_id,
+            ]] : null,
+            'name'         => count($name) > 1 ? [$name] : null,
+            'gender'       => match (strtolower((string) $patient->sex)) {
+                'male', 'm'   => 'male',
+                'female', 'f' => 'female',
+                'other'       => 'other',
+                default       => 'unknown',
+            },
+            'birthDate'    => $patient->date_of_birth?->toDateString(),
+        ], fn ($v) => $v !== null));
+
         foreach ($patient->allergies ?? [] as $allergy) {
-            $entries[] = [
-                'resource' => [
-                    'resourceType'   => 'AllergyIntolerance',
-                    'id'             => $allergy->id,
-                    'patient'        => ['reference' => "Patient/{$patient->id}"],
-                    'code'           => ['text' => $allergy->substance ?? $allergy->allergen ?? $allergy->name ?? 'Unknown'],
-                    'clinicalStatus' => ['coding' => [['code' => 'active']]],
-                ],
-            ];
+            if (! filled($allergy->substance)) {
+                continue; // an allergy to nothing named is not exportable
+            }
+            $status = match (strtolower((string) $allergy->status)) {
+                'inactive' => 'inactive',
+                'resolved' => 'resolved',
+                default    => 'active',
+            };
+            $entries[] = $this->fhirEntry(array_filter([
+                'resourceType'   => 'AllergyIntolerance',
+                'id'             => (string) $allergy->id,
+                'clinicalStatus' => ['coding' => [[
+                    'system' => 'http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical',
+                    'code'   => $status,
+                ]]],
+                'code'           => ['text' => (string) $allergy->substance],
+                'patient'        => $subject,
+                'recordedDate'   => $allergy->created_at?->toIso8601String(),
+            ], fn ($v) => $v !== null));
         }
 
-        // Condition resources (diagnoses)
         foreach ($patient->diagnoses ?? [] as $diagnosis) {
-            $entries[] = [
-                'resource' => [
-                    'resourceType'   => 'Condition',
-                    'id'             => $diagnosis->id,
-                    'subject'        => ['reference' => "Patient/{$patient->id}"],
-                    'code'           => ['text' => $diagnosis->display_name ?? $diagnosis->code ?? 'Unknown'],
-                    'clinicalStatus' => ['coding' => [['code' => $diagnosis->status ?? 'active']]],
-                    'onsetDateTime'  => $diagnosis->created_at?->toIso8601String(),
-                ],
-            ];
+            $coding = [];
+            if (filled($diagnosis->code)) {
+                $sys = strtoupper(str_replace(['-', ' ', '_'], '', (string) $diagnosis->code_system));
+                $uri = match (true) {
+                    str_starts_with($sys, 'ICD10')          => self::FHIR_SYSTEM_ICD10,
+                    $sys === 'SNOMED', $sys === 'SNOMEDCT'  => self::FHIR_SYSTEM_SNOMED,
+                    $sys === 'LOINC'                        => self::FHIR_SYSTEM_LOINC,
+                    default                                 => null,
+                };
+                if ($uri) {
+                    $coding[] = array_filter(['system' => $uri, 'code' => (string) $diagnosis->code, 'display' => $diagnosis->display_name ?: null]);
+                }
+            }
+            if (filled($diagnosis->snomed_code)) {
+                $coding[] = array_filter(['system' => self::FHIR_SYSTEM_SNOMED, 'code' => (string) $diagnosis->snomed_code, 'display' => $diagnosis->snomed_display ?: null]);
+            }
+            $code = array_filter(['coding' => $coding ?: null, 'text' => $diagnosis->display_name ?: null]);
+            if ($code === []) {
+                continue; // no code and no name: nothing to say
+            }
+
+            $status   = strtolower((string) $diagnosis->status);
+            $clinical = match ($status) {
+                'resolved'         => 'resolved',
+                'inactive'         => 'inactive',
+                'remission'        => 'remission',
+                'entered_in_error' => null, // con-5: no clinicalStatus when entered-in-error
+                default            => 'active', // active, chronic, confirmed
+            };
+            $verification = match ($status) {
+                'entered_in_error' => 'entered-in-error',
+                'provisional'      => 'provisional',
+                'differential'     => 'differential',
+                default            => 'confirmed',
+            };
+
+            $entries[] = $this->fhirEntry(array_filter([
+                'resourceType'       => 'Condition',
+                'id'                 => (string) $diagnosis->id,
+                'clinicalStatus'     => $clinical ? ['coding' => [[
+                    'system' => 'http://terminology.hl7.org/CodeSystem/condition-clinical',
+                    'code'   => $clinical,
+                ]]] : null,
+                'verificationStatus' => ['coding' => [[
+                    'system' => 'http://terminology.hl7.org/CodeSystem/condition-ver-status',
+                    'code'   => $verification,
+                ]]],
+                'category'           => [['coding' => [[
+                    'system' => 'http://terminology.hl7.org/CodeSystem/condition-category',
+                    'code'   => 'encounter-diagnosis',
+                ]]]],
+                'code'               => $code,
+                'subject'            => $subject,
+                // When it was recorded. We do not hold an onset date.
+                'recordedDate'       => $diagnosis->created_at?->toIso8601String(),
+            ], fn ($v) => $v !== null));
         }
 
-        // MedicationRequest resources
         foreach ($patient->prescriptions ?? [] as $rx) {
-            $entries[] = [
-                'resource' => [
-                    'resourceType'             => 'MedicationRequest',
-                    'id'                       => $rx->id,
-                    'subject'                  => ['reference' => "Patient/{$patient->id}"],
-                    'status'                   => $rx->status ?? 'active',
-                    'intent'                   => 'order',
-                    'medicationCodeableConcept' => ['text' => $rx->notes ?? 'Prescription'],
-                    'dosageInstruction'        => [[
-                        'text' => $rx->notes ?? '',
-                    ]],
-                ],
-            ];
+            $status = match ((string) $rx->status) {
+                'active', 'partially_dispensed' => 'active',
+                'dispensed'                     => 'completed',
+                'voided', 'cancelled'           => 'cancelled',
+                'entered_in_error'              => 'entered-in-error',
+                'expired', 'amended'            => 'stopped',
+                default                         => 'unknown',
+            };
+            foreach ($rx->items ?? [] as $item) {
+                if (! filled($item->drug_name)) {
+                    continue;
+                }
+                $medText = trim(implode(' ', array_filter([$item->drug_name, $item->strength, $item->dosage_form])));
+                $dosage  = trim(implode(', ', array_filter([
+                    $item->dose,
+                    $item->frequency,
+                    $item->route,
+                    $item->duration_days ? $item->duration_days . ' days' : null,
+                ])));
+
+                $entries[] = $this->fhirEntry(array_filter([
+                    'resourceType'              => 'MedicationRequest',
+                    'id'                        => (string) $item->id,
+                    'groupIdentifier'           => $rx->reference ? ['value' => (string) $rx->reference] : null,
+                    'status'                    => $status,
+                    'intent'                    => 'order',
+                    'medicationCodeableConcept' => ['text' => $medText],
+                    'subject'                   => $subject,
+                    'authoredOn'                => $rx->prescribed_at?->toIso8601String(),
+                    'note'                      => filled($rx->notes) ? [['text' => (string) $rx->notes]] : null,
+                    'dosageInstruction'         => $dosage !== '' ? [['text' => $dosage]] : null,
+                    'dispenseRequest'           => is_numeric($item->quantity) && $item->quantity > 0
+                        ? ['quantity' => ['value' => 0 + $item->quantity]] : null,
+                ], fn ($v) => $v !== null));
+            }
         }
 
         return [
             'resourceType' => 'Bundle',
             'id'           => \Illuminate\Support\Str::uuid()->toString(),
+            'meta'         => ['lastUpdated' => Carbon::now()->toIso8601String()],
             'type'         => 'collection',
             'timestamp'    => Carbon::now()->toIso8601String(),
-            'total'        => count($entries),
             'entry'        => $entries,
         ];
+    }
+
+    /**
+     * Wrap a resource as a bundle entry with fullUrl urn:uuid:{id}, adding a
+     * generated narrative (dom-6) built only from what the resource already says.
+     */
+    private function fhirEntry(array $resource): array
+    {
+        $summary = match ($resource['resourceType']) {
+            'Patient'           => trim(($resource['name'][0]['given'][0] ?? '') . ' ' . ($resource['name'][0]['family'] ?? ''))
+                                   ?: ($resource['identifier'][0]['value'] ?? 'Patient'),
+            'MedicationRequest' => $resource['medicationCodeableConcept']['text'] ?? '',
+            default             => $resource['code']['text'] ?? ($resource['code']['coding'][0]['display'] ?? ($resource['code']['coding'][0]['code'] ?? '')),
+        };
+        $summary = $resource['resourceType'] . ': ' . $summary;
+
+        $resource = array_slice($resource, 0, 2, true)
+            + ['text' => [
+                'status' => 'generated',
+                'div'    => '<div xmlns="http://www.w3.org/1999/xhtml">' . htmlspecialchars($summary, ENT_QUOTES | ENT_XML1, 'UTF-8') . '</div>',
+            ]]
+            + array_slice($resource, 2, null, true);
+
+        return ['fullUrl' => 'urn:uuid:' . $resource['id'], 'resource' => $resource];
     }
 
     /**
