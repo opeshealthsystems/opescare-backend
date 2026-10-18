@@ -19,10 +19,11 @@ not in the platform monorepo.
 | **Security status and what is still owed** | `docs/SECURITY_REMEDIATION.md` |
 | **Demo logins for every facility type** | `docs/DEMO_ACCOUNTS.md` |
 | **Decisions and traps across sessions** | project memory: `~/.claude/projects/C--laragon-www-opescare-finder/memory/MEMORY.md` (47 facts, split out of the monorepo's memory on 2026-10-12) |
-| **How to deploy** | `docs/HANDOVER.md` → "How to ship safely"; there is no CI and no git remote |
+| **How to deploy** | `docs/HANDOVER.md` → "How to ship safely". Remote: `github.com/opeshealthsystems/opescare-backend` (private); CI in `.github/workflows/ci.yml` |
 | **The phone app** | sibling folder `C:\laragon\www\opescare-finder-mobile` — add it to a session with `/add-dir` when you need it; it ships through EAS, not with this repo |
 
-Two traps that have cost real time here: git history was rewritten on 2026-10-12,
+Two traps that have cost real time here: git history was rewritten on 2026-10-12
+(and again on 2026-10-19, to scrub an old `.env` before the first push to GitHub),
 so **commit hashes quoted in older docs no longer resolve — find commits by their
 message**; and after any deploy the config cache must be rebuilt or prod serves the
 old config.
