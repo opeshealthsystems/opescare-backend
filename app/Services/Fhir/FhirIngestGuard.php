@@ -37,6 +37,8 @@ class FhirIngestGuard
     public const HEALTH_ID_SYSTEMS = [
         'https://opescare.com/fhir/health-id',
         'https://opescare.cloud/fhir/health-id',
+        'https://opescare.com/fhir/sid/health-id',   // FHIR export identifier (current)
+        'https://opescare.cloud/fhir/sid/health-id', // FHIR export identifier (pre-2026-10-18)
         'urn:oid:2.16.120.1.1.1',                 // OpesCare Health ID OID
     ];
 

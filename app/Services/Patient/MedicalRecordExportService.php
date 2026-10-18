@@ -86,7 +86,7 @@ class MedicalRecordExportService
     public const FHIR_SYSTEM_ICD10    = 'http://hl7.org/fhir/sid/icd-10';
     public const FHIR_SYSTEM_SNOMED   = 'http://snomed.info/sct';
     public const FHIR_SYSTEM_LOINC    = 'http://loinc.org';
-    public const FHIR_SYSTEM_HEALTHID = 'https://opescare.cloud/fhir/sid/health-id';
+    public const FHIR_SYSTEM_HEALTHID = 'https://opescare.com/fhir/sid/health-id';
 
     /**
      * Generate a FHIR R4 (4.0.1) Bundle of type "collection" for the patient.
