@@ -131,3 +131,9 @@ own test database. Phase 7 last.
 | `FacilityClaim` / "claims" routes | live | yes | Directory **listing** claims (a facility claiming its listing), not insurance — fine |
 | `Inventory*` generic module | blood inventory API only | blood only | Blood bank is in scope; generic inventory items dormant |
 | Session / cache / queue / rate-limit stores | Postgres | — | **Scale blocker** → Phase 5 moves them to Redis |
+
+## Execution log
+- 2026-10-18 `2045ccd5` — pharmacy, lab, imaging, diagnostic desks + landing rebuilt to the design contract; hospital + admin completeness; suite 2474/2474.
+- 2026-10-18 (in progress) — wave R: every remaining surface onto the same design: (1) shell for all portal areas + all sidebars + auth/public layouts, (2) hospital/clinic desk pages, (3) admin pages, (4) patient/guardian/professional/developer, (5) public pages, finders, verify, errors.
+- Next, in order: wave S — screenshot audit of every page at 1440/390 against the contract (one agent per area, fixes in place); then certification phases 2→7 above.
+- Resume recipe after an interruption: read this log, `git status --short | grep -v vendor/`, relaunch each wave-R area whose files are still uncommitted with "resume — partial work is in the tree", then continue at the first unfinished step.
