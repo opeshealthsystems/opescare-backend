@@ -65,15 +65,13 @@ indistinguishable by flag.
 - [ ] **Backups are on-server only**: off-site backup needs the S3 driver and
       keys (Backups page in the admin control center). A restore drill must
       be run once before real data lands.
-- [ ] **Git history scrub** leftover ref (HANDOVER owner action 2).
+- [x] **Git history scrub** — done 2026-10-19: `.env` removed from all history with git filter-repo, leftover `refs/original` cleared, then pushed to GitHub.
 - [ ] **DHIS2** credentials/org units from MINSANTE (reporting only; not a blocker
       for care).
 
 ## 4. Engineering gaps
 
-- [ ] **CI exists but is not wired to a remote.** `.github/workflows/ci.yml` runs
-      migrate + full suite + i18n audit on PHP 8.3/PostgreSQL 16, but the repo has
-      no git remote, so nothing runs it yet. Deploys are manual.
+- [x] **CI wired to a remote** — since 2026-10-19 the repo is `github.com/opeshealthsystems/opescare-backend` (private); `.github/workflows/ci.yml` runs on every push. Deploys are still manual.
 - [ ] **Availability provenance**: an empty finder is correct; real pharmacy/blood
       stock only appears once partners push via allow-listed `source_system`.
       Production launch should not be judged by a full-looking finder.
