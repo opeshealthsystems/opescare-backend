@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: opescare_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: opescare_test
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: pdo_pgsql, pgsql, mbstring, intl, gd, zip, bcmath, sodium
+          coverage: none
+
+      # vendor/ is tracked in git; only install when it is missing.
+      - name: Composer install (only if vendor is absent)
+        run: |
+          if [ ! -f vendor/autoload.php ]; then
+            composer install --no-interaction --prefer-dist --no-progress
+          fi
+
+      - name: Prepare environment
+        run: |
+          cp .env.ci .env
+          php artisan key:generate --force
+          php artisan opescare:jwt-keys --force
+
+      - name: Migrate
+        run: php artisan migrate --force
+
+      - name: Test suite
+        run: php artisan test
+
+      - name: i18n audit (EN/FR parity)
+        run: php scripts/i18n-audit.php
