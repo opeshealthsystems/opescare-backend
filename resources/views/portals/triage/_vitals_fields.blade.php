@@ -10,7 +10,7 @@
 
     $consciousness — the AVPU list from TriageDeskService::CONSCIOUSNESS_LEVELS.
 --}}
-<div class="form-grid">
+<div class="odc-form-grid">
     @foreach([
         'temperature'       => ['step' => '0.1', 'min' => '20',  'max' => '45'],
         'pulse_rate'        => ['step' => '1',   'min' => '10',  'max' => '300'],
@@ -22,12 +22,12 @@
         'height_cm'         => ['step' => '0.1', 'min' => '20',  'max' => '260'],
         'gcs_score'         => ['step' => '1',   'min' => '3',   'max' => '15'],
     ] as $field => $bounds)
-        <div class="form-group">
-            <label class="form-label" for="triage-{{ $field }}">{{ __('triage.' . $field) }}</label>
+        <div class="odc-field">
+            <label class="odc-label" for="triage-{{ $field }}">{{ __('triage.' . $field) }}</label>
             <input type="number"
                    id="triage-{{ $field }}"
                    name="{{ $field }}"
-                   class="form-control"
+                   class="od-input"
                    step="{{ $bounds['step'] }}"
                    min="{{ $bounds['min'] }}"
                    max="{{ $bounds['max'] }}"
@@ -36,9 +36,9 @@
         </div>
     @endforeach
 
-    <div class="form-group">
-        <label class="form-label" for="triage-consciousness">{{ __('triage.consciousness_level') }}</label>
-        <select id="triage-consciousness" name="consciousness_level" class="form-control">
+    <div class="odc-field">
+        <label class="odc-label" for="triage-consciousness">{{ __('triage.consciousness_level') }}</label>
+        <select id="triage-consciousness" name="consciousness_level" class="od-select">
             <option value="">—</option>
             @foreach($consciousness as $level)
                 <option value="{{ $level }}" @selected(old('consciousness_level') === $level)>

@@ -18,4 +18,13 @@ return [
     'open_navigation'     => 'Open navigation',
     'language_switch'     => 'Switch language to :lang',
     'nav_pending_count'   => ':count waiting',
+    'brand_care'          => 'CARE',
+    'brand_admin'         => 'ADMIN',
+    'brand_health'        => 'HEALTH',
+    'brand_pro'           => 'PRO',
+    'search_clinic'       => 'Search facilities, documents, medicines, tests…',
+    'search_admin'        => 'Search users by name, email or phone…',
+    'search_patient'      => 'Find a medicine in stock near you…',
+    'search_pro'          => 'Find a medicine in stock nearby…',
+    'search_go'           => 'Search',
 ];

@@ -8,33 +8,43 @@
 @use('App\Services\Queue\PatientQueueService', 'Q')
 
 @php
-    $statusBadge = fn (string $status) => 'badge badge-' . match ($status) {
+    $statusBadge = fn (string $status) => 'od-pill od-pill--' . match ($status) {
         Q::STATUS_WAITING   => 'neutral',
-        Q::STATUS_CALLED    => 'warning',
-        Q::STATUS_STARTED   => 'primary',
-        Q::STATUS_COMPLETED => 'success',
-        default             => 'danger',
+        Q::STATUS_CALLED    => 'pending',
+        Q::STATUS_STARTED   => 'normal',
+        Q::STATUS_COMPLETED => 'ready',
+        default             => 'urgent',
     };
+    $odInitials = function ($first, $last): string {
+        $s = mb_strtoupper(mb_substr(trim((string) $first), 0, 1) . mb_substr(trim((string) $last), 0, 1));
+        return $s !== '' ? $s : '—';
+    };
+    $odTone = fn (string $key): string => ['blue', 'amber', 'teal', 'rose', 'sky', 'green'][crc32($key) % 6];
 @endphp
 
-@section('content')
+@section('head')
+<link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">
+@endsection
 
-<div class="page-header">
+@section('content')
+<div class="od-page odc-page">
+
+<div class="od-page__head">
     <div>
-        <h1 class="page-title">{{ __('queue_desk.queue_title') }}</h1>
-        <p class="page-subtitle">{{ __('queue_desk.queue_subtitle') }}</p>
+        <h1 class="od-page__title">{{ __('queue_desk.queue_title') }}</h1>
+        <p class="od-page__sub">{{ __('queue_desk.queue_subtitle') }}</p>
     </div>
-    <a href="{{ route('portals.queue.create') }}" class="btn btn-primary">
+    <a href="{{ route('portals.queue.create') }}" class="od-btn od-btn--primary">
         <i data-lucide="user-plus"></i> {{ __('queue_desk.check_in') }}
     </a>
 </div>
 
-@if(session('success'))<div class="alert alert-success mb-6"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
-@if(session('error'))<div class="alert alert-danger mb-6"><i data-lucide="alert-circle"></i><div>{{ session('error') }}</div></div>@endif
+@if(session('success'))<div class="odc-note odc-note--ready"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
+@if(session('error'))<div class="odc-note odc-note--urgent"><i data-lucide="alert-circle"></i><div>{{ session('error') }}</div></div>@endif
 @if($errors->any())
-<div class="alert alert-danger mb-6" role="alert">
+<div class="odc-note odc-note--urgent" role="alert">
     <i data-lucide="alert-circle"></i>
-    <div><ul class="alert-list">@foreach($errors->all() as $message)<li>{{ $message }}</li>@endforeach</ul></div>
+    <div><ul class="odc-note__list">@foreach($errors->all() as $message)<li>{{ $message }}</li>@endforeach</ul></div>
 </div>
 @endif
 
@@ -42,55 +52,63 @@
      Medians and counts from PatientQueueService::summaryFor(): every number
      here comes from a timestamp that was written once. This block is the
      platform's evidence, not its claim. --}}
-<div class="stat-grid mb-6">
-    <div class="stat-card stat-card--teal">
-        <div class="stat-card__head"><i data-lucide="users"></i></div>
-        <div class="stat-card__label">{{ __('queue_desk.summary_active') }}</div>
-        <div class="stat-card__value">{{ $summary['active'] }}</div>
-        <div class="stat-card__hint">{{ __('queue_desk.summary_waiting') }}: {{ $summary['waiting'] }}</div>
+<div class="od-kpis">
+    <div class="od-kpi od-tint--teal">
+        <span class="od-kpi__icon"><i data-lucide="users"></i></span>
+        <span class="od-kpi__body">
+            <span class="od-kpi__label">{{ __('queue_desk.summary_active') }}</span>
+            <span class="od-kpi__value">{{ $summary['active'] }}</span>
+            <span class="od-kpi__sub">{{ __('queue_desk.summary_waiting') }}: {{ $summary['waiting'] }}</span>
+        </span>
     </div>
-    <div class="stat-card stat-card--primary">
-        <div class="stat-card__head"><i data-lucide="timer"></i></div>
-        <div class="stat-card__label">{{ __('queue_desk.summary_median_wait') }}</div>
-        <div class="stat-card__value">{{ Q::formatDuration($summary['median_wait_seconds']) }}</div>
-        <div class="stat-card__hint">
+    <div class="od-kpi od-tint--blue">
+        <span class="od-kpi__icon"><i data-lucide="timer"></i></span>
+        <span class="od-kpi__body">
+            <span class="od-kpi__label">{{ __('queue_desk.summary_median_wait') }}</span>
+            <span class="od-kpi__value">{{ Q::formatDuration($summary['median_wait_seconds']) }}</span>
+            <span class="od-kpi__sub">
             @if($summary['longest_wait_seconds'] === null)
                 {{ __('queue_desk.summary_none_yet') }}
             @else
                 {{ __('queue_desk.summary_longest_wait') }}: {{ Q::formatDuration($summary['longest_wait_seconds']) }}
             @endif
-        </div>
+        </span>
+        </span>
     </div>
-    <div class="stat-card stat-card--success">
-        <div class="stat-card__head"><i data-lucide="check-check"></i></div>
-        <div class="stat-card__label">{{ __('queue_desk.summary_seen') }}</div>
-        <div class="stat-card__value">{{ $summary['seen'] }}</div>
-        <div class="stat-card__hint">{{ __('queue_desk.summary_median_service') }}: {{ Q::formatDuration($summary['median_service_seconds']) }}</div>
+    <div class="od-kpi od-tint--green">
+        <span class="od-kpi__icon"><i data-lucide="check-check"></i></span>
+        <span class="od-kpi__body">
+            <span class="od-kpi__label">{{ __('queue_desk.summary_seen') }}</span>
+            <span class="od-kpi__value">{{ $summary['seen'] }}</span>
+            <span class="od-kpi__sub">{{ __('queue_desk.summary_median_service') }}: {{ Q::formatDuration($summary['median_service_seconds']) }}</span>
+        </span>
     </div>
-    <div class="stat-card stat-card--warning">
-        <div class="stat-card__head"><i data-lucide="user-x"></i></div>
-        <div class="stat-card__label">{{ __('queue_desk.summary_left') }}</div>
-        <div class="stat-card__value">{{ $summary['left'] }}</div>
-        <div class="stat-card__hint">{{ __('queue_desk.summary_checked_in') }}: {{ $summary['checked_in'] }}</div>
+    <div class="od-kpi od-tint--amber">
+        <span class="od-kpi__icon"><i data-lucide="user-x"></i></span>
+        <span class="od-kpi__body">
+            <span class="od-kpi__label">{{ __('queue_desk.summary_left') }}</span>
+            <span class="od-kpi__value">{{ $summary['left'] }}</span>
+            <span class="od-kpi__sub">{{ __('queue_desk.summary_checked_in') }}: {{ $summary['checked_in'] }}</span>
+        </span>
     </div>
 </div>
-<p class="td-muted mb-6">{{ __('queue_desk.summary_hint') }}</p>
+<p class="od-muted">{{ __('queue_desk.summary_hint') }}</p>
 
 {{-- ── The live queue ────────────────────────────────────────────────────── --}}
-<div class="panel mb-6">
-    <div class="panel-header">
-        <h2 class="panel-title"><i data-lucide="list-ordered"></i> {{ __('queue_desk.queue_title') }}</h2>
+<div class="od-card">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('queue_desk.queue_title') }} <span class="od-card__count">{{ __('hospital_desk.c_count_paren', ['count' => $activeRows->count()]) }}</span></h2>
     </div>
     @if($activeRows->isEmpty())
-        <div class="panel-body">
-            <div class="empty-state">
-                <div class="empty-state-icon"><i data-lucide="armchair"></i></div>
-                <h3>{{ __('queue_desk.empty_queue') }}</h3>
+        <div class="od-card__body">
+            <div class="od-empty">
+                <div class="od-empty__icon"><i data-lucide="armchair"></i></div>
+                <div class="od-empty__title">{{ __('queue_desk.empty_queue') }}</div>
             </div>
         </div>
     @else
-        <div class="table-wrapper">
-            <table class="data-table">
+        <div class="od-table-wrap">
+            <table class="od-table">
                 <thead>
                     <tr>
                         <th>{{ __('queue_desk.col_number') }}</th>
@@ -100,7 +118,7 @@
                         <th>{{ __('queue_desk.col_checked_in') }}</th>
                         <th>{{ __('queue_desk.col_waited') }}</th>
                         <th>{{ __('queue_desk.col_with') }}</th>
-                        <th class="row-actions">{{ __('queue_desk.col_actions') }}</th>
+                        <th class="od-table__actions">{{ __('queue_desk.col_actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -111,53 +129,52 @@
                         $qName    = trim(($qPatient->first_name ?? '') . ' ' . ($qPatient->last_name ?? ''));
                     @endphp
                     <tr>
-                        <td data-label="{{ __('queue_desk.col_number') }}"><span class="td-strong">{{ $row['number'] }}</span></td>
+                        <td data-label="{{ __('queue_desk.col_number') }}"><span class="odc-ticket">{{ $row['number'] }}</span></td>
                         <td data-label="{{ __('queue_desk.col_patient') }}">
-                            <span class="td-strong">{{ $qName !== '' ? $qName : '—' }}</span>
-                            @if($qPatient?->health_id)<div class="td-muted">{{ $qPatient->health_id }}</div>@endif
-                            @capability('clinical_chart')
-                            @if($qPatient?->health_id)<div><a href="{{ route('portals.chart.index', ['health_id' => $qPatient->health_id]) }}" class="td-muted">{{ __('hospital_desk.open_chart') }}</a></div>@endif
-                            @endcapability
+                            <div class="od-table__person">
+                                <span class="od-avatar od-tint--{{ $odTone($qName !== '' ? $qName : (string) $ticket->id) }}" aria-hidden="true">{{ $odInitials($qPatient?->first_name, $qPatient?->last_name) }}</span>
+                                <div><span class="od-table__name">{{ $qName !== '' ? $qName : '—' }}</span>@if($qPatient?->health_id)<span class="od-table__sub">{{ $qPatient->health_id }}@capability('clinical_chart') · <a href="{{ route('portals.chart.index', ['health_id' => $qPatient->health_id]) }}" class="odc-link">{{ __('hospital_desk.open_chart') }}</a>@endcapability</span>@endif</div>
+                            </div>
                         </td>
                         <td data-label="{{ __('queue_desk.col_priority') }}">@include('portals.queue._priority_badge', ['ticket' => $ticket])</td>
                         <td data-label="{{ __('queue_desk.col_status') }}">
                             <span class="{{ $statusBadge($ticket->status) }}">{{ __('queue_desk.status.' . $ticket->status) }}</span>
                         </td>
-                        <td data-label="{{ __('queue_desk.col_checked_in') }}" class="td-muted">{{ $ticket->checked_in_at?->format('H:i') ?? '—' }}</td>
-                        <td data-label="{{ __('queue_desk.col_waited') }}">
+                        <td data-label="{{ __('queue_desk.col_checked_in') }}" class="od-muted">{{ $ticket->checked_in_at?->format('H:i') ?? '—' }}</td>
+                        <td data-label="{{ __('queue_desk.col_waited') }}" class="odc-waited">
                             {{ Q::formatDuration($row['durations']['waited']) }}
-                            @if($ticket->status === Q::STATUS_WAITING)<div class="td-muted">{{ __('queue_desk.still_waiting') }}</div>@endif
-                            @if($ticket->status === Q::STATUS_STARTED)<div class="td-muted">{{ __('queue_desk.still_in_room') }}: {{ Q::formatDuration($row['durations']['served']) }}</div>@endif
+                            @if($ticket->status === Q::STATUS_WAITING)<div class="od-muted">{{ __('queue_desk.still_waiting') }}</div>@endif
+                            @if($ticket->status === Q::STATUS_STARTED)<div class="od-muted">{{ __('queue_desk.still_in_room') }}: {{ Q::formatDuration($row['durations']['served']) }}</div>@endif
                         </td>
-                        <td data-label="{{ __('queue_desk.col_with') }}" class="td-muted">{{ $ticket->assignedTo?->name ?? '—' }}</td>
-                        <td class="row-actions" data-label="{{ __('queue_desk.col_actions') }}">
-                            <div class="row-actions-inline">
+                        <td data-label="{{ __('queue_desk.col_with') }}" class="od-muted">{{ $ticket->assignedTo?->name ?? '—' }}</td>
+                        <td class="od-table__actions" data-label="{{ __('queue_desk.col_actions') }}">
+                            <div class="odc-actions">
                                 @if($ticket->status === Q::STATUS_WAITING)
-                                    <form method="POST" action="{{ route('portals.queue.call', $ticket->id) }}" class="inline-form">@csrf
-                                        <button type="submit" class="btn btn-primary btn-sm"><i data-lucide="megaphone"></i> {{ __('queue_desk.action_call') }}</button>
+                                    <form method="POST" action="{{ route('portals.queue.call', $ticket->id) }}" class="odc-inline">@csrf
+                                        <button type="submit" class="od-btn od-btn--primary od-btn--sm"><i data-lucide="megaphone"></i> {{ __('queue_desk.action_call') }}</button>
                                     </form>
                                 @endif
                                 @if($ticket->status === Q::STATUS_CALLED)
-                                    <form method="POST" action="{{ route('portals.queue.call', $ticket->id) }}" class="inline-form">@csrf
-                                        <button type="submit" class="btn btn-secondary btn-sm"><i data-lucide="megaphone"></i> {{ __('queue_desk.action_recall') }}</button>
+                                    <form method="POST" action="{{ route('portals.queue.call', $ticket->id) }}" class="odc-inline">@csrf
+                                        <button type="submit" class="od-btn od-btn--secondary od-btn--sm"><i data-lucide="megaphone"></i> {{ __('queue_desk.action_recall') }}</button>
                                     </form>
                                 @endif
                                 @if(in_array($ticket->status, [Q::STATUS_WAITING, Q::STATUS_CALLED], true))
-                                    <form method="POST" action="{{ route('portals.queue.start', $ticket->id) }}" class="inline-form">@csrf
-                                        <button type="submit" class="btn btn-primary btn-sm"><i data-lucide="play"></i> {{ __('queue_desk.action_start') }}</button>
+                                    <form method="POST" action="{{ route('portals.queue.start', $ticket->id) }}" class="odc-inline">@csrf
+                                        <button type="submit" class="od-btn od-btn--primary od-btn--sm"><i data-lucide="play"></i> {{ __('queue_desk.action_start') }}</button>
                                     </form>
                                 @endif
                                 @if($ticket->status === Q::STATUS_STARTED)
-                                    <form method="POST" action="{{ route('portals.queue.complete', $ticket->id) }}" class="inline-form" data-confirm="{{ __('hospital_desk.confirm_queue_complete') }}">@csrf
-                                        <button type="submit" class="btn btn-primary btn-sm"><i data-lucide="check"></i> {{ __('queue_desk.action_complete') }}</button>
+                                    <form method="POST" action="{{ route('portals.queue.complete', $ticket->id) }}" class="odc-inline" data-confirm="{{ __('hospital_desk.confirm_queue_complete') }}">@csrf
+                                        <button type="submit" class="od-btn od-btn--primary od-btn--sm"><i data-lucide="check"></i> {{ __('queue_desk.action_complete') }}</button>
                                     </form>
                                 @endif
                                 @if($ticket->status === Q::STATUS_CALLED)
-                                    <form method="POST" action="{{ route('portals.queue.no_show', $ticket->id) }}" class="inline-form" data-confirm="{{ __('hospital_desk.confirm_queue_no_show') }}">@csrf
-                                        <button type="submit" class="btn btn-secondary btn-sm"><i data-lucide="user-x"></i> {{ __('queue_desk.action_no_show') }}</button>
+                                    <form method="POST" action="{{ route('portals.queue.no_show', $ticket->id) }}" class="odc-inline" data-confirm="{{ __('hospital_desk.confirm_queue_no_show') }}">@csrf
+                                        <button type="submit" class="od-btn od-btn--secondary od-btn--sm"><i data-lucide="user-x"></i> {{ __('queue_desk.action_no_show') }}</button>
                                     </form>
                                 @endif
-                                <a href="{{ route('portals.queue.show', $ticket->id) }}" class="btn btn-secondary btn-sm"><i data-lucide="eye"></i> {{ __('queue_desk.action_open') }}</a>
+                                <a href="{{ route('portals.queue.show', $ticket->id) }}" class="od-btn od-btn--row">{{ __('queue_desk.action_open') }}</a>
                             </div>
                         </td>
                     </tr>
@@ -169,15 +186,15 @@
 </div>
 
 {{-- ── Finished today ────────────────────────────────────────────────────── --}}
-<div class="panel">
-    <div class="panel-header">
-        <h2 class="panel-title"><i data-lucide="history"></i> {{ __('queue_desk.closed_title') }}</h2>
+<div class="od-card">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('queue_desk.closed_title') }} <span class="od-card__count">{{ __('hospital_desk.c_count_paren', ['count' => $closedRows->count()]) }}</span></h2>
     </div>
     @if($closedRows->isEmpty())
-        <div class="panel-body"><p class="td-muted">{{ __('queue_desk.closed_empty') }}</p></div>
+        <div class="od-card__body"><p class="od-muted">{{ __('queue_desk.closed_empty') }}</p></div>
     @else
-        <div class="table-wrapper">
-            <table class="data-table">
+        <div class="od-table-wrap">
+            <table class="od-table">
                 <thead>
                     <tr>
                         <th>{{ __('queue_desk.col_number') }}</th>
@@ -186,7 +203,7 @@
                         <th>{{ __('queue_desk.col_checked_in') }}</th>
                         <th>{{ __('queue_desk.col_waited') }}</th>
                         <th>{{ __('queue_desk.col_served') }}</th>
-                        <th class="row-actions">{{ __('queue_desk.col_actions') }}</th>
+                        <th class="od-table__actions">{{ __('queue_desk.col_actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -197,17 +214,19 @@
                         $qName    = trim(($qPatient->first_name ?? '') . ' ' . ($qPatient->last_name ?? ''));
                     @endphp
                     <tr>
-                        <td data-label="{{ __('queue_desk.col_number') }}"><span class="td-strong">{{ $row['number'] }}</span></td>
+                        <td data-label="{{ __('queue_desk.col_number') }}"><span class="odc-ticket">{{ $row['number'] }}</span></td>
                         <td data-label="{{ __('queue_desk.col_patient') }}">
-                            {{ $qName !== '' ? $qName : '—' }}
-                            @if($qPatient?->health_id)<div class="td-muted">{{ $qPatient->health_id }}</div>@endif
+                            <div class="od-table__person">
+                                <span class="od-avatar od-avatar--sm od-tint--{{ $odTone($qName !== '' ? $qName : (string) $ticket->id) }}" aria-hidden="true">{{ $odInitials($qPatient?->first_name, $qPatient?->last_name) }}</span>
+                                <div><span class="od-table__name">{{ $qName !== '' ? $qName : '—' }}</span>@if($qPatient?->health_id)<span class="od-table__sub">{{ $qPatient->health_id }}</span>@endif</div>
+                            </div>
                         </td>
                         <td data-label="{{ __('queue_desk.col_status') }}"><span class="{{ $statusBadge($ticket->status) }}">{{ __('queue_desk.status.' . $ticket->status) }}</span></td>
-                        <td data-label="{{ __('queue_desk.col_checked_in') }}" class="td-muted">{{ $ticket->checked_in_at?->format('H:i') ?? '—' }}</td>
-                        <td data-label="{{ __('queue_desk.col_waited') }}">{{ Q::formatDuration($row['durations']['waited']) }}</td>
+                        <td data-label="{{ __('queue_desk.col_checked_in') }}" class="od-muted">{{ $ticket->checked_in_at?->format('H:i') ?? '—' }}</td>
+                        <td data-label="{{ __('queue_desk.col_waited') }}" class="odc-waited">{{ Q::formatDuration($row['durations']['waited']) }}</td>
                         <td data-label="{{ __('queue_desk.col_served') }}">{{ Q::formatDuration($row['durations']['served']) }}</td>
-                        <td class="row-actions" data-label="{{ __('queue_desk.col_actions') }}">
-                            <a href="{{ route('portals.queue.show', $ticket->id) }}" class="btn btn-secondary btn-sm"><i data-lucide="eye"></i> {{ __('queue_desk.action_open') }}</a>
+                        <td class="od-table__actions" data-label="{{ __('queue_desk.col_actions') }}">
+                            <a href="{{ route('portals.queue.show', $ticket->id) }}" class="od-btn od-btn--row">{{ __('queue_desk.action_open') }}</a>
                         </td>
                     </tr>
                 @endforeach
@@ -217,4 +236,5 @@
     @endif
 </div>
 
+</div>
 @endsection

@@ -22,6 +22,7 @@
 <link rel="alternate" hreflang="fr" href="{{ route('public.care-map', ['lang' => 'fr']) }}">
 <link rel="alternate" hreflang="x-default" href="{{ route('public.care-map') }}">
 <link rel="stylesheet" href="{{ asset('assets/finder.css') }}">
+@include('public.partials._od_pages_css')
 <link rel="stylesheet" href="{{ asset('css/leaflet.css') }}">
 <script src="{{ asset('js/leaflet.js') }}" defer></script>
 <script src="{{ asset('js/op-actions.js') }}?v={{ @filemtime(public_path('js/op-actions.js')) ?: '1' }}" defer></script>
@@ -91,21 +92,19 @@
 
 :root {
   --brand:        var(--f-brand, #0F4C81);
-  --brand-hover:  var(--f-brand-ink, #1A6AAF);
+  --brand-hover:  #0B3C68;
   --brand-subtle: var(--f-wash, #EFF6FF);
-  --bg:           var(--f-ground, #F1F5F9);
+  --bg:           #EEF3F9;
   --surface:      var(--f-surface, #FFFFFF);
   --border:       var(--f-line, #E2E8F0);
-  --text-1:       var(--f-ink, #0F172A);
-  --text-2:       var(--f-ink-soft, #475569);
-  --text-3:       var(--f-muted, #94A3B8);
+  --text-1:       #0F2340;
+  --text-2:       #1F3654;
+  --text-3:       #5B6B80;
   --danger:       var(--f-danger, #DC2626);
-  --radius:    0.625rem;
-  --radius-lg: 1rem;
+  --radius:    8px;
+  --radius-lg: 16px;
   --radius-full: 9999px;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
-  --shadow-md: 0 8px 24px rgba(0,0,0,.10), 0 2px 6px rgba(0,0,0,.05);
-}
+  }
 
 html { -webkit-text-size-adjust: 100%; }
 body {
@@ -119,31 +118,31 @@ body {
 /* ── Sticky header: brand row + search ─────────────────────────────── */
 .hdr {
   position: sticky; top: 0; z-index: 300;
-  background: var(--f-ink, #0A1628);
-  border-bottom: 1px solid rgba(255,255,255,.08);
+  background: #fff;
+  border-bottom: 1px solid var(--border);
 }
 .hdr-row {
   display: flex; align-items: center; gap: 0.75rem;
-  padding: 0.6rem 1rem 0.25rem;
+  padding: 0.75rem 1rem 0.25rem;
   max-width: 1400px; margin: 0 auto; width: 100%;
 }
 .brand { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; min-width: 0; }
 .brand-mark {
   width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
-  background: linear-gradient(135deg, var(--f-brand, #1a6fb5), var(--f-brand-ink, #0aab9a));
+  background: var(--brand);
   display: flex; align-items: center; justify-content: center;
   color: #fff; font-size: 15px;
 }
-.brand-name { font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 700; color: #fff; line-height: 1.1; }
-.brand-sub  { display: block; font-size: 0.55rem; font-weight: 500; color: rgba(255,255,255,.45); letter-spacing: .07em; text-transform: uppercase; }
+.brand-name { font-size: 1.05rem; font-weight: 800; color: var(--text-1); line-height: 1.1; }
+.brand-sub  { display: block; font-size: 0.55rem; font-weight: 500; color: var(--text-3); letter-spacing: 0; text-transform: none; font-size: 0.75rem; }
 .hdr-spacer { flex: 1; }
 .btn-emergency {
   display: inline-flex; align-items: center; gap: 0.35rem;
-  padding: 0.4rem 0.8rem; border-radius: var(--radius-full);
-  background: rgba(220,38,38,.9); color: #fff;
-  font-size: 0.75rem; font-weight: 700; text-decoration: none; white-space: nowrap;
+  padding: 0.5rem 0.9rem; border-radius: var(--radius);
+  background: #fff; color: var(--danger); border: 1px solid var(--border);
+  font-size: 0.82rem; font-weight: 700; text-decoration: none; white-space: nowrap;
 }
-.btn-emergency:hover { background: var(--danger); }
+.btn-emergency:hover { border-color: var(--danger); }
 .search-row {
   display: flex; gap: 0.5rem; align-items: center;
   padding: 0.45rem 1rem 0.65rem;
@@ -152,24 +151,24 @@ body {
 .search-form { flex: 1; position: relative; display: flex; }
 .search-form .icon {
   position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%);
-  color: rgba(255,255,255,.4); font-size: 0.95rem; pointer-events: none;
+  color: var(--text-3); font-size: 0.95rem; pointer-events: none;
 }
 .search-form input {
   width: 100%; font: inherit; font-size: 16px; /* 16px stops iOS zoom */
-  padding: 0.55rem 0.9rem 0.55rem 2.4rem;
-  border: 1.5px solid rgba(255,255,255,.14); border-radius: var(--radius-full);
-  background: rgba(255,255,255,.08); color: #fff; outline: none;
+  padding: 0.7rem 0.9rem 0.7rem 2.5rem; min-height: 48px;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: #fff; color: var(--text-1); outline: none;
 }
-.search-form input::placeholder { color: rgba(255,255,255,.4); }
-.search-form input:focus { border-color: rgba(255,255,255,.4); background: rgba(255,255,255,.12); }
+.search-form input::placeholder { color: var(--text-3); }
+.search-form input:focus { border-color: var(--brand); box-shadow: 0 0 0 1px var(--brand); }
 .btn-near {
   flex-shrink: 0; display: inline-flex; align-items: center; gap: 0.35rem;
-  padding: 0.5rem 0.8rem; border-radius: var(--radius-full);
-  border: 1.5px solid rgba(255,255,255,.16); background: transparent;
-  color: rgba(255,255,255,.75); font: inherit; font-size: 0.78rem; font-weight: 600;
+  padding: 0 1rem; min-height: 48px; border-radius: var(--radius);
+  border: 1px solid var(--border); background: #fff;
+  color: var(--text-1); font: inherit; font-size: 0.85rem; font-weight: 600;
   cursor: pointer; white-space: nowrap;
 }
-.btn-near:hover { border-color: rgba(255,255,255,.4); color: #fff; }
+.btn-near:hover { border-color: var(--text-1); }
 
 /* ── Filter chips ──────────────────────────────────────────────────── */
 .chips-wrap { background: var(--surface); border-bottom: 1px solid var(--border); }
@@ -183,17 +182,17 @@ body {
 .chips + .chips { padding-top: 0; }
 .chip {
   display: inline-flex; align-items: center; gap: 0.35rem;
-  padding: 0.35rem 0.8rem; border-radius: var(--radius-full);
-  border: 1.5px solid var(--border); background: var(--surface);
+  padding: 0.4rem 0.85rem; border-radius: var(--radius);
+  border: 1px solid var(--border); background: var(--surface);
   color: var(--text-2); font-size: 0.78rem; font-weight: 500;
   text-decoration: none; white-space: nowrap; flex-shrink: 0;
 }
 .chip:hover { border-color: var(--brand); color: var(--brand); }
-.chip.on { background: var(--f-ink, #0A1628); border-color: var(--f-ink, #0A1628); color: #fff; font-weight: 600; }
-.chip .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.chip.on { background: var(--brand); border-color: var(--brand); color: #fff; font-weight: 600; }
+.chip .dot { display: none; }
 .chip .n { font-size: 0.68rem; font-weight: 700; opacity: .65; }
 .chips-label {
-  font-size: 0.65rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  font-size: 0.75rem; font-weight: 600;
   color: var(--text-3); flex-shrink: 0; padding-right: 0.1rem;
 }
 
@@ -208,7 +207,7 @@ body {
 .results-page { font-size: 0.72rem; color: var(--text-3); white-space: nowrap; }
 .btn-map-toggle {
   display: inline-flex; align-items: center; gap: 0.4rem;
-  padding: 0.4rem 0.9rem; border-radius: var(--radius-full);
+  padding: 0.5rem 0.9rem; border-radius: var(--radius);
   border: none; background: var(--brand); color: #fff;
   font: inherit; font-size: 0.78rem; font-weight: 600; cursor: pointer;
   white-space: nowrap; flex-shrink: 0;
@@ -219,7 +218,7 @@ body {
 .map-panel.open { display: block; }
 #map {
   width: 100%; height: 320px;
-  border-radius: var(--radius-lg); border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg); border: 0;
   background: var(--surface);
 }
 .map-note { font-size: 0.7rem; color: var(--text-3); padding: 0.35rem 0.25rem 0; }
@@ -232,39 +231,35 @@ body {
 
 /* ── Facility card ─────────────────────────────────────────────────── */
 .card {
-  background: var(--surface); border: 1.5px solid var(--border);
-  border-radius: var(--radius-lg); padding: 0.95rem;
+  background: var(--surface); border: 0;
+  border-radius: var(--radius-lg); padding: 20px;
   display: flex; flex-direction: column; gap: 0.6rem;
   position: relative; overflow: hidden;
 }
-.card::before {
-  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
-  background: var(--tc, var(--brand));
-}
+
 .card-top { display: flex; gap: 0.7rem; align-items: flex-start; }
 .card-ic {
-  width: 40px; height: 40px; border-radius: var(--radius); flex-shrink: 0;
+  width: 24px; height: 24px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  background: color-mix(in srgb, var(--tc, var(--brand)) 12%, #fff);
-  color: var(--tc, var(--brand)); font-size: 1.1rem;
+  color: var(--brand); font-size: 1.15rem;
 }
 .card-main { flex: 1; min-width: 0; }
 .card-name-row { display: flex; justify-content: space-between; gap: 0.5rem; align-items: flex-start; }
-.card-name { font-size: 0.9rem; font-weight: 600; line-height: 1.3; }
+.card-name { font-size: 1.0625rem; font-weight: 700; line-height: 1.3; }
 .card-name a { color: inherit; text-decoration: none; }
 .card-name a:hover { color: var(--brand); }
 .card-dist {
   font-size: 0.7rem; font-weight: 700; color: var(--brand);
-  background: var(--brand-subtle); padding: 0.12rem 0.5rem;
+  background: var(--bg); padding: 0.15rem 0.55rem;
   border-radius: var(--radius-full); white-space: nowrap; flex-shrink: 0;
 }
 .badges { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.3rem; }
 .badge {
   display: inline-flex; align-items: center; gap: 0.2rem;
-  font-size: 0.66rem; font-weight: 600; padding: 0.14rem 0.5rem;
+  font-size: 0.72rem; font-weight: 600; padding: 0.15rem 0.55rem;
   border-radius: var(--radius-full); white-space: nowrap;
 }
-.badge-type { background: color-mix(in srgb, var(--tc, var(--brand)) 12%, #fff); color: var(--tc, var(--brand)); }
+.badge-type { background: var(--bg); color: var(--text-1); }
 .badge-open   { background: var(--f-good-wash, #F0FDF4); color: var(--f-good, #15803D); }
 .badge-closed { background: var(--f-danger-wash, #FEF2F2); color: var(--danger); }
 .badge-24h    { background: var(--f-danger-wash, #FEF2F2); color: var(--danger); font-weight: 700; }
@@ -272,20 +267,20 @@ body {
 .badge-gov    { background: var(--f-warn-wash, #FEF3C7); color: var(--f-warn, #B45309); }
 .card-loc {
   display: flex; align-items: flex-start; gap: 0.4rem;
-  font-size: 0.78rem; color: var(--text-2); line-height: 1.4;
+  font-size: 0.875rem; color: var(--text-2); line-height: 1.45;
 }
 .card-loc .icon { color: var(--text-3); margin-top: 2px; flex-shrink: 0; font-size: 0.8rem; }
 .card-actions { display: flex; gap: 0.5rem; align-items: center; margin-top: auto; }
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;
-  padding: 0.5rem 0.8rem; border-radius: var(--radius);
-  font-size: 0.78rem; font-weight: 600; text-decoration: none;
-  white-space: nowrap; border: 1.5px solid transparent;
+  padding: 0.5rem 0.9rem; border-radius: var(--radius);
+  font-size: 0.85rem; font-weight: 600; text-decoration: none;
+  white-space: nowrap; border: 1px solid transparent;
   min-height: 40px; /* touch target */
 }
-.btn-call { background: var(--f-good-wash, #ECFDF5); color: var(--f-good, #059669); border-color: var(--f-good, #A7F3D0); }
-.btn-call:hover { background: var(--f-good, #059669); color: #fff; }
-.btn-dir { background: var(--bg); color: var(--text-2); border-color: var(--border); }
+.btn-call { background: #fff; color: var(--text-1); border-color: var(--border); }
+.btn-call:hover { border-color: var(--text-1); }
+.btn-dir { background: #fff; color: var(--text-1); border-color: var(--border); }
 .btn-dir:hover { border-color: var(--text-2); color: var(--text-1); }
 .btn-view { background: var(--brand); color: #fff; margin-left: auto; }
 .btn-view:hover { background: var(--brand-hover); }
@@ -300,7 +295,7 @@ body {
 .empty-title { font-size: 1rem; font-weight: 600; }
 .empty-sub { font-size: 0.82rem; color: var(--text-3); max-width: 280px; line-height: 1.55; }
 .btn-reset {
-  padding: 0.5rem 1.25rem; border-radius: var(--radius-full);
+  padding: 0.65rem 1.25rem; border-radius: var(--radius);
   background: var(--brand); color: #fff; text-decoration: none;
   font-size: 0.82rem; font-weight: 600;
 }
@@ -314,8 +309,8 @@ body {
 .pager-btn {
   display: inline-flex; align-items: center; gap: 0.3rem;
   padding: 0.55rem 1rem; border-radius: var(--radius);
-  background: var(--surface); border: 1.5px solid var(--border);
-  color: var(--text-1); font-size: 0.82rem; font-weight: 600;
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text-1); font-size: 0.85rem; font-weight: 600;
   text-decoration: none; min-height: 44px;
 }
 .pager-btn:hover { border-color: var(--brand); color: var(--brand); }
@@ -325,12 +320,12 @@ body {
 /* ── Disclaimer footer ─────────────────────────────────────────────── */
 .disclaimer {
   margin: 0 1rem 1.5rem;
-  background: var(--f-warn-wash, #FFFBEB); border: 1px solid var(--f-warn, #FDE68A); border-radius: var(--radius);
-  padding: 0.7rem 0.9rem;
-  font-size: 0.74rem; color: var(--f-warn, #92400E); line-height: 1.55;
+  background: #fff; border: 0; border-radius: var(--radius-lg);
+  padding: 1rem 1.1rem;
+  font-size: 0.82rem; color: var(--text-2); line-height: 1.55;
   display: flex; gap: 0.5rem; align-items: flex-start;
 }
-.disclaimer .icon { color: var(--f-warn, #D97706); flex-shrink: 0; margin-top: 2px; }
+.disclaimer .icon { color: var(--brand); flex-shrink: 0; margin-top: 2px; }
 
 /* ── Desktop: list + persistent map side by side ───────────────────── */
 @media (min-width: 960px) {
@@ -351,7 +346,7 @@ body {
   .disclaimer   { grid-area: disc; }
   .map-panel {
     grid-area: map; display: block !important;
-    position: sticky; top: 118px;
+    position: sticky; top: 132px;
     padding: 0.75rem 1rem 0.75rem 0;
   }
   #map { height: calc(100vh - 150px); min-height: 420px; }
@@ -359,7 +354,7 @@ body {
 }
 </style>
 </head>
-<body>
+<body class="odp">
 
 {{-- ── Header: brand + search (sticky) ─────────────────────────────── --}}
 <header class="hdr">
@@ -615,10 +610,10 @@ function initMap() {
     const name = f.name.replace(/&/g,'&amp;').replace(/</g,'&lt;');
     const city = (f.city || '').replace(/&/g,'&amp;').replace(/</g,'&lt;');
     L.marker([f.lat, f.lng], { icon })
-      .bindPopup(`<div style="padding:.75rem;font-family:Inter,sans-serif;min-width:170px">
-        <div style="font-size:.85rem;font-weight:700;margin-bottom:.2rem">${name}</div>
-        ${city ? `<div style="font-size:.72rem;color:var(--f-muted, #94A3B8);margin-bottom:.5rem">${city}</div>` : ''}
-        <a href="${f.url}" style="font-size:.75rem;font-weight:600;color:#0F4C81;text-decoration:none">${I18N.view} &rarr;</a>
+      .bindPopup(`<div class="odp-popup">
+        <div class="odp-bold">${name}</div>
+        ${city ? `<div class="odp-muted odp-mb-8">${city}</div>` : ''}
+        <a class="odp-strong" href="${f.url}">${I18N.view} &rarr;</a>
       </div>`, { maxWidth: 240 })
       .addTo(map);
   });
@@ -692,7 +687,7 @@ window.addEventListener('resize', () => {
 window.addEventListener('load', () => {
   if (window.innerWidth >= 960 && map) {
     L.marker([{{ (float) request('latitude') }}, {{ (float) request('longitude') }}], {
-      icon: L.divIcon({ html: '<div style="width:14px;height:14px;border-radius:50%;background:#0F4C81;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.35)"></div>', className: '', iconSize: [14,14], iconAnchor: [7,7] })
+      icon: L.divIcon({ html: '<div class="odp-here"></div>', className: '', iconSize: [14,14], iconAnchor: [7,7] })
     }).addTo(map).bindPopup(I18N.youAreHere);
   }
 });

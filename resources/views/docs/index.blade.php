@@ -1,5 +1,9 @@
 @extends('layouts.docs')
 @section('title', 'Getting Started')
+@section('head')
+@include('public.partials._od_pages_css')
+@endsection
+
 @section('content')
 
 <h1>Getting Started with OpesCare APIs</h1>

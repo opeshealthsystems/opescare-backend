@@ -6,67 +6,74 @@
 @section('breadcrumb_home_url', route('portals.files.index', ['patientId' => $patient->id]))
 @section('breadcrumb_section', __('files.upload_title'))
 
+@section('head')
+<link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">
+@endsection
+
 @section('content')
-<div class="page-head">
-    <h2>{{ __('files.upload_title') }}</h2>
-    <div class="page-head__spacer"></div>
-    <a href="{{ route('portals.files.index', ['patientId' => $patient->id]) }}" class="btn btn-ghost btn-sm">
-        <i data-lucide="arrow-left"></i> {{ __('files.back') }}
-    </a>
-</div>
-<p class="page-subtitle mb-6">
-    {{ __('chart.health_id') }}: <span class="td-strong">{{ $patient->health_id ?? '—' }}</span>
-    &middot; {{ __('files.upload_subtitle') }}
-</p>
+<div class="od-page odc-page">
+
+<header class="od-page__head odc-head">
+    <div>
+        <h1 class="od-page__title">{{ __('files.upload_title') }}</h1>
+        <p class="od-page__sub">
+            {{ __('chart.health_id') }}: <span class="od-strong odc-mono">{{ $patient->health_id ?? '—' }}</span>
+            &middot; {{ __('files.upload_subtitle') }}
+        </p>
+    </div>
+    <div class="odc-head__actions">
+        <a href="{{ route('portals.files.index', ['patientId' => $patient->id]) }}" class="od-btn od-btn--secondary">
+            <i data-lucide="arrow-left"></i> {{ __('files.back') }}
+        </a>
+    </div>
+</header>
 
 @if($errors->any())
-    <div class="alert alert-danger mb-6"><i data-lucide="triangle-alert"></i><div>{{ $errors->first() }}</div></div>
+    <div class="odc-note odc-note--err" role="alert"><i data-lucide="triangle-alert"></i><div>{{ $errors->first() }}</div></div>
 @endif
 
-<div class="panel">
-    <div class="panel-body">
-        <form method="POST" action="{{ route('portals.files.store', ['patientId' => $patient->id]) }}" enctype="multipart/form-data">
-            @csrf
+<form method="POST" action="{{ route('portals.files.store', ['patientId' => $patient->id]) }}" enctype="multipart/form-data" class="odc-form">
+    @csrf
 
-            <div class="form-group">
-                <label class="form-label form-label-required" for="file-input">{{ __('files.lbl_file') }}</label>
-                <div id="drop-zone" class="empty-state" style="border:2px dashed var(--p-border);border-radius:var(--p-radius);cursor:pointer;"
-                     data-click="file-input">
-                    <div class="empty-state-icon"><i data-lucide="upload-cloud"></i></div>
-                    <div class="td-strong">{{ __('files.click_browse') }}</div>
-                    <div id="file-name" class="td-muted">{{ __('files.size_hint', ['max' => $maxSizeMb]) }}</div>
+    <section class="od-card">
+        <header class="od-card__head"><h2 class="od-card__title">{{ __('files.lbl_file') }}</h2></header>
+        <div class="od-card__body odc-grid">
+            <div class="odc-label odc-span">
+                <label class="odc-req" for="file-input">{{ __('files.lbl_file') }}</label>
+                <div id="drop-zone" class="odc-drop" data-click="file-input">
+                    <i data-lucide="upload-cloud"></i>
+                    <span class="od-strong">{{ __('files.click_browse') }}</span>
+                    <span id="file-name" class="od-muted">{{ __('files.size_hint', ['max' => $maxSizeMb]) }}</span>
                 </div>
-                <input type="file" id="file-input" name="file" required class="sr-only"
+                <input type="file" id="file-input" name="file" required class="sr-only od-sr"
                     accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
                     data-call-change="updateFileName" data-call-self>
-                @error('file')<div class="form-hint">{{ $message }}</div>@enderror
+                @error('file')<span class="odc-error">{{ $message }}</span>@enderror
             </div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label form-label-required">{{ __('files.lbl_category') }}</label>
-                    <select name="category" class="form-control" required>
-                        <option value="">{{ __('files.select_category') }}</option>
-                        @foreach($categories as $val => $label)
-                            <option value="{{ $val }}" {{ old('category') === $val ? 'selected' : '' }}>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">{{ __('files.lbl_description') }}</label>
-                    <input type="text" name="description" value="{{ old('description') }}" class="form-control"
-                        maxlength="300" placeholder="{{ __('files.ph_description') }}">
-                </div>
-            </div>
+            <label class="odc-label"><span class="odc-req">{{ __('files.lbl_category') }}</span>
+                <select name="category" class="od-select" required>
+                    <option value="">{{ __('files.select_category') }}</option>
+                    @foreach($categories as $val => $label)
+                        <option value="{{ $val }}" {{ old('category') === $val ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </label>
+            <label class="odc-label">{{ __('files.lbl_description') }}
+                <input type="text" name="description" value="{{ old('description') }}" class="od-input"
+                    maxlength="300" placeholder="{{ __('files.ph_description') }}">
+            </label>
+        </div>
+    </section>
 
-            <div class="row-actions-inline mt-6">
-                <button type="submit" class="btn btn-primary">
-                    <i data-lucide="upload"></i> {{ __('files.upload_attach') }}
-                </button>
-                <a href="{{ route('portals.files.index', ['patientId' => $patient->id]) }}" class="btn btn-ghost">{{ __('files.cancel') }}</a>
-            </div>
-        </form>
+    <div class="odc-actions">
+        <a href="{{ route('portals.files.index', ['patientId' => $patient->id]) }}" class="od-btn od-btn--secondary">{{ __('files.cancel') }}</a>
+        <button type="submit" class="od-btn od-btn--primary">
+            <i data-lucide="upload"></i> {{ __('files.upload_attach') }}
+        </button>
     </div>
+</form>
+
 </div>
 @endsection
 
@@ -78,18 +85,17 @@ function updateFileName(input) {
         const f = input.files[0];
         const sizeMb = (f.size / (1024*1024)).toFixed(2);
         label.textContent = f.name + ' (' + sizeMb + ' MB)';
-        label.style.color = 'var(--p-text)';
-        document.getElementById('drop-zone').style.borderColor = 'var(--p-primary)';
+        document.getElementById('drop-zone').classList.add('is-active', 'is-picked');
     }
 }
 
 // Drag-and-drop
 const dz = document.getElementById('drop-zone');
-dz.addEventListener('dragover', e => { e.preventDefault(); dz.style.borderColor='var(--p-primary)'; });
-dz.addEventListener('dragleave', () => dz.style.borderColor='');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('is-active'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('is-active'));
 dz.addEventListener('drop', e => {
     e.preventDefault();
-    dz.style.borderColor='var(--p-primary)';
+    dz.classList.add('is-active');
     const fi = document.getElementById('file-input');
     fi.files = e.dataTransfer.files;
     updateFileName(fi);

@@ -9,15 +9,15 @@
     $linked = $listing !== null;
 @endphp
 
-<div class="panel mb-6">
-    <div class="panel-header">
-        <h3 class="panel-title"><i data-lucide="image"></i> {{ __($ns . '.section_photo') }}</h3>
-    </div>
-    <div class="panel-body">
-        @unless($linked)<p class="lst-note">{{ __($ns . '.not_linked_forms') }}</p>@endunless
+<section class="od-card">
+    <header class="od-card__head">
+        <h2 class="od-card__title">{{ __($ns . '.section_photo') }}</h2>
+    </header>
+    <div class="od-card__body">
+        @unless($linked)<p class="odc-muted">{{ __($ns . '.not_linked_forms') }}</p>@endunless
 
-        <div class="ps-photo">
-            <div class="ps-photo__frame" aria-hidden="{{ $photoUrl ? 'false' : 'true' }}">
+        <div class="odc-photo-row">
+            <div class="odc-photo-frame" aria-hidden="{{ $photoUrl ? 'false' : 'true' }}">
                 @if($photoUrl)
                     <img src="{{ $photoUrl }}" alt="{{ __($ns . '.photo_alt') }}">
                 @else
@@ -26,20 +26,18 @@
                 @endif
             </div>
 
-            <form method="POST" action="{{ $action }}" enctype="multipart/form-data" class="ps-photo__form">
+            <form method="POST" action="{{ $action }}" enctype="multipart/form-data" class="odc-photo-form">
                 @csrf
-                <fieldset @class(['ps-locked' => ! $linked]) @disabled(! $linked)>
-                    <div class="form-group">
-                        <label class="form-label form-label-required" for="photo">{{ __($ns . '.label_photo') }}</label>
-                        <input type="file" id="photo" name="photo" class="form-control" accept="image/jpeg,image/png,image/webp" required>
-                        <div class="form-hint">{{ __($ns . '.hint_photo') }}</div>
-                        @error('photo')<div class="form-hint form-error">{{ $message }}</div>@enderror
-                    </div>
-                    <div style="margin-top:var(--p-space-4)">
-                        <button type="submit" class="btn btn-primary fs-tap"><i data-lucide="upload"></i> {{ __($ns . '.btn_save_photo') }}</button>
+                <fieldset @class(['odc-fieldset', 'odc-locked' => ! $linked]) @disabled(! $linked)>
+                    <label class="odc-label" for="photo">{{ __($ns . '.label_photo') }}</label>
+                    <input type="file" id="photo" name="photo" class="od-input odc-file" accept="image/jpeg,image/png,image/webp" required>
+                    <p class="odc-hint">{{ __($ns . '.hint_photo') }}</p>
+                    @error('photo')<p class="odc-error">{{ $message }}</p>@enderror
+                    <div class="odc-form-foot">
+                        <button type="submit" class="od-btn od-btn--primary fs-tap"><i data-lucide="upload"></i> {{ __($ns . '.btn_save_photo') }}</button>
                     </div>
                 </fieldset>
             </form>
         </div>
     </div>
-</div>
+</section>

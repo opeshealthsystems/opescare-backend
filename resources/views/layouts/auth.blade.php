@@ -189,6 +189,8 @@
     .f-auth .demo-panel{width:100%;max-width:400px;margin:24px auto 0}
     .f-auth .auth-hidden{display:none !important}
     </style>
+    {{-- Landing-page language for the public + auth shells (Inter, #EEF3F9, one accent, flat cards). Loads last. --}}
+    <link rel="stylesheet" href="{{ asset('css/od-public.css') }}?v={{ @filemtime(public_path('css/od-public.css')) ?: '1' }}">
 </head>
 <body class="f-auth">
 

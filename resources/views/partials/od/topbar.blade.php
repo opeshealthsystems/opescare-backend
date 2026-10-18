@@ -1,7 +1,6 @@
 {{--
     OPES desk topbar (.od-topbar) — docs/superpowers/specs/2026-10-18-desk-design-system.md.
-    Rendered by layouts/portal.blade.php instead of the classic topbar on the
-    pharmacy / lab / imaging / diagnostic desks. Keeps the ids the layout JS
+    Rendered by layouts/portal.blade.php on every portal page (all six areas). Keeps the ids the layout JS
     drives (#sidebar-toggle, #topbar-user-toggle, #topbar-user-menu) and the
     existing bell partial (#notif-bell, polled by notifications.js).
 
@@ -18,7 +17,16 @@
 @php
     $odLoc       = app()->getLocale();
     $odUser      = auth()->user();
-    $odSearchUrl = $odPharmacy ? route('portals.pharmacy.prescriptions.lookup') : route('portals.staff.search');
+    $odArea      = $odArea ?? ($odPharmacy ? 'pharmacy' : 'lab');
+    // Search target per area — existing GET routes only.
+    [$odSearchUrl, $odSearchName, $odSearchPh] = match ($odArea) {
+        'pharmacy' => [route('portals.pharmacy.prescriptions.lookup'), 'q', __('od.search_pharmacy', [], $odLoc)],
+        'admin'    => [route('admin.users.index'), 'search', __('od.search_admin', [], $odLoc)],
+        'patient'  => [route('public.network.medicine-finder'), 'q', __('od.search_patient', [], $odLoc)],
+        'pro'      => [route('public.network.medicine-finder'), 'q', __('od.search_pro', [], $odLoc)],
+        'clinic'   => [route('portals.staff.search'), 'q', __('od.search_clinic', [], $odLoc)],
+        default    => [route('portals.staff.search'), 'q', __('od.search_lab', [], $odLoc)],
+    };
     $odActiveId  = session('active_facility_id');
     $odFacility  = (is_string($odActiveId) && \Illuminate\Support\Str::isUuid($odActiveId))
         ? \App\Models\Facility::withoutGlobalScope('isolate_demo')->whereKey($odActiveId)->value('name')
@@ -40,11 +48,17 @@
     <form class="od-search" method="GET" action="{{ $odSearchUrl }}" role="search">
         <svg class="od-search__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         <label for="od-search-q" class="od-sr">{{ __('od.search_label', [], $odLoc) }}</label>
-        <input id="od-search-q" class="od-search__input" type="search" name="q" value="{{ is_string(request('q')) ? request('q') : '' }}" autocomplete="off"
-               placeholder="{{ $odPharmacy ? __('od.search_pharmacy', [], $odLoc) : __('od.search_lab', [], $odLoc) }}">
+        <input id="od-search-q" class="od-search__input" type="search" name="{{ $odSearchName }}" value="{{ is_string(request($odSearchName)) ? request($odSearchName) : '' }}" autocomplete="off"
+               placeholder="{{ $odSearchPh }}">
+        @if(in_array($odArea, ['pharmacy', 'lab', 'clinic'], true))
         <button type="submit" class="od-search__scan" aria-label="{{ __('od.scan_barcode', [], $odLoc) }}" title="{{ __('od.scan_barcode', [], $odLoc) }}">
             <x-od-icon name="barcode"/>
         </button>
+        @else
+        <button type="submit" class="od-search__scan" aria-label="{{ __('od.search_go', [], $odLoc) }}" title="{{ __('od.search_go', [], $odLoc) }}">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+        </button>
+        @endif
     </form>
 
     <div class="od-topbar__actions">

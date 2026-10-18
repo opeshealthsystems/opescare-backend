@@ -8,6 +8,7 @@
 
 @section('head')
     @include('portals.patient._finder_head')
+    <link rel="stylesheet" href="{{ asset('css/od-patient.css') }}?v={{ @filemtime(public_path('css/od-patient.css')) ?: '1' }}">
 @endsection
 
 @section('patient_banner')
@@ -51,7 +52,7 @@
                 @include('partials.finder.icon', ['name' => 'building-2', 'size' => 18])
                 {{ __('public.appt_book_facility') }}
             </h2>
-            <div class="f-field" style="margin-bottom:0;">
+            <div class="f-field ods-e7ec540">
                 <label class="f-label" for="facility_id">{{ __('finder_patient.step_facility') }}</label>
                 <select id="facility_id" name="facility_id" class="f-input" required>
                     <option value="">{{ __('finder_patient.choose_facility') }}</option>
@@ -65,12 +66,12 @@
         </section>
 
         {{-- Step 2 — type --}}
-        <section class="f-card pf-step" data-step="2" data-title="{{ __('finder_patient.step_type') }}" style="margin-top:12px;">
+        <section class="f-card pf-step ods-002535c" data-step="2" data-title="{{ __('finder_patient.step_type') }}">
             <h2 class="pf-card-head">
                 @include('partials.finder.icon', ['name' => 'heart-pulse', 'size' => 18])
                 {{ __('public.appt_book_type') }}
             </h2>
-            <p class="f-hint" style="margin:-6px 0 10px;">{{ __('finder_patient.type_help') }}</p>
+            <p class="f-hint ods-4e3268c">{{ __('finder_patient.type_help') }}</p>
             <div class="pf-choices" role="radiogroup" aria-label="{{ __('public.appt_book_type') }}">
                 @foreach($types as $t)
                 <label class="pf-choice">
@@ -86,7 +87,7 @@
         </section>
 
         {{-- Step 3 — date & time (+ optional reason) --}}
-        <section class="f-card pf-step" data-step="3" data-title="{{ __('finder_patient.step_time') }}" style="margin-top:12px;">
+        <section class="f-card pf-step ods-002535c" data-step="3" data-title="{{ __('finder_patient.step_time') }}">
             <h2 class="pf-card-head">
                 @include('partials.finder.icon', ['name' => 'calendar', 'size' => 18])
                 {{ __('public.appt_book_when') }}
@@ -98,7 +99,7 @@
                 <p class="f-hint">{{ __('finder_patient.time_help') }}</p>
                 <p class="f-error" data-step-error hidden>{{ __('finder_patient.step_required') }}</p>
             </div>
-            <div class="f-field" style="margin-bottom:0;">
+            <div class="f-field ods-e7ec540">
                 <label class="f-label" for="reason">{{ __('public.appt_book_reason') }}</label>
                 <textarea id="reason" name="reason" class="f-input" rows="3" maxlength="500"
                           placeholder="{{ __('public.appt_book_reason_ph') }}">{{ old('reason') }}</textarea>
@@ -106,13 +107,13 @@
         </section>
 
         {{-- Step 4 — confirm --}}
-        <section class="pf-step" data-step="4" data-title="{{ __('finder_patient.step_confirm') }}" style="margin-top:12px;">
+        <section class="pf-step ods-002535c" data-step="4" data-title="{{ __('finder_patient.step_confirm') }}">
             <div class="f-card" id="pf-confirm-summary" hidden>
                 <h2 class="pf-card-head">
                     @include('partials.finder.icon', ['name' => 'check', 'size' => 18])
                     {{ __('finder_patient.confirm_title') }}
                 </h2>
-                <p class="f-hint" style="margin:-6px 0 10px;">{{ __('finder_patient.confirm_check') }}</p>
+                <p class="f-hint ods-4e3268c">{{ __('finder_patient.confirm_check') }}</p>
                 <dl class="pf-summary">
                     <div><dt>{{ __('finder_patient.confirm_facility') }}</dt><dd id="pf-sum-facility">—</dd></div>
                     <div><dt>{{ __('finder_patient.confirm_type') }}</dt><dd id="pf-sum-type">—</dd></div>
@@ -121,27 +122,27 @@
                 </dl>
             </div>
 
-            <div class="pf-alert" style="margin-top:12px;">
+            <div class="pf-alert ods-002535c">
                 @include('partials.finder.icon', ['name' => 'info', 'size' => 18])
                 <p>{{ __('finder_patient.lifecycle_note') }}</p>
             </div>
 
-            <button type="submit" class="f-btn f-btn--primary f-btn--block pf-nojs-only" style="min-height:48px;">
+            <button type="submit" class="f-btn f-btn--primary f-btn--block pf-nojs-only ods-a27b458">
                 {{ __('public.appt_book_submit') }}
             </button>
         </section>
 
         {{-- JS wizard navigation --}}
         <div class="pf-wizard-nav">
-            <button type="button" class="f-btn" id="pf-back" style="min-height:48px;">
+            <button type="button" class="f-btn ods-a27b458" id="pf-back">
                 @include('partials.finder.icon', ['name' => 'chevron-left', 'size' => 18])
                 {{ __('finder_patient.btn_back') }}
             </button>
-            <button type="button" class="f-btn f-btn--primary" id="pf-next" style="flex:1;min-height:48px;">
+            <button type="button" class="f-btn f-btn--primary ods-223c2f2" id="pf-next">
                 {{ __('finder_patient.btn_continue') }}
                 @include('partials.finder.icon', ['name' => 'chevron-right', 'size' => 18])
             </button>
-            <button type="submit" class="f-btn f-btn--primary" id="pf-submit" style="flex:1;min-height:48px;" hidden>
+            <button type="submit" class="f-btn f-btn--primary ods-223c2f2" id="pf-submit" hidden>
                 {{ __('public.appt_book_submit') }}
             </button>
         </div>

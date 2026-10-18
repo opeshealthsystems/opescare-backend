@@ -4,55 +4,58 @@
 @section('breadcrumb_home', __('staff_data.title_import'))
 @section('breadcrumb_home_url', route('portals.admin.data_import.index'))
 @section('breadcrumb_section', __('public.stf_import_validation_summary'))
+@section('head')<link rel="stylesheet" href="{{ asset('css/od-admin.css') }}?v={{ @filemtime(public_path('css/od-admin.css')) ?: '1' }}">@endsection
 
 @section('content')
+<div class="od-page">
+<div class="od-page__head">
+    <div>
+        <h1 class="od-page__title">{{ __('public.stf_import_validation_summary') }}</h1>
+        <p class="od-page__sub">{{ $job->original_filename }} · {{ $importTypes[$job->import_type]['label'] ?? $job->import_type }}</p>
+    </div>
+    <div class="od-row">
+        <span class="od-pill od-pill--{{ $job->status === 'validated' ? 'ready' : 'urgent' }}">@enum($job->status)</span>
+    </div>
+</div>
 
 @include('portals.admin.data_import._wizard_steps', ['step' => 3])
 
 @if(session('success'))
-    <div class="alert alert-success mb-6"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>
+    <div class="oda-gb-alert oda-gb-alert--ok"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>
 @endif
 @if(session('error'))
-    <div class="alert alert-danger mb-6"><i data-lucide="triangle-alert"></i><div>{{ session('error') }}</div></div>
+    <div class="oda-gb-alert oda-gb-alert--bad"><i data-lucide="triangle-alert"></i><div>{{ session('error') }}</div></div>
 @endif
 
-<div class="panel mb-6">
-    <div class="panel-header">
-        <h3 class="panel-title">{{ __('public.stf_import_validation_summary') }}</h3>
-        <span class="badge {{ $job->status === 'validated' ? 'badge-success' : 'badge-danger' }}">@enum($job->status)</span>
+@php
+    $cards = [
+        [__('public.stf_import_total_rows'), (int) $job->total_rows,   'blue',                                   'rows-3'],
+        [__('public.stf_import_valid'),      (int) $job->valid_rows,   'green',                                  'check-circle'],
+        [__('public.stf_import_invalid'),    (int) $job->invalid_rows, $job->invalid_rows > 0 ? 'rose' : 'sky', 'triangle-alert'],
+    ];
+@endphp
+<div class="od-kpis oda-gb-kpis--3">
+    @foreach($cards as [$label, $value, $tint, $icon])
+    <div class="od-kpi od-tint--{{ $tint }}">
+        <span class="od-kpi__icon"><i data-lucide="{{ $icon }}"></i></span>
+        <span class="od-kpi__body">
+            <span class="od-kpi__label">{{ $label }}</span>
+            <span class="od-kpi__value">{{ number_format($value) }}</span>
+        </span>
     </div>
-    <div class="panel-body">
-        <p class="td-muted mb-6">
-            {{ $job->original_filename }} · {{ $importTypes[$job->import_type]['label'] ?? $job->import_type }}
-        </p>
-        @php
-            $cards = [
-                [__('public.stf_import_total_rows'), (int) $job->total_rows,   '',                                                'rows-3'],
-                [__('public.stf_import_valid'),      (int) $job->valid_rows,   'stat-card--success',                              'check-circle'],
-                [__('public.stf_import_invalid'),    (int) $job->invalid_rows, $job->invalid_rows > 0 ? 'stat-card--danger' : '', 'triangle-alert'],
-            ];
-        @endphp
-        <div class="stat-grid">
-            @foreach($cards as [$label, $value, $mod, $icon])
-            <div class="stat-card {{ $mod }}">
-                <div class="stat-card__head"><i data-lucide="{{ $icon }}"></i></div>
-                <div class="stat-card__value">{{ number_format($value) }}</div>
-                <div class="stat-card__label">{{ $label }}</div>
-            </div>
-            @endforeach
-        </div>
-    </div>
+    @endforeach
 </div>
 
 @if($job->rowErrors->count() > 0)
-<div class="panel mb-6">
-    <div class="panel-header">
-        <h3 class="panel-title">{{ __('public.stf_import_val_errors_title') }} <span class="badge badge-danger">{{ $job->rowErrors->count() }}</span></h3>
-        <span class="td-muted">{{ __('public.stf_import_showing_errors') }}</span>
+<section class="od-card">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('public.stf_import_val_errors_title') }}</h2>
+        <span class="od-card__count">{{ $job->rowErrors->count() }}</span>
+        <span class="od-card__link">{{ __('public.stf_import_showing_errors') }}</span>
     </div>
-    <div class="panel-body panel-body--flush">
-        <div class="table-wrapper">
-            <table class="data-table">
+    <div class="od-card__body od-card__body--flush">
+        <div class="od-table-wrap">
+            <table class="od-table">
                 <thead>
                     <tr>
                         <th>{{ __('public.stf_import_col_row_no') }}</th>
@@ -65,8 +68,8 @@
                     @foreach($job->rowErrors as $err)
                     <tr>
                         <td data-label="{{ __('public.stf_import_col_row_no') }}">{{ $err->row_number }}</td>
-                        <td data-label="{{ __('public.stf_import_col_field') }}"><span class="badge badge-neutral">{{ $err->field ?? '—' }}</span></td>
-                        <td data-label="{{ __('public.stf_import_col_error') }}"><span class="mono">{{ $err->error_code }}</span></td>
+                        <td data-label="{{ __('public.stf_import_col_field') }}"><span class="od-pill od-pill--neutral">{{ $err->field ?? '—' }}</span></td>
+                        <td data-label="{{ __('public.stf_import_col_error') }}"><span class="oda-mono">{{ $err->error_code }}</span></td>
                         <td data-label="{{ __('public.stf_import_col_message') }}">{{ $err->message }}</td>
                     </tr>
                     @endforeach
@@ -74,13 +77,13 @@
             </table>
         </div>
     </div>
-</div>
+</section>
 @endif
 
-<div class="panel">
-    <div class="panel-body">
+<section class="od-card">
+    <div class="od-card__body od-stack">
         @if($job->canBeApproved())
-            <div class="alert alert-success mb-6">
+            <div class="oda-gb-alert oda-gb-alert--ok">
                 <i data-lucide="shield-check"></i>
                 <div>
                     <strong>{{ __('public.stf_import_ready_title') }}</strong>
@@ -93,11 +96,11 @@
                     </p>
                 </div>
             </div>
-            <div class="row-actions-inline">
-                <a href="{{ route('portals.admin.data_import.mapping', $job->id) }}" class="btn btn-ghost btn-sm">{{ __('public.stf_import_edit_mapping') }}</a>
-                <form method="POST" action="{{ route('portals.admin.data_import.approve', $job->id) }}" class="inline-form">
+            <div class="od-row">
+                <a href="{{ route('portals.admin.data_import.mapping', $job->id) }}" class="od-btn od-btn--ghost od-btn--sm">{{ __('public.stf_import_edit_mapping') }}</a>
+                <form method="POST" action="{{ route('portals.admin.data_import.approve', $job->id) }}" class="oda-inline-form">
                     @csrf
-                    <button type="submit" class="btn btn-primary btn-sm"
+                    <button type="submit" class="od-btn od-btn--primary od-btn--sm"
                         data-confirm="{{ __('staff_data.confirm_approve', ['n' => $job->valid_rows]) }}">
                         <i data-lucide="check-circle"></i>
                         {{ __('public.stf_import_approve_btn') }} {{ number_format($job->valid_rows) }} {{ __('public.stf_import_records_suffix') }}
@@ -106,24 +109,24 @@
             </div>
 
         @elseif($job->status === 'validation_failed')
-            <div class="alert alert-danger mb-6">
+            <div class="oda-gb-alert oda-gb-alert--bad">
                 <i data-lucide="triangle-alert"></i>
                 <div>
                     <strong>{{ __('public.stf_import_all_failed_title') }}</strong>
                     <p>{{ __('public.stf_import_all_failed_desc') }}</p>
                 </div>
             </div>
-            <div class="row-actions-inline">
-                <a href="{{ route('portals.admin.data_import.mapping', $job->id) }}" class="btn btn-ghost btn-sm">{{ __('public.stf_import_edit_mapping') }}</a>
-                <a href="{{ route('portals.admin.data_import.create') }}" class="btn btn-primary btn-sm">{{ __('public.stf_import_reupload') }}</a>
+            <div class="od-row">
+                <a href="{{ route('portals.admin.data_import.mapping', $job->id) }}" class="od-btn od-btn--ghost od-btn--sm">{{ __('public.stf_import_edit_mapping') }}</a>
+                <a href="{{ route('portals.admin.data_import.create') }}" class="od-btn od-btn--primary od-btn--sm">{{ __('public.stf_import_reupload') }}</a>
             </div>
 
         @else
-            <div class="row-actions-inline">
-                <a href="{{ route('portals.admin.data_import.index') }}" class="btn btn-ghost btn-sm">{{ __('public.stf_import_back_history') }}</a>
+            <div class="od-row">
+                <a href="{{ route('portals.admin.data_import.index') }}" class="od-btn od-btn--ghost od-btn--sm"><i data-lucide="arrow-left"></i> {{ __('public.stf_import_back_history') }}</a>
             </div>
         @endif
     </div>
+</section>
 </div>
-
 @endsection

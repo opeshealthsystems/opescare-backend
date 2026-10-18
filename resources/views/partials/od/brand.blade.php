@@ -1,5 +1,5 @@
 {{-- OPES desk lockup (.od-brand): custom mark + "OPES" + product word + "by OPES
-     Health Systems". $odProduct is 'pharmacy' or 'lab'. No emoji, no Lucide. --}}
+     Health Systems". $odProduct is the area: pharmacy | lab | clinic | admin | patient | pro. No emoji, no Lucide. --}}
 @php $odLoc = app()->getLocale(); @endphp
 <a href="{{ $odHome }}" class="od-brand" aria-label="{{ __('od.brand_home', [], $odLoc) }}">
     <svg class="od-brand__mark" viewBox="0 0 64 64" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
@@ -8,7 +8,44 @@
             <path d="M49 13.5A26 26 0 0 1 53 17.5" stroke-width="3.5"/>
             <circle cx="57.2" cy="28" r="2.2" fill="currentColor" stroke="none"/>
         </g>
-        @if($odProduct === 'lab')
+        @if($odProduct === 'clinic')
+            {{-- care: medical cross --}}
+            <g stroke="#FFFFFF" stroke-width="2.6">
+                <path d="M27 17h10v10h10v10H37v10H27V37H17V27h10z"/>
+            </g>
+            <g stroke="#4FA3FF" stroke-width="2.4">
+                <path d="M28 32h3l2-4 2.5 8 1.5-4h3"/>
+            </g>
+        @elseif($odProduct === 'admin')
+            {{-- admin: shield with check --}}
+            <g stroke="#FFFFFF" stroke-width="2.6">
+                <path d="M32 14l14 5v11c0 9.5-6 16-14 20-8-4-14-10.5-14-20V19z"/>
+            </g>
+            <g stroke="#4FA3FF" stroke-width="2.6">
+                <path d="M25.5 32l4.5 4.5 8.5-9"/>
+            </g>
+        @elseif($odProduct === 'patient')
+            {{-- health: ID card --}}
+            <g stroke="#FFFFFF" stroke-width="2.6">
+                <rect x="15" y="20" width="34" height="24" rx="4"/>
+                <circle cx="25" cy="30" r="3.6"/>
+                <path d="M19.5 39.5c1-3 3-4.5 5.5-4.5s4.5 1.5 5.5 4.5"/>
+            </g>
+            <g stroke="#4FA3FF" stroke-width="2.4">
+                <path d="M35 28h9"/>
+                <path d="M35 33h9"/>
+                <path d="M35 38h5"/>
+            </g>
+        @elseif($odProduct === 'pro')
+            {{-- pro: stethoscope --}}
+            <g stroke="#FFFFFF" stroke-width="2.6">
+                <path d="M21 15h-2v10a8 8 0 0 0 16 0V15h-2"/>
+                <path d="M27 33v4a9 9 0 0 0 18 0v-5"/>
+            </g>
+            <g stroke="#4FA3FF" stroke-width="2.4">
+                <circle cx="45" cy="28.5" r="3.5"/>
+            </g>
+        @elseif($odProduct === 'lab')
             <g stroke="#FFFFFF" stroke-width="2.6">
                 <path d="M19 48h22"/>
                 <path d="M24 43.5h10"/>
@@ -39,7 +76,14 @@
     </svg>
     <span class="od-brand__text">
         <span class="od-brand__opes">{{ __('od.brand_opes', [], $odLoc) }}</span>
-        <span class="od-brand__product">{{ $odProduct === 'lab' ? __('od.brand_lab', [], $odLoc) : __('od.brand_pharmacy', [], $odLoc) }}</span>
+        <span class="od-brand__product">{{ match ($odProduct) {
+            'lab'     => __('od.brand_lab', [], $odLoc),
+            'clinic'  => __('od.brand_care', [], $odLoc),
+            'admin'   => __('od.brand_admin', [], $odLoc),
+            'patient' => __('od.brand_health', [], $odLoc),
+            'pro'     => __('od.brand_pro', [], $odLoc),
+            default   => __('od.brand_pharmacy', [], $odLoc),
+        } }}</span>
         <span class="od-brand__by">{{ __('od.brand_by', [], $odLoc) }}</span>
     </span>
 </a>

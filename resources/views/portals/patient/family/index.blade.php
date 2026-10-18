@@ -7,6 +7,7 @@
 
 @section('head')
     @include('portals.patient._finder_head')
+    <link rel="stylesheet" href="{{ asset('css/od-patient.css') }}?v={{ @filemtime(public_path('css/od-patient.css')) ?: '1' }}">
 @endsection
 
 @section('patient_banner')
@@ -52,22 +53,22 @@
 
     @if(isset($incomingInvites) && $incomingInvites->isNotEmpty())
     <div data-section="incoming-invitations" class="pf-section">
-        <h2 class="pf-card-head" style="margin-bottom:10px;">
+        <h2 class="pf-card-head ods-a7409f7">
             @include('partials.finder.icon', ['name' => 'bell', 'size' => 18])
             {{ __('family.inv_section_title') }}
-            <a href="{{ route('portals.patient.family.invitations') }}" class="f-btn f-btn--ghost" style="margin-left:auto;min-height:36px;padding:4px 12px;">{{ __('family.inv_view_all') }}</a>
+            <a href="{{ route('portals.patient.family.invitations') }}" class="f-btn f-btn--ghost ods-023e71f">{{ __('family.inv_view_all') }}</a>
         </h2>
         <div class="pf-stack">
             @foreach($incomingInvites as $inv)
             @php $who = $inv->guardianUser?->name ?? $inv->guardianUser?->email ?? (__('public.portal.unknown_guardian', [], $l)); @endphp
             <div class="f-card" data-invitation="{{ $inv->id }}">
-                <p style="margin:0 0 10px;">{{ __('family.inv_from', ['name' => $who, 'relationship' => mb_strtolower($relLabel($inv->relationship)), 'access' => mb_strtolower($inv->access_level === 'full' ? __('family.access.full') : __('family.access.read_only'))]) }}</p>
+                <p class="ods-0998cfa">{{ __('family.inv_from', ['name' => $who, 'relationship' => mb_strtolower($relLabel($inv->relationship)), 'access' => mb_strtolower($inv->access_level === 'full' ? __('family.access.full') : __('family.access.read_only'))]) }}</p>
                 <div class="pf-actions">
-                    <form method="POST" action="{{ route('portals.patient.family.invitations.accept', $inv->id) }}" style="margin:0;">
+                    <form class="ods-1386d50" method="POST" action="{{ route('portals.patient.family.invitations.accept', $inv->id) }}">
                         @csrf
                         <button type="submit" class="f-btn f-btn--primary">{{ __('family.inv_accept') }}</button>
                     </form>
-                    <form method="POST" action="{{ route('portals.patient.family.invitations.decline', $inv->id) }}" style="margin:0;">
+                    <form class="ods-1386d50" method="POST" action="{{ route('portals.patient.family.invitations.decline', $inv->id) }}">
                         @csrf
                         <button type="submit" class="f-btn pf-btn--danger-ghost">{{ __('family.inv_decline') }}</button>
                     </form>
@@ -79,12 +80,12 @@
     @endif
 
     @if($links->isEmpty())
-    <div class="f-card" style="text-align:center;padding:40px 20px;">
-        <div class="pf-qa__icon" style="margin:0 auto 12px;width:48px;height:48px;">
+    <div class="f-card ods-99e8a36">
+        <div class="pf-qa__icon ods-4ef0061">
             @include('partials.finder.icon', ['name' => 'users', 'size' => 24])
         </div>
-        <h2 style="font-size:1.125rem;font-weight:750;margin:0 0 6px;">{{ __('public.portal.no_family_title', [], $l) }}</h2>
-        <p class="f-muted" style="margin:0;">{{ __('public.portal.no_family_desc', [], $l) }}</p>
+        <h2 class="ods-40b57ba">{{ __('public.portal.no_family_title', [], $l) }}</h2>
+        <p class="f-muted ods-1386d50">{{ __('public.portal.no_family_desc', [], $l) }}</p>
     </div>
     @else
     <div class="pf-stack">
@@ -97,15 +98,15 @@
             $readOnly = \App\Http\Middleware\GuardianAccessMiddleware::isReadOnly($link);
         @endphp
         <div class="f-card" data-link="{{ $link->id }}">
-            <div style="display:flex;align-items:center;gap:12px;">
+            <div class="ods-9f0e4db">
                 <div class="pf-avatar">{{ strtoupper(substr($dep?->first_name ?? 'D', 0, 1)) }}</div>
-                <div style="flex:1;min-width:0;">
-                    <div style="font-weight:750;color:var(--f-ink);">
+                <div class="ods-89bd09b">
+                    <div class="ods-8b99e49">
                         {{ $dep ? ($link->status === 'active' ? trim(($dep->first_name ?? '') . ' ' . ($dep->last_name ?? '')) : trim(($dep->first_name ?? '') . ' ' . mb_substr((string) ($dep->last_name ?? ''), 0, 1) . '.')) : (__('public.portal.unknown_patient', [], $l)) }}
-                        @if($dep && $viewingId === $dep->id)<span class="f-badge f-badge--good" style="margin-left:6px;">{{ __('family.dash_currently_viewing') }}</span>@endif
+                        @if($dep && $viewingId === $dep->id)<span class="f-badge f-badge--good ods-da47284">{{ __('family.dash_currently_viewing') }}</span>@endif
                     </div>
                     @if($dep && $link->status === 'active')
-                    <div class="f-small f-muted" style="font-family:ui-monospace,Menlo,Consolas,monospace;">{{ $dep->health_id }}</div>
+                    <div class="f-small f-muted ods-9709411">{{ $dep->health_id }}</div>
                     @endif
                 </div>
                 @if($link->status === 'pending_invite')
@@ -114,23 +115,23 @@
                 <span class="f-badge f-badge--good">{{ __('public.portal.lbl_active', [], $l) }}</span>
                 @endif
             </div>
-            <p class="f-small f-muted" style="margin:10px 0 0;">
+            <p class="f-small f-muted ods-446a577">
                 {{ $relLabel($link->relationship) }} &middot;
                 {{ $readOnly ? __('family.access.read_only') : __('family.access.full') }}
                 @if($link->status === 'pending_invite') &middot; {{ __('family.dash_pending_invite') }} @endif
             </p>
             @if(!$dep)
-            <div class="pf-alert pf-alert--warn" style="margin:10px 0 0;">
+            <div class="pf-alert pf-alert--warn ods-446a577">
                 @include('partials.finder.icon', ['name' => 'alert-circle', 'size' => 18])
                 <p class="f-small">{{ __('family.dash_hidden_dependent') }}</p>
             </div>
             @elseif($link->age_transition_expires_at)
-            <div class="pf-alert pf-alert--warn" style="margin:10px 0 0;">
+            <div class="pf-alert pf-alert--warn ods-446a577">
                 @include('partials.finder.icon', ['name' => 'alert-circle', 'size' => 18])
                 <p class="f-small">{{ __('family.age_grace', ['name' => $dep->first_name, 'date' => $link->age_transition_expires_at->translatedFormat('d M Y')]) }}</p>
             </div>
             @elseif($soon && $link->status === 'active')
-            <div class="pf-alert" style="margin:10px 0 0;" data-age-transition>
+            <div class="pf-alert ods-446a577" data-age-transition>
                 @include('partials.finder.icon', ['name' => 'info', 'size' => 18])
                 <p class="f-small">{{ __('family.age_turns_majority', ['name' => $dep->first_name, 'age' => $majorityAge, 'date' => $turns->translatedFormat('d M Y'), 'grace' => $graceDays]) }}</p>
             </div>
@@ -152,15 +153,15 @@
     @endif
 
     @if($incomingConsent->isNotEmpty())
-    <div data-section="guardian-consent" class="pf-section" style="margin-top:24px;">
-        <h2 class="pf-card-head" style="margin-bottom:10px;">
+    <div data-section="guardian-consent" class="pf-section ods-062d4a8">
+        <h2 class="pf-card-head ods-a7409f7">
             @include('partials.finder.icon', ['name' => 'shield-check', 'size' => 18])
             {{ __('public.portal.guardian_section_title', [], $l) }}
         </h2>
         <div class="pf-stack">
             @foreach($incomingConsent as $cl)
             <div class="f-card">
-                <p style="margin:0 0 12px;">
+                <p class="ods-c9d4377">
                     <strong>{{ $cl->guardianUser?->name ?? $cl->guardianUser?->email ?? (__('public.portal.unknown_guardian', [], $l)) }}</strong>
                     {{ __('public.portal.guardian_access_desc', [], $l) }}
                     <strong>{{ $cl->age_transition_expires_at->translatedFormat('d M Y') }}</strong>

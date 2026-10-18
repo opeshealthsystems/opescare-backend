@@ -11,31 +11,30 @@
 
     $selfReported — a collection of PatientRecordedVital.
 --}}
-<div class="panel mb-4">
-    <div class="panel-header">
-        <h2 class="panel-title">
-            <i data-lucide="smartphone"></i>
+<div class="od-card">
+    <div class="od-card__head">
+        <h2 class="od-card__title">
             {{ __('triage.self_reported_title') }}
         </h2>
-        <span class="badge badge-neutral">{{ __('triage.self_reported_badge') }}</span>
+        <span class="od-pill od-pill--neutral">{{ __('triage.self_reported_badge') }}</span>
     </div>
-    <div class="panel-body">
-        <p class="form-hint mb-4">{{ __('triage.self_reported_note') }}</p>
+    <div class="od-card__body">
+        <p class="odc-hint">{{ __('triage.self_reported_note') }}</p>
 
         @if($selfReported->isEmpty())
-            <p class="td-muted">{{ __('triage.self_reported_empty') }}</p>
+            <p class="od-muted">{{ __('triage.self_reported_empty') }}</p>
         @else
-            <div class="table-wrapper">
-                <table class="data-table">
+            <div class="od-table-wrap">
+                <table class="od-table">
                     <tbody>
                     @foreach($selfReported as $reading)
                         <tr>
-                            <td class="td-strong">@enum($reading->measure?->value ?? '—')</td>
+                            <td class="odc-strong">@enum($reading->measure?->value ?? '—')</td>
                             <td>
                                 {{ $reading->value_primary }}@if($reading->value_secondary !== null)/{{ $reading->value_secondary }}@endif
-                                <span class="td-muted">{{ $reading->unit }}</span>
+                                <span class="od-muted">{{ $reading->unit }}</span>
                             </td>
-                            <td class="td-muted">
+                            <td class="od-muted">
                                 {{ __('triage.measured_at') }}: {{ $reading->measured_at?->translatedFormat('d M Y H:i') ?? '—' }}
                             </td>
                         </tr>

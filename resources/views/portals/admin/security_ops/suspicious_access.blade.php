@@ -6,40 +6,51 @@
 @section('breadcrumb_home', __('security_ops.breadcrumb_home'))
 @section('breadcrumb_home_url', route('portals.admin'))
 @section('breadcrumb_section', __('security_ops.sa_title'))
+@section('head')<link rel="stylesheet" href="{{ asset('css/od-admin.css') }}?v={{ @filemtime(public_path('css/od-admin.css')) ?: '1' }}">@endsection
+
+@php $tones = ['blue', 'amber', 'teal', 'rose', 'sky', 'green']; @endphp
 
 @section('content')
-<div class="page-head">
-    <h2>{{ __('security_ops.sa_title') }}</h2>
-    <div class="page-head__spacer"></div>
-    <form method="POST" action="{{ route('portals.admin.security.suspicious_access.scan') }}" class="inline-form">
-        @csrf
-        <button type="submit" class="btn btn-primary btn-sm"><i data-lucide="radar"></i> {{ __('security_ops.sa_btn_scan') }}</button>
-    </form>
+<div class="od-page od-stack">
+<div class="od-page__head">
+    <div>
+        <h1 class="od-page__title">{{ __('security_ops.sa_title') }}</h1>
+        <p class="od-page__sub">{{ __('security_ops.sa_subtitle', ['threshold' => $threshold, 'minutes' => $window]) }}</p>
+    </div>
+    <div class="od-row">
+        <form method="POST" action="{{ route('portals.admin.security.suspicious_access.scan') }}" class="oda-inline-form">
+            @csrf
+            <button type="submit" class="od-btn od-btn--primary"><i data-lucide="radar"></i> {{ __('security_ops.sa_btn_scan') }}</button>
+        </form>
+    </div>
 </div>
-<p class="page-subtitle mb-6">{{ __('security_ops.sa_subtitle', ['threshold' => $threshold, 'minutes' => $window]) }}</p>
 
-@if(session('success'))<div class="alert alert-success mb-6"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
+@if(session('success'))<div class="oda-ga-alert oda-ga-alert--ok"><i data-lucide="check-circle"></i><div class="oda-ga-alert__body">{{ session('success') }}</div></div>@endif
 
-<form method="GET" action="{{ route('portals.admin.security.suspicious_access') }}" class="filter-bar">
-    <select name="status" class="filter-select" aria-label="{{ __('security_ops.sa_col_status') }}">
-        <option value="">{{ __('security_ops.sa_filter_all') }}</option>
-        @foreach(['open', 'reviewed', 'dismissed', 'escalated'] as $s)
-            <option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>{{ __('security_ops.sa_status_'.$s) }}</option>
-        @endforeach
-    </select>
-    <button type="submit" class="btn btn-primary btn-sm"><i data-lucide="filter"></i> {{ __('security_ops.btn_filter') }}</button>
-</form>
-
-<div class="panel">
-    <div class="panel-body panel-body--flush">
+<section class="od-card">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('security_ops.sa_title') }} <span class="od-card__count">({{ $flags->total() }})</span></h2>
+    </div>
+    <div class="od-card__body">
+    <form method="GET" action="{{ route('portals.admin.security.suspicious_access') }}" class="oda-toolbar">
+        <select name="status" class="od-select" aria-label="{{ __('security_ops.sa_col_status') }}">
+            <option value="">{{ __('security_ops.sa_filter_all') }}</option>
+            @foreach(['open', 'reviewed', 'dismissed', 'escalated'] as $s)
+                <option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>{{ __('security_ops.sa_status_'.$s) }}</option>
+            @endforeach
+        </select>
+        <button type="submit" class="od-btn od-btn--primary od-btn--sm"><i data-lucide="filter"></i> {{ __('security_ops.btn_filter') }}</button>
+    </form>
+    </div>
+    <div class="od-card__body od-card__body--flush">
         @if($flags->isEmpty())
-            <div class="empty-state">
-                <div class="empty-state-icon"><i data-lucide="shield-check"></i></div>
-                <h3>{{ __('security_ops.sa_empty') }}</h3>
+            <div class="od-empty">
+                <span class="od-empty__icon"><i data-lucide="shield-check"></i></span>
+                <h3 class="od-empty__title">{{ __('security_ops.sa_empty') }}</h3>
             </div>
         @else
-        <div class="table-wrapper">
-            <table class="data-table">
+        <div class="od-table-wrap">
+            <table class="od-table">
                 <thead><tr>
                     <th>{{ __('security_ops.sa_col_user') }}</th>
                     <th>{{ __('security_ops.sa_col_type') }}</th>
@@ -50,34 +61,43 @@
                 </tr></thead>
                 <tbody>
                 @foreach($flags as $flag)
+                    @php
+                        $who = $users[$flag->user_id]->email ?? substr($flag->user_id, 0, 12).'…';
+                        $stPill = match($flag->status) { 'open' => 'od-pill--urgent', 'escalated' => 'od-pill--pending', 'reviewed' => 'od-pill--ready', default => 'od-pill--neutral' };
+                    @endphp
                     <tr data-flag="{{ $flag->id }}">
-                        <td data-label="{{ __('security_ops.sa_col_user') }}" class="td-strong">{{ $users[$flag->user_id]->email ?? substr($flag->user_id, 0, 12).'…' }}</td>
+                        <td data-label="{{ __('security_ops.sa_col_user') }}">
+                            <div class="od-table__person">
+                                <span class="od-avatar od-avatar--sm od-tint--{{ $tones[crc32((string) $flag->user_id) % 6] }}">{{ strtoupper(mb_substr($who, 0, 2)) }}</span>
+                                <span class="od-table__name">{{ $who }}</span>
+                            </div>
+                        </td>
                         <td data-label="{{ __('security_ops.sa_col_type') }}">{{ __('security_ops.sa_type_'.$flag->flag_type) }}</td>
-                        <td data-label="{{ __('security_ops.sa_col_severity') }}"><span class="badge {{ in_array($flag->severity, ['critical', 'high']) ? 'badge-danger' : 'badge-warning' }} badge-sm">@enum($flag->severity, 'severity')</span></td>
-                        <td data-label="{{ __('security_ops.sa_col_evidence') }}" class="td-muted">
+                        <td data-label="{{ __('security_ops.sa_col_severity') }}"><span class="od-pill {{ in_array($flag->severity, ['critical', 'high']) ? 'od-pill--urgent' : 'od-pill--pending' }}">@enum($flag->severity, 'severity')</span></td>
+                        <td data-label="{{ __('security_ops.sa_col_evidence') }}">
                             @if(isset($flag->evidence['record_count']))
                                 {{ __('security_ops.sa_evidence_volume', ['count' => $flag->evidence['record_count'], 'minutes' => $flag->evidence['window_minutes'] ?? $window]) }}
                             @else
                                 {{ __('security_ops.sa_evidence_emergency') }}
                             @endif
-                            <div class="code-muted">{{ $flag->created_at?->format('d/m/Y H:i') }}</div>
+                            <span class="od-table__sub">{{ $flag->created_at?->format('d/m/Y H:i') }}</span>
                         </td>
                         <td data-label="{{ __('security_ops.sa_col_status') }}">
-                            {{ __('security_ops.sa_status_'.$flag->status) }}
+                            <span class="od-pill {{ $stPill }}">{{ __('security_ops.sa_status_'.$flag->status) }}</span>
                             @if($flag->reviewed_at)
-                                <div class="code-muted">{{ __('security_ops.sa_reviewed_by', ['who' => $users[$flag->reviewed_by]->email ?? '—', 'when' => $flag->reviewed_at->format('d/m/Y H:i')]) }}</div>
-                                @if($flag->review_notes)<div class="td-muted">{{ \Illuminate\Support\Str::limit($flag->review_notes, 80) }}</div>@endif
+                                <span class="od-table__sub">{{ __('security_ops.sa_reviewed_by', ['who' => $users[$flag->reviewed_by]->email ?? '—', 'when' => $flag->reviewed_at->format('d/m/Y H:i')]) }}</span>
+                                @if($flag->review_notes)<span class="od-table__sub">{{ \Illuminate\Support\Str::limit($flag->review_notes, 80) }}</span>@endif
                             @endif
                         </td>
                         <td data-label="{{ __('security_ops.sa_col_actions') }}">
                             @if($flag->isOpen())
-                            <form method="POST" action="{{ route('portals.admin.security.suspicious_access.review', $flag->id) }}" class="inline-form">
+                            <form method="POST" action="{{ route('portals.admin.security.suspicious_access.review', $flag->id) }}" class="oda-ga-rowform">
                                 @csrf
-                                <select name="decision" class="filter-select" aria-label="{{ __('security_ops.sa_col_status') }}">
+                                <select name="decision" class="od-select" aria-label="{{ __('security_ops.sa_col_status') }}">
                                     @foreach($decisions as $d)<option value="{{ $d }}">{{ __('security_ops.sa_status_'.$d) }}</option>@endforeach
                                 </select>
-                                <input type="text" name="notes" required class="form-control" placeholder="{{ __('security_ops.sa_ph_notes') }}" aria-label="{{ __('security_ops.sa_ph_notes') }}">
-                                <button type="submit" class="btn btn-secondary btn-sm">{{ __('security_ops.sa_btn_review') }}</button>
+                                <input type="text" name="notes" required class="od-input" placeholder="{{ __('security_ops.sa_ph_notes') }}" aria-label="{{ __('security_ops.sa_ph_notes') }}">
+                                <button type="submit" class="od-btn od-btn--row od-btn--sm">{{ __('security_ops.sa_btn_review') }}</button>
                             </form>
                             @endif
                         </td>
@@ -88,6 +108,7 @@
         </div>
         @endif
     </div>
+    @if($flags->hasPages())<div class="od-card__foot">{{ $flags->links() }}</div>@endif
+</section>
 </div>
-<div class="mt-4">{{ $flags->links() }}</div>
 @endsection

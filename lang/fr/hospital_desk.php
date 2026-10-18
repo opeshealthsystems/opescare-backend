@@ -67,4 +67,39 @@ return [
 
     // ── Liste d\'attente ──
     'waitlist_showing'            => 'Affichage de :from–:to sur :total',
+
+    // ── Tableau de bord établissement (/facility) ──
+    'dash_welcome' => 'Bon retour',
+    'dash_kpi_queue' => 'File d\'attente',
+    'dash_kpi_queue_urgent' => ':count urgent(s) en attente',
+    'dash_kpi_rx' => 'Ordonnances du jour',
+    'dash_kpi_rx_sub' => 'Émises dans cet établissement aujourd\'hui',
+    'dash_quick' => 'Actions rapides',
+    'dash_qa_book' => 'Prendre rendez-vous',
+    'dash_qa_checkin' => 'Enregistrer un patient',
+    'dash_qa_triage' => 'Triage',
+    'dash_qa_rx' => 'Nouvelle ordonnance',
+    'dash_qa_referral' => 'Nouvelle référence',
+    'dash_qa_search' => 'Rechercher un patient',
+    'dash_queue_title' => 'File d\'attente du jour',
+    'dash_queue_empty' => 'Personne en attente',
+    'dash_col_arrived' => 'Arrivée',
+    'dash_col_priority' => 'Priorité',
+    'dash_col_status' => 'Statut',
+    'dash_col_action' => 'Action',
+    'dash_open' => 'Ouvrir',
+    'dash_alerts' => 'Alertes',
+    'dash_alert_urgent' => 'Patients urgents en attente',
+    'dash_alert_urgent_sub' => 'Priorité urgence ou très urgente, pas encore vus',
+    'dash_appts_title' => 'Rendez-vous du jour',
+    'dash_appts_empty' => 'Aucun rendez-vous aujourd\'hui',
+    'dash_appts_empty_text' => 'Aucun rendez-vous n\'est prévu dans cet établissement aujourd\'hui.',
+
+    // ── Refonte des postes clinique (2026-10-18) ──
+    'b_action_edit' => 'Modifier',
+    'c_count_paren' => '(:count)',
+    'd_ref_sec_patient' => 'Patient et urgence',
+    'd_ref_sec_destination' => 'Destination du patient',
+    'd_ref_sec_clinical' => 'Transmission clinique',
+    'd_imm_doses' => '{0} Aucune dose enregistrée|{1} :count dose enregistrée|[2,*] :count doses enregistrées',
 ];

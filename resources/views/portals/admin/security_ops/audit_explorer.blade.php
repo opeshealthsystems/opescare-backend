@@ -4,78 +4,81 @@
 @section('breadcrumb_home', __('security_ops.breadcrumb_home'))
 @section('breadcrumb_home_url', route('portals.admin'))
 @section('breadcrumb_section', __('security_ops.audit_title'))
+@section('head')<link rel="stylesheet" href="{{ asset('css/od-admin.css') }}?v={{ @filemtime(public_path('css/od-admin.css')) ?: '1' }}">@endsection
 
 @section('content')
-<div class="page-head">
-    <h2>{{ __('security_ops.audit_title') }}</h2>
+<div class="od-page od-stack">
+<div class="od-page__head">
+    <div>
+        <h1 class="od-page__title">{{ __('security_ops.audit_title') }}</h1>
+        <p class="od-page__sub">{{ __('security_ops.audit_subtitle') }}</p>
+    </div>
 </div>
-<p class="page-subtitle mb-6">{{ __('security_ops.audit_subtitle') }}</p>
 
 {{-- Filters. The actor field takes an exact ID: this is a trail explorer, not
      a directory, and there is no name or patient lookup here by design. --}}
-<div class="panel mb-4">
-    <div class="panel-body">
-        <form method="GET" action="{{ route('portals.admin.security.audit_explorer') }}" class="field-grid">
-            <div class="form-group">
-                <label class="form-label" for="f-action">{{ __('security_ops.audit_filter_action_type') }}</label>
-                <select id="f-action" name="action_type" class="form-control">
+<section class="od-card">
+    <div class="od-card__body">
+        <form method="GET" action="{{ route('portals.admin.security.audit_explorer') }}" class="oda-form oda-form--3">
+            <label class="oda-label" for="f-action">
+                <span class="oda-label__text">{{ __('security_ops.audit_filter_action_type') }}</span>
+                <select id="f-action" name="action_type" class="od-select">
                     <option value="">{{ __('security_ops.audit_filter_all_actions') }}</option>
                     @foreach($actionTypes as $at)
                         <option value="{{ $at }}" {{ request('action_type') === $at ? 'selected' : '' }}>{{ $at }}</option>
                     @endforeach
                 </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="f-resource">{{ __('security_ops.audit_filter_resource_type') }}</label>
-                <select id="f-resource" name="resource_type" class="form-control">
+            </label>
+            <label class="oda-label" for="f-resource">
+                <span class="oda-label__text">{{ __('security_ops.audit_filter_resource_type') }}</span>
+                <select id="f-resource" name="resource_type" class="od-select">
                     <option value="">{{ __('security_ops.audit_filter_all_resources') }}</option>
                     @foreach($resourceTypes as $rt)
                         <option value="{{ $rt }}" {{ request('resource_type') === $rt ? 'selected' : '' }}>{{ $rt }}</option>
                     @endforeach
                 </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="f-actor">{{ __('security_ops.audit_filter_actor_id') }}</label>
-                <input id="f-actor" type="text" name="actor_id" value="{{ request('actor_id') }}" class="form-control"
+            </label>
+            <label class="oda-label" for="f-actor">
+                <span class="oda-label__text">{{ __('security_ops.audit_filter_actor_id') }}</span>
+                <input id="f-actor" type="text" name="actor_id" value="{{ request('actor_id') }}" class="od-input oda-mono"
                        placeholder="{{ __('security_ops.audit_filter_actor_placeholder') }}">
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="f-from">{{ __('security_ops.audit_filter_date_from') }}</label>
-                <input id="f-from" type="date" name="date_from" value="{{ request('date_from') }}" class="form-control">
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="f-to">{{ __('security_ops.audit_filter_date_to') }}</label>
-                <input id="f-to" type="date" name="date_to" value="{{ request('date_to') }}" class="form-control">
-            </div>
-            <div class="form-group">
-                <label class="form-label">{{ __('security_ops.audit_filter_emergency_label') }}</label>
-                <label class="form-check">
+            </label>
+            <label class="oda-label" for="f-from">
+                <span class="oda-label__text">{{ __('security_ops.audit_filter_date_from') }}</span>
+                <input id="f-from" type="date" name="date_from" value="{{ request('date_from') }}" class="od-input">
+            </label>
+            <label class="oda-label" for="f-to">
+                <span class="oda-label__text">{{ __('security_ops.audit_filter_date_to') }}</span>
+                <input id="f-to" type="date" name="date_to" value="{{ request('date_to') }}" class="od-input">
+            </label>
+            <div class="oda-label">
+                <span class="oda-label__text">{{ __('security_ops.audit_filter_emergency_label') }}</span>
+                <label class="oda-check">
                     <input type="checkbox" name="emergency_only" value="1" {{ request('emergency_only') ? 'checked' : '' }}>
                     {{ __('security_ops.audit_filter_emergency_only') }}
                 </label>
             </div>
-            <div class="form-group">
-                <button type="submit" class="btn btn-primary btn-sm"><i data-lucide="search"></i> {{ __('security_ops.btn_search') }}</button>
-                <a href="{{ route('portals.admin.security.audit_explorer') }}" class="btn btn-ghost btn-sm">{{ __('security_ops.btn_clear') }}</a>
+            <div class="oda-form__actions">
+                <a href="{{ route('portals.admin.security.audit_explorer') }}" class="od-btn od-btn--ghost">{{ __('security_ops.btn_clear') }}</a>
+                <button type="submit" class="od-btn od-btn--primary"><i data-lucide="search"></i> {{ __('security_ops.btn_search') }}</button>
             </div>
         </form>
     </div>
-</div>
+</section>
 
-<div class="panel">
-    <div class="panel-header">
-        <h3 class="panel-title"><i data-lucide="search-code"></i> {{ __('security_ops.audit_events_title') }}</h3>
-        <span class="badge badge-neutral badge-sm">{{ $events->total() }} {{ __('security_ops.audit_total_suffix') }}</span>
+<section class="od-card">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('security_ops.audit_events_title') }} <span class="od-card__count">({{ $events->total() }} {{ __('security_ops.audit_total_suffix') }})</span></h2>
     </div>
-    <div class="panel-body panel-body--flush">
+    <div class="od-card__body od-card__body--flush">
         @if($events->isEmpty())
-            <div class="empty-state">
-                <div class="empty-state-icon"><i data-lucide="search-x"></i></div>
-                <h3>{{ __('security_ops.audit_empty') }}</h3>
+            <div class="od-empty">
+                <span class="od-empty__icon"><i data-lucide="search-x"></i></span>
+                <h3 class="od-empty__title">{{ __('security_ops.audit_empty') }}</h3>
             </div>
         @else
-        <div class="table-wrapper">
-            <table class="data-table">
+        <div class="od-table-wrap">
+            <table class="od-table">
                 <thead><tr>
                     <th>{{ __('security_ops.audit_col_action') }}</th>
                     <th>{{ __('security_ops.audit_col_resource') }}</th>
@@ -84,47 +87,47 @@
                     <th>{{ __('security_ops.audit_col_ip') }}</th>
                     <th>{{ __('security_ops.audit_col_authority') }}</th>
                     <th>{{ __('security_ops.audit_col_when') }}</th>
-                    <th></th>
+                    <th class="od-table__actions"></th>
                 </tr></thead>
                 <tbody>
                     @foreach($events as $ev)
                     <tr>
-                        <td data-label="{{ __('security_ops.audit_col_action') }}" class="td-strong">{{ $ev->action_type }}</td>
+                        <td data-label="{{ __('security_ops.audit_col_action') }}"><span class="od-table__name oda-mono">{{ $ev->action_type }}</span></td>
                         <td data-label="{{ __('security_ops.audit_col_resource') }}">
                             @if($ev->resource_type)
-                                <span class="badge badge-neutral badge-sm">{{ $ev->resource_type }}</span>
+                                <span class="od-pill od-pill--neutral">{{ $ev->resource_type }}</span>
                                 @if($ev->resource_id)
-                                    <span class="code-muted">{{ substr($ev->resource_id, 0, 8) }}…</span>
+                                    <span class="od-table__sub oda-mono">{{ substr($ev->resource_id, 0, 8) }}…</span>
                                 @endif
                             @else
-                                <span class="td-muted">—</span>
+                                <span class="oda-ga-muted">—</span>
                             @endif
                         </td>
-                        <td data-label="{{ __('security_ops.audit_col_actor') }}" class="td-muted">
-                            <span class="code-muted">{{ $ev->actor_id ? substr($ev->actor_id, 0, 8).'…' : '—' }}</span>
+                        <td data-label="{{ __('security_ops.audit_col_actor') }}">
+                            <span class="oda-mono">{{ $ev->actor_id ? substr($ev->actor_id, 0, 8).'…' : '—' }}</span>
                             @if($ev->actor_role)
-                                <div class="code-muted">{{ $ev->actor_role }}</div>
+                                <span class="od-table__sub">{{ $ev->actor_role }}</span>
                             @endif
                         </td>
                         {{-- Masked: this desk never renders a patient name, and an
                              audit row is not a reason to resolve one. --}}
-                        <td data-label="{{ __('security_ops.audit_col_patient') }}" class="td-muted">
-                            <span class="code-muted">{{ $ev->patient_id ? substr($ev->patient_id, 0, 8).'…' : '—' }}</span>
+                        <td data-label="{{ __('security_ops.audit_col_patient') }}" class="oda-ga-muted">
+                            <span class="oda-mono">{{ $ev->patient_id ? substr($ev->patient_id, 0, 8).'…' : '—' }}</span>
                         </td>
-                        <td data-label="{{ __('security_ops.audit_col_ip') }}" class="td-muted">{{ $ev->ip_address ?? '—' }}</td>
+                        <td data-label="{{ __('security_ops.audit_col_ip') }}" class="oda-ga-muted">{{ $ev->ip_address ?? '—' }}</td>
                         <td data-label="{{ __('security_ops.audit_col_authority') }}">
                             @if($ev->emergency_override)
-                                <span class="badge badge-danger badge-sm">{{ __('security_ops.audit_badge_emergency') }}</span>
+                                <span class="od-pill od-pill--urgent">{{ __('security_ops.audit_badge_emergency') }}</span>
                             @else
-                                <span class="badge badge-neutral badge-sm">{{ __('security_ops.audit_badge_consented') }}</span>
+                                <span class="od-pill od-pill--neutral">{{ __('security_ops.audit_badge_consented') }}</span>
                             @endif
                         </td>
-                        <td data-label="{{ __('security_ops.audit_col_when') }}" class="td-muted">
+                        <td data-label="{{ __('security_ops.audit_col_when') }}" class="oda-ga-muted">
                             {{ $ev->created_at?->translatedFormat('M d, Y H:i') }}
                         </td>
-                        <td class="row-actions">
+                        <td class="od-table__actions">
                             @if($ev->before_state || $ev->after_state || $ev->reason)
-                                <button type="button" class="icon-btn" aria-label="{{ __('security_ops.audit_view_details') }}"
+                                <button type="button" class="od-btn od-btn--ghost od-btn--icon od-btn--sm" aria-label="{{ __('security_ops.audit_view_details') }}"
                                     data-call="showDetail" data-args="{{ json_encode([$ev->before_state, $ev->after_state, $ev->action_type, $ev->reason ?? '']) }}">
                                     <i data-lucide="eye"></i>
                                 </button>
@@ -135,29 +138,34 @@
                 </tbody>
             </table>
         </div>
-        <div class="panel-footer">
-            {{ $events->links() }}
-        </div>
         @endif
     </div>
+    @unless($events->isEmpty())
+    <div class="od-card__foot">
+        {{ $events->links() }}
+    </div>
+    @endunless
+</section>
 </div>
 
 {{-- Detail modal --}}
 <div id="detail-modal" class="modal-fixed">
-    <div class="modal-fixed__panel">
-        <div class="modal-fixed__head">
-            <h3 id="detail-title" class="modal-fixed__title"></h3>
-            <button type="button" class="icon-btn" aria-label="{{ __('security_ops.btn_close') }}" data-call="closeDetail"><i data-lucide="x"></i></button>
+    <div class="od-card oda-modal oda-ga-modal--wide">
+        <div class="od-card__head">
+            <h3 id="detail-title" class="od-card__title"></h3>
+            <button type="button" class="od-btn od-btn--ghost od-btn--icon od-btn--sm oda-modal__close" aria-label="{{ __('security_ops.btn_close') }}" data-call="closeDetail"><i data-lucide="x"></i></button>
         </div>
-        <div id="detail-reason" class="text-muted text-sm mb-3"></div>
-        <div class="form-row">
-            <div class="form-group">
-                <div class="form-label">{{ __('security_ops.audit_diff_before') }}</div>
-                <pre id="detail-before" class="code-block"></pre>
-            </div>
-            <div class="form-group">
-                <div class="form-label">{{ __('security_ops.audit_diff_after') }}</div>
-                <pre id="detail-after" class="code-block"></pre>
+        <div class="od-card__body od-stack">
+            <p id="detail-reason" class="oda-help"></p>
+            <div class="oda-ga-diff">
+                <div>
+                    <p class="oda-ga-diff__label">{{ __('security_ops.audit_diff_before') }}</p>
+                    <pre id="detail-before" class="oda-pre"></pre>
+                </div>
+                <div>
+                    <p class="oda-ga-diff__label">{{ __('security_ops.audit_diff_after') }}</p>
+                    <pre id="detail-after" class="oda-pre"></pre>
+                </div>
             </div>
         </div>
     </div>

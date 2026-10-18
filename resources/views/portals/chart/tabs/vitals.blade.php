@@ -12,27 +12,27 @@
        VitalProvenance::SelfReported on every row, never interpreted.
 --}}
 @php
-    $flagBadge = fn (string $severity) => 'badge badge-' . match ($severity) {
-        'critical' => 'danger',
-        'warning'  => 'warning',
-        'success'  => 'success',
+    $flagBadge = fn (string $severity) => 'od-pill od-pill--' . match ($severity) {
+        'critical' => 'urgent',
+        'warning'  => 'pending',
+        'success'  => 'ready',
         default    => 'neutral',
     };
     $facilityBadge = \App\Enums\VitalProvenance::FacilityMeasured;
     $selfBadge     = \App\Enums\VitalProvenance::SelfReported;
 @endphp
 
-<div class="panel mb-4">
-    <div class="panel-header">
-        <h2 class="panel-title"><i data-lucide="activity"></i> {{ __('chart.facility_vitals_title') }}</h2>
+<div class="od-card">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('chart.facility_vitals_title') }}</h2>
         @if($bands->eligible)
-            <span class="badge badge-neutral">{{ __('chart.advisory_source') }}</span>
+            <span class="od-pill od-pill--neutral">{{ __('chart.advisory_source') }}</span>
         @endif
     </div>
-    <div class="panel-body">
+    <div class="od-card__body">
 
         @if(! $bands->eligible)
-        <div class="alert alert-warning mb-4" role="alert">
+        <div class="odc-note odc-note--pending" role="alert">
             <i data-lucide="shield-alert"></i>
             <div>
                 <strong>{{ __('chart.no_bands_title') }}</strong>
@@ -40,14 +40,14 @@
             </div>
         </div>
         @else
-            <p class="form-hint mb-4">{{ __('chart.advisory_note') }}</p>
+            <p class="odc-hint">{{ __('chart.advisory_note') }}</p>
         @endif
 
         @if($rows->isEmpty())
-            <p class="td-muted">{{ __('chart.facility_vitals_none') }}</p>
+            <p class="od-muted">{{ __('chart.facility_vitals_none') }}</p>
         @else
-            <div class="table-wrapper">
-                <table class="data-table">
+            <div class="od-table-wrap">
+                <table class="od-table">
                     <thead>
                     <tr>
                         <th>{{ __('chart.col_recorded_at') }}</th>
@@ -69,7 +69,7 @@
                             $flag = fn (string $measure) => $v['flags'][$measure] ?? null;
                             $cell = function (string $measure, $value) use ($flag, $flagBadge) {
                                 if ($value === null) {
-                                    return '<span class="td-muted">—</span>';
+                                    return '<span class="od-muted">—</span>';
                                 }
                                 $out = e($value);
                                 $f   = $flag($measure);
@@ -83,14 +83,14 @@
                                 : ($v['systolic_bp'] ?? null);
                         @endphp
                         <tr>
-                            <td class="td-muted">
+                            <td class="od-muted">
                                 {{ $v['recorded_at']?->translatedFormat('d M Y H:i') ?? '—' }}
                                 @if($v['time_is_entry'])<br><small>{{ __('chart.entered_at_note') }}</small>@endif
                             </td>
                             <td>
-                                <span class="badge badge-success">{{ __($facilityBadge->labelKey()) }}</span>
+                                <span class="od-pill od-pill--ready">{{ __($facilityBadge->labelKey()) }}</span>
                                 @if($bands->eligible && $v['pregnancy'])
-                                    <br><small class="td-muted">{{ __('chart.row_no_bands_pregnancy') }}</small>
+                                    <br><small class="od-muted">{{ __('chart.row_no_bands_pregnancy') }}</small>
                                 @endif
                             </td>
                             <td>{!! $cell('temperature', $v['temperature']) !!}</td>
@@ -111,19 +111,19 @@
     </div>
 </div>
 
-<div class="panel mb-4">
-    <div class="panel-header">
-        <h2 class="panel-title"><i data-lucide="smartphone"></i> {{ __('chart.self_reported_title') }}</h2>
-        <span class="badge badge-warning">{{ __($selfBadge->labelKey()) }}</span>
+<div class="od-card">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('chart.self_reported_title') }}</h2>
+        <span class="od-pill od-pill--pending">{{ __($selfBadge->labelKey()) }}</span>
     </div>
-    <div class="panel-body">
-        <p class="form-hint mb-4">{{ __('chart.self_reported_note') }} {{ __($selfBadge->descriptionKey()) }}</p>
+    <div class="od-card__body">
+        <p class="odc-hint">{{ __('chart.self_reported_note') }} {{ __($selfBadge->descriptionKey()) }}</p>
 
         @if($selfReported->isEmpty())
-            <p class="td-muted">{{ __('chart.self_reported_empty') }}</p>
+            <p class="od-muted">{{ __('chart.self_reported_empty') }}</p>
         @else
-            <div class="table-wrapper">
-                <table class="data-table">
+            <div class="od-table-wrap">
+                <table class="od-table">
                     <thead>
                     <tr>
                         <th>{{ __('chart.measured_at') }}</th>
@@ -135,12 +135,12 @@
                     <tbody>
                     @foreach($selfReported as $reading)
                         <tr>
-                            <td class="td-muted">{{ $reading->measured_at?->translatedFormat('d M Y H:i') ?? '—' }}</td>
-                            <td><span class="badge badge-warning">{{ __($selfBadge->labelKey()) }}</span></td>
-                            <td class="td-strong">{{ $reading->measure ? __($reading->measure->labelKey()) : '—' }}</td>
+                            <td class="od-muted">{{ $reading->measured_at?->translatedFormat('d M Y H:i') ?? '—' }}</td>
+                            <td><span class="od-pill od-pill--pending">{{ __($selfBadge->labelKey()) }}</span></td>
+                            <td class="odc-strong">{{ $reading->measure ? __($reading->measure->labelKey()) : '—' }}</td>
                             <td>
                                 {{ $reading->value_primary }}@if($reading->value_secondary !== null)/{{ $reading->value_secondary }}@endif
-                                <span class="td-muted">{{ $reading->unit }}</span>
+                                <span class="od-muted">{{ $reading->unit }}</span>
                             </td>
                         </tr>
                     @endforeach

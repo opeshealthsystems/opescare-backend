@@ -3,6 +3,10 @@
 @section('title', __('public.terms_page.page_title'))
 @section('description', __('public.terms_page.meta_description'))
 
+@push('head')
+    @include('public.partials._od_pages_css')
+@endpush
+
 @section('content')
 
     {{--
@@ -35,12 +39,12 @@
 
     <header class="content-header">
         <div class="container">
-            <div class="badge" style="background:rgba(15,76,129,.12);color:#0F4C81;margin-bottom:1rem;">{{ __('public.terms_page.badge') }}</div>
+            <div class="badge odp-mb-16">{{ __('public.terms_page.badge') }}</div>
             <h1>{{ __('public.terms_page.hero_title') }}</h1>
-            <p class="text-muted" style="max-width:760px;margin:0 auto;">
+            <p class="text-muted odp-measure">
                 {{ __('public.terms_page.hero_subtitle') }}
             </p>
-            <div style="margin-top:1.5rem;display:flex;justify-content:center;gap:1.5rem;flex-wrap:wrap;font-size:0.875rem;color:var(--color-text-muted);">
+            <div class="odp-links">
                 <span><strong>{{ __('public.terms_page.effective_date') }}</strong> 1 June 2026</span>
                 <span><strong>{{ __('public.terms_page.last_updated') }}</strong> 7 June 2026</span>
                 <span><strong>{{ __('public.terms_page.version') }}</strong> 2.0</span>
@@ -50,10 +54,10 @@
     </header>
 
     {{-- Quick nav --}}
-    <section style="background:var(--f-ground);border-bottom:1px solid #E2E8F0;padding:1.25rem 0;">
+    <section class="odp-band">
         <div class="container">
-            <p style="font-size:0.8125rem;color:var(--color-text-muted);margin:0 0 0.5rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">{{ __('public.terms_page.sections_label') }}</p>
-            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+            <p class="odp-kicker">{{ __('public.terms_page.sections_label') }}</p>
+            <div class="odp-row">
                 @foreach([
                     ['#parties','Parties'],
                     ['#platform','Platform Scope'],
@@ -71,20 +75,20 @@
                     ['#termination','Termination'],
                     ['#contact','Contact'],
                 ] as [$href,$label])
-                <a href="{{ $href }}" style="font-size:0.8125rem;padding:4px 12px;background:#fff;border:1px solid #E2E8F0;border-radius:999px;color:var(--color-primary);text-decoration:none;">{{ $label }}</a>
+                <a class="odp-tag" href="{{ $href }}">{{ $label }}</a>
                 @endforeach
             </div>
         </div>
     </section>
 
     <section class="content-body">
-        <div class="container rich-text" style="max-width:860px;">
+        <div class="container rich-text odp-wide">
 
             {{-- Acceptance banner --}}
-            <div style="background:var(--f-warn-wash);border:1px solid var(--f-warn);border-radius:1rem;padding:1.5rem;margin-bottom:3rem;">
-                <div style="display:flex;gap:1rem;align-items:flex-start;">
-                    <span style="color:var(--f-warn);flex-shrink:0;margin-top:0.15rem;">@include('partials.finder.icon', ['name' => 'alert-triangle', 'size' => 20])</span>
-                    <p style="margin:0;font-size:0.9rem;color:var(--f-warn);line-height:1.65;">
+            <div class="odp-panel odp-panel--warn odp-mb-48">
+                <div class="odp-row odp-row--top">
+                    <span class="odp-icon--warn odp-shrink">@include('partials.finder.icon', ['name' => 'alert-triangle', 'size' => 20])</span>
+                    <p class="odp-m0">
                         <strong>By creating an account, registering a facility, or using any OpesCare service, you confirm that you have read, understood and agree to be bound by these Terms and Conditions in their entirety.</strong> If you do not agree, you must not use the OpesCare platform. Institutions using the platform on behalf of an employer or healthcare organisation confirm that a duly authorised representative has accepted these terms on behalf of that entity.
                     </p>
                 </div>
@@ -119,7 +123,7 @@
             {{-- 3. Regulatory Framework --}}
             <h2 id="regulatory">3. Applicable Regulatory Framework</h2>
             <p>OpesCare operates under and in compliance with the following legal and regulatory instruments:</p>
-            <div style="display:grid;gap:0.875rem;margin:1rem 0;">
+            <div class="odp-stack odp-mt-16 odp-mb-16">
                 @foreach([
                     ['Cameroon Law No. 2010/012 of 21 December 2010','On cybersecurity and cybercriminality — governs personal data protection, electronic evidence, and cybercrime.'],
                     ['Cameroon Law No. 2010/021 of 21 December 2010','On electronic commerce — governs online service provision, electronic contracts, and digital consumer rights.'],
@@ -131,9 +135,9 @@
                     ['African Union Malabo Convention (2014)','African Union Convention on Cyber Security and Personal Data Protection (EX.CL/846(XXV)) — regional data protection framework.'],
                     ['MINSANTE National Digital Health Strategy 2026–2030','Cameroon\'s national roadmap for health digitalization, EHR implementation, interoperability, and telemedicine regulation.'],
                 ] as [$law,$desc])
-                <div style="background:var(--f-ground);border-left:4px solid #0F4C81;border-radius:0 0.75rem 0.75rem 0;padding:1rem 1.25rem;">
-                    <p style="margin:0 0 0.25rem;font-weight:700;font-size:0.9rem;color:var(--f-ink);">{{ $law }}</p>
-                    <p style="margin:0;font-size:0.875rem;color:var(--f-ink-soft);">{{ $desc }}</p>
+                <div class="odp-panel">
+                    <p class="odp-bold">{{ $law }}</p>
+                    <p class="odp-m0 odp-soft">{{ $desc }}</p>
                 </div>
                 @endforeach
             </div>
@@ -298,8 +302,8 @@
 
             {{-- 18. Contact --}}
             <h2 id="contact">18. Contact</h2>
-            <div style="background:var(--f-ground);border:1px solid #E2E8F0;border-radius:0.875rem;padding:1.5rem;margin:1rem 0;">
-                <p style="margin:0;"><strong>Legal Enquiries:</strong> <a href="mailto:legal@opeshealthsystems.com">legal@opeshealthsystems.com</a><br>
+            <div class="odp-panel">
+                <p class="odp-m0"><strong>Legal Enquiries:</strong> <a href="mailto:legal@opeshealthsystems.com">legal@opeshealthsystems.com</a><br>
                 <strong>Data Protection:</strong> <a href="mailto:privacy@opeshealthsystems.com">privacy@opeshealthsystems.com</a><br>
                 <strong>Technical Support:</strong> <a href="mailto:support@opescare.com">support@opescare.com</a><br>
                 <strong>Partnership:</strong> <a href="mailto:partners@opescare.com">partners@opescare.com</a><br>
@@ -307,9 +311,9 @@
             </div>
 
             {{-- Footer --}}
-            <div style="margin-top:4rem;padding:2rem;background:var(--f-ground, var(--f-ground));border:1px solid #E2E8F0;border-radius:1rem;font-size:0.875rem;color:var(--color-text-muted);">
-                <p style="margin:0 0 0.5rem;"><strong>{{ __('public.terms_page.effective_date') }}</strong> 1 June 2026 &nbsp;|&nbsp; <strong>{{ __('public.terms_page.version') }}</strong> 2.0 &nbsp;|&nbsp; <strong>{{ __('public.terms_page.last_updated') }}</strong> 7 June 2026</p>
-                <p style="margin:0;"><strong>{{ __('public.terms_page.governing_law_label') }}</strong> Republic of Cameroon &nbsp;|&nbsp; <strong>{{ __('public.terms_page.jurisdiction') }}</strong> Courts of Yaoundé, Cameroon &nbsp;|&nbsp; <strong>{{ __('public.terms_page.languages') }}</strong> English (French available on request)</p>
+            <div class="odp-foot">
+                <p class="odp-mb-8"><strong>{{ __('public.terms_page.effective_date') }}</strong> 1 June 2026 &nbsp;|&nbsp; <strong>{{ __('public.terms_page.version') }}</strong> 2.0 &nbsp;|&nbsp; <strong>{{ __('public.terms_page.last_updated') }}</strong> 7 June 2026</p>
+                <p class="odp-m0"><strong>{{ __('public.terms_page.governing_law_label') }}</strong> Republic of Cameroon &nbsp;|&nbsp; <strong>{{ __('public.terms_page.jurisdiction') }}</strong> Courts of Yaoundé, Cameroon &nbsp;|&nbsp; <strong>{{ __('public.terms_page.languages') }}</strong> English (French available on request)</p>
             </div>
 
         </div>

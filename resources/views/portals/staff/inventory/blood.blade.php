@@ -9,26 +9,30 @@
 @section('breadcrumb_section', __('staff_inv.breadcrumb_blood', [], app()->getLocale()))
 
 @section('head')
-@include('portals.pharmacy._supply_styles')
+<link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">
 @endsection
 
 @section('content')
+<div class="od-page odc-page">
 
-<div class="page-head">
-    <h2>{{ __('public.stf_inv_blood_title') }}</h2>
-    <div class="page-head__spacer"></div>
-    <button type="button" class="btn btn-primary btn-sm fs-tap" data-call="openUpsertModal">
-        <i data-lucide="plus-circle"></i>
-        {{ __('public.stf_inv_blood_update_stock_btn') }}
-    </button>
-</div>
-<p class="page-subtitle mb-6">{{ __('public.stf_inv_blood_subtitle') }}</p>
+<header class="od-page__head odc-head">
+    <div>
+        <h1 class="od-page__title">{{ __('public.stf_inv_blood_title') }}</h1>
+        <p class="od-page__sub">{{ __('public.stf_inv_blood_subtitle') }}</p>
+    </div>
+    <div class="odc-head__actions">
+        <button type="button" class="od-btn od-btn--primary" data-call="openUpsertModal">
+            <i data-lucide="plus-circle"></i>
+            {{ __('public.stf_inv_blood_update_stock_btn') }}
+        </button>
+    </div>
+</header>
 
 @if(session('success'))
-    <div class="alert alert-success mb-6"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>
+    <div class="odc-note odc-note--ok" role="status"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>
 @endif
 @if(session('error'))
-    <div class="alert alert-danger mb-6"><i data-lucide="triangle-alert"></i><div>{{ session('error') }}</div></div>
+    <div class="odc-note odc-note--err" role="alert"><i data-lucide="triangle-alert"></i><div>{{ session('error') }}</div></div>
 @endif
 
 {{-- What this screen is FOR. Stock typed here is published to the public Blood
@@ -38,75 +42,73 @@
      nothing when there are none. Saying so beats a clerk keeping a fridge
      up to date that no patient can ever see. --}}
 @if($publishesToFinder)
-    <div class="alert alert-info mb-6">
-        <i data-lucide="radio-tower"></i>
-        <div>{{ __('public.stf_inv_blood_publishes_notice') }}</div>
-    </div>
+    <div class="odc-note odc-note--info"><i data-lucide="radio-tower"></i><div>{{ __('public.stf_inv_blood_publishes_notice') }}</div></div>
 @else
-    <div class="alert alert-warning mb-6">
-        <i data-lucide="triangle-alert"></i>
-        <div>{{ __('public.stf_inv_blood_no_listing_notice') }}</div>
-    </div>
+    <div class="odc-note odc-note--warn"><i data-lucide="triangle-alert"></i><div>{{ __('public.stf_inv_blood_no_listing_notice') }}</div></div>
 @endif
 
 {{-- Summary Cards --}}
-<div class="stat-grid mb-6">
-    <div class="stat-card stat-card--primary">
-        <div class="stat-card__value">{{ $summary['total_units'] }}</div>
-        <div class="stat-card__label">{{ __('public.stf_inv_blood_stat_total') }}</div>
+<div class="od-kpis odc-kpis5">
+    <div class="od-kpi od-tint--blue">
+        <span class="od-kpi__icon"><x-od-icon name="droplet" /></span>
+        <span class="od-kpi__body"><span class="od-kpi__label">{{ __('public.stf_inv_blood_stat_total') }}</span><span class="od-kpi__value">{{ $summary['total_units'] }}</span></span>
     </div>
-    <div class="stat-card stat-card--success">
-        <div class="stat-card__value">{{ $summary['groups_covered'] }}</div>
-        <div class="stat-card__label">{{ __('public.stf_inv_blood_stat_groups') }}</div>
+    <div class="od-kpi od-tint--green">
+        <span class="od-kpi__icon"><i data-lucide="layers"></i></span>
+        <span class="od-kpi__body"><span class="od-kpi__label">{{ __('public.stf_inv_blood_stat_groups') }}</span><span class="od-kpi__value">{{ $summary['groups_covered'] }}</span></span>
     </div>
-    <div class="stat-card stat-card--danger">
-        <div class="stat-card__value">{{ $summary['expired'] }}</div>
-        <div class="stat-card__label">{{ __('public.stf_inv_blood_stat_expired') }}</div>
+    <div class="od-kpi od-tint--red">
+        <span class="od-kpi__icon"><i data-lucide="calendar-x"></i></span>
+        <span class="od-kpi__body"><span class="od-kpi__label">{{ __('public.stf_inv_blood_stat_expired') }}</span><span class="od-kpi__value">{{ $summary['expired'] }}</span></span>
     </div>
-    <div class="stat-card stat-card--danger">
-        <div class="stat-card__value">{{ $summary['unsafe'] }}</div>
-        <div class="stat-card__label">{{ __('public.stf_inv_blood_stat_unsafe') }}</div>
+    <div class="od-kpi od-tint--rose">
+        <span class="od-kpi__icon"><i data-lucide="shield-alert"></i></span>
+        <span class="od-kpi__body"><span class="od-kpi__label">{{ __('public.stf_inv_blood_stat_unsafe') }}</span><span class="od-kpi__value">{{ $summary['unsafe'] }}</span></span>
     </div>
-    <div class="stat-card stat-card--warning">
-        <div class="stat-card__value">{{ $summary['quarantined'] }}</div>
-        <div class="stat-card__label">{{ __('public.stf_inv_blood_stat_quarantined') }}</div>
+    <div class="od-kpi od-tint--amber">
+        <span class="od-kpi__icon"><x-od-icon name="fridge-thermo" /></span>
+        <span class="od-kpi__body"><span class="od-kpi__label">{{ __('public.stf_inv_blood_stat_quarantined') }}</span><span class="od-kpi__value">{{ $summary['quarantined'] }}</span></span>
     </div>
 </div>
 
-{{-- Filters --}}
-<form method="GET" action="{{ route('portals.staff.inventory.blood') }}" class="filter-bar">
-    <select name="blood_group" class="filter-select">
-        <option value="">{{ __('public.stf_inv_blood_all_groups') }}</option>
-        @foreach(['O+','O-','A+','A-','B+','B-','AB+','AB-'] as $g)
-            <option value="{{ $g }}" {{ request('blood_group') === $g ? 'selected' : '' }}>{{ $g }}</option>
-        @endforeach
-    </select>
-    <select name="component" class="filter-select">
-        <option value="">{{ __('public.stf_inv_blood_all_components') }}</option>
-        @foreach(['whole_blood','packed_red_cells','fresh_frozen_plasma','platelets'] as $c)
-            <option value="{{ $c }}" {{ request('component') === $c ? 'selected' : '' }}>@enum($c, 'blood_component')</option>
-        @endforeach
-    </select>
-    <button type="submit" class="btn btn-primary btn-sm">
-        <i data-lucide="filter"></i> {{ __('public.stf_inv_blood_filter_btn') }}
-    </button>
-    <a href="{{ route('portals.staff.inventory.blood') }}" class="btn btn-ghost btn-sm">{{ __('public.stf_inv_blood_clear_btn') }}</a>
-</form>
+<section class="od-card">
+    <header class="od-card__head">
+        <h2 class="od-card__title">{{ __('public.stf_inv_blood_title') }} <span class="od-card__count">({{ $items->count() }})</span></h2>
+    </header>
+    <div class="od-card__body">
+    {{-- Filters --}}
+    <form method="GET" action="{{ route('portals.staff.inventory.blood') }}" class="odc-toolbar">
+        <select name="blood_group" class="od-select" aria-label="{{ __('public.stf_inv_blood_col_group') }}">
+            <option value="">{{ __('public.stf_inv_blood_all_groups') }}</option>
+            @foreach(['O+','O-','A+','A-','B+','B-','AB+','AB-'] as $g)
+                <option value="{{ $g }}" {{ request('blood_group') === $g ? 'selected' : '' }}>{{ $g }}</option>
+            @endforeach
+        </select>
+        <select name="component" class="od-select" aria-label="{{ __('public.stf_inv_blood_col_component') }}">
+            <option value="">{{ __('public.stf_inv_blood_all_components') }}</option>
+            @foreach(['whole_blood','packed_red_cells','fresh_frozen_plasma','platelets'] as $c)
+                <option value="{{ $c }}" {{ request('component') === $c ? 'selected' : '' }}>@enum($c, 'blood_component')</option>
+            @endforeach
+        </select>
+        <button type="submit" class="od-btn od-btn--secondary">
+            <i data-lucide="filter"></i> {{ __('public.stf_inv_blood_filter_btn') }}
+        </button>
+        <a href="{{ route('portals.staff.inventory.blood') }}" class="od-btn od-btn--ghost">{{ __('public.stf_inv_blood_clear_btn') }}</a>
+    </form>
 
-<div class="panel">
-    <div class="panel-body panel-body--flush">
         @if($items->isEmpty())
-            <div class="empty-state">
-                <div class="empty-state-icon"><i data-lucide="droplets"></i></div>
-                <h3>{{ __('public.stf_inv_blood_empty_title') }}</h3>
-                <p>{{ __('public.stf_inv_blood_empty_desc') }}</p>
-                <button type="button" class="btn btn-primary btn-sm mt-6 fs-tap" data-call="openUpsertModal">{{ __('public.stf_inv_blood_update_stock_btn') }}</button>
+            <div class="od-empty">
+                <span class="od-empty__icon"><x-od-icon name="droplet" /></span>
+                <div class="od-empty__title">{{ __('public.stf_inv_blood_empty_title') }}</div>
+                <p class="od-empty__text">{{ __('public.stf_inv_blood_empty_desc') }}</p>
+                <button type="button" class="od-btn od-btn--primary" data-call="openUpsertModal">{{ __('public.stf_inv_blood_update_stock_btn') }}</button>
             </div>
         @else
-            <div class="table-wrapper">
-                <table class="data-table">
+            <div class="od-table-wrap">
+                <table class="od-table odc-stack">
                     <thead>
                         <tr>
+                            <th class="od-table__num">#</th>
                             <th>{{ __('public.stf_inv_blood_col_group') }}</th>
                             <th>{{ __('public.stf_inv_blood_col_component') }}</th>
                             <th>{{ __('public.stf_inv_blood_col_units') }}</th>
@@ -116,50 +118,50 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($items as $item)
+                        @foreach($items as $i => $item)
                         @php
-                            $qtyBadge = $item->available_units <= 0 ? 'badge-danger' : ($item->available_units <= 5 ? 'badge-warning' : 'badge-success');
+                            $qtyPill = $item->available_units <= 0 ? 'low' : ($item->available_units <= 5 ? 'reorder' : 'ready');
                         @endphp
                         <tr>
+                            <td class="od-table__num">{{ $i + 1 }}</td>
                             <td data-label="{{ __('public.stf_inv_blood_col_group') }}">
                                 {{-- Big group tag — same visual language as the public
                                      Blood Finder's group grid. --}}
-                                <span class="fs-bgroup-tag">{{ $item->blood_group }}</span>
+                                <span class="odc-btag">{{ $item->blood_group }}</span>
                             </td>
                             <td data-label="{{ __('public.stf_inv_blood_col_component') }}">
-                                <span class="badge badge-neutral">@enum($item->component)</span>
+                                <span class="od-table__name">@enum($item->component)</span>
                             </td>
                             <td data-label="{{ __('public.stf_inv_blood_col_units') }}">
-                                <span class="badge {{ $qtyBadge }}">{{ $item->available_units }}</span> {{ __('public.stf_inv_blood_units_label') }}
+                                <span class="od-pill od-pill--{{ $qtyPill }}">{{ $item->available_units }}</span> {{ __('public.stf_inv_blood_units_label') }}
                             </td>
                             <td data-label="{{ __('public.stf_inv_blood_col_flags') }}">
-                                @if($item->is_expired)    <span class="badge badge-danger badge-sm">{{ __('public.stf_inv_blood_flag_expired') }}</span> @endif
-                                @if($item->is_unsafe)     <span class="badge badge-danger badge-sm">{{ __('public.stf_inv_blood_flag_unsafe') }}</span> @endif
-                                @if($item->is_quarantined)<span class="badge badge-warning badge-sm">{{ __('public.stf_inv_blood_flag_quarantine') }}</span> @endif
+                                @if($item->is_expired)    <span class="od-pill od-pill--urgent">{{ __('public.stf_inv_blood_flag_expired') }}</span> @endif
+                                @if($item->is_unsafe)     <span class="od-pill od-pill--urgent">{{ __('public.stf_inv_blood_flag_unsafe') }}</span> @endif
+                                @if($item->is_quarantined)<span class="od-pill od-pill--pending">{{ __('public.stf_inv_blood_flag_quarantine') }}</span> @endif
                                 @if(!$item->is_expired && !$item->is_unsafe && !$item->is_quarantined)
                                     {{-- Screening state is said out loud, not implied by a dash. --}}
-                                    <span class="fs-screen-ok">@include('partials.finder.icon', ['name' => 'check', 'size' => 12]) {{ __('finder_supply.blood_screening_clear') }}</span>
+                                    <span class="odc-ok"><i data-lucide="check"></i> {{ __('finder_supply.blood_screening_clear') }}</span>
                                 @endif
                             </td>
-                            <td data-label="{{ __('public.stf_inv_blood_col_updated') }}" class="td-muted">
+                            <td data-label="{{ __('public.stf_inv_blood_col_updated') }}" class="od-muted">
                                 {{ \Carbon\Carbon::parse($item->last_stock_update)->translatedFormat('M d, H:i') }}
                             </td>
-                            <td data-label="{{ __('public.stf_inv_blood_col_actions') }}">
-                                <div class="row-actions-inline">
-                                    <button type="button" class="btn btn-primary btn-xs fs-tap"
+                            <td class="od-table__actions" data-label="{{ __('public.stf_inv_blood_col_actions') }}">
+                                <div class="odc-rowacts">
+                                    <button type="button" class="od-btn od-btn--row"
                                         data-call="openAdjustModal" data-args="{{ json_encode([$item->id, $item->blood_group, $item->component, 'add']) }}">
                                         <i data-lucide="plus"></i>
                                         {{ __('public.stf_inv_blood_btn_add') }}
                                     </button>
-                                    <button type="button" class="btn btn-ghost btn-xs fs-tap"
+                                    <button type="button" class="od-btn od-btn--sm odc-btn-quiet"
                                         data-call="openAdjustModal" data-args="{{ json_encode([$item->id, $item->blood_group, $item->component, 'subtract']) }}">
                                         <i data-lucide="minus"></i>
                                         {{ __('public.stf_inv_blood_btn_use') }}
                                     </button>
-                                    <button type="button" class="btn btn-ghost btn-xs fs-tap"
+                                    <button type="button" class="od-kebab" aria-label="{{ __('public.stf_inv_blood_btn_flags') }}" title="{{ __('public.stf_inv_blood_btn_flags') }}"
                                         data-call="openBloodFlagModal" data-args="{{ json_encode([$item->id, $item->blood_group . ' ' . $item->component, $item->is_expired ? 1 : 0, $item->is_unsafe ? 1 : 0, $item->is_quarantined ? 1 : 0]) }}">
                                         <i data-lucide="flag"></i>
-                                        {{ __('public.stf_inv_blood_btn_flags') }}
                                     </button>
                                 </div>
                             </td>
@@ -170,57 +172,54 @@
             </div>
         @endif
     </div>
-</div>
+</section>
 
 {{-- Upsert (Add/Update) Modal --}}
-<div id="upsert-modal" class="modal-backdrop mt-6" hidden>
-    <div class="modal" role="dialog" aria-modal="true">
-        <h3 class="modal__title"><i data-lucide="droplets"></i> {{ __('public.stf_inv_blood_modal_set_title') }}</h3>
-        <form method="POST" action="{{ route('portals.staff.inventory.blood.upsert') }}">
+<div id="upsert-modal" class="odc-modal" hidden>
+    <div class="odc-modal__box" role="dialog" aria-modal="true" aria-labelledby="upsert-title">
+        <h3 id="upsert-title" class="odc-modal__title"><x-od-icon name="droplet" /> {{ __('public.stf_inv_blood_modal_set_title') }}</h3>
+        <form method="POST" action="{{ route('portals.staff.inventory.blood.upsert') }}" class="odc-form">
             @csrf
-            <div class="modal__body">
-                <p>{{ __('public.stf_inv_blood_modal_set_note') }}</p>
-                <div class="form-group">
-                    {{-- Same `blood_group` field, radio chips instead of a
-                         <select>: the grid mirrors the public Blood Finder. --}}
-                    <label class="form-label">{{ __('public.stf_inv_blood_lbl_group') }}</label>
-                    <div class="fs-bgrid" role="radiogroup" aria-label="{{ __('finder_supply.blood_group_pick') }}">
-                        @foreach(['O+','O-','A+','A-','B+','B-','AB+','AB-'] as $g)
-                            <label class="fs-bchip">
-                                <input type="radio" name="blood_group" value="{{ $g }}" {{ $g === 'O+' ? 'checked' : '' }} required>
-                                <span>{{ $g }}</span>
-                            </label>
-                        @endforeach
-                    </div>
+            <p class="od-muted">{{ __('public.stf_inv_blood_modal_set_note') }}</p>
+            <div class="odc-label">
+                {{-- Same `blood_group` field, radio chips instead of a
+                     <select>: the grid mirrors the public Blood Finder. --}}
+                <span>{{ __('public.stf_inv_blood_lbl_group') }}</span>
+                <div class="odc-bgrid" role="radiogroup" aria-label="{{ __('finder_supply.blood_group_pick') }}">
+                    @foreach(['O+','O-','A+','A-','B+','B-','AB+','AB-'] as $g)
+                        <label class="odc-bchip">
+                            <input type="radio" name="blood_group" value="{{ $g }}" {{ $g === 'O+' ? 'checked' : '' }} required>
+                            <span>{{ $g }}</span>
+                        </label>
+                    @endforeach
                 </div>
-                <div class="form-group">
-                    <label class="form-label">{{ __('public.stf_inv_blood_lbl_component') }}</label>
-                    <select name="component" class="form-control" required>
-                        @foreach(['whole_blood','packed_red_cells','fresh_frozen_plasma','platelets'] as $c)
-                            <option value="{{ $c }}">@enum($c, 'blood_component')</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="upsert-units">{{ __('public.stf_inv_blood_lbl_units') }}</label>
-                    <div class="fs-stepper">
-                        <button type="button" aria-label="{{ __('finder_supply.stepper_minus') }}" data-call="fsStep" data-args="[&quot;upsert-units&quot;,-1]">&minus;</button>
-                        <input type="number" id="upsert-units" name="available_units" required min="0" inputmode="numeric" value="0">
-                        <button type="button" aria-label="{{ __('finder_supply.stepper_plus') }}" data-call="fsStep" data-args="[&quot;upsert-units&quot;,1]">+</button>
-                    </div>
-                </div>
-                @if($publishesToFinder)
-                {{-- Honest, and true: BloodAvailabilityProjector republishes on save. --}}
-                <div class="fs-publish-note">
-                    @include('partials.finder.icon', ['name' => 'droplet', 'size' => 15])
-                    <span>{{ __('finder_supply.blood_publish_note') }}</span>
-                </div>
-                @endif
             </div>
-            <div class="modal__footer">
-                <button type="button" class="btn btn-ghost btn-sm fs-tap" data-call="closeUpsertModal">{{ __('public.stf_inv_blood_cancel') }}</button>
-                <button type="submit" class="btn btn-primary btn-sm fs-tap">
-                    @include('partials.finder.icon', ['name' => 'check', 'size' => 16])
+            <label class="odc-label">{{ __('public.stf_inv_blood_lbl_component') }}
+                <select name="component" class="od-select" required>
+                    @foreach(['whole_blood','packed_red_cells','fresh_frozen_plasma','platelets'] as $c)
+                        <option value="{{ $c }}">@enum($c, 'blood_component')</option>
+                    @endforeach
+                </select>
+            </label>
+            <div class="odc-label">
+                <label for="upsert-units">{{ __('public.stf_inv_blood_lbl_units') }}</label>
+                <div class="odc-stepper">
+                    <button type="button" aria-label="{{ __('finder_supply.stepper_minus') }}" data-call="fsStep" data-args="[&quot;upsert-units&quot;,-1]">&minus;</button>
+                    <input type="number" id="upsert-units" name="available_units" class="od-input" required min="0" inputmode="numeric" value="0">
+                    <button type="button" aria-label="{{ __('finder_supply.stepper_plus') }}" data-call="fsStep" data-args="[&quot;upsert-units&quot;,1]">+</button>
+                </div>
+            </div>
+            @if($publishesToFinder)
+            {{-- Honest, and true: BloodAvailabilityProjector republishes on save. --}}
+            <div class="odc-note odc-note--info">
+                <x-od-icon name="droplet" />
+                <span>{{ __('finder_supply.blood_publish_note') }}</span>
+            </div>
+            @endif
+            <div class="odc-actions">
+                <button type="button" class="od-btn od-btn--secondary" data-call="closeUpsertModal">{{ __('public.stf_inv_blood_cancel') }}</button>
+                <button type="submit" class="od-btn od-btn--primary">
+                    <i data-lucide="check"></i>
                     {{ __('public.stf_inv_blood_btn_save') }}
                 </button>
             </div>
@@ -229,63 +228,60 @@
 </div>
 
 {{-- Adjust Modal --}}
-<div id="adjust-modal" class="modal-backdrop mt-6" hidden>
-    <div class="modal" role="dialog" aria-modal="true">
-        <h3 id="adjust-title" class="modal__title"><i data-lucide="plus-minus"></i> {{ __('public.stf_inv_blood_adjust_title') }}</h3>
-        <form id="adjust-form" method="POST" action="">
+<div id="adjust-modal" class="odc-modal" hidden>
+    <div class="odc-modal__box" role="dialog" aria-modal="true" aria-labelledby="adjust-title">
+        <h3 id="adjust-title" class="odc-modal__title">{{ __('public.stf_inv_blood_adjust_title') }}</h3>
+        <form id="adjust-form" method="POST" action="" class="odc-form">
             @csrf
             <input type="hidden" id="adjust-direction" name="direction" value="add">
-            <div class="modal__body">
-                <p id="adjust-label"></p>
-                <div class="form-group">
-                    <label class="form-label" for="adjust-units">{{ __('public.stf_inv_blood_lbl_adj_units') }}</label>
-                    <div class="fs-stepper">
-                        <button type="button" aria-label="{{ __('finder_supply.stepper_minus') }}" data-call="fsStep" data-args="[&quot;adjust-units&quot;,-1]">&minus;</button>
-                        <input type="number" id="adjust-units" name="units" required min="1" inputmode="numeric" value="1">
-                        <button type="button" aria-label="{{ __('finder_supply.stepper_plus') }}" data-call="fsStep" data-args="[&quot;adjust-units&quot;,1]">+</button>
-                    </div>
+            <p id="adjust-label" class="od-muted"></p>
+            <div class="odc-label">
+                <label for="adjust-units">{{ __('public.stf_inv_blood_lbl_adj_units') }}</label>
+                <div class="odc-stepper">
+                    <button type="button" aria-label="{{ __('finder_supply.stepper_minus') }}" data-call="fsStep" data-args="[&quot;adjust-units&quot;,-1]">&minus;</button>
+                    <input type="number" id="adjust-units" name="units" class="od-input" required min="1" inputmode="numeric" value="1">
+                    <button type="button" aria-label="{{ __('finder_supply.stepper_plus') }}" data-call="fsStep" data-args="[&quot;adjust-units&quot;,1]">+</button>
                 </div>
-                @if($publishesToFinder)
-                <div class="fs-publish-note">
-                    @include('partials.finder.icon', ['name' => 'droplet', 'size' => 15])
-                    <span>{{ __('finder_supply.blood_publish_note') }}</span>
-                </div>
-                @endif
             </div>
-            <div class="modal__footer">
-                <button type="button" class="btn btn-ghost btn-sm fs-tap" data-call="closeAdjustModal">{{ __('public.stf_inv_blood_cancel') }}</button>
-                <button type="submit" id="adjust-btn" class="btn btn-primary btn-sm fs-tap">{{ __('public.stf_inv_blood_btn_confirm') }}</button>
+            @if($publishesToFinder)
+            <div class="odc-note odc-note--info">
+                <x-od-icon name="droplet" />
+                <span>{{ __('finder_supply.blood_publish_note') }}</span>
+            </div>
+            @endif
+            <div class="odc-actions">
+                <button type="button" class="od-btn od-btn--secondary" data-call="closeAdjustModal">{{ __('public.stf_inv_blood_cancel') }}</button>
+                <button type="submit" id="adjust-btn" class="od-btn od-btn--primary">{{ __('public.stf_inv_blood_btn_confirm') }}</button>
             </div>
         </form>
     </div>
 </div>
 
 {{-- Blood Flag Modal --}}
-<div id="blood-flag-modal" class="modal-backdrop mt-6" hidden>
-    <div class="modal" role="dialog" aria-modal="true">
-        <h3 class="modal__title"><i data-lucide="flag"></i> {{ __('public.stf_inv_blood_flags_title') }}</h3>
-        <form id="blood-flag-form" method="POST" action="">
+<div id="blood-flag-modal" class="odc-modal" hidden>
+    <div class="odc-modal__box" role="dialog" aria-modal="true" aria-labelledby="blood-flag-title">
+        <h3 id="blood-flag-title" class="odc-modal__title"><i data-lucide="flag"></i> {{ __('public.stf_inv_blood_flags_title') }}</h3>
+        <form id="blood-flag-form" method="POST" action="" class="odc-form">
             @csrf
-            <div class="modal__body">
-                <p id="blood-flag-label"></p>
-                <label class="form-check">
-                    <input type="checkbox" id="bf-expired" name="is_expired" value="1"> {{ __('public.stf_inv_blood_lbl_expired') }}
-                </label>
-                <label class="form-check">
-                    <input type="checkbox" id="bf-unsafe" name="is_unsafe" value="1"> {{ __('public.stf_inv_blood_lbl_unsafe') }}
-                </label>
-                <label class="form-check">
-                    <input type="checkbox" id="bf-quarantined" name="is_quarantined" value="1"> {{ __('public.stf_inv_blood_lbl_quarantined') }}
-                </label>
-            </div>
-            <div class="modal__footer">
-                <button type="button" class="btn btn-ghost btn-sm" data-call="closeBloodFlagModal">{{ __('public.stf_inv_blood_cancel') }}</button>
-                <button type="submit" class="btn btn-primary btn-sm">{{ __('public.stf_inv_blood_btn_save_flags') }}</button>
+            <p id="blood-flag-label" class="od-muted"></p>
+            <label class="odc-check">
+                <input type="checkbox" id="bf-expired" name="is_expired" value="1" class="od-check"> {{ __('public.stf_inv_blood_lbl_expired') }}
+            </label>
+            <label class="odc-check">
+                <input type="checkbox" id="bf-unsafe" name="is_unsafe" value="1" class="od-check"> {{ __('public.stf_inv_blood_lbl_unsafe') }}
+            </label>
+            <label class="odc-check">
+                <input type="checkbox" id="bf-quarantined" name="is_quarantined" value="1" class="od-check"> {{ __('public.stf_inv_blood_lbl_quarantined') }}
+            </label>
+            <div class="odc-actions">
+                <button type="button" class="od-btn od-btn--secondary" data-call="closeBloodFlagModal">{{ __('public.stf_inv_blood_cancel') }}</button>
+                <button type="submit" class="od-btn od-btn--primary">{{ __('public.stf_inv_blood_btn_save_flags') }}</button>
             </div>
         </form>
     </div>
 </div>
 
+</div>
 @endsection
 
 @section('scripts')
@@ -314,7 +310,7 @@
         document.getElementById('adjust-direction').value = direction;
         document.getElementById('adjust-form').action = bloodAdjustUrl.replace('__ID__', encodeURIComponent(id));
         var btn = document.getElementById('adjust-btn');
-        btn.className = direction === 'add' ? 'btn btn-primary btn-sm fs-tap' : 'btn btn-warning btn-sm fs-tap';
+        btn.className = direction === 'add' ? 'od-btn od-btn--primary' : 'od-btn od-btn--danger';
         btn.textContent = direction === 'add' ? '{{ __('staff_inv.js_add', [], app()->getLocale()) }}' : '{{ __('staff_inv.js_use', [], app()->getLocale()) }}';
         document.getElementById('adjust-modal').removeAttribute('hidden');
     }

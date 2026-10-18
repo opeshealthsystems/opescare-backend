@@ -4,35 +4,30 @@
 @section('breadcrumb_home_url', route('portals.admin'))
 @section('breadcrumb_section', __('kpi.trend_title'))
 @include('portals.admin.control_center._sidebar')
+@section('head')<link rel="stylesheet" href="{{ asset('css/od-admin.css') }}?v={{ @filemtime(public_path('css/od-admin.css')) ?: '1' }}">@endsection
 
 @section('content')
+<div class="od-page">
 
-<div class="breadcrumb">
-    <a href="{{ route('portals.admin.kpi.index') }}">{{ __('public.adm_kpi_trend_breadcrumb') }}</a>
-    <i data-lucide="chevron-right"></i>
-    <span>{{ $definition ? __('kpi.metric_' . $definition->slug) : __('kpi.trend_title') }}</span>
-</div>
-
-<div class="entity-head">
-    <div class="entity-head__icon"><i data-lucide="trending-up"></i></div>
+<div class="od-page__head">
     <div>
-        <h2 class="entity-head__title">{{ $definition ? __('kpi.metric_' . $definition->slug) : __('kpi.trend_title') }}</h2>
+        <h1 class="od-page__title">{{ $definition ? __('kpi.metric_' . $definition->slug) : __('kpi.trend_title') }}</h1>
+        <p class="od-page__sub"><a href="{{ route('portals.admin.kpi.index') }}">{{ __('public.adm_kpi_trend_breadcrumb') }}</a></p>
         @if($definition)
-        <div class="entity-head__sub">
-            <span class="td-muted text-sm">{{ __('kpi.metric_' . $definition->slug . '_desc') }}</span>
-            <span class="badge badge--info badge-sm">{{ __('kpi.category_' . $definition->category) }}</span>
-        </div>
+        <p class="od-page__sub">
+            {{ __('kpi.metric_' . $definition->slug . '_desc') }}
+            <span class="od-pill od-pill--normal">{{ __('kpi.category_' . $definition->category) }}</span>
+        </p>
         @endif
     </div>
 </div>
 
 {{-- Controls --}}
-<div class="panel mb-4">
-    <div class="panel-body">
-        <form method="GET" action="{{ route('portals.admin.kpi.trend') }}" class="filter-bar">
-            <div class="form-group">
-                <label class="form-label">{{ __('public.adm_kpi_trend_label_metric') }}</label>
-                <select name="metric" class="form-control" data-autosubmit>
+<div class="od-card">
+    <div class="od-card__body">
+        <form method="GET" action="{{ route('portals.admin.kpi.trend') }}" class="oda-form">
+            <label class="oda-label"><span class="oda-label__text">{{ __('public.adm_kpi_trend_label_metric') }}</span>
+                <select name="metric" class="od-select" data-autosubmit>
                     @foreach($allMetrics->groupBy(fn($m) => __('kpi.category_' . $m->category)) as $cat => $group)
                     <optgroup label="{{ $cat }}">
                         @foreach($group as $m)
@@ -40,16 +35,13 @@
                         @endforeach
                     </optgroup>
                     @endforeach
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label">{{ __('public.adm_kpi_trend_label_period') }}</label>
-                <select name="period" class="form-control" data-autosubmit>
+                </select></label>
+            <label class="oda-label"><span class="oda-label__text">{{ __('public.adm_kpi_trend_label_period') }}</span>
+                <select name="period" class="od-select" data-autosubmit>
                     <option value="7d" {{ $period === '7d' ? 'selected' : '' }}>{{ __('public.adm_kpi_trend_period_7d') }}</option>
                     <option value="30d" {{ $period === '30d' ? 'selected' : '' }}>{{ __('public.adm_kpi_trend_period_30d') }}</option>
                     <option value="90d" {{ $period === '90d' ? 'selected' : '' }}>{{ __('public.adm_kpi_trend_period_90d') }}</option>
-                </select>
-            </div>
+                </select></label>
         </form>
     </div>
 </div>
@@ -64,59 +56,40 @@
     $isPct = $definition->display_format === 'percentage';
 @endphp
 {{-- Metric Info --}}
-<div class="stat-grid mb-4">
-    <div class="stat-card stat-card--primary">
-        <div class="stat-card__value">{{ $latest !== null ? number_format($latest, $isPct ? 1 : 0) . ($isPct ? '%' : '') : '—' }}</div>
-        <div class="stat-card__label">{{ __('public.adm_kpi_trend_stat_latest') }}</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-card__value">{{ $avg !== null ? number_format($avg, 1) : '—' }}</div>
-        <div class="stat-card__label">{{ __('public.adm_kpi_trend_stat_average') }}</div>
-    </div>
-    <div class="stat-card stat-card--success">
-        <div class="stat-card__value">{{ $max !== null ? number_format($max, 1) : '—' }}</div>
-        <div class="stat-card__label">{{ __('public.adm_kpi_trend_stat_peak') }}</div>
-    </div>
-    <div class="stat-card stat-card--warning">
-        <div class="stat-card__value">{{ $min !== null ? number_format($min, 1) : '—' }}</div>
-        <div class="stat-card__label">{{ __('public.adm_kpi_trend_stat_minimum') }}</div>
-    </div>
+<div class="od-kpis">
+    <div class="od-kpi od-tint--blue"><span class="od-kpi__icon"><i data-lucide="activity"></i></span><span class="od-kpi__body"><span class="od-kpi__label">{{ __('public.adm_kpi_trend_stat_latest') }}</span><span class="od-kpi__value">{{ $latest !== null ? number_format($latest, $isPct ? 1 : 0) . ($isPct ? '%' : '') : '—' }}</span></span></div>
+    <div class="od-kpi od-tint--sky"><span class="od-kpi__icon"><i data-lucide="sigma"></i></span><span class="od-kpi__body"><span class="od-kpi__label">{{ __('public.adm_kpi_trend_stat_average') }}</span><span class="od-kpi__value">{{ $avg !== null ? number_format($avg, 1) : '—' }}</span></span></div>
+    <div class="od-kpi od-tint--green"><span class="od-kpi__icon"><i data-lucide="arrow-up"></i></span><span class="od-kpi__body"><span class="od-kpi__label">{{ __('public.adm_kpi_trend_stat_peak') }}</span><span class="od-kpi__value">{{ $max !== null ? number_format($max, 1) : '—' }}</span></span></div>
+    <div class="od-kpi od-tint--amber"><span class="od-kpi__icon"><i data-lucide="arrow-down"></i></span><span class="od-kpi__body"><span class="od-kpi__label">{{ __('public.adm_kpi_trend_stat_minimum') }}</span><span class="od-kpi__value">{{ $min !== null ? number_format($min, 1) : '—' }}</span></span></div>
     @if($definition->target_value)
-    <div class="stat-card stat-card--teal">
-        <div class="stat-card__value">{{ number_format($definition->target_value, 1) }}</div>
-        <div class="stat-card__label">{{ __('public.adm_kpi_trend_stat_target') }}</div>
-    </div>
+    <div class="od-kpi od-tint--teal"><span class="od-kpi__icon"><i data-lucide="target"></i></span><span class="od-kpi__body"><span class="od-kpi__label">{{ __('public.adm_kpi_trend_stat_target') }}</span><span class="od-kpi__value">{{ number_format($definition->target_value, 1) }}</span></span></div>
     @endif
 </div>
 
 {{-- Trend breakdown --}}
-<div class="panel">
-    <div class="panel-header">
-        <h3 class="panel-title"><i data-lucide="calendar"></i> {{ __('kpi.daily_values', ['from' => $from->format('d/m/Y'), 'to' => $to->format('d/m/Y')]) }}</h3>
+<div class="od-card">
+    <div class="od-card__head">
+        <h2 class="od-card__title"><i data-lucide="calendar"></i> {{ __('kpi.daily_values', ['from' => $from->format('d/m/Y'), 'to' => $to->format('d/m/Y')]) }}</h2>
     </div>
-    <div class="panel-body">
+    <div class="od-card__body">
         @if(empty($trendData))
-        <div class="td-muted empty-cell">{{ __('public.adm_kpi_trend_no_data') }}</div>
+        <div class="od-empty"><p class="od-empty__text">{{ __('public.adm_kpi_trend_no_data') }}</p></div>
         @else
         @php $maxVal = $max ?: 1; @endphp
-        <div class="breakdown">
+        <div class="oda-gd-bars">
             @foreach($trendData as $date => $value)
-            <div class="breakdown__row">
-                <span class="breakdown__label">{{ \Carbon\Carbon::parse($date)->translatedFormat('d M Y') }}</span>
-                <div class="breakdown__track">
-                    @if($value !== null)
-                    <div class="breakdown__fill" style="width: {{ min(100, ($value / $maxVal) * 100) }}%"></div>
-                    @endif
-                </div>
-                <span class="breakdown__value">
+            <div class="oda-gd-bars__row">
+                <span class="oda-gd-bars__label">{{ \Carbon\Carbon::parse($date)->translatedFormat('d M Y') }}</span>
+                <meter class="oda-gd-meter" min="0" max="{{ $maxVal }}" value="{{ $value !== null ? min($value, $maxVal) : 0 }}"></meter>
+                <span class="oda-gd-bars__value">
                     @if($value !== null)
                         {{ number_format($value, $isPct ? 1 : 0) }}{{ $isPct ? '%' : '' }}
                         @if($definition->target_value)
                             @php $diff = $value - $definition->target_value; @endphp
-                            <span class="text-sm {{ $diff >= 0 ? 'trend-up' : 'trend-down' }}">({{ $diff >= 0 ? '+' : '' }}{{ number_format($diff, 1) }})</span>
+                            <span class="od-kpi__trend {{ $diff >= 0 ? 'od-kpi__trend--up' : 'od-kpi__trend--down' }}">({{ $diff >= 0 ? '+' : '' }}{{ number_format($diff, 1) }})</span>
                         @endif
                     @else
-                        <span class="td-muted">{{ __('public.adm_kpi_trend_no_data_inline') }}</span>
+                        <span class="oda-help">{{ __('public.adm_kpi_trend_no_data_inline') }}</span>
                     @endif
                 </span>
             </div>
@@ -126,13 +99,16 @@
     </div>
 </div>
 @else
-<div class="panel">
-    <div class="empty-state">
-        <div class="empty-state-icon"><i data-lucide="trending-up"></i></div>
-        <h3>{{ __('public.adm_kpi_trend_empty_h3') }}</h3>
-        <p>{{ __('public.adm_kpi_trend_empty_p') }}</p>
+<div class="od-card">
+    <div class="od-card__body">
+        <div class="od-empty">
+            <span class="od-empty__icon"><i data-lucide="trending-up"></i></span>
+            <h3 class="od-empty__title">{{ __('public.adm_kpi_trend_empty_h3') }}</h3>
+            <p class="od-empty__text">{{ __('public.adm_kpi_trend_empty_p') }}</p>
+        </div>
     </div>
 </div>
 @endif
 
+</div>
 @endsection

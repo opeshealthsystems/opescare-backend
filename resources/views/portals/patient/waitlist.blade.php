@@ -8,6 +8,7 @@
 
 @section('head')
     @include('portals.patient._finder_head')
+    <link rel="stylesheet" href="{{ asset('css/od-patient.css') }}?v={{ @filemtime(public_path('css/od-patient.css')) ?: '1' }}">
 @endsection
 
 @section('patient_banner')
@@ -60,7 +61,7 @@
             @include('partials.finder.icon', ['name' => 'list-ordered', 'size' => 18])
             {{ __('waitlist.join_title') }}
         </h2>
-        <p class="f-hint" style="margin:-6px 0 12px;">{{ __('waitlist.join_help') }}</p>
+        <p class="f-hint ods-0e1ed56">{{ __('waitlist.join_help') }}</p>
 
         <div class="f-field">
             <label class="f-label" for="wl_facility_id">{{ __('waitlist.field_facility') }}</label>
@@ -81,7 +82,7 @@
             </select>
         </div>
 
-        <div class="pf-actions" style="align-items:flex-start;">
+        <div class="pf-actions ods-b5053b6">
             <div class="f-field">
                 <label class="f-label" for="wl_earliest">{{ __('waitlist.field_earliest') }}</label>
                 <input type="date" id="wl_earliest" name="preferred_earliest_date" class="f-input"
@@ -114,25 +115,25 @@
                       placeholder="{{ __('waitlist.notes_ph') }}">{{ old('notes') }}</textarea>
         </div>
 
-        <button type="submit" class="f-btn f-btn--primary" style="min-height:48px;">
+        <button type="submit" class="f-btn f-btn--primary ods-a27b458">
             @include('partials.finder.icon', ['name' => 'list-plus', 'size' => 18])
             {{ __('waitlist.btn_join') }}
         </button>
     </form>
 
     {{-- Entries --}}
-    <h2 style="font-size:1.05rem;font-weight:750;margin:24px 0 10px;">
+    <h2 class="ods-7852867">
         {{ __('waitlist.my_entries') }}
         @if($openCount > 0)<span class="f-badge f-badge--warn">{{ $openCount }}</span>@endif
     </h2>
 
     @if($entries->isEmpty())
-    <div class="f-card" style="text-align:center;padding:32px 20px;">
-        <div class="pf-qa__icon" style="margin:0 auto 12px;width:48px;height:48px;">
+    <div class="f-card ods-9ca32e0">
+        <div class="pf-qa__icon ods-4ef0061">
             @include('partials.finder.icon', ['name' => 'list-ordered', 'size' => 24])
         </div>
-        <h3 style="font-size:1.05rem;font-weight:750;margin:0 0 6px;">{{ __('waitlist.empty_title') }}</h3>
-        <p class="f-muted" style="margin:0;">{{ __('waitlist.empty_desc') }}</p>
+        <h3 class="ods-b152a63">{{ __('waitlist.empty_title') }}</h3>
+        <p class="f-muted ods-1386d50">{{ __('waitlist.empty_desc') }}</p>
     </div>
     @else
     <div class="pf-stack">
@@ -176,14 +177,14 @@
                 </span>
             </div>
             @if($entry->status === 'notified')
-            <p class="f-small" style="color:var(--f-good);margin:8px 0 0;display:flex;align-items:center;gap:6px;">
+            <p class="f-small ods-42751fa">
                 @include('partials.finder.icon', ['name' => 'bell-ring', 'size' => 15])
                 {{ __('waitlist.notified_hint') }}
                 <a href="{{ route('portals.patient.appointments.book') }}">{{ __('public.appt_book_btn') }}</a>
             </p>
             @endif
             @if($entry->notes)
-                <p class="f-small f-muted" style="margin:8px 0 0;">{{ $entry->notes }}</p>
+                <p class="f-small f-muted ods-00dd4a9">{{ $entry->notes }}</p>
             @endif
             @if($canCancel)
             <div class="pf-appt__actions">

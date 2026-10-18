@@ -13,9 +13,10 @@
 --}}
 
 @section('content')
+<link rel="stylesheet" href="{{ asset('css/od-patient.css') }}?v={{ @filemtime(public_path('css/od-patient.css')) ?: '1' }}">
     <div class="auth-card">
         <div class="auth-status-icon" aria-hidden="true">
-            <i data-lucide="clock" style="width:2.5rem;height:2.5rem;"></i>
+            <i class="ods-2f607f0" data-lucide="clock"></i>
         </div>
 
         <h1 class="auth-headline">{{ __('onboarding.guardian.pending_headline') }}</h1>
@@ -23,20 +24,20 @@
 
         @if (session('success'))
             <div class="auth-alert auth-alert--success" role="status">
-                <i data-lucide="check-circle" style="width:1.05rem;height:1.05rem;flex-shrink:0;"></i>
+                <i class="ods-fe2db25" data-lucide="check-circle"></i>
                 <span>{{ session('success') }}</span>
             </div>
         @endif
 
-        <p class="auth-fineprint" style="margin-top:1.25rem;font-weight:600;">{{ __('family.pending_next_steps') }}</p>
+        <p class="auth-fineprint ods-5262216">{{ __('family.pending_next_steps') }}</p>
 
-        <div style="display:grid;gap:.6rem;margin:.5rem 0 1rem;" data-section="guardian-next-steps">
-            <a href="{{ route('portals.patient.family.add') }}" class="auth-btn auth-btn-primary" style="display:inline-flex;align-items:center;justify-content:center;gap:.5rem;text-decoration:none;">
-                <i data-lucide="baby" style="width:1.05rem;height:1.05rem;"></i>
+        <div class="ods-4c8faeb" data-section="guardian-next-steps">
+            <a href="{{ route('portals.patient.family.add') }}" class="auth-btn auth-btn-primary ods-7850b4d">
+                <i class="ods-f0b6e6f" data-lucide="baby"></i>
                 {{ __('family.dash_add_child') }}
             </a>
-            <a href="{{ route('portals.patient.family.invite') }}" class="auth-btn auth-btn-secondary" style="display:inline-flex;align-items:center;justify-content:center;gap:.5rem;text-decoration:none;">
-                <i data-lucide="send" style="width:1.05rem;height:1.05rem;"></i>
+            <a href="{{ route('portals.patient.family.invite') }}" class="auth-btn auth-btn-secondary ods-7850b4d">
+                <i class="ods-f0b6e6f" data-lucide="send"></i>
                 {{ __('family.dash_invite_adult') }}
             </a>
         </div>

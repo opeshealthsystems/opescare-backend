@@ -3,6 +3,10 @@
 @section('title', __('public.legal_page.page_title'))
 @section('description', __('public.legal_page.hero_subtitle'))
 
+@push('head')
+    @include('public.partials._od_pages_css')
+@endpush
+
 @section('content')
 
     {{--
@@ -51,12 +55,12 @@
                         @include('partials.finder.icon', ['name' => 'chevron-right', 'size' => 18])
                     </a>
                 @empty
-                    <div class="f-card f-muted" style="text-align:center;">
+                    <div class="f-card f-muted odp-text-center">
                         {{ __('public.legal_page.no_docs') }}
                     </div>
                 @endforelse
 
-                <div class="f-card f-small" style="margin-top:1.5rem;">
+                <div class="f-card f-small odp-mt-24">
                     <strong>{{ __('public.legal_page.questions') }}</strong> {{ __('public.legal_page.contact_privacy') }}
                     <a href="mailto:privacy@opescare.com">privacy@opescare.com</a>
                     {{ __('public.legal_page.or_visit') }} <a href="{{ route('public.help') }}">{{ __('public.legal_page.help_centre') }}</a>.

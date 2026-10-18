@@ -7,6 +7,7 @@
 
 @section('head')
     @include('portals.patient._finder_head')
+    <link rel="stylesheet" href="{{ asset('css/od-patient.css') }}?v={{ @filemtime(public_path('css/od-patient.css')) ?: '1' }}">
 @endsection
 
 @section('patient_banner')
@@ -35,11 +36,11 @@
             <p>{{ __('family.inv_no_patient') }}</p>
         </div>
     @elseif($invites->isEmpty())
-        <div class="f-card" style="text-align:center;padding:40px 20px;" data-section="invitations-empty">
-            <div class="pf-qa__icon" style="margin:0 auto 12px;width:48px;height:48px;">
+        <div class="f-card ods-99e8a36" data-section="invitations-empty">
+            <div class="pf-qa__icon ods-4ef0061">
                 @include('partials.finder.icon', ['name' => 'bell', 'size' => 24])
             </div>
-            <p class="f-muted" style="margin:0;">{{ __('family.inv_empty') }}</p>
+            <p class="f-muted ods-1386d50">{{ __('family.inv_empty') }}</p>
         </div>
     @else
         <div class="pf-stack" data-section="invitations">
@@ -51,27 +52,27 @@
                 $level = $inv->access_level === 'full' ? __('family.access.full') : __('family.access.read_only');
             @endphp
             <div class="f-card" data-invitation="{{ $inv->id }}">
-                <div style="display:flex;align-items:center;gap:12px;">
+                <div class="ods-9f0e4db">
                     <div class="pf-avatar">{{ strtoupper(substr($who, 0, 1)) }}</div>
-                    <div style="flex:1;min-width:0;">
-                        <p style="margin:0;color:var(--f-ink);">{{ __('family.inv_from', ['name' => $who, 'relationship' => mb_strtolower($rel), 'access' => mb_strtolower($level)]) }}</p>
+                    <div class="ods-89bd09b">
+                        <p class="ods-25eb2b5">{{ __('family.inv_from', ['name' => $who, 'relationship' => mb_strtolower($rel), 'access' => mb_strtolower($level)]) }}</p>
                         @if($inv->invite_expires_at)
-                        <p class="f-small f-muted" style="margin:4px 0 0;">{{ __('family.inv_expires', ['date' => $inv->invite_expires_at->translatedFormat('d M Y, H:i')]) }}</p>
+                        <p class="f-small f-muted ods-b112164">{{ __('family.inv_expires', ['date' => $inv->invite_expires_at->translatedFormat('d M Y, H:i')]) }}</p>
                         @endif
                     </div>
                 </div>
-                <p class="f-small f-muted" style="margin:10px 0 0;">
+                <p class="f-small f-muted ods-446a577">
                     {{ $inv->access_level === 'full' ? __('family.access_full_explained') : __('family.access_read_only_explained') }}
                 </p>
                 <div class="pf-appt__actions">
-                    <form method="POST" action="{{ route('portals.patient.family.invitations.accept', $inv->id) }}" style="margin:0;">
+                    <form class="ods-1386d50" method="POST" action="{{ route('portals.patient.family.invitations.accept', $inv->id) }}">
                         @csrf
                         <button type="submit" class="f-btn f-btn--primary">
                             @include('partials.finder.icon', ['name' => 'check', 'size' => 16])
                             {{ __('family.inv_accept') }}
                         </button>
                     </form>
-                    <form method="POST" action="{{ route('portals.patient.family.invitations.decline', $inv->id) }}" style="margin:0;">
+                    <form class="ods-1386d50" method="POST" action="{{ route('portals.patient.family.invitations.decline', $inv->id) }}">
                         @csrf
                         <button type="submit" class="f-btn pf-btn--danger-ghost">{{ __('family.inv_decline') }}</button>
                     </form>

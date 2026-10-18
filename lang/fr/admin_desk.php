@@ -77,4 +77,24 @@ return [
     'incident_detail'    => 'Incident',
     'opened_by'          => 'Ouvert par',
 
+    // ── Admin landing (od) ──
+    'home_hello'               => 'Bon retour',
+    'home_kpi_facilities_sub'  => 'Enregistrés sur la plateforme',
+    'home_kpi_users_sub'       => 'Comptes du personnel et des administrateurs',
+    'home_quick_title'         => 'Actions rapides',
+    'home_quick_facilities'    => 'Établissements',
+    'home_quick_users'         => 'Comptes du personnel',
+    'home_quick_mpi'           => 'Revue des identités',
+    'home_quick_security'      => 'Centre de sécurité',
+    'home_quick_verifications' => 'Vérifications',
+    'home_quick_control'       => 'Centre de contrôle',
+    'home_events_empty_title'  => 'Aucune activité récente',
+    'home_alerts_title'        => 'Alertes de sécurité',
+
+    // ── Group A: control center, security ops, MPI ──
+    'ga_until'          => 'Jusqu’au :when',
+    'ga_toggle'         => 'Basculer :label',
+    'ga_enable'         => 'Activer :label',
+    'ga_disable'        => 'Désactiver :label',
+
 ];

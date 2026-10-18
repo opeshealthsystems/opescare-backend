@@ -35,6 +35,7 @@
 <link rel="alternate" hreflang="x-default" href="{{ route('public.care-map.emergency') }}">
 @include('partials.favicons')
 <link rel="stylesheet" href="{{ asset('assets/finder.css') }}?v={{ @filemtime(public_path('assets/finder.css')) ?: '1' }}">
+@include('public.partials._od_pages_css')
 <style>
 /* Page-local styles on top of finder.css tokens. Calm, high contrast,
    list-first. --f-danger appears ONLY on the two dial actions. */
@@ -47,7 +48,6 @@
     background: var(--f-danger); color: #FFFFFF;
     border-radius: var(--f-r); text-decoration: none;
     font-size: 1.25rem; font-weight: 800; letter-spacing: -0.01em;
-    box-shadow: var(--f-shadow);
     -webkit-tap-highlight-color: transparent;
 }
 .em-dial:active { transform: translateY(1px); }
@@ -68,7 +68,7 @@
 {{-- Canonical, hreflang, Open Graph and schema.org --}}
 @include('partials.seo_head')
 </head>
-<body>
+<body class="odp">
 
 <header class="em-header">
     <div class="f-container em-header__row">
@@ -86,11 +86,11 @@
 <main id="f-main">
 
     {{-- 1 ── Dial first. --}}
-    <section class="f-section--tight" style="padding-block:24px;">
+    <section class="f-section--tight odp-pad-y">
         <div class="f-container">
-            <h1 class="f-h2" style="font-size:1.375rem;">{{ __('public.care_map_emergency.h1') }}</h1>
-            <p style="font-weight:700;margin-top:14px;">{{ __('finder_search.emergency.call_now_title') }}</p>
-            <p class="f-small f-muted" style="margin-top:4px;">{{ __('finder_search.emergency.call_now_sub') }}</p>
+            <h1 class="f-h2 odp-title">{{ __('public.care_map_emergency.h1') }}</h1>
+            <p class="odp-bold odp-mt-16">{{ __('finder_search.emergency.call_now_title') }}</p>
+            <p class="f-small f-muted odp-mt-4">{{ __('finder_search.emergency.call_now_sub') }}</p>
 
             <div class="em-dial-grid">
                 <a href="tel:112" class="em-dial">
@@ -102,17 +102,17 @@
                     {{ __('finder_search.emergency.dial_119') }}
                 </a>
             </div>
-            <p class="f-small f-muted" style="margin-top:8px;">{{ __('finder_search.emergency.dial_hint') }}</p>
+            <p class="f-small f-muted odp-mt-8">{{ __('finder_search.emergency.dial_hint') }}</p>
         </div>
     </section>
 
     {{-- 2 ── Then the nearest hospitals. --}}
-    <section class="f-section--tight f-section--surface" style="padding-block:24px;border-top:1px solid var(--f-line);">
+    <section class="f-section--tight f-section--surface odp-pad-y--line">
         <div class="f-container">
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+            <div class="odp-row odp-row--top odp-row--spread">
                 <div>
-                    <h2 class="f-h2" style="font-size:1.25rem;">{{ __('finder_search.emergency.nearest_title') }}</h2>
-                    <p class="f-small f-muted" style="margin-top:2px;">
+                    <h2 class="f-h2 odp-title">{{ __('finder_search.emergency.nearest_title') }}</h2>
+                    <p class="f-small f-muted odp-mt-2">
                         {{ count($facilities) === 1
                             ? __('public.care_map_emergency.count_hospitals_one')
                             : __('public.care_map_emergency.count_hospitals', ['count' => count($facilities)]) }}
@@ -123,13 +123,13 @@
                     {{ __('finder_search.common.use_my_location') }}
                 </button>
             </div>
-            <p class="f-small f-muted" role="status" aria-live="polite" id="em-locate-status" style="margin-top:6px;">
+            <p class="f-small f-muted odp-mt-6" role="status" aria-live="polite" id="em-locate-status">
                 @if(request()->filled('latitude') && request()->filled('longitude')){{ __('finder_search.common.location_active') }}@endif
             </p>
 
             {{-- No column in care_facilities records A&E capability, so the
                  page says exactly that instead of guessing. --}}
-            <p class="em-note f-small" style="margin-top:12px;color:var(--f-ink-soft);">
+            <p class="em-note f-small odp-mt-12 odp-soft">
                 @include('partials.finder.icon', ['name' => 'alert-circle', 'size' => 16])
                 <span>{{ __('public.care_map_emergency.capability_unknown') }}</span>
             </p>
@@ -183,21 +183,21 @@
                         </div>
                     </article>
                 @empty
-                    <div class="f-card" style="text-align:center;padding:32px 20px;">
+                    <div class="f-card odp-empty">
                         @include('partials.finder.icon', ['name' => 'map-pin', 'size' => 32, 'class' => 'f-muted'])
-                        <p style="font-weight:700;margin-top:10px;">{{ __('public.care_map_emergency.empty_title') }}</p>
-                        <p class="f-small f-muted" style="margin-top:6px;">{{ __('public.care_map_emergency.empty_sub') }}</p>
+                        <p class="odp-bold odp-mt-12">{{ __('public.care_map_emergency.empty_title') }}</p>
+                        <p class="f-small f-muted odp-mt-6">{{ __('public.care_map_emergency.empty_sub') }}</p>
                     </div>
                 @endforelse
             </div>
 
             @if(count($facilities) > $shown->count())
-                <p class="f-small f-muted" style="margin-top:12px;">{{ __('finder_search.common.showing_first', ['count' => $shown->count()]) }}</p>
+                <p class="f-small f-muted odp-mt-12">{{ __('finder_search.common.showing_first', ['count' => $shown->count()]) }}</p>
             @endif
         </div>
     </section>
 
-    <footer class="f-section--tight" style="padding-block:20px;">
+    <footer class="f-section--tight odp-pad-y">
         <div class="f-container">
             <p class="f-small f-muted">{{ __('finder_search.common.info_may_change') }}</p>
         </div>

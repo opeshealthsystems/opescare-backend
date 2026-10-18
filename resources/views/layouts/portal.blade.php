@@ -5,14 +5,23 @@
     @php
         /*
          * OPES desk shell (docs/superpowers/specs/2026-10-18-desk-design-system.md):
-         * the pharmacy, lab, imaging and diagnostic desks render with body.od,
-         * public/css/od.css, the .od-brand lockup and the .od-topbar. Every
-         * other portal page keeps the classic chrome untouched.
+         * EVERY portal page renders with body.od.od--{area}, public/css/od.css,
+         * the .od-brand lockup and the .od-topbar. Area picks the brand word,
+         * the mark and the topbar search target: pharmacy | lab | clinic |
+         * admin | patient | pro. admin.css is folded into od.css (body.od--admin).
          */
-        $odPharmacy = request()->is('pharmacy', 'pharmacy/*');
+        $odPharmacy = request()->is('pharmacy', 'pharmacy/*', 'portals/pharmacy', 'portals/pharmacy/*');
         $odLabDesk  = request()->is('facility/lab', 'facility/lab/*', 'facility/imaging', 'facility/imaging/*', 'facility/diagnostic', 'facility/diagnostic/*');
-        $od         = $odPharmacy || $odLabDesk;
-        $odProduct  = $odPharmacy ? 'pharmacy' : 'lab';
+        $odArea     = match (true) {
+            $odPharmacy => 'pharmacy',
+            $odLabDesk  => 'lab',
+            request()->is('admin', 'admin/*', 'portals/admin', 'portals/admin/*', 'horizon*') => 'admin',
+            request()->is('patient', 'patient/*', 'portals/patient', 'portals/patient/*', 'portals/guardian', 'portals/guardian/*', 'family', 'family/*') => 'patient',
+            request()->is('professional', 'professional/*', 'developer', 'developer/*', 'portals/developer', 'portals/developer/*') => 'pro',
+            default => 'clinic',
+        };
+        $od         = true;
+        $odProduct  = $odArea;
     @endphp
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -20,11 +29,6 @@
     <meta name="theme-color" content="#0F4C81">
     @include('partials.favicons')
     <link rel="manifest" href="{{ asset('site.webmanifest') }}">
-    @unless($od)
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    @endunless
     @if (file_exists(public_path('assets/finder.css')))
         <link rel="stylesheet" href="{{ asset('assets/finder.css') }}">
     @endif
@@ -36,18 +40,13 @@
         <link rel="preload" href="{{ asset('fonts/inter/inter-500.woff2') }}" as="font" type="font/woff2" crossorigin>
         <link rel="preload" href="{{ asset('fonts/inter/inter-700.woff2') }}" as="font" type="font/woff2" crossorigin>
         <link rel="stylesheet" href="{{ asset('css/od.css') }}?v={{ @filemtime(public_path('css/od.css')) ?: '1' }}">
+        {{-- Shared portal class names (.panel, .btn, .data-table …) in the od look, plus the
+             admin helpers that used to live in public/css/admin.css (now retired). --}}
+        <link rel="stylesheet" href="{{ asset('css/od-legacy.css') }}?v={{ @filemtime(public_path('css/od-legacy.css')) ?: '1' }}">
     @endif
-    @if (request()->is('admin', 'admin/*', 'portals/admin', 'portals/admin/*'))
-        {{-- The admin console's own rules (public/css/admin.css): scoped to body.section-admin, same pattern as pharmacy.css. --}}
-        <link rel="stylesheet" href="{{ asset('css/admin.css') }}?v={{ @filemtime(public_path('css/admin.css')) ?: '1' }}">
-    @endif
-    <style>
-        .sidebar-spacer{margin-bottom:var(--p-space-3,.75rem)}
-        .min-w-0{min-width:0}
-    </style>
     @yield('head')
 </head>
-<body class="portal-body{{ $odPharmacy ? ' section-pharmacy' : '' }}{{ $od ? ' od od--' . $odProduct : '' }}{{ request()->is('admin', 'admin/*', 'portals/admin', 'portals/admin/*') ? ' section-admin' : '' }}">
+<body class="portal-body od od--{{ $odArea }}{{ $odPharmacy ? ' section-pharmacy' : '' }}{{ $odArea === 'admin' ? ' section-admin' : '' }}">
 
 <div class="portal-wrap">
 
@@ -96,7 +95,14 @@
     <aside class="portal-sidebar" id="portal-sidebar" role="navigation" aria-label="Portal navigation">
 
         @if($od)
-            @include('partials.od.brand', ['odProduct' => $odProduct, 'odHome' => $odPharmacy ? route('portals.pharmacy.dashboard') : (request()->is('facility/imaging*') ? route('portals.imaging.index') : (request()->is('facility/diagnostic*') ? route('portals.diagnostic.dashboard') : route('portals.lab.index')))])
+            @include('partials.od.brand', ['odProduct' => $odProduct, 'odHome' => match ($odArea) {
+                'pharmacy' => route('portals.pharmacy.dashboard'),
+                'lab'      => request()->is('facility/imaging*') ? route('portals.imaging.index') : (request()->is('facility/diagnostic*') ? route('portals.diagnostic.dashboard') : route('portals.lab.index')),
+                'admin'    => route('portals.admin'),
+                'patient'  => route('portals.patient'),
+                'pro'      => request()->is('developer*', 'portals/developer*') ? route('portals.developer.dashboard') : route('professional.profile'),
+                default    => route('portals.staff'),
+            }])
         @else
         <a href="{{ url('/') }}" class="sidebar-brand" aria-label="OpesCare Home">
             <div class="sidebar-brand-icon" aria-hidden="true">

@@ -8,6 +8,7 @@
 
 @section('head')
     @include('portals.patient._finder_head')
+    <link rel="stylesheet" href="{{ asset('css/od-patient.css') }}?v={{ @filemtime(public_path('css/od-patient.css')) ?: '1' }}">
 @endsection
 
 @section('patient_banner')
@@ -41,14 +42,14 @@
     </div>
 
     @if($apptCount === 0)
-    <div class="f-card" style="text-align:center;padding:40px 20px;">
-        <div class="pf-qa__icon" style="margin:0 auto 12px;width:48px;height:48px;">
+    <div class="f-card ods-99e8a36">
+        <div class="pf-qa__icon ods-4ef0061">
             @include('partials.finder.icon', ['name' => 'calendar', 'size' => 24])
         </div>
-        <h2 style="font-size:1.125rem;font-weight:750;margin:0 0 6px;">{{ __('public.portal.no_appointments_title', [], $l) }}</h2>
-        <p class="f-muted" style="margin:0 0 18px;">{{ __('public.portal.no_appointments_desc', [], $l) }}</p>
-        <div class="pf-actions" style="justify-content:center;">
-            <a href="{{ route('portals.patient.appointments.book') }}" class="f-btn f-btn--primary" style="min-height:48px;">
+        <h2 class="ods-40b57ba">{{ __('public.portal.no_appointments_title', [], $l) }}</h2>
+        <p class="f-muted ods-7307c03">{{ __('public.portal.no_appointments_desc', [], $l) }}</p>
+        <div class="pf-actions ods-9b54a37">
+            <a href="{{ route('portals.patient.appointments.book') }}" class="f-btn f-btn--primary ods-a27b458">
                 @include('partials.finder.icon', ['name' => 'calendar-plus', 'size' => 18])
                 {{ __('public.appt_book_btn') }}
             </a>
@@ -109,7 +110,7 @@
                         @endif
                     </div>
                     @if($status === 'requested')
-                    <p class="f-small" style="color:var(--f-warn);margin:8px 0 0;display:flex;align-items:center;gap:6px;">
+                    <p class="f-small ods-2cfa178">
                         @include('partials.finder.icon', ['name' => 'clock', 'size' => 15])
                         {{ __('finder_patient.requested_hint') }}
                     </p>

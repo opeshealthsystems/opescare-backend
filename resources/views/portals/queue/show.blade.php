@@ -20,66 +20,71 @@
     $isOpen = in_array($ticket->status, Q::ACTIVE_STATUSES, true);
 @endphp
 
-@section('content')
+@section('head')
+<link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">
+@endsection
 
-<div class="page-header">
+@section('content')
+<div class="od-page odc-page">
+
+<div class="od-page__head">
     <div>
-        <h1 class="page-title">{{ __('queue_desk.ticket_title', ['number' => $number]) }}</h1>
-        <p class="page-subtitle">
-            <span class="td-strong">{{ $qName !== '' ? $qName : '—' }}</span>
+        <h1 class="od-page__title">{{ __('queue_desk.ticket_title', ['number' => $number]) }}</h1>
+        <p class="od-page__sub">
+            <span class="odc-strong">{{ $qName !== '' ? $qName : '—' }}</span>
             @if($qPatient?->health_id) · {{ $qPatient->health_id }} @endif
             · {{ $ticket->appointment_id ? __('queue_desk.booking') : __('queue_desk.walk_in') }}
         </p>
     </div>
-    <a href="{{ route('portals.queue.index') }}" class="btn btn-secondary">
+    <a href="{{ route('portals.queue.index') }}" class="od-btn od-btn--secondary">
         <i data-lucide="arrow-left"></i> {{ __('queue_desk.back_to_queue') }}
     </a>
 </div>
 
-@if(session('success'))<div class="alert alert-success mb-6"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
-@if(session('error'))<div class="alert alert-danger mb-6"><i data-lucide="alert-circle"></i><div>{{ session('error') }}</div></div>@endif
+@if(session('success'))<div class="odc-note odc-note--ready"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
+@if(session('error'))<div class="odc-note odc-note--urgent"><i data-lucide="alert-circle"></i><div>{{ session('error') }}</div></div>@endif
 @if($errors->any())
-<div class="alert alert-danger mb-6" role="alert">
+<div class="odc-note odc-note--urgent" role="alert">
     <i data-lucide="alert-circle"></i>
-    <div><ul class="alert-list">@foreach($errors->all() as $message)<li>{{ $message }}</li>@endforeach</ul></div>
+    <div><ul class="odc-note__list">@foreach($errors->all() as $message)<li>{{ $message }}</li>@endforeach</ul></div>
 </div>
 @endif
 
 {{-- ── Timeline: the five timestamps, each written once ─────────────────── --}}
-<div class="panel mb-6">
-    <div class="panel-header">
-        <h2 class="panel-title"><i data-lucide="timer"></i> {{ __('queue_desk.timeline') }}</h2>
+<div class="od-card">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('queue_desk.timeline') }}</h2>
         <div>
-            <span class="badge badge-neutral">{{ __('queue_desk.status.' . $ticket->status) }}</span>
+            <span class="od-pill od-pill--neutral">{{ __('queue_desk.status.' . $ticket->status) }}</span>
             @include('portals.queue._priority_badge', ['ticket' => $ticket])
         </div>
     </div>
-    <div class="table-wrapper">
-        <table class="data-table">
+    <div class="od-table-wrap">
+        <table class="od-table">
             <tbody>
                 @foreach($stamps as $key => $at)
                 <tr>
-                    <td class="td-strong">{{ __('queue_desk.' . $key) }}</td>
+                    <td class="odc-strong">{{ __('queue_desk.' . $key) }}</td>
                     <td>{{ $at ? $at->translatedFormat('d M Y H:i:s') : __('queue_desk.not_yet') }}</td>
                 </tr>
                 @endforeach
                 <tr>
-                    <td class="td-strong">{{ __('queue_desk.waited_total') }}</td>
+                    <td class="odc-strong">{{ __('queue_desk.waited_total') }}</td>
                     <td>{{ Q::formatDuration($durations['waited']) }}</td>
                 </tr>
                 <tr>
-                    <td class="td-strong">{{ __('queue_desk.served_total') }}</td>
+                    <td class="odc-strong">{{ __('queue_desk.served_total') }}</td>
                     <td>{{ Q::formatDuration($durations['served']) }}</td>
                 </tr>
                 @if($ticket->priority_reason)
                 <tr>
-                    <td class="td-strong">{{ __('queue_desk.priority_reason') }}</td>
+                    <td class="odc-strong">{{ __('queue_desk.priority_reason') }}</td>
                     <td>{{ $ticket->priority_reason }}</td>
                 </tr>
                 @endif
                 @if($ticket->status_reason)
                 <tr>
-                    <td class="td-strong">{{ __('queue_desk.col_reason') }}</td>
+                    <td class="odc-strong">{{ __('queue_desk.col_reason') }}</td>
                     <td>{{ $ticket->status_reason }}</td>
                 </tr>
                 @endif
@@ -92,30 +97,30 @@
      for this visit, and the booking the ticket came from. Each link is gated
      by the same capability as its route so nothing here 403s. ─────────── --}}
 @capability('clinical_chart', 'triage')
-<div class="panel mb-6" data-panel="next-steps">
-    <div class="panel-header">
-        <h2 class="panel-title"><i data-lucide="route"></i> {{ __('hospital_desk.patient_next_steps') }}</h2>
+<div class="od-card" data-panel="next-steps">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('hospital_desk.patient_next_steps') }}</h2>
     </div>
-    <div class="panel-body">
-        <p class="td-muted mb-4">{{ __('hospital_desk.patient_next_steps_hint') }}</p>
-        <div class="row-actions-inline">
+    <div class="od-card__body">
+        <p class="od-muted">{{ __('hospital_desk.patient_next_steps_hint') }}</p>
+        <div class="odc-actions">
             @capability('clinical_chart')
             @if($qPatient?->health_id)
-            <a href="{{ route('portals.chart.index', ['health_id' => $qPatient->health_id]) }}" class="btn btn-primary btn-sm">
+            <a href="{{ route('portals.chart.index', ['health_id' => $qPatient->health_id]) }}" class="od-btn od-btn--primary od-btn--sm">
                 <i data-lucide="folder-heart"></i> {{ __('hospital_desk.open_chart') }}
             </a>
             @endif
             @endcapability
             @capability('triage')
             @if($isOpen && $qPatient?->health_id)
-            <a href="{{ route('portals.triage.create', ['health_id' => $qPatient->health_id]) }}" class="btn btn-secondary btn-sm">
+            <a href="{{ route('portals.triage.create', ['health_id' => $qPatient->health_id]) }}" class="od-btn od-btn--secondary od-btn--sm">
                 <i data-lucide="siren"></i> {{ __('hospital_desk.open_triage') }}
             </a>
             @endif
             @endcapability
             @capability('front_desk', 'schedule')
             @if($ticket->appointment_id)
-            <a href="{{ route('portals.staff.appointments', ['date' => $ticket->appointment?->scheduled_at?->toDateString()]) }}" class="btn btn-secondary btn-sm">
+            <a href="{{ route('portals.staff.appointments', ['date' => $ticket->appointment?->scheduled_at?->toDateString()]) }}" class="od-btn od-btn--secondary od-btn--sm">
                 <i data-lucide="calendar-check-2"></i> {{ __('hospital_desk.open_appointment') }}
             </a>
             @endif
@@ -129,31 +134,31 @@
      not mid-consultation: a consultation that began is completed, not
      cancelled. ──────────────────────────────────────────────────────────── --}}
 @if(in_array($ticket->status, [Q::STATUS_WAITING, Q::STATUS_CALLED], true))
-<div class="panel form-panel mb-6">
-    <div class="panel-header">
-        <h2 class="panel-title"><i data-lucide="x-circle"></i> {{ __('queue_desk.action_cancel') }}</h2>
+<div class="od-card odc-form">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('queue_desk.action_cancel') }}</h2>
     </div>
-    <div class="panel-body">
+    <div class="od-card__body">
         <form method="POST" action="{{ route('portals.queue.cancel', $ticket->id) }}" data-confirm="{{ __('hospital_desk.confirm_queue_cancel') }}">
             @csrf
-            <div class="form-group mb-4">
-                <label class="form-label form-label-required" for="queue-cancel-reason">{{ __('queue_desk.cancel_reason') }}</label>
-                <input type="text" id="queue-cancel-reason" name="reason" class="form-control" maxlength="500" required value="{{ old('reason') }}">
+            <div class="odc-field">
+                <label class="odc-label odc-label--req" for="queue-cancel-reason">{{ __('queue_desk.cancel_reason') }}</label>
+                <input type="text" id="queue-cancel-reason" name="reason" class="od-input" maxlength="500" required value="{{ old('reason') }}">
             </div>
-            <button type="submit" class="btn btn-secondary"><i data-lucide="x-circle"></i> {{ __('queue_desk.action_cancel') }}</button>
+            <button type="submit" class="od-btn od-btn--secondary"><i data-lucide="x-circle"></i> {{ __('queue_desk.action_cancel') }}</button>
         </form>
     </div>
 </div>
 @endif
 
 {{-- ── History: append-only ──────────────────────────────────────────────── --}}
-<div class="panel">
-    <div class="panel-header">
-        <h2 class="panel-title"><i data-lucide="history"></i> {{ __('queue_desk.history_title') }}</h2>
+<div class="od-card">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('queue_desk.history_title') }}</h2>
     </div>
-    <div class="panel-body"><p class="td-muted">{{ __('queue_desk.history_hint') }}</p></div>
-    <div class="table-wrapper">
-        <table class="data-table">
+    <div class="od-card__body"><p class="od-muted">{{ __('queue_desk.history_hint') }}</p></div>
+    <div class="od-table-wrap">
+        <table class="od-table">
             <thead>
                 <tr>
                     <th>{{ __('queue_desk.col_at') }}</th>
@@ -166,11 +171,11 @@
             <tbody>
             @foreach($ticket->histories as $h)
                 <tr>
-                    <td data-label="{{ __('queue_desk.col_at') }}" class="td-muted">{{ $h->changed_at?->translatedFormat('d M Y H:i:s') ?? '—' }}</td>
+                    <td data-label="{{ __('queue_desk.col_at') }}" class="od-muted">{{ $h->changed_at?->translatedFormat('d M Y H:i:s') ?? '—' }}</td>
                     <td data-label="{{ __('queue_desk.col_from') }}">{{ $h->from_status ? __('queue_desk.status.' . $h->from_status) : '—' }}</td>
-                    <td data-label="{{ __('queue_desk.col_to') }}"><span class="badge badge-neutral">{{ __('queue_desk.status.' . $h->to_status) }}</span></td>
-                    <td data-label="{{ __('queue_desk.col_by') }}" class="td-muted">{{ $h->changed_by ? ($actors[$h->changed_by] ?? '—') : '—' }}</td>
-                    <td data-label="{{ __('queue_desk.col_reason') }}" class="td-muted">{{ $h->reason ?? '—' }}</td>
+                    <td data-label="{{ __('queue_desk.col_to') }}"><span class="od-pill od-pill--neutral">{{ __('queue_desk.status.' . $h->to_status) }}</span></td>
+                    <td data-label="{{ __('queue_desk.col_by') }}" class="od-muted">{{ $h->changed_by ? ($actors[$h->changed_by] ?? '—') : '—' }}</td>
+                    <td data-label="{{ __('queue_desk.col_reason') }}" class="od-muted">{{ $h->reason ?? '—' }}</td>
                 </tr>
             @endforeach
             </tbody>
@@ -178,4 +183,5 @@
     </div>
 </div>
 
+</div>
 @endsection

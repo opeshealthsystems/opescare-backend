@@ -41,7 +41,7 @@
                 {{ $vbRead ? __('family.banner_read_only') : __('family.banner_full') }}
             </span>
         </div>
-        <form method="POST" action="{{ route('portals.patient.family.switch.back') }}" style="margin:0;">
+        <form class="ods-1386d50" method="POST" action="{{ route('portals.patient.family.switch.back') }}">
             @csrf
             <button type="submit" class="pf-viewing__back">
                 <i data-lucide="undo-2" aria-hidden="true"></i>

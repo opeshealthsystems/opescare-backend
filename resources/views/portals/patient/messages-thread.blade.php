@@ -8,6 +8,7 @@
 
 @section('head')
     @include('portals.patient._finder_head')
+    <link rel="stylesheet" href="{{ asset('css/od-patient.css') }}?v={{ @filemtime(public_path('css/od-patient.css')) ?: '1' }}">
 @endsection
 
 @section('patient_banner')
@@ -41,14 +42,14 @@
     @if(!empty($context))
     <div class="pf-alert">
         @include('partials.finder.icon', ['name' => 'info', 'size' => 18])
-        <p><span class="f-small" style="text-transform:uppercase;letter-spacing:.04em;font-weight:700;display:block;">{{ __('messaging.ctx_about') }}</span>
+        <p><span class="f-small ods-f7130a8">{{ __('messaging.ctx_about') }}</span>
         <strong>{{ $context['label'] }}</strong></p>
     </div>
     @endif
 
-    <div class="f-card" style="margin-bottom:12px;">
+    <div class="f-card ods-fa3e1c7">
         @if($messages->isEmpty())
-            <p class="f-muted" style="text-align:center;margin:20px 0;">{{ __('messaging.no_messages') }}</p>
+            <p class="f-muted ods-f1b6e00">{{ __('messaging.no_messages') }}</p>
         @else
             <div class="pf-msgs">
                 @foreach($messages as $msg)
@@ -73,16 +74,16 @@
     @elseif($readOnly)
         {{-- Read-only guardian: the composer is shown but cannot be used — the reason is right above it. --}}
         <div class="pf-alert" data-section="read-only-note">
-            <i data-lucide="lock" aria-hidden="true" style="width:18px;height:18px;flex:none;margin-top:2px;"></i>
+            <i class="ods-d9ea87f" data-lucide="lock" aria-hidden="true"></i>
             <p id="reply-disabled-reason">{{ __('family.inbox_read_only_compose', ['name' => $viewingName]) }}</p>
         </div>
         <div class="f-card" data-section="composer-disabled">
-            <div class="f-field" style="margin-bottom:12px;">
+            <div class="f-field ods-fa3e1c7">
                 <label class="f-label" for="body">{{ __('messaging.reply_label') }}</label>
                 <textarea id="body" name="body" class="f-input" rows="3" maxlength="5000"
                           placeholder="{{ __('messaging.reply_placeholder') }}" disabled aria-disabled="true" aria-describedby="reply-disabled-reason"></textarea>
             </div>
-            <button type="button" class="f-btn f-btn--primary" style="min-height:48px;" disabled aria-disabled="true">
+            <button type="button" class="f-btn f-btn--primary ods-a27b458" disabled aria-disabled="true">
                 {{ __('messaging.send') }}
                 @include('partials.finder.icon', ['name' => 'arrow-right', 'size' => 16])
             </button>
@@ -91,18 +92,18 @@
         <form method="POST" action="{{ route('portals.patient.messages.send', $thread->uuid) }}" class="f-card">
             @csrf
             @if($viewing)
-            <p class="pf-alert" style="margin-bottom:12px;" data-section="on-behalf-note">
+            <p class="pf-alert ods-fa3e1c7" data-section="on-behalf-note">
                 @include('partials.finder.icon', ['name' => 'users', 'size' => 18])
                 <span>{{ __('family.inbox_on_behalf', ['name' => $viewingName]) }}</span>
             </p>
             @endif
-            <div class="f-field" style="margin-bottom:12px;">
+            <div class="f-field ods-fa3e1c7">
                 <label class="f-label" for="body">{{ __('messaging.reply_label') }}</label>
                 <textarea id="body" name="body" class="f-input" rows="3" maxlength="5000"
                           placeholder="{{ __('messaging.reply_placeholder') }}" required>{{ old('body') }}</textarea>
                 @error('body')<p class="f-error">{{ $message }}</p>@enderror
             </div>
-            <button type="submit" class="f-btn f-btn--primary" style="min-height:48px;">
+            <button type="submit" class="f-btn f-btn--primary ods-a27b458">
                 {{ __('messaging.send') }}
                 @include('partials.finder.icon', ['name' => 'arrow-right', 'size' => 16])
             </button>

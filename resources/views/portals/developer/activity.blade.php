@@ -2,6 +2,10 @@
 @section('title', __('developer_ext.act_page_title'))
 @php $l = app()->getLocale(); @endphp
 
+@section('head')
+    <link rel="stylesheet" href="{{ asset('css/od-pro.css') }}?v={{ @filemtime(public_path('css/od-pro.css')) ?: '1' }}">
+@endsection
+
 @section('content')
 
     <div class="breadcrumb">
@@ -89,7 +93,7 @@
                                 @if($outcome)
                                     <details class="mt-2">
                                         <summary class="btn btn-ghost btn-sm"><i data-lucide="file-json"></i> {{ __('developer_ext.act_btn_outcome') }}</summary>
-                                        <pre class="code-block mono" style="white-space:pre-wrap;">{{ $outcome }}</pre>
+                                        <pre class="code-block mono ods-d07753c">{{ $outcome }}</pre>
                                     </details>
                                 @endif
                             </td>

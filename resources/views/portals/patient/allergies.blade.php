@@ -7,6 +7,7 @@
 
 @section('head')
     @include('portals.patient._finder_head')
+    <link rel="stylesheet" href="{{ asset('css/od-patient.css') }}?v={{ @filemtime(public_path('css/od-patient.css')) ?: '1' }}">
 @endsection
 
 @section('patient_banner')
@@ -36,11 +37,11 @@
     </div>
 
     @if(!$patient || $allergies->isEmpty())
-    <div class="f-card" style="text-align:center;padding:40px 20px;" data-section="allergies-empty">
-        <div class="pf-qa__icon" style="margin:0 auto 12px;width:48px;height:48px;">
+    <div class="f-card ods-99e8a36" data-section="allergies-empty">
+        <div class="pf-qa__icon ods-4ef0061">
             @include('partials.finder.icon', ['name' => 'alert-triangle', 'size' => 24])
         </div>
-        <p class="f-muted" style="margin:0;">{{ __('family.alg_empty') }}</p>
+        <p class="f-muted ods-1386d50">{{ __('family.alg_empty') }}</p>
     </div>
     @else
     <div class="f-card" data-section="allergies">
@@ -57,7 +58,7 @@
                 <tbody>
                 @foreach($allergies as $a)
                     <tr>
-                        <td style="font-weight:650;color:var(--f-ink);">{{ $a->substance }}</td>
+                        <td class="ods-749274d">{{ $a->substance }}</td>
                         <td><span class="f-badge {{ $tone($a->severity) }}">@enum($a->severity, 'severity')</span></td>
                         <td>@enum($a->status)</td>
                         <td>{{ $a->created_at?->translatedFormat('d M Y') ?? '—' }}</td>

@@ -7,6 +7,7 @@
 
 @section('head')
     @include('portals.patient._finder_head')
+    <link rel="stylesheet" href="{{ asset('css/od-patient.css') }}?v={{ @filemtime(public_path('css/od-patient.css')) ?: '1' }}">
 @endsection
 
 @section('patient_banner')
@@ -33,11 +34,11 @@
     </div>
 
     @if(!$patient || $conditions->isEmpty())
-    <div class="f-card" style="text-align:center;padding:40px 20px;" data-section="conditions-empty">
-        <div class="pf-qa__icon" style="margin:0 auto 12px;width:48px;height:48px;">
+    <div class="f-card ods-99e8a36" data-section="conditions-empty">
+        <div class="pf-qa__icon ods-4ef0061">
             @include('partials.finder.icon', ['name' => 'stethoscope', 'size' => 24])
         </div>
-        <p class="f-muted" style="margin:0;">{{ __('family.cl_empty') }}</p>
+        <p class="f-muted ods-1386d50">{{ __('family.cl_empty') }}</p>
     </div>
     @else
     <div class="f-card" data-section="conditions">
@@ -55,8 +56,8 @@
                 <tbody>
                 @foreach($conditions as $c)
                     <tr>
-                        <td style="font-weight:650;color:var(--f-ink);">{{ $c->display_name ?? $c->snomed_display ?? '—' }}</td>
-                        <td style="font-family:ui-monospace,Menlo,Consolas,monospace;">{{ $c->code ?? $c->snomed_code ?? '—' }}</td>
+                        <td class="ods-749274d">{{ $c->display_name ?? $c->snomed_display ?? '—' }}</td>
+                        <td class="ods-9709411">{{ $c->code ?? $c->snomed_code ?? '—' }}</td>
                         <td><span class="f-badge {{ in_array($c->status, ['active', 'chronic'], true) ? 'f-badge--warn' : 'pf-badge--muted' }}">@enum($c->status)</span></td>
                         <td>{{ $c->is_primary ? __('family.yes') : '—' }}</td>
                         <td>{{ $c->created_at?->translatedFormat('d M Y') ?? '—' }}</td>

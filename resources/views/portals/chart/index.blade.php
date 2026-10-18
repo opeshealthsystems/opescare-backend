@@ -5,12 +5,17 @@
 @section('breadcrumb_home_url', route('portals.chart.index'))
 @section('breadcrumb_section', __('chart.lookup_title'))
 
-@section('content')
+@section('head')
+<link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">
+@endsection
 
-<div class="page-header">
+@section('content')
+<div class="od-page odc-page">
+
+<div class="od-page__head">
     <div>
-        <h1 class="page-title">{{ __('chart.lookup_title') }}</h1>
-        <p class="page-subtitle">{{ __('chart.lookup_subtitle') }}</p>
+        <h1 class="od-page__title">{{ __('chart.lookup_title') }}</h1>
+        <p class="od-page__sub">{{ __('chart.lookup_subtitle') }}</p>
     </div>
 </div>
 
@@ -19,37 +24,38 @@
      platform's patients. A Health ID nobody holds and one this clinician has
      no basis to open produce the same message, so the form never confirms
      that a record exists. --}}
-<div class="panel form-panel">
-    <div class="panel-header">
-        <h2 class="panel-title"><i data-lucide="search"></i> {{ __('chart.health_id') }}</h2>
+<div class="od-card odc-form">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('chart.health_id') }}</h2>
     </div>
-    <div class="panel-body">
+    <div class="od-card__body">
 
         @if($notFound)
-        <div class="alert alert-danger mb-4" role="alert">
+        <div class="odc-note odc-note--urgent" role="alert">
             <i data-lucide="user-x"></i>
             <div>{{ __('chart.not_found') }}</div>
         </div>
         @endif
 
         <form method="GET" action="{{ route('portals.chart.index') }}">
-            <div class="form-group mb-4">
-                <label class="form-label form-label-required" for="chart-health-id">{{ __('chart.health_id') }}</label>
-                <input type="text" id="chart-health-id" name="health_id" class="form-control"
+            <div class="odc-field">
+                <label class="odc-label odc-label--req" for="chart-health-id">{{ __('chart.health_id') }}</label>
+                <input type="text" id="chart-health-id" name="health_id" class="od-input"
                        value="{{ $healthId }}" required autocomplete="off" autofocus maxlength="64">
-                <div class="form-hint">{{ __('chart.health_id_hint') }}</div>
+                <div class="odc-hint">{{ __('chart.health_id_hint') }}</div>
             </div>
-            <div class="row-actions-inline">
-                <button type="submit" class="btn btn-primary">
+            <div class="odc-actions">
+                <button type="submit" class="od-btn od-btn--primary">
                     <i data-lucide="folder-open"></i> {{ __('chart.lookup') }}
                 </button>
             </div>
         </form>
 
-        <p class="form-hint mt-4">
+        <p class="odc-hint odc-mt">
             <a href="{{ route('portals.staff') }}">{{ __('chart.landing_hint') }}</a>
         </p>
     </div>
 </div>
 
+</div>
 @endsection

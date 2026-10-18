@@ -4,31 +4,34 @@
 @section('breadcrumb_home', __('public.adm_cc_hlth_breadcrumb_home'))
 @section('breadcrumb_home_url', route('portals.admin'))
 @section('breadcrumb_section', __('public.adm_cc_hlth_breadcrumb_section'))
+@section('head')<link rel="stylesheet" href="{{ asset('css/od-admin.css') }}?v={{ @filemtime(public_path('css/od-admin.css')) ?: '1' }}">@endsection
 
 @section('content')
-<div class="page-header">
+<div class="od-page od-stack">
+<div class="od-page__head">
     <div>
-        <h1 class="page-title">{{ __('public.adm_cc_hlth_heading') }}</h1>
-        <p class="page-subtitle">{{ __('public.adm_cc_hlth_subtitle') }}</p>
+        <h1 class="od-page__title">{{ __('public.adm_cc_hlth_heading') }}</h1>
+        <p class="od-page__sub">{{ __('public.adm_cc_hlth_subtitle') }}</p>
     </div>
-    <div class="page-head__spacer"></div>
-    <a href="{{ route('portals.admin.cc.health') }}" class="btn btn-ghost btn-sm">
-        <i data-lucide="refresh-cw"></i> {{ __('public.adm_cc_hlth_btn_refresh') }}
-    </a>
+    <div class="od-row">
+        <a href="{{ route('portals.admin.cc.health') }}" class="od-btn od-btn--secondary">
+            <i data-lucide="refresh-cw"></i> {{ __('public.adm_cc_hlth_btn_refresh') }}
+        </a>
+    </div>
 </div>
 
 @php
-    $statusVariant = fn($s) => match($s) {
-        'ok'      => 'stat-card--success',
-        'warning' => 'stat-card--warning',
-        'error'   => 'stat-card--danger',
-        default   => '',
+    $statusTint = fn($s) => match($s) {
+        'ok'      => 'od-tint--green',
+        'warning' => 'od-tint--amber',
+        'error'   => 'od-tint--rose',
+        default   => 'od-tint--blue',
     };
     $statusBadge = fn($s) => match($s) {
-        'ok'      => 'badge-success',
-        'warning' => 'badge-warning',
-        'error'   => 'badge-danger',
-        default   => 'badge-neutral',
+        'ok'      => 'od-pill--ready',
+        'warning' => 'od-pill--pending',
+        'error'   => 'od-pill--urgent',
+        default   => 'od-pill--neutral',
     };
     $statusIcon = fn($s) => match($s) {
         'ok'      => 'check-circle',
@@ -44,77 +47,85 @@
     ];
     $fj = $health['failed_jobs'] ?? ['status'=>'ok','count'=>0,'message'=>''];
     $fjStatus = ($fj['count'] ?? 0) > 0 ? 'warning' : 'ok';
+    $errors   = collect($health)->where('status', 'error')->count();
+    $warnings = collect($health)->where('status', 'warning')->count();
+    $oks      = collect($health)->where('status', 'ok')->count();
 @endphp
 
-<div class="card-grid mb-6">
+{{-- Summary tiles --}}
+<div class="od-kpis oda-ga-kpis3">
+    <a href="{{ route('portals.admin.cc.health') }}" class="od-kpi od-tint--green">
+        <span class="od-kpi__icon"><i data-lucide="check-circle"></i></span>
+        <span class="od-kpi__body">
+            <span class="od-kpi__label">{{ __('public.adm_cc_hlth_stat_healthy') }}</span>
+            <span class="od-kpi__value">{{ $oks }}</span>
+        </span>
+    </a>
+    <a href="{{ route('portals.admin.cc.health') }}" class="od-kpi od-tint--amber">
+        <span class="od-kpi__icon"><i data-lucide="alert-circle"></i></span>
+        <span class="od-kpi__body">
+            <span class="od-kpi__label">{{ __('public.adm_cc_hlth_stat_warnings') }}</span>
+            <span class="od-kpi__value">{{ $warnings }}</span>
+        </span>
+    </a>
+    <a href="{{ route('portals.admin.cc.health') }}" class="od-kpi od-tint--rose">
+        <span class="od-kpi__icon"><i data-lucide="x-circle"></i></span>
+        <span class="od-kpi__body">
+            <span class="od-kpi__label">{{ __('public.adm_cc_hlth_stat_errors') }}</span>
+            <span class="od-kpi__value">{{ $errors }}</span>
+        </span>
+    </a>
+</div>
 
+<div class="od-grid od-grid--3">
     @foreach($checks as [$label, $data, $defaultMsg])
-    <div class="stat-card {{ $statusVariant($data['status']) }}">
-        <div class="stat-card__head">
-            <i data-lucide="{{ $statusIcon($data['status']) }}"></i>
-            <span class="stat-card__label">{{ $label }}</span>
-            <span class="badge {{ $statusBadge($data['status']) }}  badge-sm ml-auto">{{ strtoupper($data['status']) }}</span>
+    <section class="od-card oda-ga-check {{ $statusTint($data['status']) }}">
+        <div class="oda-ga-check__head">
+            <span class="oda-ga-check__icon"><i data-lucide="{{ $statusIcon($data['status']) }}"></i></span>
+            <span>{{ $label }}</span>
+            <span class="od-pill {{ $statusBadge($data['status']) }}">{{ strtoupper($data['status']) }}</span>
         </div>
-        <p class="nav-card__desc">{{ $data['message'] ?? $defaultMsg }}</p>
-    </div>
+        <p class="oda-ga-muted">{{ $data['message'] ?? $defaultMsg }}</p>
+    </section>
     @endforeach
 
     {{-- Failed Jobs --}}
-    <div class="stat-card {{ $statusVariant($fjStatus) }}">
-        <div class="stat-card__head">
-            <i data-lucide="{{ $statusIcon($fjStatus) }}"></i>
-            <span class="stat-card__label">{{ __('public.adm_cc_hlth_check_failed_jobs') }}</span>
-            <span class="badge {{ $fjStatus === 'warning' ? 'badge-warning' : 'badge-success' }}  badge-sm ml-auto">{{ $fj['count'] ?? 0 }}</span>
+    <section class="od-card oda-ga-check {{ $statusTint($fjStatus) }}">
+        <div class="oda-ga-check__head">
+            <span class="oda-ga-check__icon"><i data-lucide="{{ $statusIcon($fjStatus) }}"></i></span>
+            <span>{{ __('public.adm_cc_hlth_check_failed_jobs') }}</span>
+            <span class="od-pill {{ $fjStatus === 'warning' ? 'od-pill--pending' : 'od-pill--ready' }}">{{ $fj['count'] ?? 0 }}</span>
         </div>
-        <p class="nav-card__desc">{{ $fj['message'] ?? __('public.adm_cc_hlth_check_failed_jobs_msg') }}</p>
-    </div>
-
+        <p class="oda-ga-muted">{{ $fj['message'] ?? __('public.adm_cc_hlth_check_failed_jobs_msg') }}</p>
+    </section>
 </div>
 
 {{-- Summary Panel --}}
-<div class="panel">
-    <div class="panel-header">
-        <h3 class="panel-title"><i data-lucide="stethoscope"></i> {{ __('public.adm_cc_hlth_summary_heading') }}</h3>
+<section class="od-card">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('public.adm_cc_hlth_summary_heading') }}</h2>
     </div>
-    <div class="panel-body">
-        @php
-            $errors   = collect($health)->where('status', 'error')->count();
-            $warnings = collect($health)->where('status', 'warning')->count();
-            $oks      = collect($health)->where('status', 'ok')->count();
-        @endphp
-        <div class="stat-grid mb-4">
-            <div class="stat-card stat-card--success">
-                <div class="stat-card__value">{{ $oks }}</div>
-                <div class="stat-card__label">{{ __('public.adm_cc_hlth_stat_healthy') }}</div>
-            </div>
-            <div class="stat-card stat-card--warning">
-                <div class="stat-card__value">{{ $warnings }}</div>
-                <div class="stat-card__label">{{ __('public.adm_cc_hlth_stat_warnings') }}</div>
-            </div>
-            <div class="stat-card stat-card--danger">
-                <div class="stat-card__value">{{ $errors }}</div>
-                <div class="stat-card__label">{{ __('public.adm_cc_hlth_stat_errors') }}</div>
-            </div>
-        </div>
+    <div class="od-card__body">
         @if($errors > 0)
-            <div class="alert alert-danger">
+            <div class="oda-ga-alert oda-ga-alert--danger">
                 <i data-lucide="alert-triangle"></i>
-                <div>{{ __('public.adm_cc_hlth_alert_critical') }}</div>
+                <div class="oda-ga-alert__body">{{ __('public.adm_cc_hlth_alert_critical') }}</div>
             </div>
         @elseif($warnings > 0)
-            <div class="alert alert-warning">
+            <div class="oda-ga-alert oda-ga-alert--warn">
                 <i data-lucide="alert-circle"></i>
-                <div>{{ __('public.adm_cc_hlth_alert_warning') }}</div>
+                <div class="oda-ga-alert__body">{{ __('public.adm_cc_hlth_alert_warning') }}</div>
             </div>
         @else
-            <div class="alert alert-success">
+            <div class="oda-ga-alert oda-ga-alert--ok">
                 <i data-lucide="check-circle"></i>
-                <div>{{ __('public.adm_cc_hlth_alert_ok') }}</div>
+                <div class="oda-ga-alert__body">{{ __('public.adm_cc_hlth_alert_ok') }}</div>
             </div>
         @endif
-        <div class="td-muted text-sm mt-6">
+        <p class="oda-ga-muted">
             {{ __('public.adm_cc_hlth_last_checked') }} {{ now()->translatedFormat('M d, Y H:i:s') }} {{ __('public.adm_cc_hlth_server_time') }}
-        </div>
+        </p>
     </div>
+</section>
 </div>
 @endsection

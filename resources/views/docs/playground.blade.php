@@ -2,6 +2,7 @@
 @section('title', 'Interactive Playground')
 
 @section('head')
+@include('public.partials._od_pages_css')
 <style>
   /* Override content padding for full-height Redoc */
   .docs-content {
@@ -21,7 +22,7 @@
 
 @section('content')
 {{-- Redoc renders the reference itself, so the document had no heading. --}}
-<h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">OpesCare Connect API — interactive reference</h1>
+<h1 class="odp-sr">OpesCare Connect API — interactive reference</h1>
 <div class="redoc-wrap">
     <redoc
         spec-url='{{ asset("openapi.json") }}'

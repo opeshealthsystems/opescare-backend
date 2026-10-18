@@ -7,102 +7,27 @@
 @section('breadcrumb_section', __('prescriber.create_title'))
 
 @section('head')
-<style>
-    /* Repeatable medicine lines. Each line is a self-contained card so a row can
-       be added or removed without the surrounding layout shifting. */
-    .rx-rows { display: flex; flex-direction: column; gap: var(--p-space-4); }
-
-    .rx-row {
-        border: 1px solid var(--p-border);
-        border-radius: var(--p-radius);
-        background: var(--p-surface-2);
-        padding: var(--p-space-4);
-    }
-
-    .rx-row .form-control { background: var(--p-surface); }
-
-    .rx-row__head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: var(--p-space-3);
-        margin-bottom: var(--p-space-3);
-    }
-
-    .rx-row__num {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 1.6rem;
-        height: 1.6rem;
-        border-radius: 999px;
-        background: #0F4C81;
-        color: #FFFFFF;
-        font-size: 0.75rem;
-        font-weight: 700;
-        flex-shrink: 0;
-    }
-
-    .rx-remove[disabled] { opacity: 0.45; cursor: not-allowed; }
-
-    .rx-patient { display: flex; align-items: center; gap: var(--p-space-3); }
-
-    .rx-patient__avatar {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 2.5rem;
-        height: 2.5rem;
-        border-radius: 999px;
-        background: rgba(15,76,129,.12);
-        color: #0F4C81;
-        font-weight: 700;
-        font-size: 0.9rem;
-        flex-shrink: 0;
-    }
-
-    .rx-patient__name { font-weight: 600; color: var(--p-text); }
-    .rx-patient__meta { font-size: 0.82rem; color: var(--p-text-muted); margin-top: 0.15rem; }
-
-    .rx-lookup { max-width: 480px; }
-
-    @media (max-width: 720px) {
-        .rx-row .form-row,
-        .rx-row .form-row-3 { grid-template-columns: 1fr; gap: var(--p-space-3); }
-    }
-</style>
+<link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">
 @endsection
 
 @section('content')
+<div class="od-page">
 
-<div class="page-header">
+<div class="od-page__head">
     <div>
-        <h1 class="page-title">{{ __('prescriber.create_title') }}</h1>
-        <p class="page-subtitle">{{ __('prescriber.create_subtitle') }}</p>
+        <h1 class="od-page__title">{{ __('prescriber.create_title') }}</h1>
+        <p class="od-page__sub">{{ __('prescriber.create_subtitle') }}</p>
     </div>
-    <a href="{{ route('portals.prescriber.index') }}" class="btn btn-ghost btn-sm">
-        <i data-lucide="arrow-left"></i>
-        <span>{{ __('prescriber.back') }}</span>
-    </a>
+    <a href="{{ route('portals.prescriber.index') }}" class="od-btn od-btn--secondary"><i data-lucide="arrow-left"></i> <span>{{ __('prescriber.back') }}</span></a>
 </div>
 
 @if(session('error'))
-<div class="alert alert-danger mb-4" role="alert">
-    <i data-lucide="triangle-alert"></i>
-    <div>{{ session('error') }}</div>
-</div>
+<div class="odc-note odc-note--err" role="alert"><i data-lucide="triangle-alert"></i><div>{{ session('error') }}</div></div>
 @endif
 
 @if($errors->any())
-<div class="alert alert-danger mb-4" role="alert">
-    <i data-lucide="triangle-alert"></i>
-    <div>
-        <ul class="alert-list">
-            @foreach($errors->all() as $message)
-                <li>{{ $message }}</li>
-            @endforeach
-        </ul>
-    </div>
+<div class="odc-note odc-note--err" role="alert"><i data-lucide="triangle-alert"></i>
+    <div><ul>@foreach($errors->all() as $message)<li>{{ $message }}</li>@endforeach</ul></div>
 </div>
 @endif
 
@@ -110,278 +35,171 @@
 
     {{-- ── Step 1: find the patient ────────────────────────────────────────
          Exact Health ID only — patient names are deliberately not searchable. --}}
-    <div class="panel form-panel">
-        <div class="panel-header">
-            <h2 class="panel-title">
-                <i data-lucide="search"></i>
-                {{ __('prescriber.find_patient') }}
-            </h2>
-        </div>
-        <div class="panel-body">
-
+    <section class="od-card">
+        <header class="od-card__head"><h2 class="od-card__title">{{ __('prescriber.find_patient') }}</h2></header>
+        <div class="od-card__body">
             @if($notFound)
-            <div class="alert alert-danger mb-4" role="alert">
-                <i data-lucide="user-x"></i>
-                <div>{{ __('prescriber.not_found') }}</div>
-            </div>
+            <div class="odc-note odc-note--err odc-note--inset" role="alert"><i data-lucide="user-x"></i><div>{{ __('prescriber.not_found') }}</div></div>
             @endif
 
-            <form method="GET" action="{{ route('portals.prescriber.create') }}" class="rx-lookup">
-                <div class="form-group mb-4">
-                    <label class="form-label form-label-required" for="rx-health-id">{{ __('prescriber.health_id') }}</label>
-                    <input type="text"
-                           id="rx-health-id"
-                           name="health_id"
-                           class="form-control"
-                           value="{{ request('health_id') }}"
-                           required
-                           autocomplete="off"
-                           autofocus>
-                    <div class="form-hint">{{ __('prescriber.health_id_hint') }}</div>
+            <form method="GET" action="{{ route('portals.prescriber.create') }}" class="odc-form">
+                <div class="odc-grid odc-grid--1">
+                    <div class="odc-field">
+                        <label class="odc-label odc-label--req" for="rx-health-id">{{ __('prescriber.health_id') }}</label>
+                        <input type="text" id="rx-health-id" name="health_id" class="od-input" value="{{ request('health_id') }}" required autocomplete="off" autofocus>
+                        <p class="odc-hint">{{ __('prescriber.health_id_hint') }}</p>
+                    </div>
                 </div>
-
-                <div class="row-actions-inline">
-                    <button type="submit" class="btn btn-primary">
-                        <i data-lucide="search"></i>
-                        <span>{{ __('prescriber.lookup') }}</span>
-                    </button>
-                    <a href="{{ route('portals.prescriber.index') }}" class="btn btn-secondary">{{ __('prescriber.cancel') }}</a>
+                <div class="odc-actions">
+                    <a href="{{ route('portals.prescriber.index') }}" class="od-btn od-btn--secondary">{{ __('prescriber.cancel') }}</a>
+                    <button type="submit" class="od-btn od-btn--primary"><i data-lucide="search"></i> <span>{{ __('prescriber.lookup') }}</span></button>
                 </div>
             </form>
-
         </div>
-    </div>
+    </section>
 
 @else
 
     @php
         // Rebuild the submitted lines on a validation bounce; otherwise start with
-        // a single empty line. Always an array of arrays so the row markup can read
-        // keys without null-offset noise.
+        // a single empty line. Always an array of arrays.
         $oldItems = old('items');
         $itemRows = (is_array($oldItems) && count($oldItems) > 0)
             ? array_values(array_map(fn ($r) => (array) $r, $oldItems))
             : [[]];
 
-        $patientName    = trim(($patient->first_name ?? '') . ' ' . ($patient->last_name ?? ''));
-        $patientInitial = strtoupper(mb_substr($patientName !== '' ? $patientName : 'P', 0, 1));
-        $patientDob     = $patient->date_of_birth;
+        $patientName = trim(($patient->first_name ?? '') . ' ' . ($patient->last_name ?? ''));
+        $patientInit = mb_strtoupper(mb_substr(trim((string) ($patient->first_name ?? '')), 0, 1) . mb_substr(trim((string) ($patient->last_name ?? '')), 0, 1));
+        $patientTone = ['blue', 'amber', 'teal', 'rose', 'sky', 'green'][crc32($patientName !== '' ? $patientName : (string) $patient->id) % 6];
+        // Never print a date of birth: an age band only.
+        $patientAge  = $patient->date_of_birth ? \App\Support\ResultFlagResolver::ageBand($patient->date_of_birth) : null;
     @endphp
 
     {{-- ── Selected patient ──────────────────────────────────────────────── --}}
-    <div class="panel mb-4">
-        <div class="panel-header">
-            <h2 class="panel-title">
-                <i data-lucide="user-round"></i>
-                {{ __('prescriber.patient') }}
-            </h2>
-            <a href="{{ route('portals.prescriber.create') }}" class="btn btn-ghost btn-sm">
-                <i data-lucide="repeat"></i>
-                <span>{{ __('prescriber.change_patient') }}</span>
-            </a>
-        </div>
-        <div class="panel-body">
-            <div class="rx-patient">
-                <span class="rx-patient__avatar" aria-hidden="true">{{ $patientInitial }}</span>
-                <div class="min-w-0">
-                    <div class="rx-patient__name">{{ $patientName }}</div>
-                    <div class="rx-patient__meta">
-                        {{ __('prescriber.health_id') }}: <span class="kv-strong">{{ $patient->health_id }}</span>
-                        @if($patientDob)
-                            &middot; {{ $patientDob->format('Y-m-d') }}
-                        @endif
-                        @if($patient->sex)
-                            &middot; @enum($patient->sex)
-                        @endif
+    <section class="od-card">
+        <div class="od-card__head">
+            <div class="odc-patient">
+                <span class="od-avatar od-avatar--lg od-tint--{{ $patientTone }}" aria-hidden="true">{{ $patientInit !== '' ? $patientInit : '—' }}</span>
+                <div class="odc-patient__main">
+                    <div class="od-detail__name">{{ $patientName !== '' ? $patientName : '—' }}</div>
+                    <div class="od-detail__facts">
+                        <span class="od-detail__fact"><i data-lucide="id-card"></i> {{ $patient->health_id }}</span>
+                        @if($patientAge)<span class="od-detail__fact"><i data-lucide="calendar"></i> {{ __('pharmacy_desk.age_bands.' . $patientAge) }}</span>@endif
+                        @if($patient->sex)<span class="od-detail__fact"><i data-lucide="user"></i> @enum($patient->sex)</span>@endif
                     </div>
                 </div>
             </div>
+            <a href="{{ route('portals.prescriber.create') }}" class="od-btn od-btn--secondary od-btn--sm"><i data-lucide="repeat"></i> <span>{{ __('prescriber.change_patient') }}</span></a>
         </div>
-    </div>
+    </section>
 
     {{-- ── The prescription ──────────────────────────────────────────────── --}}
-    <form method="POST" action="{{ route('portals.prescriber.store') }}" id="rx-form">
+    <form method="POST" action="{{ route('portals.prescriber.store') }}" id="rx-form" class="odc-form">
         @csrf
         <input type="hidden" name="patient_id" value="{{ $patient->id }}">
 
-        <div class="panel mb-4">
-            <div class="panel-header">
-                <h2 class="panel-title">
-                    <i data-lucide="pill"></i>
-                    {{ __('prescriber.medicines') }}
-                </h2>
-            </div>
-            <div class="panel-body">
-
-                <div class="rx-rows" id="rx-rows">
+        <section class="od-card">
+            <header class="od-card__head">
+                <h2 class="od-card__title">{{ __('prescriber.medicines') }}</h2>
+                <button type="button" class="od-btn od-btn--secondary od-btn--sm" id="rx-add"><i data-lucide="plus"></i> <span>{{ __('prescriber.add_item') }}</span></button>
+            </header>
+            <div class="od-card__body">
+                <div class="odc-rx-rows" id="rx-rows">
                     @foreach($itemRows as $i => $row)
-                    <div class="rx-row" data-index="{{ $i }}">
-                        <div class="rx-row__head">
-                            <span class="rx-row__num">{{ $i + 1 }}</span>
-                            <button type="button" class="btn btn-ghost btn-sm rx-remove">
-                                <i data-lucide="trash-2"></i>
-                                <span>{{ __('prescriber.remove_item') }}</span>
-                            </button>
+                    <div class="odc-rx-row rx-row" data-index="{{ $i }}">
+                        <div class="odc-rx-row__head">
+                            <span class="odc-rx-row__num rx-row__num">{{ $i + 1 }}</span>
+                            <button type="button" class="od-btn od-btn--ghost od-btn--sm odc-rx-remove rx-remove"><i data-lucide="trash-2"></i> <span>{{ __('prescriber.remove_item') }}</span></button>
                         </div>
 
-                        <div class="form-group mb-3">
-                            <label class="form-label form-label-required">{{ __('prescriber.drug_name') }}</label>
-                            <input type="text"
-                                   class="form-control rx-drug"
-                                   name="items[{{ $i }}][drug_name]"
-                                   value="{{ $row['drug_name'] ?? '' }}"
-                                   list="rx-medicine-list"
-                                   maxlength="200"
-                                   required
-                                   autocomplete="off"
-                                   aria-label="{{ __('prescriber.drug_name') }}">
+                        <div class="odc-field">
+                            <label class="odc-label odc-label--req">{{ __('prescriber.drug_name') }}</label>
+                            <input type="text" class="od-input rx-drug" name="items[{{ $i }}][drug_name]" value="{{ $row['drug_name'] ?? '' }}" list="rx-medicine-list" maxlength="200" required autocomplete="off" aria-label="{{ __('prescriber.drug_name') }}">
                             {{-- Filled by JS only when the typed text matches a catalogue entry exactly.
-                                 Empty stays empty: ConvertEmptyStringsToNull turns it into null, which
-                                 the nullable|uuid rule accepts. Off-catalogue drugs post name-only. --}}
-                            <input type="hidden"
-                                   class="rx-medicine-id"
-                                   name="items[{{ $i }}][medicine_id]"
-                                   value="{{ $row['medicine_id'] ?? '' }}">
+                                 Empty stays empty: off-catalogue drugs post name-only. --}}
+                            <input type="hidden" class="rx-medicine-id" name="items[{{ $i }}][medicine_id]" value="{{ $row['medicine_id'] ?? '' }}">
                         </div>
 
-                        <div class="form-row-3 mb-3">
-                            <div class="form-group">
-                                <label class="form-label">{{ __('prescriber.dose') }}</label>
-                                <input type="text"
-                                       class="form-control"
-                                       name="items[{{ $i }}][dose]"
-                                       value="{{ $row['dose'] ?? '' }}"
-                                       maxlength="100"
-                                       placeholder="{{ __('prescriber.dose_ph') }}"
-                                       aria-label="{{ __('prescriber.dose') }}">
+                        <div class="odc-grid odc-grid--3">
+                            <div class="odc-field">
+                                <label class="odc-label">{{ __('prescriber.dose') }}</label>
+                                <input type="text" class="od-input" name="items[{{ $i }}][dose]" value="{{ $row['dose'] ?? '' }}" maxlength="100" placeholder="{{ __('prescriber.dose_ph') }}" aria-label="{{ __('prescriber.dose') }}">
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">{{ __('prescriber.frequency') }}</label>
-                                <input type="text"
-                                       class="form-control"
-                                       name="items[{{ $i }}][frequency]"
-                                       value="{{ $row['frequency'] ?? '' }}"
-                                       maxlength="100"
-                                       placeholder="{{ __('prescriber.frequency_ph') }}"
-                                       aria-label="{{ __('prescriber.frequency') }}">
+                            <div class="odc-field">
+                                <label class="odc-label">{{ __('prescriber.frequency') }}</label>
+                                <input type="text" class="od-input" name="items[{{ $i }}][frequency]" value="{{ $row['frequency'] ?? '' }}" maxlength="100" placeholder="{{ __('prescriber.frequency_ph') }}" aria-label="{{ __('prescriber.frequency') }}">
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">{{ __('prescriber.route') }}</label>
-                                <select class="form-control"
-                                        name="items[{{ $i }}][route]"
-                                        aria-label="{{ __('prescriber.route') }}">
+                            <div class="odc-field">
+                                <label class="odc-label">{{ __('prescriber.route') }}</label>
+                                <select class="od-select" name="items[{{ $i }}][route]" aria-label="{{ __('prescriber.route') }}">
                                     <option value=""></option>
                                     @foreach($routes as $administrationRoute)
-                                        <option value="{{ $administrationRoute }}"
-                                            @selected(($row['route'] ?? '') === $administrationRoute)>{{ $administrationRoute }}</option>
+                                        <option value="{{ $administrationRoute }}" @selected(($row['route'] ?? '') === $administrationRoute)>{{ $administrationRoute }}</option>
                                     @endforeach
                                 </select>
                             </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">{{ __('prescriber.duration_days') }}</label>
-                                <input type="number"
-                                       class="form-control"
-                                       name="items[{{ $i }}][duration_days]"
-                                       value="{{ $row['duration_days'] ?? '' }}"
-                                       min="1" max="365" step="1" inputmode="numeric"
-                                       aria-label="{{ __('prescriber.duration_days') }}">
+                            <div class="odc-field">
+                                <label class="odc-label">{{ __('prescriber.duration_days') }}</label>
+                                <input type="number" class="od-input" name="items[{{ $i }}][duration_days]" value="{{ $row['duration_days'] ?? '' }}" min="1" max="365" step="1" inputmode="numeric" aria-label="{{ __('prescriber.duration_days') }}">
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">{{ __('prescriber.quantity') }}</label>
-                                <input type="number"
-                                       class="form-control"
-                                       name="items[{{ $i }}][quantity]"
-                                       value="{{ $row['quantity'] ?? '' }}"
-                                       min="1" max="1000" step="1" inputmode="numeric"
-                                       aria-label="{{ __('prescriber.quantity') }}">
+                            <div class="odc-field">
+                                <label class="odc-label">{{ __('prescriber.quantity') }}</label>
+                                <input type="number" class="od-input" name="items[{{ $i }}][quantity]" value="{{ $row['quantity'] ?? '' }}" min="1" max="1000" step="1" inputmode="numeric" aria-label="{{ __('prescriber.quantity') }}">
                             </div>
                         </div>
                     </div>
                     @endforeach
                 </div>
-
-                <div class="row-actions-inline mt-3">
-                    <button type="button" class="btn btn-secondary btn-sm" id="rx-add">
-                        <i data-lucide="plus"></i>
-                        <span>{{ __('prescriber.add_item') }}</span>
-                    </button>
-                </div>
-
             </div>
-        </div>
+        </section>
 
-        {{-- Catalogue autocomplete. Free text is still accepted, so an
-             off-catalogue medicine can always be written. --}}
+        {{-- Catalogue autocomplete. Free text is still accepted. --}}
         <datalist id="rx-medicine-list">
             @foreach($medicines as $medicine)
-                <option data-id="{{ $medicine->id }}"
-                        value="{{ trim($medicine->name . ' ' . ($medicine->strength ?? '')) }}"></option>
+                <option data-id="{{ $medicine->id }}" value="{{ trim($medicine->name . ' ' . ($medicine->strength ?? '')) }}"></option>
             @endforeach
         </datalist>
 
-        <div class="panel mb-4">
-            <div class="panel-body">
-                <div class="form-group mb-4">
-                    <label class="form-label" for="rx-notes">{{ __('prescriber.notes') }}</label>
-                    <textarea id="rx-notes"
-                              name="notes"
-                              rows="3"
-                              class="form-control"
-                              maxlength="1000"
-                              placeholder="{{ __('prescriber.notes_ph') }}">{{ old('notes') }}</textarea>
+        <section class="od-card">
+            <header class="od-card__head"><h2 class="od-card__title">{{ __('prescriber.notes') }}</h2></header>
+            <div class="od-card__body odc-grid">
+                <div class="odc-field odc-field--full">
+                    <label class="odc-label" for="rx-notes">{{ __('prescriber.notes') }}</label>
+                    <textarea id="rx-notes" name="notes" rows="3" class="odc-textarea" maxlength="1000" placeholder="{{ __('prescriber.notes_ph') }}">{{ old('notes') }}</textarea>
                 </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label" for="rx-validity">{{ __('prescriber.validity_days') }}</label>
-                        <input type="number"
-                               id="rx-validity"
-                               name="validity_days"
-                               class="form-control"
-                               value="{{ old('validity_days') }}"
-                               min="1" max="365" step="1" inputmode="numeric">
-                    </div>
-                    <div class="form-group"></div>
+                <div class="odc-field">
+                    <label class="odc-label" for="rx-validity">{{ __('prescriber.validity_days') }}</label>
+                    <input type="number" id="rx-validity" name="validity_days" class="od-input" value="{{ old('validity_days') }}" min="1" max="365" step="1" inputmode="numeric">
                 </div>
             </div>
-        </div>
+        </section>
 
         {{-- Drug-interaction warnings (imported CDSS). Advisory only: the
              prescription saves whether or not the box is ticked, and both the
              warnings shown and the acknowledgement are audited on save. --}}
-        <div class="panel mb-4" id="rx-interactions" data-check-url="{{ route('portals.prescriber.interaction_check') }}" hidden>
-            <div class="panel-header">
-                <h2 class="panel-title">
-                    <i data-lucide="triangle-alert"></i>
-                    {{ __('cdss.panel_title') }}
-                </h2>
-            </div>
-            <div class="panel-body">
-                <p class="form-hint mb-3">{{ __('cdss.panel_hint') }}</p>
-                <ul class="alert-list mb-3" id="rx-interactions-list"></ul>
-                <label class="form-check">
+        <section class="od-card" id="rx-interactions" data-check-url="{{ route('portals.prescriber.interaction_check') }}" hidden>
+            <header class="od-card__head"><h2 class="od-card__title">{{ __('cdss.panel_title') }}</h2></header>
+            <div class="od-card__body">
+                <p class="odc-hint">{{ __('cdss.panel_hint') }}</p>
+                <ul class="odc-ia-list" id="rx-interactions-list"></ul>
+                <label class="odc-check">
                     <input type="hidden" name="interactions_acknowledged" value="0">
                     <input type="checkbox" name="interactions_acknowledged" value="1" id="rx-interactions-ack">
                     <span>{{ __('cdss.acknowledge') }}</span>
                 </label>
             </div>
-        </div>
-        <p class="form-hint mb-4">{{ __('cdss.coverage_note') }}</p>
+        </section>
+        <p class="odc-hint">{{ __('cdss.coverage_note') }}</p>
 
-        <div class="row-actions-inline">
-            <button type="submit" class="btn btn-primary">
-                <i data-lucide="file-plus-2"></i>
-                <span>{{ __('prescriber.issue') }}</span>
-            </button>
-            <a href="{{ route('portals.prescriber.index') }}" class="btn btn-secondary">{{ __('prescriber.cancel') }}</a>
+        <div class="odc-actions">
+            <a href="{{ route('portals.prescriber.index') }}" class="od-btn od-btn--secondary">{{ __('prescriber.cancel') }}</a>
+            <button type="submit" class="od-btn od-btn--primary"><i data-lucide="file-plus-2"></i> <span>{{ __('prescriber.issue') }}</span></button>
         </div>
     </form>
 
 @endif
 
+</div>
 @endsection
 
 @section('scripts')

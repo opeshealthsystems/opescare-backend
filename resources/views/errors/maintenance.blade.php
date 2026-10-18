@@ -9,8 +9,8 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f0f4f8;
+            font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #EEF3F9;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -21,34 +21,31 @@
         .card {
             background: #fff;
             border-radius: 16px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
             max-width: 520px;
             width: 100%;
-            padding: 48px 40px;
-            text-align: center;
+            padding: 40px;
+            text-align: left;
         }
 
         .icon {
-            width: 72px;
-            height: 72px;
-            background: #fff7ed;
-            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            background: none;
+            border-radius: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 28px;
+            margin: 0 0 16px;
         }
 
-        .icon svg { width: 36px; height: 36px; }
+        .icon svg { width: 28px; height: 28px; }
 
         .badge {
             display: inline-block;
-            background: #fff7ed;
-            color: #c2410c;
+            background: #FBF0E5;
+            color: #B54708;
             font-size: 12px;
             font-weight: 600;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
             padding: 4px 12px;
             border-radius: 999px;
             margin-bottom: 20px;
@@ -57,21 +54,21 @@
         h1 {
             font-size: 22px;
             font-weight: 700;
-            color: #111827;
+            color: #0F2340;
             margin-bottom: 12px;
             line-height: 1.3;
         }
 
         .message {
             font-size: 15px;
-            color: #6b7280;
+            color: #5B6B80;
             line-height: 1.6;
             margin-bottom: 28px;
         }
 
         .times {
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
+            background: #EEF3F9;
+            border: 0;
             border-radius: 10px;
             padding: 16px 20px;
             margin-bottom: 28px;

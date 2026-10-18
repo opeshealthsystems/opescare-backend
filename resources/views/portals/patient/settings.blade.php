@@ -10,6 +10,7 @@
 
 @section('head')
     @include('portals.patient._finder_head')
+    <link rel="stylesheet" href="{{ asset('css/od-patient.css') }}?v={{ @filemtime(public_path('css/od-patient.css')) ?: '1' }}">
 @endsection
 
 @section('patient_banner')
@@ -28,12 +29,12 @@
     </div>
 
     @if(!$patient)
-    <div class="f-card" style="text-align:center;padding:40px 20px;">
-        <div class="pf-qa__icon" style="margin:0 auto 12px;width:48px;height:48px;">
+    <div class="f-card ods-99e8a36">
+        <div class="pf-qa__icon ods-4ef0061">
             @include('partials.finder.icon', ['name' => 'alert-triangle', 'size' => 24])
         </div>
-        <h2 style="font-size:1.125rem;font-weight:750;margin:0 0 6px;">{{ __('public.portal.no_profile_found_title', [], $l) }}</h2>
-        <p class="f-muted" style="margin:0;">{{ __('public.portal.no_profile_found_desc', [], $l) }}</p>
+        <h2 class="ods-40b57ba">{{ __('public.portal.no_profile_found_title', [], $l) }}</h2>
+        <p class="f-muted ods-1386d50">{{ __('public.portal.no_profile_found_desc', [], $l) }}</p>
     </div>
     @else
     <form method="POST" action="{{ route('portals.patient.settings.update') }}">
@@ -50,7 +51,7 @@
             ];
         @endphp
 
-        <div class="f-card" style="margin-bottom:12px;">
+        <div class="f-card ods-fa3e1c7">
             <h2 class="pf-card-head">
                 @include('partials.finder.icon', ['name' => 'bell', 'size' => 18])
                 {{ __('public.pat_settings_notif_title', [], $l) }}
@@ -71,11 +72,11 @@
             </div>
         </div>
 
-        <div class="f-card" style="margin-bottom:16px;">
+        <div class="f-card ods-8e86974">
             <h2 class="pf-card-head">{{ __('public.pat_settings_appearance_title', [], $l) }}</h2>
-            <div class="f-field" style="margin-bottom:0;">
+            <div class="f-field ods-e7ec540">
                 <label class="f-label" for="preferred_theme">{{ __('public.pat_settings_theme', [], $l) }}</label>
-                <select id="preferred_theme" name="preferred_theme" class="f-input" style="max-width:280px;">
+                <select id="preferred_theme" name="preferred_theme" class="f-input ods-015ccf9">
                     <option value="system" {{ ($settings?->preferred_theme ?? 'system') === 'system' ? 'selected' : '' }}>{{ __('public.pat_settings_theme_system', [], $l) }}</option>
                     <option value="light"  {{ $settings?->preferred_theme === 'light' ? 'selected' : '' }}>{{ __('public.pat_settings_theme_light', [], $l) }}</option>
                     <option value="dark"   {{ $settings?->preferred_theme === 'dark' ? 'selected' : '' }}>{{ __('public.pat_settings_theme_dark', [], $l) }}</option>
@@ -84,7 +85,7 @@
         </div>
 
         <div class="pf-actions">
-            <button type="submit" class="f-btn f-btn--primary" style="min-height:48px;">
+            <button type="submit" class="f-btn f-btn--primary ods-a27b458">
                 @include('partials.finder.icon', ['name' => 'check', 'size' => 16])
                 {{ __('public.pat_settings_save', [], $l) }}
             </button>
@@ -94,17 +95,17 @@
 
     {{-- Lost or stolen card. One POST revokes every active QR token; the Health
          ID number itself stays valid, so nothing here can lock a patient out. --}}
-    <form method="POST" action="{{ route('portals.patient.lost-card') }}" class="f-card" style="margin-bottom:16px;">
+    <form method="POST" action="{{ route('portals.patient.lost-card') }}" class="f-card ods-8e86974">
         @csrf
         <h2 class="pf-card-head">
             @include('partials.finder.icon', ['name' => 'shield-alert', 'size' => 18])
             {{ __('public.pat_lost_card_title', [], $l) }}
         </h2>
-        <p class="f-muted" style="margin:0 0 12px;">{{ __('public.pat_lost_card_desc', [], $l) }}</p>
+        <p class="f-muted ods-c9d4377">{{ __('public.pat_lost_card_desc', [], $l) }}</p>
         <div class="f-field">
             <label class="f-label" for="report_reason">{{ __('public.pat_lost_card_reason', [], $l) }}</label>
             <textarea id="report_reason" name="report_reason" class="f-input" rows="2" maxlength="500" required>{{ old('report_reason') }}</textarea>
-            @error('report_reason')<p class="f-small" style="color:#b42318;margin:6px 0 0;">{{ $message }}</p>@enderror
+            @error('report_reason')<p class="f-small ods-a945a59">{{ $message }}</p>@enderror
         </div>
         <button type="submit" class="f-btn f-btn--danger" data-confirm="{{ __('public.pat_lost_card_confirm', [], $l) }}">
             @include('partials.finder.icon', ['name' => 'shield-alert', 'size' => 18])

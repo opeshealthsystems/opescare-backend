@@ -2,7 +2,7 @@
      the clinical record: folding self-reported symptom text in beside coded
      diagnoses is how a sentence a patient typed becomes a finding somebody
      prescribes against (see MobileDoctorPreconsultController). --}}
-<div class="alert alert-warning mb-4" role="note">
+<div class="odc-note odc-note--pending" role="note">
     <i data-lucide="message-square-text"></i>
     <div>
         <strong>{{ __('chart.preconsult_badge') }}</strong>
@@ -11,30 +11,30 @@
 </div>
 
 @if($submissions->isEmpty())
-<div class="panel mb-4"><div class="panel-body"><p class="td-muted">{{ __('chart.preconsult_none') }}</p></div></div>
+<div class="od-card"><div class="od-card__body"><p class="od-muted">{{ __('chart.preconsult_none') }}</p></div></div>
 @else
     @foreach($submissions as $s)
-    <div class="panel mb-4">
-        <div class="panel-header">
-            <h2 class="panel-title">
+    <div class="od-card">
+        <div class="od-card__head">
+            <h2 class="od-card__title">
                 <i data-lucide="clipboard-pen-line"></i>
                 {{ __('chart.col_submitted') }}: {{ $s['submitted_at'] ? \Illuminate\Support\Carbon::parse($s['submitted_at'])->translatedFormat('d M Y H:i') : '—' }}
             </h2>
-            <span class="badge badge-warning">{{ __('chart.preconsult_badge') }}</span>
+            <span class="od-pill od-pill--pending">{{ __('chart.preconsult_badge') }}</span>
         </div>
-        <div class="panel-body">
-            <div class="td-muted mb-3">{{ __('chart.answers_count', ['count' => $s['answered_count']]) }}</div>
+        <div class="od-card__body">
+            <div class="od-muted">{{ __('chart.answers_count', ['count' => $s['answered_count']]) }}</div>
             @if(empty($s['answers']))
-                <p class="td-muted">—</p>
+                <p class="od-muted">—</p>
             @else
-                <div class="table-wrapper">
-                    <table class="data-table">
+                <div class="od-table-wrap">
+                    <table class="od-table">
                         <tbody>
                         @foreach($s['answers'] as $answer)
                             <tr>
-                                <td class="td-strong">{{ $answer['question_label'] }}</td>
+                                <td class="odc-strong">{{ $answer['question_label'] }}</td>
                                 <td>{{ $answer['value_label'] ?? $answer['value'] }}</td>
-                                <td class="td-muted"><small>{{ $answer['provenance']['label'] }}</small></td>
+                                <td class="od-muted"><small>{{ $answer['provenance']['label'] }}</small></td>
                             </tr>
                         @endforeach
                         </tbody>

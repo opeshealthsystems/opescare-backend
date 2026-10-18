@@ -4,63 +4,73 @@
 @section('breadcrumb_home', __('staff_data.title_import'))
 @section('breadcrumb_home_url', route('portals.admin.data_import.index'))
 @section('breadcrumb_section', __('public.stf_import_map_title'))
+@section('head')<link rel="stylesheet" href="{{ asset('css/od-admin.css') }}?v={{ @filemtime(public_path('css/od-admin.css')) ?: '1' }}">@endsection
 
 @section('content')
-
-@include('portals.admin.data_import._wizard_steps', ['step' => 2])
-
 @php
     // The job stores { file_column => system_field }; this screen is one row per
     // SYSTEM FIELD, so flip it once here rather than inside the loop.
     $fieldToColumn = array_flip($suggested ?? []);
     $headers       = $job->detected_headers ?? [];
 @endphp
-
-<div class="panel">
-    <div class="panel-header">
-        <h3 class="panel-title">{{ __('public.stf_import_map_title') }}</h3>
-    </div>
-    <div class="panel-body">
-        <p class="td-muted">
+<div class="od-page">
+<div class="od-page__head">
+    <div>
+        <h1 class="od-page__title">{{ __('public.stf_import_map_title') }}</h1>
+        <p class="od-page__sub">
             {{ __('public.stf_import_file_detail') }}: <strong>{{ $job->original_filename }}</strong>
             · {{ __('public.stf_import_type_detail') }}: <strong>{{ $importTypes[$job->import_type]['label'] ?? $job->import_type }}</strong>
         </p>
-        <p class="td-muted mb-6">{{ __('public.stf_import_match_desc') }}</p>
+    </div>
+</div>
 
-        @if(session('error'))
-            <div class="alert alert-danger mb-6"><i data-lucide="triangle-alert"></i><div>{{ session('error') }}</div></div>
-        @endif
+@include('portals.admin.data_import._wizard_steps', ['step' => 2])
 
-        @if(count($headers) === 0)
-            <div class="alert alert-warning mb-6">
-                <i data-lucide="triangle-alert"></i>
-                <div>{{ __('public.stf_import_header_hint') }}</div>
-            </div>
-        @endif
+@if(session('error'))
+    <div class="oda-gb-alert oda-gb-alert--bad"><i data-lucide="triangle-alert"></i><div>{{ session('error') }}</div></div>
+@endif
 
-        @if(count($saved) > 0)
-        <div class="alert alert-info mb-6">
-            <i data-lucide="bookmark"></i>
-            <div>
-                <label class="form-label" for="saved-mapping-picker">{{ __('public.stf_import_load_saved') }}</label>
-                <div class="row-actions-inline">
-                    <select id="saved-mapping-picker" class="form-control">
-                        <option value="">{{ __('staff_data.select_placeholder') }}</option>
-                        @foreach($saved as $sm)
-                            <option value="{{ json_encode($sm['mapping']) }}">{{ $sm['name'] }}</option>
-                        @endforeach
-                    </select>
-                    <button type="button" class="btn btn-ghost btn-sm" id="apply-saved-mapping">{{ __('public.stf_import_apply') }}</button>
-                </div>
-            </div>
+@if(count($headers) === 0)
+    <div class="oda-gb-alert oda-gb-alert--warn">
+        <i data-lucide="triangle-alert"></i>
+        <div>{{ __('public.stf_import_header_hint') }}</div>
+    </div>
+@endif
+
+@if(count($saved) > 0)
+<section class="od-card">
+    <div class="od-card__head">
+        <h2 class="od-card__title"><i data-lucide="bookmark"></i> {{ __('public.stf_import_load_saved') }}</h2>
+    </div>
+    <div class="od-card__body">
+        <div class="oda-toolbar">
+            <label class="oda-gb-sr" for="saved-mapping-picker">{{ __('public.stf_import_load_saved') }}</label>
+            <select id="saved-mapping-picker" class="od-select">
+                <option value="">{{ __('staff_data.select_placeholder') }}</option>
+                @foreach($saved as $sm)
+                    <option value="{{ json_encode($sm['mapping']) }}">{{ $sm['name'] }}</option>
+                @endforeach
+            </select>
+            <button type="button" class="od-btn od-btn--secondary od-btn--sm" id="apply-saved-mapping">{{ __('public.stf_import_apply') }}</button>
         </div>
-        @endif
+    </div>
+</section>
+@endif
 
-        <form method="POST" action="{{ route('portals.admin.data_import.mapping.store', $job->id) }}">
-            @csrf
+<form method="POST" action="{{ route('portals.admin.data_import.mapping.store', $job->id) }}" class="od-stack">
+    @csrf
 
-            <div class="table-wrapper">
-                <table class="data-table">
+    <section class="od-card">
+        <div class="od-card__head">
+            <h2 class="od-card__title">{{ __('public.stf_import_map_title') }}</h2>
+            <span class="od-card__count">{{ count($systemFields) }}</span>
+        </div>
+        <div class="od-card__body">
+            <p class="oda-help">{{ __('public.stf_import_match_desc') }}</p>
+        </div>
+        <div class="od-card__body od-card__body--flush">
+            <div class="od-table-wrap">
+                <table class="od-table">
                     <thead>
                         <tr>
                             <th>{{ __('public.stf_import_col_opescare_field') }}</th>
@@ -77,17 +87,17 @@
                         @endphp
                         <tr>
                             <td data-label="{{ __('public.stf_import_col_opescare_field') }}">
-                                <span class="{{ $sf['required'] ? 'td-strong' : '' }}">{{ $sf['key'] }}</span>
+                                <code class="oda-mono {{ $sf['required'] ? 'od-table__name' : '' }}">{{ $sf['key'] }}</code>
                             </td>
                             <td data-label="{{ __('public.stf_import_col_required_hdr') }}">
                                 @if($sf['required'])
-                                    <span class="badge badge-danger">{{ __('public.stf_import_required_badge') }}</span>
+                                    <span class="od-pill od-pill--urgent">{{ __('public.stf_import_required_badge') }}</span>
                                 @else
-                                    <span class="badge badge-neutral">{{ __('public.stf_import_optional_badge') }}</span>
+                                    <span class="od-pill od-pill--neutral">{{ __('public.stf_import_optional_badge') }}</span>
                                 @endif
                             </td>
                             <td data-label="{{ __('public.stf_import_col_map_to') }}">
-                                <select name="mapping[{{ $sf['key'] }}]" class="form-control mapping-select" data-system-field="{{ $sf['key'] }}">
+                                <select name="mapping[{{ $sf['key'] }}]" class="od-select mapping-select" data-system-field="{{ $sf['key'] }}">
                                     <option value="">{{ __('public.stf_import_skip') }}</option>
                                     @foreach($headers as $col)
                                         <option value="{{ $col }}" {{ $preSelected === $col ? 'selected' : '' }}>{{ $col }}</option>
@@ -99,26 +109,28 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+    </section>
 
-            <div class="alert alert-info mt-6">
-                <i data-lucide="bookmark"></i>
-                <div class="row-actions-inline">
-                    <label class="form-label" for="save_as">{{ __('public.stf_import_save_reuse') }}</label>
-                    <input type="text" name="save_as" id="save_as" class="form-control" maxlength="80" placeholder="{{ __('public.stf_import_save_name_ph') }}">
+    <section class="od-card">
+        <div class="od-card__body">
+            <div class="oda-form">
+                <label class="oda-label" for="save_as">
+                    <span class="oda-label__text"><i data-lucide="bookmark"></i> {{ __('public.stf_import_save_reuse') }}</span>
+                    <input type="text" name="save_as" id="save_as" class="od-input" maxlength="80" placeholder="{{ __('public.stf_import_save_name_ph') }}">
+                </label>
+                <div class="oda-form__actions">
+                    <a href="{{ route('portals.admin.data_import.index') }}" class="od-btn od-btn--ghost od-btn--sm">{{ __('public.stf_import_cancel_link') }}</a>
+                    <button type="submit" class="od-btn od-btn--primary od-btn--sm">
+                        <i data-lucide="check-circle"></i>
+                        {{ __('public.stf_import_save_validate') }}
+                    </button>
                 </div>
             </div>
-
-            <div class="row-actions-inline mt-6">
-                <a href="{{ route('portals.admin.data_import.index') }}" class="btn btn-ghost btn-sm">{{ __('public.stf_import_cancel_link') }}</a>
-                <button type="submit" class="btn btn-primary btn-sm">
-                    <i data-lucide="check-circle"></i>
-                    {{ __('public.stf_import_save_validate') }}
-                </button>
-            </div>
-        </form>
-    </div>
+        </div>
+    </section>
+</form>
 </div>
-
 @endsection
 
 @section('scripts')

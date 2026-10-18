@@ -26,6 +26,10 @@
         . "  }'";
 @endphp
 
+@section('head')
+    <link rel="stylesheet" href="{{ asset('css/od-pro.css') }}?v={{ @filemtime(public_path('css/od-pro.css')) ?: '1' }}">
+@endsection
+
 @section('content')
 
     <div class="breadcrumb">
@@ -92,7 +96,7 @@
         <div class="panel-header"><h3 class="panel-title"><i data-lucide="key"></i> {{ __('developer_ext.qs_step1_title') }}</h3></div>
         <div class="panel-body">
             <p class="mb-6">{{ __('developer_ext.qs_step1_body') }}</p>
-            <pre class="code-block mono" style="white-space:pre-wrap;">{{ $curlToken }}</pre>
+            <pre class="code-block mono ods-d07753c">{{ $curlToken }}</pre>
             <button type="button" class="btn btn-secondary btn-sm mt-2" data-copy-text="{{ $curlToken }}"><i data-lucide="copy"></i> {{ __('developer_ext.qs_copy') }}</button>
         </div>
     </div>
@@ -102,7 +106,7 @@
         <div class="panel-header"><h3 class="panel-title"><i data-lucide="file-search"></i> {{ __('developer_ext.qs_step2_title') }}</h3></div>
         <div class="panel-body">
             <p class="mb-6">{{ __('developer_ext.qs_step2_body') }}</p>
-            <pre class="code-block mono" style="white-space:pre-wrap;">{{ $curlMetadata }}</pre>
+            <pre class="code-block mono ods-d07753c">{{ $curlMetadata }}</pre>
             <button type="button" class="btn btn-secondary btn-sm mt-2" data-copy-text="{{ $curlMetadata }}"><i data-lucide="copy"></i> {{ __('developer_ext.qs_copy') }}</button>
         </div>
     </div>
@@ -112,7 +116,7 @@
         <div class="panel-header"><h3 class="panel-title"><i data-lucide="upload"></i> {{ __('developer_ext.qs_step3_title') }}</h3></div>
         <div class="panel-body">
             <p class="mb-6">{{ __('developer_ext.qs_step3_body') }}</p>
-            <pre class="code-block mono" style="white-space:pre-wrap;">{{ $curlObservation }}</pre>
+            <pre class="code-block mono ods-d07753c">{{ $curlObservation }}</pre>
             <button type="button" class="btn btn-secondary btn-sm mt-2" data-copy-text="{{ $curlObservation }}"><i data-lucide="copy"></i> {{ __('developer_ext.qs_copy') }}</button>
             <p class="td-muted mt-2"><a href="{{ route('portals.developer.activity') }}"><i data-lucide="activity"></i> {{ __('developer_ext.act_page_title') }}</a></p>
         </div>

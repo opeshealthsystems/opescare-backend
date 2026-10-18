@@ -3,6 +3,10 @@
 @section('title', $document->title)
 @section('description', $document->title)
 
+@push('head')
+    @include('public.partials._od_pages_css')
+@endpush
+
 @section('content')
 
     {{--
@@ -49,7 +53,7 @@
                     </div>
 
                     <div class="f-card fs-legal-body">
-                        {!! app(AppModulesegalservicesegalhtmlsanitizer::class)->clean((string) $currentversion->content_html) !!}
+                        {!! app(\App\Modules\Legal\Services\LegalHtmlSanitizer::class)->clean((string) $currentVersion->content_html) !!}
                     </div>
                 @else
                     <div class="f-card fs-no-content">

@@ -7,19 +7,20 @@
     facility they administer. The view never queries facilities itself, so there
     is no path by which this control can grow into a dump of the whole register.
 
+    Rendered as a full-width cell of an .oda-form grid.
     Expects: $facilityOptions, $facilityPickerOpen, $facilityPickerCap,
              $selected (current facility id or null).
 --}}
-<div class="form-group mt-6">
-    <label class="form-label" for="primary_facility_id">{{ __('admin_extra.users_lbl_facility') }}</label>
-    <select name="primary_facility_id" id="primary_facility_id" class="form-control">
+<div class="oda-label oda-form__full">
+    <label class="oda-label__text" for="primary_facility_id">{{ __('admin_extra.users_lbl_facility') }}</label>
+    <select name="primary_facility_id" id="primary_facility_id" class="od-select">
         <option value="">{{ __('admin_extra.users_ph_facility') }}</option>
         @foreach($facilityOptions as $facilityOption)
         <option value="{{ $facilityOption->id }}" @selected(old('primary_facility_id', $selected ?? null) == $facilityOption->id)>{{ $facilityOption->name }}</option>
         @endforeach
     </select>
-    @error('primary_facility_id')<div class="form-hint">{{ $message }}</div>@enderror
-    <div class="form-hint">
+    @error('primary_facility_id')<span class="oda-error">{{ $message }}</span>@enderror
+    <p class="oda-help">
         {{ __('admin_extra.users_facility_help') }}
         @if(! $facilityPickerOpen)
             {{ __('admin_extra.users_facility_locked') }}
@@ -28,5 +29,5 @@
         @elseif($facilityOptions->count() >= $facilityPickerCap)
             {{ __('admin_extra.users_facility_hint', ['n' => $facilityPickerCap]) }}
         @endif
-    </div>
+    </p>
 </div>

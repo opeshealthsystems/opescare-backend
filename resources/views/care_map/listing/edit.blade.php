@@ -17,6 +17,7 @@
 @section('head')
 @include('portals.pharmacy._supply_styles')
 <style>
+  .lst-err{color:var(--p-danger)} .lst-mt4{margin-top:var(--p-space-4)} .lst-mt5{margin-top:var(--p-space-5)}
   .lst-badges{display:flex;gap:.45rem;flex-wrap:wrap;margin-bottom:var(--p-space-3)}
   .lst-badge{display:inline-flex;align-items:center;gap:.3rem;padding:.25rem .65rem;border-radius:999px;font-size:.72rem;font-weight:700}
   .lst-badge i{width:12px;height:12px}
@@ -83,41 +84,41 @@
                     @if($phonePrimary === null)
                         <div class="form-hint">{{ __('caremap_claim.hint_phone_placeholder') }}</div>
                     @endif
-                    @error('phone_primary')<div class="form-hint" style="color:var(--p-danger)">{{ $message }}</div>@enderror
+                    @error('phone_primary')<div class="form-hint lst-err">{{ $message }}</div>@enderror
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="phone_secondary">{{ __('caremap_claim.label_phone_secondary') }}</label>
                     <input type="tel" id="phone_secondary" name="phone_secondary" class="form-control" maxlength="40"
                            value="{{ old('phone_secondary', \App\Models\CareFacility::realValue($listing->phone_secondary)) }}">
-                    @error('phone_secondary')<div class="form-hint" style="color:var(--p-danger)">{{ $message }}</div>@enderror
+                    @error('phone_secondary')<div class="form-hint lst-err">{{ $message }}</div>@enderror
                 </div>
             </div>
 
-            <div class="form-row" style="margin-top:var(--p-space-4)">
+            <div class="form-row lst-mt4">
                 <div class="form-group">
                     <label class="form-label" for="email">{{ __('caremap_claim.label_email') }}</label>
                     <input type="email" id="email" name="email" class="form-control" maxlength="150"
                            value="{{ old('email', $listing->email) }}">
-                    @error('email')<div class="form-hint" style="color:var(--p-danger)">{{ $message }}</div>@enderror
+                    @error('email')<div class="form-hint lst-err">{{ $message }}</div>@enderror
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="website">{{ __('caremap_claim.label_website') }}</label>
                     <input type="url" id="website" name="website" class="form-control" maxlength="255"
                            value="{{ old('website', $listing->website) }}" placeholder="https://">
-                    @error('website')<div class="form-hint" style="color:var(--p-danger)">{{ $message }}</div>@enderror
+                    @error('website')<div class="form-hint lst-err">{{ $message }}</div>@enderror
                 </div>
             </div>
 
-            <div class="form-group" style="margin-top:var(--p-space-4)">
+            <div class="form-group lst-mt4">
                 <label class="form-label" for="description">{{ __('caremap_claim.label_description') }}</label>
                 <textarea id="description" name="description" class="form-control" maxlength="2000">{{ old('description', $listing->description) }}</textarea>
                 <div class="form-hint">{{ __('caremap_claim.hint_description') }}</div>
-                @error('description')<div class="form-hint" style="color:var(--p-danger)">{{ $message }}</div>@enderror
+                @error('description')<div class="form-hint lst-err">{{ $message }}</div>@enderror
             </div>
 
-            <div style="margin-top:var(--p-space-5)">
+            <div class="lst-mt5">
                 <button type="submit" class="btn btn-primary fs-tap">
                     <i data-lucide="save"></i> {{ __('caremap_claim.btn_save') }}
                 </button>
@@ -176,7 +177,7 @@
                 </table>
             </div>
 
-            <div style="margin-top:var(--p-space-5)">
+            <div class="lst-mt5">
                 <button type="submit" class="btn btn-primary fs-tap">
                     <i data-lucide="save"></i> {{ __('caremap_claim.btn_save_hours') }}
                 </button>
@@ -244,7 +245,7 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('portals.listing.services.store') }}" style="margin-top:var(--p-space-5)">
+        <form class="lst-mt5" method="POST" action="{{ route('portals.listing.services.store') }}">
             @csrf
             <div class="lst-svc-grid">
                 <div class="form-group">
@@ -279,7 +280,7 @@
                 <label class="lst-check"><input type="checkbox" name="telemedicine_available" value="1"> {{ __('caremap_claim.svc_telemedicine') }}</label>
             </div>
 
-            <div style="margin-top:var(--p-space-5)">
+            <div class="lst-mt5">
                 <button type="submit" class="btn btn-primary fs-tap">
                     <i data-lucide="plus"></i> {{ __('caremap_claim.btn_add_service') }}
                 </button>

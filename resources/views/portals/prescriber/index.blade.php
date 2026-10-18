@@ -4,67 +4,80 @@
 @section('breadcrumb_home_url', route('portals.prescriber.index'))
 @section('breadcrumb_section', __('prescriber.nav'))
 
+@section('head')
+<link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">
+@endsection
+
 @php
-    // The statuses a prescription can actually carry, in the order a prescriber
-    // scans them. Labels come from prescriber.st_*; colours follow the house
-    // badge palette (info = live, success = done, warning = part-way, neutral = closed).
+    // The statuses a prescription can actually carry, in the order a prescriber scans them.
     $rxStatuses = ['active', 'dispensed', 'partially_dispensed', 'voided', 'expired', 'cancelled'];
-    $rxColor = fn ($s) => match ($s) {
-        'active'              => 'info',
-        'dispensed'           => 'success',
-        'partially_dispensed' => 'warning',
+    $rxPill = fn ($s) => match ($s) {
+        'active'              => 'pending',
+        'dispensed'           => 'ready',
+        'partially_dispensed' => 'verifying',
         default               => 'neutral',
+    };
+    $rxDot = fn ($s) => match ($s) {
+        'active'              => 'pending',
+        'dispensed'           => 'ready',
+        'partially_dispensed' => 'normal',
+        default               => null,
+    };
+    $tone = fn (string $key): string => ['blue', 'amber', 'teal', 'rose', 'sky', 'green'][crc32($key) % 6];
+    $initials = function ($first, $last): string {
+        $s = mb_strtoupper(mb_substr(trim((string) $first), 0, 1) . mb_substr(trim((string) $last), 0, 1));
+        return $s !== '' ? $s : '—';
     };
 @endphp
 
 @section('content')
+<div class="od-page">
 
-<div class="page-header">
+<div class="od-page__head">
     <div>
-        <h1 class="page-title">{{ __('prescriber.title') }}</h1>
-        <p class="page-subtitle">{{ __('prescriber.subtitle') }}</p>
+        <h1 class="od-page__title">{{ __('prescriber.title') }}</h1>
+        <p class="od-page__sub">{{ __('prescriber.subtitle') }}</p>
     </div>
-    <a href="{{ route('portals.prescriber.create') }}" class="btn btn-primary">
-        <i data-lucide="plus"></i> {{ __('prescriber.new') }}
-    </a>
+    <a href="{{ route('portals.prescriber.create') }}" class="od-btn od-btn--primary"><x-od-icon name="rx" /> {{ __('prescriber.new') }}</a>
 </div>
 
-@if(session('success'))<div class="alert alert-success mb-6"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
-@if(session('error'))<div class="alert alert-danger mb-6"><i data-lucide="alert-circle"></i><div>{{ session('error') }}</div></div>@endif
+@if(session('success'))<div class="odc-note odc-note--ok" role="status"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
+@if(session('error'))<div class="odc-note odc-note--err" role="alert"><i data-lucide="alert-circle"></i><div>{{ session('error') }}</div></div>@endif
 
-<div class="filter-bar">
-    <a href="{{ route('portals.prescriber.index') }}"
-       class="btn btn-sm {{ $status ? 'btn-secondary' : 'btn-primary' }}"
-       @if(! $status) aria-current="page" @endif>{{ __('prescriber.filter_all') }}</a>
-    @foreach($rxStatuses as $rxStatus)
-        <a href="{{ route('portals.prescriber.index', ['status' => $rxStatus]) }}"
-           class="btn btn-sm {{ $status === $rxStatus ? 'btn-primary' : 'btn-secondary' }}"
-           @if($status === $rxStatus) aria-current="page" @endif>{{ __('prescriber.st_' . $rxStatus) }}</a>
-    @endforeach
-</div>
+<section class="od-card" aria-labelledby="odc-rx-title">
+    <header class="od-card__head">
+        <h2 class="od-card__title" id="odc-rx-title">{{ __('prescriber.nav') }} <span class="od-card__count">({{ method_exists($prescriptions, 'total') ? $prescriptions->total() : $prescriptions->count() }})</span></h2>
+    </header>
 
-<div class="panel">
-    @if($prescriptions->isEmpty())
-        <div class="panel-body">
-            <div class="empty-state">
-                <div class="empty-state-icon"><i data-lucide="file-text"></i></div>
-                <h3>{{ __('prescriber.empty') }}</h3>
-                <p>{{ __('prescriber.empty_desc') }}</p>
-                <a href="{{ route('portals.prescriber.create') }}" class="btn btn-primary btn-sm mt-6"><i data-lucide="plus"></i> {{ __('hospital_desk.empty_prescriber_action') }}</a>
+    <nav class="od-tabs" aria-label="{{ __('prescriber.col_status') }}">
+        <a href="{{ route('portals.prescriber.index') }}" class="od-tab {{ $status ? '' : 'is-active' }}" @if(! $status) aria-current="page" @endif>{{ __('prescriber.filter_all') }}</a>
+        @foreach($rxStatuses as $rxStatus)
+            <a href="{{ route('portals.prescriber.index', ['status' => $rxStatus]) }}" class="od-tab {{ $status === $rxStatus ? 'is-active' : '' }}" @if($status === $rxStatus) aria-current="page" @endif>
+                @if($rxDot($rxStatus))<span class="od-tab__dot od-tab__dot--{{ $rxDot($rxStatus) }}"></span>@endif
+                {{ __('prescriber.st_' . $rxStatus) }}
+            </a>
+        @endforeach
+    </nav>
+
+    <div class="od-card__body">
+        @if($prescriptions->isEmpty())
+            <div class="od-empty">
+                <span class="od-empty__icon"><x-od-icon name="rx" /></span>
+                <div class="od-empty__title">{{ __('prescriber.empty') }}</div>
+                <p class="od-empty__text">{{ __('prescriber.empty_desc') }}</p>
+                <a href="{{ route('portals.prescriber.create') }}" class="od-btn od-btn--primary"><i data-lucide="plus"></i> {{ __('hospital_desk.empty_prescriber_action') }}</a>
             </div>
-        </div>
-    @else
-        <div class="table-wrapper">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>{{ __('prescriber.col_patient') }}</th>
-                        <th>{{ __('prescriber.col_items') }}</th>
-                        <th>{{ __('prescriber.col_status') }}</th>
-                        <th>{{ __('prescriber.col_issued') }}</th>
-                        <th class="row-actions">{{ __('prescriber.view') }}</th>
-                    </tr>
-                </thead>
+        @else
+        <div class="od-table-wrap">
+            <table class="od-table">
+                <thead><tr>
+                    <th class="od-table__num">#</th>
+                    <th>{{ __('prescriber.col_patient') }}</th>
+                    <th>{{ __('prescriber.col_items') }}</th>
+                    <th>{{ __('prescriber.col_status') }}</th>
+                    <th>{{ __('prescriber.col_issued') }}</th>
+                    <th>{{ __('prescriber.view') }}</th>
+                </tr></thead>
                 <tbody>
                 @foreach($prescriptions as $rx)
                     @php
@@ -72,26 +85,29 @@
                         $rxName    = trim(($rxPatient->first_name ?? '') . ' ' . ($rxPatient->last_name ?? ''));
                         $rxFirst   = $rx->items->first();
                         $rxExtra   = max($rx->items->count() - 1, 0);
+                        $first     = method_exists($prescriptions, 'firstItem') ? (int) $prescriptions->firstItem() : 1;
                     @endphp
                     <tr>
-                        <td data-label="{{ __('prescriber.col_patient') }}">
-                            <span class="td-strong">{{ $rxName !== '' ? $rxName : '—' }}</span>
-                            @if($rxPatient?->health_id)
-                                <div class="td-muted">{{ $rxPatient->health_id }}</div>
-                            @endif
+                        <td class="od-table__num">{{ $first + $loop->index }}</td>
+                        <td>
+                            <div class="od-table__person">
+                                <span class="od-avatar od-tint--{{ $tone($rxName !== '' ? $rxName : (string) $rx->id) }}" aria-hidden="true">{{ $initials($rxPatient->first_name ?? '', $rxPatient->last_name ?? '') }}</span>
+                                <div>
+                                    <a href="{{ route('portals.prescriber.show', $rx->id) }}" class="od-table__name">{{ $rxName !== '' ? $rxName : '—' }}</a>
+                                    @if($rxPatient?->health_id)<span class="od-table__sub">{{ $rxPatient->health_id }}</span>@endif
+                                </div>
+                            </div>
                         </td>
-                        <td data-label="{{ __('prescriber.col_items') }}">
+                        <td>
                             @if($rxFirst)
-                                <div>{{ $rxFirst->drug_name }}</div>
-                                @if($rxExtra > 0)
-                                    <div class="td-muted">+{{ $rxExtra }} {{ __('public.pharmacy_portal.lbl_items') }}</div>
-                                @endif
+                                <span class="od-table__name">{{ $rxFirst->drug_name }}</span>
+                                @if($rxExtra > 0)<span class="od-table__sub">+{{ $rxExtra }} {{ __('public.pharmacy_portal.lbl_items') }}</span>@endif
                             @else
-                                <span class="td-muted">—</span>
+                                <span class="od-muted">—</span>
                             @endif
                         </td>
-                        <td data-label="{{ __('prescriber.col_status') }}">
-                            <span class="badge badge-{{ $rxColor($rx->status) }}">
+                        <td>
+                            <span class="od-pill od-pill--{{ $rxPill($rx->status) }}">
                                 @if(\Illuminate\Support\Facades\Lang::has('prescriber.st_' . $rx->status))
                                     {{ __('prescriber.st_' . $rx->status) }}
                                 @else
@@ -99,26 +115,24 @@
                                 @endif
                             </span>
                         </td>
-                        <td data-label="{{ __('prescriber.col_issued') }}" class="td-muted">
+                        <td>
                             {{ $rx->prescribed_at?->translatedFormat('d M Y') ?? '—' }}
-                            @if(filled($rx->reference))
-                                <div class="td-muted" data-rx-code>{{ $rx->reference }}</div>
-                            @endif
+                            @if(filled($rx->reference))<span class="od-table__sub" data-rx-code>{{ $rx->reference }}</span>@endif
                         </td>
-                        <td class="row-actions" data-label="{{ __('prescriber.view') }}">
-                            <a href="{{ route('portals.prescriber.show', $rx->id) }}" class="btn btn-secondary btn-sm">
-                                <i data-lucide="eye"></i> {{ __('prescriber.view') }}
-                            </a>
+                        <td class="od-table__actions">
+                            <a href="{{ route('portals.prescriber.show', $rx->id) }}" class="od-btn od-btn--row">{{ __('prescriber.view') }}</a>
                         </td>
                     </tr>
                 @endforeach
                 </tbody>
             </table>
         </div>
-        @if($prescriptions->hasPages())
-            <div class="panel-body">{{ $prescriptions->links() }}</div>
         @endif
+    </div>
+    @if($prescriptions->hasPages())
+        <div class="odc-pager">{{ $prescriptions->links() }}</div>
     @endif
-</div>
+</section>
 
+</div>
 @endsection

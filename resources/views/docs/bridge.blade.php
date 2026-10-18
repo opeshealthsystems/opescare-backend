@@ -1,5 +1,9 @@
 @extends('layouts.docs')
 @section('title', 'Bridge Agent')
+@section('head')
+@include('public.partials._od_pages_css')
+@endsection
+
 @section('content')
 
 <h1>Bridge Agent</h1>

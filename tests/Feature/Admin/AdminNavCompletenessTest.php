@@ -182,7 +182,7 @@ class AdminNavCompletenessTest extends TestCase
         $admin = $this->platformAdmin();
         $html = $this->actingAs($admin)->withSession(['mfa.verified' => true])->get(route('portals.admin'))->assertOk()->getContent();
 
-        $this->assertDoesNotMatchRegularExpression('/<div class="kpi-card"/', $html, 'a KPI tile that goes nowhere');
-        $this->assertMatchesRegularExpression('/<a href="[^"]+" class="kpi-card"/', $html);
+        $this->assertDoesNotMatchRegularExpression('/<div class="od-kpi[ "]/', $html, 'a KPI tile that goes nowhere');
+        $this->assertMatchesRegularExpression('/<a href="[^"]+" class="od-kpi[ "]/', $html);
     }
 }

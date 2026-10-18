@@ -8,6 +8,7 @@
 
 @section('head')
     @include('portals.patient._finder_head')
+    <link rel="stylesheet" href="{{ asset('css/od-patient.css') }}?v={{ @filemtime(public_path('css/od-patient.css')) ?: '1' }}">
 @endsection
 
 @section('patient_banner')
@@ -28,12 +29,12 @@
     </div>
 
     @if($referrals->isEmpty())
-    <div class="f-card" style="text-align:center;padding:40px 20px;">
-        <div class="pf-qa__icon" style="margin:0 auto 12px;width:48px;height:48px;">
+    <div class="f-card ods-99e8a36">
+        <div class="pf-qa__icon ods-4ef0061">
             @include('partials.finder.icon', ['name' => 'arrow-right-left', 'size' => 24])
         </div>
-        <h2 style="font-size:1.125rem;font-weight:750;margin:0 0 6px;">{{ __('public.pat_referral_empty_title', [], $l) }}</h2>
-        <p class="f-muted" style="margin:0;">{{ __('public.pat_referral_empty_desc', [], $l) }}</p>
+        <h2 class="ods-40b57ba">{{ __('public.pat_referral_empty_title', [], $l) }}</h2>
+        <p class="f-muted ods-1386d50">{{ __('public.pat_referral_empty_desc', [], $l) }}</p>
     </div>
     @else
 
@@ -64,18 +65,18 @@
                     <p class="pf-appt__title">
                         {{ __('public.pat_referral_col_to', [], $l) }}: {{ $to }}
                     </p>
-                    <p class="f-muted" style="margin:2px 0 0;">
+                    <p class="f-muted ods-9bed7a6">
                         {{ __('public.pat_referral_col_from', [], $l) }}:
                         {{ $r->referringFacility?->name ?? __('public.pat_referral_unknown', [], $l) }}
                     </p>
-                    <p style="margin:8px 0 0;">
+                    <p class="ods-00dd4a9">
                         <span class="f-muted">{{ __('public.pat_referral_col_reason', [], $l) }}:</span>
                         {{ $r->reason }}
                     </p>
                 </div>
                 <div class="pf-appt__side">
                     <span class="f-badge {{ $badgeCls }}">@enum($r->status)</span>
-                    <span class="f-small f-muted" style="display:block;margin-top:6px;">
+                    <span class="f-small f-muted ods-c1bc483">
                         {{ __('public.pat_referral_col_urgency', [], $l) }}: @enum($r->urgency, 'urgency')
                     </span>
                 </div>

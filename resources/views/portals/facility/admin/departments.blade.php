@@ -6,45 +6,56 @@
 @section('breadcrumb_home_url', route('portals.admin'))
 @section('breadcrumb_section', __('facility_admin.departments_title'))
 
+@section('head')
+<link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">
+@endsection
+
 @section('content')
 
-<div class="page-header">
+@php
+    $tone = fn (string $key): string => ['blue', 'amber', 'teal', 'rose', 'sky', 'green'][crc32($key) % 6];
+@endphp
+
+<div class="od-page">
+
+<header class="od-page__head">
     <div>
-        <h1 class="page-title">{{ __('facility_admin.departments_title') }}</h1>
-        <p class="page-subtitle">{{ __('facility_admin.departments_subtitle') }}</p>
+        <h1 class="od-page__title">{{ __('facility_admin.departments_title') }}</h1>
+        <p class="od-page__sub">{{ __('facility_admin.departments_subtitle') }}</p>
     </div>
-    <div class="page-actions">
-        <a href="{{ route('portals.facility.admin.overview') }}" class="btn btn-secondary">
+    <div class="odc-actions">
+        <a href="{{ route('portals.facility.admin.overview') }}" class="od-btn od-btn--secondary">
             <i data-lucide="gauge"></i> {{ __('facility_admin.nav_overview') }}
         </a>
-        <a href="{{ route('portals.facility.team') }}" class="btn btn-secondary">
+        <a href="{{ route('portals.facility.team') }}" class="od-btn od-btn--primary">
             <i data-lucide="users"></i> {{ __('facility_admin.action_open_team') }}
         </a>
     </div>
-</div>
+</header>
 
 {{-- Plain statement of what this page is: a grouping of a free-text field,
      not a department register. --}}
-<div class="alert alert-info mb-4" style="display:flex;gap:.5rem;align-items:flex-start;">
+<div class="odc-note odc-note--info">
     <i data-lucide="info"></i>
-    <span>{{ __('facility_admin.departments_free_text') }}</span>
+    <div class="odc-note__text">{{ __('facility_admin.departments_free_text') }}</div>
 </div>
 
-<div class="panel">
-    <div class="panel-header">
-        <h3 class="panel-title"><i data-lucide="layout-grid"></i> {{ __('facility_admin.departments_title') }}</h3>
-    </div>
-    <div class="panel-body">
+<section class="od-card">
+    <header class="od-card__head">
+        <h2 class="od-card__title">{{ __('facility_admin.departments_title') }} <span class="od-card__count">({{ count($departments) }})</span></h2>
+    </header>
+    <div class="od-card__body od-card__body--flush">
         @if($departments === [])
-            <div class="empty-state">
-                <i data-lucide="layout-grid"></i>
-                <p>{{ __('facility_admin.departments_empty') }}</p>
+            <div class="od-empty">
+                <span class="od-empty__icon"><i data-lucide="layout-grid"></i></span>
+                <p class="od-empty__text">{{ __('facility_admin.departments_empty') }}</p>
             </div>
         @else
-            <div class="table-wrapper">
-            <table class="data-table" data-table="departments">
+            <div class="od-table-wrap">
+            <table class="od-table" data-table="departments">
                 <thead>
                     <tr>
+                        <th class="od-table__num">#</th>
                         <th>{{ __('facility_admin.col_department') }}</th>
                         <th>{{ __('facility_admin.col_department_count') }}</th>
                         <th>{{ __('facility_admin.col_department_roles') }}</th>
@@ -54,24 +65,30 @@
                 <tbody>
                 @foreach($departments as $name => $group)
                     <tr data-department="{{ $name === '' ? '__unassigned' : $name }}">
+                        <td class="od-table__num">{{ $loop->iteration }}</td>
                         <td data-label="{{ __('facility_admin.col_department') }}">
-                            @if($name === '')
-                                <span class="td-muted"><i data-lucide="circle-dashed"></i> {{ __('facility_admin.department_unassigned') }}</span>
-                            @else
-                                <span class="td-strong">{{ $name }}</span>
-                            @endif
+                            <div class="od-table__person">
+                                <span class="od-avatar odc-ico-avatar od-tint--{{ $name === '' ? 'sky' : $tone((string) $name) }}" aria-hidden="true"><i data-lucide="{{ $name === '' ? 'circle-dashed' : 'layout-grid' }}"></i></span>
+                                @if($name === '')
+                                    <span class="od-table__sub">{{ __('facility_admin.department_unassigned') }}</span>
+                                @else
+                                    <span class="od-table__name">{{ $name }}</span>
+                                @endif
+                            </div>
                         </td>
-                        <td data-label="{{ __('facility_admin.col_department_count') }}" data-department-count="{{ $group['count'] }}">
+                        <td data-label="{{ __('facility_admin.col_department_count') }}" data-department-count="{{ $group['count'] }}" class="odc-nowrap">
                             {{ __('facility_admin.department_members', ['count' => $group['count']]) }}
                         </td>
                         <td data-label="{{ __('facility_admin.col_department_roles') }}">
+                            <div class="odc-row-actions">
                             @foreach($group['roles'] as $role => $n)
-                                <span class="badge badge-neutral">{{ __('portal.' . $role . '_role') !== 'portal.' . $role . '_role' ? __('portal.' . $role . '_role') : $role }} × {{ $n }}</span>
+                                <span class="od-pill od-pill--neutral">{{ __('portal.' . $role . '_role') !== 'portal.' . $role . '_role' ? __('portal.' . $role . '_role') : $role }} × {{ $n }}</span>
                             @endforeach
+                            </div>
                         </td>
                         <td data-label="{{ __('facility_admin.col_department_members') }}">
                             @foreach($group['members'] as $member)
-                                <a href="{{ route('portals.facility.admin.member', $member['user_id']) }}">{{ $member['name'] }}</a>@if($member['job_title']) <span class="td-muted">— {{ $member['job_title'] }}</span>@endif{{ $loop->last ? '' : ', ' }}
+                                <a href="{{ route('portals.facility.admin.member', $member['user_id']) }}" class="od-table__name">{{ $member['name'] }}</a>@if($member['job_title'])<span class="od-table__sub">{{ $member['job_title'] }}</span>@endif
                             @endforeach
                         </td>
                     </tr>
@@ -81,6 +98,7 @@
             </div>
         @endif
     </div>
-</div>
+</section>
 
+</div>
 @endsection

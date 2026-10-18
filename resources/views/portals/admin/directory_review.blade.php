@@ -4,143 +4,123 @@
 @section('breadcrumb_home', 'Admin')
 @section('breadcrumb_home_url', route('portals.admin'))
 @section('breadcrumb_section', __('caremap_claim.review_title'))
-
-@section('head')
-<style>
-  .dr-tabs{display:flex;gap:.5rem;border-bottom:1px solid var(--p-border);margin-bottom:var(--p-space-5)}
-  .dr-tab{display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1rem;font-size:.875rem;font-weight:600;color:var(--p-text-muted);text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-1px}
-  .dr-tab.active{color:var(--p-primary);border-bottom-color:var(--p-primary)}
-  .dr-tab-count{display:inline-flex;align-items:center;justify-content:center;min-width:1.35rem;padding:0 .35rem;height:1.35rem;border-radius:999px;background:var(--p-surface-2);font-size:.7rem;font-weight:700}
-  .dr-tab.active .dr-tab-count{background:rgba(15,76,129,.12);color:var(--p-primary)}
-  .dr-inline-form{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
-  .dr-inline-form .form-control{min-width:9rem;padding:.3rem .55rem;font-size:.78rem}
-  .dr-tags{font-family:'Courier New',monospace;font-size:.72rem;color:var(--p-text-muted);white-space:pre-wrap;word-break:break-word;max-width:34rem}
-  .dr-note{font-size:.8rem;color:var(--p-text-muted);margin-bottom:var(--p-space-4)}
-  .dr-reasonbar{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:var(--p-space-4)}
-  .dr-reason-chip{padding:.3rem .7rem;border:1px solid var(--p-border);border-radius:999px;font-size:.75rem;font-weight:600;color:var(--p-text-2);text-decoration:none}
-  .dr-reason-chip.active{background:var(--p-primary);border-color:var(--p-primary);color:#fff}
-  /* Side-by-side: a duplicate cannot be judged from one record. */
-  .dr-card{border:1px solid var(--p-border);border-radius:var(--p-radius,8px);margin-bottom:var(--p-space-4);overflow:hidden}
-  .dr-card-head{display:flex;align-items:flex-start;gap:.75rem;flex-wrap:wrap;padding:.75rem 1rem;background:var(--p-surface-2);border-bottom:1px solid var(--p-border)}
-  .dr-card-title{font-weight:700;font-size:.95rem}
-  .dr-card-sub{font-size:.75rem;color:var(--p-text-muted)}
-  .dr-compare{display:grid;grid-template-columns:1fr 1fr;gap:0}
-  .dr-col{padding:.85rem 1rem}
-  .dr-col + .dr-col{border-left:1px solid var(--p-border)}
-  .dr-col-head{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--p-text-muted);margin-bottom:.5rem}
-  .dr-col--candidate .dr-col-head{color:var(--p-primary)}
-  .dr-field{display:flex;gap:.5rem;font-size:.8rem;padding:.18rem 0}
-  .dr-field dt{flex:0 0 6.5rem;color:var(--p-text-muted)}
-  .dr-field dd{margin:0;font-weight:600;word-break:break-word}
-  .dr-field dd.is-missing{font-weight:400;color:var(--p-text-muted);font-style:italic}
-  .dr-actions{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;padding:.7rem 1rem;border-top:1px solid var(--p-border)}
-  .dr-attrib{font-size:.75rem;color:var(--p-text-muted);margin-bottom:var(--p-space-4)}
-  @media (max-width:860px){.dr-compare{grid-template-columns:1fr}.dr-col + .dr-col{border-left:0;border-top:1px solid var(--p-border)}}
-</style>
-@endsection
+@section('head')<link rel="stylesheet" href="{{ asset('css/od-admin.css') }}?v={{ @filemtime(public_path('css/od-admin.css')) ?: '1' }}">@endsection
 
 @section('content')
+@php
+    $gdTones = ['blue','amber','teal','rose','sky','green'];
+    $gdTone  = fn ($k) => $gdTones[crc32((string) $k) % count($gdTones)];
+    $gdInit  = fn ($n) => mb_strtoupper(collect(preg_split('/\s+/', trim((string) $n)))->filter()->take(2)->map(fn ($p) => mb_substr($p, 0, 1))->implode('')) ?: '—';
+@endphp
+<div class="od-page">
 
-<div class="page-header">
+<div class="od-page__head">
     <div>
-        <h1 class="page-title">{{ __('caremap_claim.review_title') }}</h1>
-        <p class="page-subtitle">{{ __('caremap_claim.review_subtitle') }}</p>
+        <h1 class="od-page__title">{{ __('caremap_claim.review_title') }}</h1>
+        <p class="od-page__sub">{{ __('caremap_claim.review_subtitle') }}</p>
     </div>
 </div>
 
-@if(session('success'))<div class="alert alert-success mb-6"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
-@if(session('error'))<div class="alert alert-danger mb-6"><i data-lucide="alert-circle"></i><div>{{ session('error') }}</div></div>@endif
+@if(session('success'))<div class="oda-gd-flash oda-gd-flash--ok"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
+@if(session('error'))<div class="oda-gd-flash oda-gd-flash--err"><i data-lucide="alert-circle"></i><div>{{ session('error') }}</div></div>@endif
 
-<div class="dr-tabs">
-    <a href="{{ route('admin.care-map.review', ['tab' => 'claims']) }}" class="dr-tab {{ $tab === 'claims' ? 'active' : '' }}">
+<nav class="od-tabs">
+    <a href="{{ route('admin.care-map.review', ['tab' => 'claims']) }}" class="od-tab {{ $tab === 'claims' ? 'is-active' : '' }}">
         <i data-lucide="badge-check"></i>
         <span>{{ __('caremap_claim.tab_claims') }}</span>
-        <span class="dr-tab-count">{{ $pendingClaimCount }}</span>
+        <span class="od-tab__count">{{ $pendingClaimCount }}</span>
     </a>
-    <a href="{{ route('admin.care-map.review', ['tab' => 'imports']) }}" class="dr-tab {{ $tab === 'imports' ? 'active' : '' }}">
+    <a href="{{ route('admin.care-map.review', ['tab' => 'imports']) }}" class="od-tab {{ $tab === 'imports' ? 'is-active' : '' }}">
         <i data-lucide="git-pull-request-arrow"></i>
         <span>{{ __('caremap_claim.tab_imports') }}</span>
-        <span class="dr-tab-count">{{ $pendingImportCount }}</span>
+        <span class="od-tab__count">{{ $pendingImportCount }}</span>
     </a>
-    <a href="{{ route('admin.care-map.review', ['tab' => 'unlinked']) }}" class="dr-tab {{ $tab === 'unlinked' ? 'active' : '' }}">
+    <a href="{{ route('admin.care-map.review', ['tab' => 'unlinked']) }}" class="od-tab {{ $tab === 'unlinked' ? 'is-active' : '' }}">
         <i data-lucide="unlink"></i>
         <span>{{ __('caremap_claim.tab_unlinked') }}</span>
-        <span class="dr-tab-count">{{ $unlinkedListings->count() }}</span>
+        <span class="od-tab__count">{{ $unlinkedListings->count() }}</span>
     </a>
-</div>
+</nav>
 
 @if($tab === 'claims')
 
     {{-- ══ Ownership claims ══════════════════════════════════════════════ --}}
-    <div class="alert alert-warning mb-6">
+    <div class="oda-gd-flash oda-gd-flash--warn">
         <i data-lucide="shield-alert"></i>
         <div>{{ __('caremap_claim.approve_warning') }}</div>
     </div>
 
+    <div class="od-card">
+        <div class="od-card__head">
+            <h2 class="od-card__title"><i data-lucide="clock"></i> {{ __('caremap_claim.tab_claims') }}</h2>
+            <span class="od-card__count">{{ $pendingClaims->total() }}</span>
+        </div>
     @if($pendingClaims->isEmpty())
-        <div class="panel">
-            <div class="panel-body">
-                <div class="empty-state">
-                    <div class="empty-state-icon"><i data-lucide="check-circle"></i></div>
-                    <p>{{ __('caremap_claim.empty_claims_queue') }}</p>
-                </div>
+        <div class="od-card__body">
+            <div class="od-empty">
+                <span class="od-empty__icon"><i data-lucide="check-circle"></i></span>
+                <p class="od-empty__text">{{ __('caremap_claim.empty_claims_queue') }}</p>
             </div>
         </div>
     @else
-        <div class="panel">
-            <div class="panel-header">
-                <h3 class="panel-title"><i data-lucide="clock"></i> {{ $pendingClaims->total() }}</h3>
-            </div>
-            <div class="table-wrapper">
-                <table class="data-table">
+        <div class="od-card__body od-card__body--flush">
+            <div class="od-table-wrap">
+                <table class="od-table">
                     <thead>
                         <tr>
                             <th>{{ __('caremap_claim.col_facility') }}</th>
                             <th>{{ __('caremap_claim.claim_col_claimant') }}</th>
                             <th>{{ __('caremap_claim.claim_col_contact') }}</th>
                             <th>{{ __('caremap_claim.col_submitted') }}</th>
-                            <th class="row-actions">&nbsp;</th>
+                            <th>&nbsp;</th>
                         </tr>
                     </thead>
                     <tbody>
                     @foreach($pendingClaims as $claim)
-                        @php $listing = $claim->careFacility; @endphp
+                        @php $listing = $claim->careFacility; $facName = $listing?->facility_name ?? $claim->facility?->name ?? '—'; @endphp
                         <tr>
                             <td data-label="{{ __('caremap_claim.col_facility') }}">
-                                <span class="td-strong">{{ $listing?->facility_name ?? $claim->facility?->name ?? '—' }}</span>
-                                @if($listing)
-                                    <div class="td-muted">{{ $listing->city }}{{ $listing->region ? ', ' . $listing->region : '' }}</div>
-                                    <a href="{{ route('public.care-map.profile', $listing->id) }}" class="td-muted" target="_blank" rel="noopener">
-                                        {{ __('caremap_claim.view_listing') }}
-                                    </a>
-                                @endif
+                                <div class="od-table__person">
+                                    <span class="od-avatar od-avatar--sm od-tint--{{ $gdTone($listing?->id ?? $facName) }}">{{ $gdInit($facName) }}</span>
+                                    <div>
+                                        <div class="od-table__name">{{ $facName }}</div>
+                                        @if($listing)
+                                            <div class="od-table__sub">{{ $listing->city }}{{ $listing->region ? ', ' . $listing->region : '' }}</div>
+                                            <a href="{{ route('public.care-map.profile', $listing->id) }}" class="od-table__sub" target="_blank" rel="noopener">
+                                                {{ __('caremap_claim.view_listing') }}
+                                            </a>
+                                        @endif
+                                    </div>
+                                </div>
                             </td>
                             <td data-label="{{ __('caremap_claim.claim_col_claimant') }}">
-                                <span class="td-strong">{{ $claim->claimant_name ?? $claim->claimant?->name ?? '—' }}</span>
-                                <div class="td-muted">{{ $claim->claimant_role ?? '—' }}</div>
+                                <span class="od-table__name">{{ $claim->claimant_name ?? $claim->claimant?->name ?? '—' }}</span>
+                                <div class="od-table__sub">{{ $claim->claimant_role ?? '—' }}</div>
                             </td>
-                            <td data-label="{{ __('caremap_claim.claim_col_contact') }}" class="td-muted">
-                                {{ $claim->claimant_email ?? $claim->claimant?->email ?? '—' }}
-                                @if($claim->claimant_phone)<div>{{ $claim->claimant_phone }}</div>@endif
-                                @if($claim->claim_reason)<div>{{ Str::limit($claim->claim_reason, 120) }}</div>@endif
+                            <td data-label="{{ __('caremap_claim.claim_col_contact') }}">
+                                <div class="od-table__sub">{{ $claim->claimant_email ?? $claim->claimant?->email ?? '—' }}</div>
+                                @if($claim->claimant_phone)<div class="od-table__sub">{{ $claim->claimant_phone }}</div>@endif
+                                @if($claim->claim_reason)<div class="od-table__sub">{{ Str::limit($claim->claim_reason, 120) }}</div>@endif
                             </td>
-                            <td data-label="{{ __('caremap_claim.col_submitted') }}" class="td-muted">
-                                {{ optional($claim->submitted_at ?? $claim->created_at)->format('Y-m-d') ?? '—' }}
+                            <td data-label="{{ __('caremap_claim.col_submitted') }}">
+                                <span class="od-table__sub">{{ optional($claim->submitted_at ?? $claim->created_at)->format('Y-m-d') ?? '—' }}</span>
                             </td>
-                            <td class="row-actions">
-                                <form method="POST" action="{{ route('admin.care-map.review.claims.reject', $claim->id) }}" class="dr-inline-form">
-                                    @csrf
-                                    <input type="text" name="review_notes" class="form-control" placeholder="{{ __('caremap_claim.notes_placeholder') }}" maxlength="1000">
-                                    <button type="submit" class="btn btn-secondary btn-sm">
-                                        <i data-lucide="x"></i> {{ __('caremap_claim.btn_reject') }}
-                                    </button>
-                                </form>
-                                <form method="POST" action="{{ route('admin.care-map.review.claims.approve', $claim->id) }}">
-                                    @csrf
-                                    <button type="submit" class="btn btn-primary btn-sm">
-                                        <i data-lucide="check"></i> {{ __('caremap_claim.btn_approve') }}
-                                    </button>
-                                </form>
+                            <td>
+                                <div class="od-table__actions">
+                                    <form method="POST" action="{{ route('admin.care-map.review.claims.reject', $claim->id) }}" class="oda-inline-form">
+                                        @csrf
+                                        <input type="text" name="review_notes" class="od-input oda-gd-note" placeholder="{{ __('caremap_claim.notes_placeholder') }}" maxlength="1000" aria-label="{{ __('caremap_claim.notes_placeholder') }}">
+                                        <button type="submit" class="od-btn od-btn--secondary od-btn--sm">
+                                            <i data-lucide="x"></i> {{ __('caremap_claim.btn_reject') }}
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="{{ route('admin.care-map.review.claims.approve', $claim->id) }}" class="oda-inline-form">
+                                        @csrf
+                                        <button type="submit" class="od-btn od-btn--row">
+                                            <i data-lucide="check"></i> {{ __('caremap_claim.btn_approve') }}
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     @endforeach
@@ -148,61 +128,65 @@
                 </table>
             </div>
         </div>
-        <div class="mb-6">{{ $pendingClaims->links() }}</div>
+        <div class="od-card__foot">{{ $pendingClaims->links() }}</div>
     @endif
+    </div>
 
     @if($decidedClaims->isNotEmpty())
-        <div class="panel">
-            <div class="panel-header">
-                <h3 class="panel-title"><i data-lucide="history"></i> {{ __('caremap_claim.recent_decisions') }}</h3>
+        <div class="od-card">
+            <div class="od-card__head">
+                <h2 class="od-card__title"><i data-lucide="history"></i> {{ __('caremap_claim.recent_decisions') }}</h2>
+                <span class="od-card__count">{{ $decidedClaims->count() }}</span>
             </div>
-            <div class="table-wrapper">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>{{ __('caremap_claim.col_facility') }}</th>
-                            <th>{{ __('caremap_claim.claim_col_claimant') }}</th>
-                            <th>{{ __('caremap_claim.col_status') }}</th>
-                            <th>{{ __('caremap_claim.col_reviewed') }}</th>
-                            <th class="row-actions">&nbsp;</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    @foreach($decidedClaims as $claim)
-                        @php
-                            $badge = match($claim->claim_status) {
-                                \App\Enums\FacilityClaimStatus::Approved => 'badge-success',
-                                \App\Enums\FacilityClaimStatus::Rejected => 'badge-danger',
-                                default                                  => 'badge-neutral',
-                            };
-                        @endphp
-                        <tr>
-                            <td data-label="{{ __('caremap_claim.col_facility') }}">
-                                <span class="td-strong">{{ $claim->careFacility?->facility_name ?? '—' }}</span>
-                            </td>
-                            <td data-label="{{ __('caremap_claim.claim_col_claimant') }}" class="td-muted">
-                                {{ $claim->claimant_name ?? $claim->claimant?->name ?? '—' }}
-                            </td>
-                            <td data-label="{{ __('caremap_claim.col_status') }}">
-                                <span class="badge {{ $badge }}">{{ __('caremap_claim.status_' . $claim->claim_status->value) }}</span>
-                            </td>
-                            <td data-label="{{ __('caremap_claim.col_reviewed') }}" class="td-muted">
-                                {{ optional($claim->reviewed_at)->format('Y-m-d') ?? '—' }}
-                            </td>
-                            <td class="row-actions">
-                                @if($claim->claim_status === \App\Enums\FacilityClaimStatus::Approved)
-                                    <form method="POST" action="{{ route('admin.care-map.review.claims.revoke', $claim->id) }}" data-confirm="{{ __('admin_desk.confirm_revoke_claim') }}">
-                                        @csrf
-                                        <button type="submit" class="btn btn-ghost btn-sm">
-                                            <i data-lucide="undo-2"></i> {{ __('caremap_claim.btn_revoke') }}
-                                        </button>
-                                    </form>
-                                @endif
-                            </td>
-                        </tr>
-                    @endforeach
-                    </tbody>
-                </table>
+            <div class="od-card__body od-card__body--flush">
+                <div class="od-table-wrap">
+                    <table class="od-table">
+                        <thead>
+                            <tr>
+                                <th>{{ __('caremap_claim.col_facility') }}</th>
+                                <th>{{ __('caremap_claim.claim_col_claimant') }}</th>
+                                <th>{{ __('caremap_claim.col_status') }}</th>
+                                <th>{{ __('caremap_claim.col_reviewed') }}</th>
+                                <th>&nbsp;</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach($decidedClaims as $claim)
+                            @php
+                                $badge = match($claim->claim_status) {
+                                    \App\Enums\FacilityClaimStatus::Approved => 'od-pill--ready',
+                                    \App\Enums\FacilityClaimStatus::Rejected => 'od-pill--urgent',
+                                    default                                  => 'od-pill--neutral',
+                                };
+                            @endphp
+                            <tr>
+                                <td data-label="{{ __('caremap_claim.col_facility') }}">
+                                    <span class="od-table__name">{{ $claim->careFacility?->facility_name ?? '—' }}</span>
+                                </td>
+                                <td data-label="{{ __('caremap_claim.claim_col_claimant') }}">
+                                    <span class="od-table__sub">{{ $claim->claimant_name ?? $claim->claimant?->name ?? '—' }}</span>
+                                </td>
+                                <td data-label="{{ __('caremap_claim.col_status') }}">
+                                    <span class="od-pill {{ $badge }}">{{ __('caremap_claim.status_' . $claim->claim_status->value) }}</span>
+                                </td>
+                                <td data-label="{{ __('caremap_claim.col_reviewed') }}">
+                                    <span class="od-table__sub">{{ optional($claim->reviewed_at)->format('Y-m-d') ?? '—' }}</span>
+                                </td>
+                                <td>
+                                    @if($claim->claim_status === \App\Enums\FacilityClaimStatus::Approved)
+                                        <form method="POST" action="{{ route('admin.care-map.review.claims.revoke', $claim->id) }}" data-confirm="{{ __('admin_desk.confirm_revoke_claim') }}" class="oda-inline-form">
+                                            @csrf
+                                            <button type="submit" class="od-btn od-btn--ghost od-btn--sm">
+                                                <i data-lucide="undo-2"></i> {{ __('caremap_claim.btn_revoke') }}
+                                            </button>
+                                        </form>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     @endif
@@ -219,22 +203,27 @@
         it in, but a listing that predates the claim flow has no claim to
         approve, and this is the only place that join can be made by hand.
     --}}
-    <div class="alert alert-warning mb-6">
+    <div class="oda-gd-flash oda-gd-flash--warn">
         <i data-lucide="shield-alert"></i>
         <div>{{ __('caremap_claim.link_warning') }}</div>
     </div>
 
+    <div class="od-card">
+        <div class="od-card__head">
+            <h2 class="od-card__title"><i data-lucide="unlink"></i> {{ __('caremap_claim.tab_unlinked') }}</h2>
+            <span class="od-card__count">{{ $unlinkedListings->count() }}</span>
+        </div>
     @if($unlinkedListings->isEmpty())
-        <div class="panel">
-            <div class="empty-state">
-                <i data-lucide="check-circle"></i>
-                <p>{{ __('caremap_claim.link_none') }}</p>
+        <div class="od-card__body">
+            <div class="od-empty">
+                <span class="od-empty__icon"><i data-lucide="check-circle"></i></span>
+                <p class="od-empty__text">{{ __('caremap_claim.link_none') }}</p>
             </div>
         </div>
     @else
-        <div class="panel">
-            <div class="table-wrap">
-                <table class="data-table">
+        <div class="od-card__body od-card__body--flush">
+            <div class="od-table-wrap">
+                <table class="od-table">
                     <thead>
                         <tr>
                             <th>{{ __('caremap_claim.link_col_listing') }}</th>
@@ -246,18 +235,23 @@
                         @foreach($unlinkedListings as $row)
                             <tr>
                                 <td data-label="{{ __('caremap_claim.link_col_listing') }}">
-                                    <div class="td-strong">{{ $row->listing_name }}</div>
-                                    <div class="td-muted">{{ $row->listing_city }} · {{ $row->listing_type }}</div>
+                                    <div class="od-table__person">
+                                        <span class="od-avatar od-avatar--sm od-tint--{{ $gdTone($row->listing_id) }}">{{ $gdInit($row->listing_name) }}</span>
+                                        <div>
+                                            <div class="od-table__name">{{ $row->listing_name }}</div>
+                                            <div class="od-table__sub">{{ $row->listing_city }} · {{ $row->listing_type }}</div>
+                                        </div>
+                                    </div>
                                 </td>
                                 <td data-label="{{ __('caremap_claim.link_col_facility') }}">
-                                    <div class="td-strong">{{ $row->facility_name }}</div>
-                                    <div class="td-muted">{{ $row->facility_type_tenant }}</div>
+                                    <div class="od-table__name">{{ $row->facility_name }}</div>
+                                    <div class="od-table__sub">{{ $row->facility_type_tenant }}</div>
                                 </td>
-                                <td class="row-actions" data-label="{{ __('caremap_claim.link_col_action') }}">
-                                    <form method="POST" action="{{ route('admin.care-map.review.listings.link', $row->listing_id) }}" class="inline-form">
+                                <td data-label="{{ __('caremap_claim.link_col_action') }}">
+                                    <form method="POST" action="{{ route('admin.care-map.review.listings.link', $row->listing_id) }}" class="oda-inline-form">
                                         @csrf
                                         <input type="hidden" name="facility_id" value="{{ $row->facility_id }}">
-                                        <button type="submit" class="btn btn-success btn-sm">
+                                        <button type="submit" class="od-btn od-btn--row">
                                             <i data-lucide="link"></i> {{ __('caremap_claim.link_action') }}
                                         </button>
                                     </form>
@@ -269,6 +263,7 @@
             </div>
         </div>
     @endif
+    </div>
 
 @else
 
@@ -276,50 +271,49 @@
 
     {{-- ODbL: attribution travels with the data, wherever the data is shown. --}}
     @if($osmAttribution)
-        <p class="dr-attrib">
+        <p class="oda-help oda-gd-attrib">
             <i data-lucide="scale"></i>
             {{ __('facility_review.attribution', ['attribution' => $osmAttribution]) }}
             — {{ __('facility_review.attribution_note') }}
         </p>
     @endif
 
-    {{-- Status: pending by default, but a deferred row must stay reachable. --}}
-    <div class="dr-reasonbar">
-        @foreach(\App\Enums\FacilityImportReviewStatus::cases() as $case)
-            <a href="{{ route('admin.care-map.review', ['tab' => 'imports', 'status' => $case->value]) }}"
-               class="dr-reason-chip {{ $activeStatus === $case ? 'active' : '' }}">
-                {{ __($case->translationKey()) }} ({{ $statusCounts[$case->value] ?? 0 }})
-            </a>
-        @endforeach
-    </div>
+    <div class="od-card">
+        <div class="od-card__head">
+            <h2 class="od-card__title"><i data-lucide="import"></i> {{ __('caremap_claim.tab_imports') }}</h2>
+            <span class="od-card__count">{{ $importReviews->total() }}</span>
+        </div>
+        <div class="od-card__body od-stack">
+            {{-- Status: pending by default, but a deferred row must stay reachable. --}}
+            <nav class="od-tabs">
+                @foreach(\App\Enums\FacilityImportReviewStatus::cases() as $case)
+                    <a href="{{ route('admin.care-map.review', ['tab' => 'imports', 'status' => $case->value]) }}"
+                       class="od-tab {{ $activeStatus === $case ? 'is-active' : '' }}">
+                        {{ __($case->translationKey()) }} <span class="od-tab__count">{{ $statusCounts[$case->value] ?? 0 }}</span>
+                    </a>
+                @endforeach
+            </nav>
 
-    <div class="dr-reasonbar">
-        <a href="{{ route('admin.care-map.review', ['tab' => 'imports', 'status' => $activeStatus->value]) }}"
-           class="dr-reason-chip {{ $activeReason ? '' : 'active' }}">{{ __('caremap_claim.filter_all_reasons') }}</a>
-        @foreach($reasonCounts as $reason => $total)
-            <a href="{{ route('admin.care-map.review', ['tab' => 'imports', 'status' => $activeStatus->value, 'reason' => $reason]) }}"
-               class="dr-reason-chip {{ $activeReason === $reason ? 'active' : '' }}">
-                {{ __('caremap_claim.reason_' . $reason) }} ({{ $total }})
-            </a>
-        @endforeach
-    </div>
+            <nav class="od-tabs">
+                <a href="{{ route('admin.care-map.review', ['tab' => 'imports', 'status' => $activeStatus->value]) }}"
+                   class="od-tab {{ $activeReason ? '' : 'is-active' }}">{{ __('caremap_claim.filter_all_reasons') }}</a>
+                @foreach($reasonCounts as $reason => $total)
+                    <a href="{{ route('admin.care-map.review', ['tab' => 'imports', 'status' => $activeStatus->value, 'reason' => $reason]) }}"
+                       class="od-tab {{ $activeReason === $reason ? 'is-active' : '' }}">
+                        {{ __('caremap_claim.reason_' . $reason) }} <span class="od-tab__count">{{ $total }}</span>
+                    </a>
+                @endforeach
+            </nav>
 
     @if($importReviews->isEmpty())
-        <div class="panel">
-            <div class="panel-body">
-                <div class="empty-state">
-                    <div class="empty-state-icon"><i data-lucide="check-circle"></i></div>
-                    <p>{{ __('caremap_claim.empty_imports_queue') }}</p>
-                </div>
+            <div class="od-empty">
+                <span class="od-empty__icon"><i data-lucide="check-circle"></i></span>
+                <p class="od-empty__text">{{ __('caremap_claim.empty_imports_queue') }}</p>
             </div>
         </div>
+    </div>
     @else
-        <div class="panel">
-            <div class="panel-header">
-                <h3 class="panel-title"><i data-lucide="import"></i> {{ $importReviews->total() }}</h3>
-            </div>
-            <div class="panel-body">
-                <p class="dr-note">{{ __('facility_review.never_verified') }}</p>
+                <p class="oda-help">{{ __('facility_review.never_verified') }}</p>
 
                 @php
                     // Shown only when the value is real. 692 directory rows carry the
@@ -358,11 +352,12 @@
                         ] : [];
                     @endphp
 
-                    <div class="dr-card">
-                        <div class="dr-card-head">
-                            <div>
-                                <div class="dr-card-title">{{ $name !== '' ? $name : __('facility_review.value_missing') }}</div>
-                                <div class="dr-card-sub">
+                    <div class="oda-gd-review">
+                        <div class="oda-gd-review__head">
+                            <span class="od-avatar od-avatar--sm od-tint--{{ $gdTone($review->id) }}">{{ $gdInit($name) }}</span>
+                            <div class="oda-gd-review__title">
+                                <div class="od-table__name">{{ $name !== '' ? $name : __('facility_review.value_missing') }}</div>
+                                <div class="od-table__sub">
                                     {{ __('caremap_claim.reason_' . $review->reason) }}
                                     @if($review->match_score !== null)
                                         &bull; {{ __('facility_review.match_score', ['score' => number_format($review->match_score, 2)]) }}
@@ -372,101 +367,96 @@
                                     @endif
                                 </div>
                             </div>
-                            <div style="flex:1"></div>
-                            <span class="badge badge-neutral">{{ __($review->status->translationKey()) }}</span>
+                            <span class="od-pill od-pill--neutral">{{ __($review->status->translationKey()) }}</span>
                         </div>
 
                         @if($cluster > 1)
-                            <div class="alert alert-warning" style="margin:.75rem 1rem 0">
+                            <div class="oda-gd-flash oda-gd-flash--warn oda-gd-review__flash">
                                 <i data-lucide="copy"></i>
                                 <div>{{ __('facility_review.cluster_warning', ['count' => $cluster]) }}</div>
                             </div>
                         @endif
 
                         {{-- A duplicate cannot be judged from one record. Both, or neither. --}}
-                        <div class="dr-compare">
-                            <div class="dr-col dr-col--candidate">
-                                <div class="dr-col-head">{{ __('facility_review.compare_candidate') }}</div>
-                                <dl>
+                        <div class="oda-gd-compare">
+                            <div class="oda-gd-compare__col">
+                                <div class="oda-gd-compare__head oda-gd-compare__head--candidate">{{ __('facility_review.compare_candidate') }}</div>
+                                <dl class="oda-dl">
                                     @foreach($candidateFields as $key => $value)
-                                        <div class="dr-field">
-                                            <dt>{{ __('facility_review.' . $key) }}</dt>
-                                            <dd class="{{ filled($value) ? '' : 'is-missing' }}">{{ filled($value) ? $value : __('facility_review.value_missing') }}</dd>
-                                        </div>
+                                        <dt>{{ __('facility_review.' . $key) }}</dt>
+                                        <dd class="{{ filled($value) ? '' : 'oda-gd-missing' }}">{{ filled($value) ? $value : __('facility_review.value_missing') }}</dd>
                                     @endforeach
                                 </dl>
                                 @if($name === '')
                                     {{-- 136 of the queue are unnamed OSM elements. The Add button is
                                          disabled for them; say why, and point at where the name usually is. --}}
-                                    <p class="td-muted"><i data-lucide="alert-triangle"></i> {{ __('caremap_claim.no_name_warning') }}</p>
+                                    <p class="oda-help"><i data-lucide="alert-triangle"></i> {{ __('caremap_claim.no_name_warning') }}</p>
                                 @endif
                                 @if(!empty($review->payload))
-                                    <details>
-                                        <summary class="td-muted">{{ __('caremap_claim.raw_tags') }}</summary>
-                                        <div class="dr-tags">{{ json_encode($review->payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}</div>
+                                    <details class="oda-gd-details">
+                                        <summary class="oda-help">{{ __('caremap_claim.raw_tags') }}</summary>
+                                        <div class="oda-pre">{{ json_encode($review->payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}</div>
                                     </details>
                                 @endif
                             </div>
 
-                            <div class="dr-col">
-                                <div class="dr-col-head">{{ __('facility_review.compare_existing') }}</div>
+                            <div class="oda-gd-compare__col">
+                                <div class="oda-gd-compare__head">{{ __('facility_review.compare_existing') }}</div>
                                 @if($listing)
-                                    <dl>
+                                    <dl class="oda-dl">
                                         @foreach($existingFields as $key => $value)
-                                            <div class="dr-field">
-                                                <dt>{{ __('facility_review.' . $key) }}</dt>
-                                                <dd class="{{ filled($value) ? '' : 'is-missing' }}">{{ filled($value) ? $value : __('facility_review.value_missing') }}</dd>
-                                            </div>
+                                            <dt>{{ __('facility_review.' . $key) }}</dt>
+                                            <dd class="{{ filled($value) ? '' : 'oda-gd-missing' }}">{{ filled($value) ? $value : __('facility_review.value_missing') }}</dd>
                                         @endforeach
                                     </dl>
-                                    <a href="{{ route('public.care-map.profile', $listing->id) }}" class="td-muted" target="_blank" rel="noopener">
+                                    <a href="{{ route('public.care-map.profile', $listing->id) }}" class="od-card__link" target="_blank" rel="noopener">
                                         <i data-lucide="external-link"></i> {{ __('caremap_claim.view_listing') }}
                                     </a>
                                 @else
-                                    <p class="td-muted">{{ __('facility_review.no_match') }}</p>
+                                    <p class="oda-help">{{ __('facility_review.no_match') }}</p>
                                 @endif
                             </div>
                         </div>
 
                         @if($review->reviewed_at)
-                            <div class="dr-card-sub" style="padding:0 1rem .5rem">
+                            <p class="oda-help oda-gd-review__meta">
                                 {{ __('facility_review.' . ($review->status === \App\Enums\FacilityImportReviewStatus::Deferred ? 'deferred_meta' : 'decided_meta'), [
                                     'name' => $review->reviewer?->name ?? '—',
                                     'date' => $review->reviewed_at->format('Y-m-d'),
                                 ]) }}
                                 @if($review->review_notes) &bull; {{ $review->review_notes }} @endif
-                            </div>
+                            </p>
                         @endif
 
                         @if($review->status->isOpen())
-                            <div class="dr-actions">
-                                <form method="POST" action="{{ route('admin.care-map.review.imports.accept', $review->id) }}">
+                            <div class="oda-gd-review__actions">
+                                <form method="POST" action="{{ route('admin.care-map.review.imports.accept', $review->id) }}" class="oda-inline-form">
                                     @csrf
-                                    <button type="submit" class="btn btn-primary btn-sm" @disabled($name === '')>
+                                    <button type="submit" class="od-btn od-btn--primary od-btn--sm" @disabled($name === '')>
                                         <i data-lucide="plus"></i> {{ __('caremap_claim.btn_accept') }}
                                     </button>
                                 </form>
                                 @if($review->matched_facility_id)
-                                    <form method="POST" action="{{ route('admin.care-map.review.imports.merge', $review->id) }}" data-confirm="{{ __('admin_desk.confirm_merge_import') }}">
+                                    <form method="POST" action="{{ route('admin.care-map.review.imports.merge', $review->id) }}" data-confirm="{{ __('admin_desk.confirm_merge_import') }}" class="oda-inline-form">
                                         @csrf
-                                        <button type="submit" class="btn btn-secondary btn-sm">
+                                        <button type="submit" class="od-btn od-btn--secondary od-btn--sm">
                                             <i data-lucide="merge"></i> {{ __('caremap_claim.btn_merge') }}
                                         </button>
                                     </form>
                                 @endif
                                 @if($review->status->isPending())
-                                    <form method="POST" action="{{ route('admin.care-map.review.imports.defer', $review->id) }}" class="dr-inline-form">
+                                    <form method="POST" action="{{ route('admin.care-map.review.imports.defer', $review->id) }}" class="oda-inline-form">
                                         @csrf
-                                        <input type="text" name="review_notes" class="form-control" placeholder="{{ __('facility_review.defer_reason') }}" maxlength="1000">
-                                        <button type="submit" class="btn btn-ghost btn-sm" title="{{ __('facility_review.defer_hint') }}">
+                                        <input type="text" name="review_notes" class="od-input oda-gd-note" placeholder="{{ __('facility_review.defer_reason') }}" maxlength="1000" aria-label="{{ __('facility_review.defer_reason') }}">
+                                        <button type="submit" class="od-btn od-btn--ghost od-btn--sm" title="{{ __('facility_review.defer_hint') }}">
                                             <i data-lucide="clock"></i> {{ __('facility_review.btn_defer') }}
                                         </button>
                                     </form>
                                 @endif
-                                <form method="POST" action="{{ route('admin.care-map.review.imports.reject', $review->id) }}" class="dr-inline-form">
+                                <form method="POST" action="{{ route('admin.care-map.review.imports.reject', $review->id) }}" class="oda-inline-form">
                                     @csrf
-                                    <input type="text" name="review_notes" class="form-control" placeholder="{{ __('caremap_claim.notes_placeholder') }}" maxlength="1000">
-                                    <button type="submit" class="btn btn-ghost btn-sm">
+                                    <input type="text" name="review_notes" class="od-input oda-gd-note" placeholder="{{ __('caremap_claim.notes_placeholder') }}" maxlength="1000" aria-label="{{ __('caremap_claim.notes_placeholder') }}">
+                                    <button type="submit" class="od-btn od-btn--ghost od-btn--sm">
                                         <i data-lucide="x"></i> {{ __('caremap_claim.btn_reject') }}
                                     </button>
                                 </form>
@@ -474,11 +464,12 @@
                         @endif
                     </div>
                 @endforeach
-            </div>
         </div>
-        <div class="mb-6">{{ $importReviews->links() }}</div>
+        <div class="od-card__foot">{{ $importReviews->links() }}</div>
+    </div>
     @endif
 
 @endif
 
+</div>
 @endsection

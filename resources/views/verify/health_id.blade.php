@@ -69,12 +69,12 @@
             max-width: 560px;
             background: #fff;
             border-radius: 1.25rem;
-            box-shadow: 0 4px 24px rgba(15,76,129,.1);
+            box-shadow: none;
             overflow: hidden;
         }
 
         .verify-card-header {
-            background: linear-gradient(135deg, #0F2744 0%, #0F4C81 100%);
+            background: #0F4C81;
             padding: 2.25rem 2rem 2rem;
             text-align: center;
             color: #fff;

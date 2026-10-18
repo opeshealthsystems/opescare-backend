@@ -4,42 +4,49 @@
 @section('breadcrumb_home', 'Admin')
 @section('breadcrumb_home_url', route('portals.admin'))
 @section('breadcrumb_section', __('professional.ver_title', [], app()->getLocale()))
+@section('head')<link rel="stylesheet" href="{{ asset('css/od-admin.css') }}?v={{ @filemtime(public_path('css/od-admin.css')) ?: '1' }}">@endsection
+@php
+    $gcTones = ['blue', 'amber', 'teal', 'rose', 'sky', 'green'];
+    $gcTone = fn ($s) => $gcTones[crc32((string) $s) % count($gcTones)];
+    $gcInit = fn ($n) => mb_strtoupper(collect(preg_split('/\s+/', trim((string) $n)))->filter()->take(2)->map(fn ($w) => mb_substr($w, 0, 1))->implode('')) ?: '?';
+@endphp
 @section('content')
+<div class="od-page">
 
-<div class="page-header">
+<div class="od-page__head">
     <div>
-        <h1 class="page-title">{{ __('professional.ver_title', [], app()->getLocale()) }}</h1>
-        <p class="page-subtitle">{{ __('professional.ver_subtitle', [], app()->getLocale()) }}</p>
+        <h1 class="od-page__title">{{ __('professional.ver_title', [], app()->getLocale()) }}</h1>
+        <p class="od-page__sub">{{ __('professional.ver_subtitle', [], app()->getLocale()) }}</p>
     </div>
 </div>
 
-@if(session('success'))<div class="alert alert-success mb-6"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
-@if(session('error'))<div class="alert alert-danger mb-6"><i data-lucide="alert-circle"></i><div>{{ session('error') }}</div></div>@endif
+@if(session('success'))<div class="oda-gc-flash oda-gc-flash--ok"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
+@if(session('error'))<div class="oda-gc-flash oda-gc-flash--err"><i data-lucide="alert-circle"></i><div>{{ session('error') }}</div></div>@endif
 
-<div class="stat-grid mb-6">
-    <div class="stat-card stat-card--primary">
-        <div class="stat-card__head"><i data-lucide="clock"></i></div>
-        <div class="stat-card__label">{{ __('professional.ver_pending_count', [], app()->getLocale()) }}</div>
-        <div class="stat-card__value">{{ $pending->total() }}</div>
+<div class="od-kpis oda-gc-kpis--2">
+    <div class="od-kpi">
+        <span class="od-kpi__icon od-tint--amber"><i data-lucide="clock"></i></span>
+        <div class="od-kpi__body"><span class="od-kpi__label">{{ __('professional.ver_pending_count', [], app()->getLocale()) }}</span><span class="od-kpi__value">{{ $pending->total() }}</span></div>
     </div>
-    <div class="stat-card stat-card--success">
-        <div class="stat-card__head"><i data-lucide="shield-check"></i></div>
-        <div class="stat-card__label">{{ __('professional.ver_verified_total', [], app()->getLocale()) }}</div>
-        <div class="stat-card__value">{{ $verifiedTotal }}</div>
+    <div class="od-kpi">
+        <span class="od-kpi__icon od-tint--green"><i data-lucide="shield-check"></i></span>
+        <div class="od-kpi__body"><span class="od-kpi__label">{{ __('professional.ver_verified_total', [], app()->getLocale()) }}</span><span class="od-kpi__value">{{ $verifiedTotal }}</span></div>
     </div>
 </div>
 
+<section class="od-card">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('professional.ver_pending_count', [], app()->getLocale()) }} <span class="od-card__count">({{ $pending->total() }})</span></h2>
+    </div>
 @if($pending->total() === 0)
-    <div class="panel">
-        <div class="empty-state">
-            <div class="empty-state-icon"><i data-lucide="shield-check"></i></div>
-            <p>{{ __('professional.ver_empty', [], app()->getLocale()) }}</p>
-        </div>
+    <div class="od-empty">
+        <span class="od-empty__icon"><i data-lucide="shield-check"></i></span>
+        <p class="od-empty__text">{{ __('professional.ver_empty', [], app()->getLocale()) }}</p>
     </div>
+</section>
 @else
-    <div class="panel">
-        <div class="table-wrapper">
-            <table class="data-table">
+        <div class="od-table-wrap">
+            <table class="od-table">
                 <thead>
                     <tr>
                         <th>{{ __('professional.ver_provider', [], app()->getLocale()) }}</th>
@@ -47,7 +54,7 @@
                         <th>{{ __('professional.ver_number', [], app()->getLocale()) }}</th>
                         <th>{{ __('professional.ver_issuer', [], app()->getLocale()) }}</th>
                         <th>{{ __('professional.ver_submitted', [], app()->getLocale()) }}</th>
-                        <th class="row-actions">{{ __('professional.ver_verify', [], app()->getLocale()) }}</th>
+                        <th class="od-table__actions">{{ __('professional.ver_verify', [], app()->getLocale()) }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -62,8 +69,6 @@
                     @endphp
                     <tr>
                         <td data-label="{{ __('professional.ver_provider', [], app()->getLocale()) }}">
-                            <a href="{{ route('portals.admin.verifications.show', $credential->id) }}" class="td-strong">{{ $credential->provider?->name }}</a>
-                            <div class="td-muted">{{ $credential->provider?->email }}</div>
                             @php
                                 /*
                                  * The role under a professional's name is a LABEL, not data the
@@ -78,22 +83,31 @@
                                     ? __('portal.role_name.' . $roleKey)
                                     : $credential->provider?->role?->description;
                             @endphp
-                            @if($roleLabel)
-                            <div class="td-muted">{{ $roleLabel }}</div>
-                            @endif
+                            <div class="od-table__person">
+                                <span class="od-avatar od-tint--{{ $gcTone($credential->provider?->email) }}" aria-hidden="true">{{ $gcInit($credential->provider?->name) }}</span>
+                                <div>
+                                    <a href="{{ route('portals.admin.verifications.show', $credential->id) }}" class="od-table__name">{{ $credential->provider?->name }}</a>
+                                    <span class="od-table__sub">{{ $credential->provider?->email }}</span>
+                                    @if($roleLabel)
+                                    <span class="od-table__sub">{{ $roleLabel }}</span>
+                                    @endif
+                                </div>
+                            </div>
                         </td>
                         <td data-label="{{ __('professional.ver_credential', [], app()->getLocale()) }}">
-                            <span class="badge badge-neutral">{{ $ctLabel }}</span>
+                            <span class="od-pill od-pill--neutral">{{ $ctLabel }}</span>
                         </td>
-                        <td data-label="{{ __('professional.ver_number', [], app()->getLocale()) }}">{{ $credential->credential_number ?: '—' }}</td>
+                        <td data-label="{{ __('professional.ver_number', [], app()->getLocale()) }}" class="oda-mono">{{ $credential->credential_number ?: '—' }}</td>
                         <td data-label="{{ __('professional.ver_issuer', [], app()->getLocale()) }}">{{ $credential->issuing_body ?: '—' }}</td>
-                        <td data-label="{{ __('professional.ver_submitted', [], app()->getLocale()) }}" class="td-muted">{{ $credential->created_at?->diffForHumans() }}</td>
-                        <td class="row-actions" data-label="{{ __('professional.ver_verify', [], app()->getLocale()) }}">
-                            <form method="POST" action="{{ route('portals.admin.verifications.verify', $credential->id) }}" class="inline-form">
+                        <td data-label="{{ __('professional.ver_submitted', [], app()->getLocale()) }}" class="oda-gc-muted">{{ $credential->created_at?->diffForHumans() }}</td>
+                        <td class="od-table__actions" data-label="{{ __('professional.ver_verify', [], app()->getLocale()) }}">
+                            <div class="oda-gc-actions">
+                            <form method="POST" action="{{ route('portals.admin.verifications.verify', $credential->id) }}" class="oda-inline-form">
                                 @csrf
-                                <button type="submit" class="btn btn-success btn-sm"><i data-lucide="check"></i> {{ __('professional.ver_verify', [], app()->getLocale()) }}</button>
+                                <button type="submit" class="od-btn od-btn--row"><i data-lucide="check"></i> {{ __('professional.ver_verify', [], app()->getLocale()) }}</button>
                             </form>
-                            <button type="button" class="btn btn-ghost btn-sm" data-call="opOpenModal" data-args="[&quot;reject-{{ $credential->id }}&quot;]"><i data-lucide="x"></i> {{ __('professional.ver_reject', [], app()->getLocale()) }}</button>
+                            <button type="button" class="od-btn od-btn--ghost od-btn--sm" data-call="opOpenModal" data-args="[&quot;reject-{{ $credential->id }}&quot;]"><i data-lucide="x"></i> {{ __('professional.ver_reject', [], app()->getLocale()) }}</button>
+                            </div>
                         </td>
                     </tr>
                 @endforeach
@@ -101,25 +115,25 @@
             </table>
         </div>
         @if($pending->hasPages())
-        <div class="panel-body">{{ $pending->links() }}</div>
+        <div class="od-card__foot">{{ $pending->links() }}</div>
         @endif
-    </div>
+</section>
 
     {{-- Reject modals: optional reason, red confirm --}}
     @foreach($pending as $credential)
-    <div id="reject-{{ $credential->id }}" class="modal-backdrop mt-6" hidden>
-        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="reject-{{ $credential->id }}-title">
-            <h3 class="modal__title" id="reject-{{ $credential->id }}-title"><i data-lucide="x-circle"></i> {{ __('professional.ver_reject', [], app()->getLocale()) }}</h3>
-            <form method="POST" action="{{ route('portals.admin.verifications.reject', $credential->id) }}" data-confirm="{{ __('admin_desk.confirm_reject_credential') }}">
+    <div id="reject-{{ $credential->id }}" class="modal-backdrop" hidden>
+        <div class="od-card oda-modal" role="dialog" aria-modal="true" aria-labelledby="reject-{{ $credential->id }}-title">
+            <div class="od-card__head"><h3 class="od-card__title" id="reject-{{ $credential->id }}-title"><i data-lucide="x-circle"></i> {{ __('professional.ver_reject', [], app()->getLocale()) }}</h3></div>
+            <form method="POST" action="{{ route('portals.admin.verifications.reject', $credential->id) }}" data-confirm="{{ __('admin_desk.confirm_reject_credential') }}" class="od-card__body od-stack">
                 @csrf
-                <div class="modal__body">
-                    <p class="td-strong mb-2">{{ $credential->provider?->name }}</p>
-                    <label class="form-label" for="notes-{{ $credential->id }}">{{ __('professional.ver_reject_reason', [], app()->getLocale()) }}</label>
-                    <textarea name="notes" id="notes-{{ $credential->id }}" rows="3" class="form-control" style="width:100%;"></textarea>
-                </div>
-                <div class="modal__footer">
-                    <button type="button" class="btn btn-ghost" data-call="opCloseModal" data-args="[&quot;reject-{{ $credential->id }}&quot;]">{{ __('public.adm_users_idx_modal_delete_btn_cancel', [], app()->getLocale()) }}</button>
-                    <button type="submit" class="btn btn-danger"><i data-lucide="x"></i> {{ __('professional.ver_reject', [], app()->getLocale()) }}</button>
+                <p class="od-table__name">{{ $credential->provider?->name }}</p>
+                <label class="oda-label" for="notes-{{ $credential->id }}">
+                    <span class="oda-label__text">{{ __('professional.ver_reject_reason', [], app()->getLocale()) }}</span>
+                    <textarea name="notes" id="notes-{{ $credential->id }}" rows="3" class="oda-textarea"></textarea>
+                </label>
+                <div class="oda-form__actions">
+                    <button type="button" class="od-btn od-btn--ghost" data-call="opCloseModal" data-args="[&quot;reject-{{ $credential->id }}&quot;]">{{ __('public.adm_users_idx_modal_delete_btn_cancel', [], app()->getLocale()) }}</button>
+                    <button type="submit" class="od-btn od-btn--danger"><i data-lucide="x"></i> {{ __('professional.ver_reject', [], app()->getLocale()) }}</button>
                 </div>
             </form>
         </div>
@@ -127,6 +141,7 @@
     @endforeach
 @endif
 
+</div>
 @endsection
 @section('scripts')
 <script @cspNonce>

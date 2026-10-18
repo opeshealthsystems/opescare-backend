@@ -8,6 +8,7 @@
 
 @section('head')
     @include('portals.patient._finder_head')
+    <link rel="stylesheet" href="{{ asset('css/od-patient.css') }}?v={{ @filemtime(public_path('css/od-patient.css')) ?: '1' }}">
 @endsection
 
 @section('patient_banner')
@@ -37,7 +38,7 @@
     @if($readOnly)
     {{-- Preferences belong to a person: a dependent's are shown, never edited, from a guardian's session. --}}
     <div class="pf-alert" data-section="prefs-read-only-note">
-        <i data-lucide="lock" aria-hidden="true" style="width:18px;height:18px;flex:none;margin-top:2px;"></i>
+        <i class="ods-d9ea87f" data-lucide="lock" aria-hidden="true"></i>
         <p id="prefs-disabled-reason">{{ __('family.inbox_prefs_note', ['name' => $viewingName]) }}</p>
     </div>
     @endif
@@ -45,7 +46,7 @@
     <form method="POST" action="{{ route('portals.patient.notifications.preferences.update') }}" @if($readOnly) data-section="prefs-disabled" aria-describedby="prefs-disabled-reason" @endif>
         @csrf
 
-        <div class="f-card" style="margin-bottom:12px;">
+        <div class="f-card ods-fa3e1c7">
             <h2 class="pf-card-head">
                 @include('partials.finder.icon', ['name' => 'sliders-horizontal', 'size' => 18])
                 {{ __('notifications.prefs_channels') }}
@@ -55,7 +56,7 @@
                     <thead>
                         <tr>
                             <th>{{ __('notifications.category') }}</th>
-                            @foreach($channels as $ch)<th style="text-align:center;">{{ __('notifications.channel_' . $ch) }}</th>@endforeach
+                            @foreach($channels as $ch)<th class="ods-13076d9">{{ __('notifications.channel_' . $ch) }}</th>@endforeach
                         </tr>
                     </thead>
                     <tbody>
@@ -63,7 +64,7 @@
                         <tr>
                             <td><strong>{{ __('notifications.cat_' . $cat) }}</strong></td>
                             @foreach($channels as $ch)
-                            <td style="text-align:center;">
+                            <td class="ods-13076d9">
                                 <input type="checkbox" name="prefs[{{ $cat }}][{{ $ch }}]" value="1"
                                        aria-label="{{ __('notifications.cat_' . $cat) }} — {{ __('notifications.channel_' . $ch) }}"
                                        @checked($prefs[$cat][$ch] ?? false) @disabled($readOnly)>
@@ -76,13 +77,13 @@
             </div>
         </div>
 
-        <div class="f-card" style="margin-bottom:16px;">
-            <div class="f-field" style="margin-bottom:0;">
+        <div class="f-card ods-8e86974">
+            <div class="f-field ods-e7ec540">
                 <label class="f-label" for="language">
                     @include('partials.finder.icon', ['name' => 'globe', 'size' => 15])
                     {{ __('notifications.language') }}
                 </label>
-                <select id="language" name="language" class="f-input" style="max-width:280px;" @disabled($readOnly)>
+                <select id="language" name="language" class="f-input ods-015ccf9" @disabled($readOnly)>
                     <option value="en" @selected($language === 'en')>English</option>
                     <option value="fr" @selected($language === 'fr')>Français</option>
                 </select>
@@ -90,7 +91,7 @@
         </div>
 
         @unless($readOnly)
-        <button type="submit" class="f-btn f-btn--primary" style="min-height:48px;">
+        <button type="submit" class="f-btn f-btn--primary ods-a27b458">
             @include('partials.finder.icon', ['name' => 'check', 'size' => 16])
             {{ __('notifications.prefs_save') }}
         </button>

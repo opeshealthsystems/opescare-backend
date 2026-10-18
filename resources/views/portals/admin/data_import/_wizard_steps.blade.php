@@ -6,21 +6,21 @@ $steps = [
     4 => __('public.stf_import_wizard_approve'),
 ];
 @endphp
-<div class="stepper">
+<nav class="od-tabs oda-gb-steps" aria-label="{{ __('staff_data.title_import') }}">
     @foreach($steps as $num => $label)
         @php
             $active = $step === $num;
             $done   = $step > $num;
         @endphp
-        <div class="stepper__step {{ $active ? 'active' : '' }} {{ $done ? 'done' : '' }}">
-            <div class="stepper__dot">
+        <span class="od-tab {{ $active ? 'is-active' : '' }} {{ $done ? 'oda-gb-step--done' : '' }}" @if($active) aria-current="step" @endif>
+            <span class="oda-gb-step__num">
                 @if($done)
                     <i data-lucide="check"></i>
                 @else
                     {{ $num }}
                 @endif
-            </div>
-            <div class="stepper__label">{{ $label }}</div>
-        </div>
+            </span>
+            {{ $label }}
+        </span>
     @endforeach
-</div>
+</nav>

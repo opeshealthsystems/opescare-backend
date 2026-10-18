@@ -19,137 +19,143 @@
 @section('breadcrumb_home_url', route('portals.staff'))
 @section('breadcrumb_section', __('blood_desk.breadcrumb'))
 
+@section('head')
+<link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">
+@endsection
+
 @section('content')
 
 @php
-    $statusBadge = match($bloodRequest->status->value) {
-        'pending'                         => 'badge-warning',
-        'confirmed', 'ready', 'fulfilled' => 'badge-success',
-        default                           => 'badge-neutral',
+    $statusPill = match($bloodRequest->status->value) {
+        'pending'                         => 'pending',
+        'confirmed', 'ready', 'fulfilled' => 'ready',
+        default                           => 'neutral',
     };
-    $urgencyBadge = match($bloodRequest->urgency->value) {
-        'emergency' => 'badge-danger',
-        'urgent'    => 'badge-warning',
-        default     => 'badge-neutral',
+    $urgencyPill = match($bloodRequest->urgency->value) {
+        'emergency' => 'urgent',
+        'urgent'    => 'pending',
+        default     => 'neutral',
     };
     $moves = collect($nextMoves)->map(fn ($s) => $s->value)->all();
+    $bp = $bloodRequest->patient;
+    $bpName = $bp ? trim($bp->first_name . ' ' . $bp->last_name) : '';
+    $bpInitials = $bp ? (mb_strtoupper(mb_substr(trim((string) $bp->first_name), 0, 1) . mb_substr(trim((string) $bp->last_name), 0, 1)) ?: '—') : '—';
+    $bpTone = ['blue', 'amber', 'teal', 'rose', 'sky', 'green'][crc32($bpName !== '' ? $bpName : (string) $bloodRequest->id) % 6];
 @endphp
 
-<div class="page-head">
-    <h2>{{ __('blood_desk.detail_title', ['reference' => $bloodRequest->reference]) }}</h2>
-    <div class="page-head__spacer"></div>
-    <a href="{{ route('portals.staff.blood_requests.index') }}" class="btn btn-ghost btn-sm fs-tap">
-        <i data-lucide="arrow-left"></i>
-        {{ __('blood_desk.back_to_queue') }}
-    </a>
-</div>
-<p class="page-subtitle mb-6">
-    <span class="badge {{ $statusBadge }}">{{ __('blood_desk.status_' . $bloodRequest->status->value) }}</span>
-    <span class="badge {{ $urgencyBadge }}">{{ __('blood_desk.urgency_' . $bloodRequest->urgency->value) }}</span>
-</p>
+<div class="od-page odc-page">
+
+<header class="od-page__head odc-head">
+    <div>
+        <h1 class="od-page__title">{{ __('blood_desk.detail_title', ['reference' => $bloodRequest->reference]) }}</h1>
+        <p class="od-page__sub">
+            <span class="od-pill od-pill--{{ $statusPill }}">{{ __('blood_desk.status_' . $bloodRequest->status->value) }}</span>
+            <span class="od-pill od-pill--dot od-pill--{{ $urgencyPill }}">{{ __('blood_desk.urgency_' . $bloodRequest->urgency->value) }}</span>
+        </p>
+    </div>
+    <div class="odc-head__actions">
+        <a href="{{ route('portals.staff.blood_requests.index') }}" class="od-btn od-btn--secondary">
+            <i data-lucide="arrow-left"></i>
+            {{ __('blood_desk.back_to_queue') }}
+        </a>
+    </div>
+</header>
 
 @if(session('success'))
-    <div class="alert alert-success mb-6"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>
+    <div class="odc-note odc-note--ok" role="status"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>
 @endif
 @if(session('error'))
-    <div class="alert alert-danger mb-6"><i data-lucide="triangle-alert"></i><div>{{ session('error') }}</div></div>
+    <div class="odc-note odc-note--err" role="alert"><i data-lucide="triangle-alert"></i><div>{{ session('error') }}</div></div>
 @endif
 
-<div class="panel mb-6">
-    <div class="panel-header"><h3>{{ __('blood_desk.section_request') }}</h3></div>
-    <div class="panel-body">
-        <dl class="detail-list">
-            <dt>{{ __('blood_desk.lbl_group') }}</dt>
-            <dd><span class="fs-bgroup-tag">{{ $bloodRequest->blood_group->value }}</span></dd>
+<div class="od-grid od-grid--main">
 
-            <dt>{{ __('blood_desk.lbl_component') }}</dt>
-            <dd><span class="badge badge-neutral">@enum($bloodRequest->component_type->value, 'blood_component')</span></dd>
+<div class="od-stack">
+    {{-- Identity only, and only because a clerk at the counter has to match the
+         person in front of them to the request. No chart, no address, no history. --}}
+    <section class="od-card" aria-labelledby="odc-br-patient">
+        <header class="od-card__head"><h2 class="od-card__title" id="odc-br-patient">{{ __('blood_desk.section_patient') }}</h2></header>
+        <div class="od-card__body od-detail">
+            <div class="od-detail__head">
+                <span class="od-avatar od-avatar--lg od-tint--{{ $bpTone }}" aria-hidden="true">{{ $bpInitials }}</span>
+                <div class="od-detail__main">
+                    <h3 class="od-detail__name">{{ $bpName !== '' ? $bpName : __('blood_desk.not_recorded') }}</h3>
+                    <div class="od-detail__ref">
+                        <span>{{ $bloodRequest->reference }}</span>
+                        <span>{{ optional($bloodRequest->created_at)->translatedFormat('d M Y') }}</span>
+                        <span>{{ optional($bloodRequest->created_at)->format('H:i') }}</span>
+                    </div>
+                    <div class="od-detail__facts">
+                        <span class="od-detail__fact"><i data-lucide="id-card"></i> <span class="odc-mono">{{ $bp?->health_id ?: __('blood_desk.not_recorded') }}</span></span>
+                        <span class="od-detail__fact"><i data-lucide="phone"></i> {{ $bloodRequest->contact_phone ?: __('blood_desk.not_recorded') }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-            <dt>{{ __('blood_desk.lbl_quantity') }}</dt>
-            <dd>{{ $bloodRequest->quantity }} {{ __('blood_desk.units_label') }}</dd>
+    <section class="od-card" aria-labelledby="odc-br-request">
+        <header class="od-card__head"><h2 class="od-card__title" id="odc-br-request">{{ __('blood_desk.section_request') }}</h2></header>
+        <div class="od-card__body">
+            <dl class="odc-kv">
+                <div><dt>{{ __('blood_desk.lbl_group') }}</dt><dd><span class="odc-btag">{{ $bloodRequest->blood_group->value }}</span></dd></div>
+                <div><dt>{{ __('blood_desk.lbl_component') }}</dt><dd><span class="od-pill od-pill--neutral">@enum($bloodRequest->component_type->value, 'blood_component')</span></dd></div>
+                <div><dt>{{ __('blood_desk.lbl_quantity') }}</dt><dd>{{ $bloodRequest->quantity }} {{ __('blood_desk.units_label') }}</dd></div>
+                <div><dt>{{ __('blood_desk.lbl_needed_by') }}</dt><dd>{{ optional($bloodRequest->needed_by)->translatedFormat('M d, Y H:i') ?: __('blood_desk.not_recorded') }}</dd></div>
+                <div><dt>{{ __('blood_desk.lbl_expires') }}</dt><dd>{{ optional($bloodRequest->expires_at)->translatedFormat('M d, Y H:i') ?: __('blood_desk.not_recorded') }}</dd></div>
+                <div><dt>{{ __('blood_desk.lbl_filed') }}</dt><dd>{{ optional($bloodRequest->created_at)->translatedFormat('M d, Y H:i') }}</dd></div>
+                <div class="odc-span"><dt>{{ __('blood_desk.lbl_patient_note') }}</dt><dd>{{ $bloodRequest->patient_note ?: __('blood_desk.not_recorded') }}</dd></div>
+            </dl>
+        </div>
+    </section>
 
-            <dt>{{ __('blood_desk.lbl_needed_by') }}</dt>
-            <dd>{{ optional($bloodRequest->needed_by)->translatedFormat('M d, Y H:i') ?: __('blood_desk.not_recorded') }}</dd>
-
-            <dt>{{ __('blood_desk.lbl_expires') }}</dt>
-            <dd>{{ optional($bloodRequest->expires_at)->translatedFormat('M d, Y H:i') ?: __('blood_desk.not_recorded') }}</dd>
-
-            <dt>{{ __('blood_desk.lbl_filed') }}</dt>
-            <dd>{{ optional($bloodRequest->created_at)->translatedFormat('M d, Y H:i') }}</dd>
-
-            <dt>{{ __('blood_desk.lbl_patient_note') }}</dt>
-            <dd>{{ $bloodRequest->patient_note ?: __('blood_desk.not_recorded') }}</dd>
-        </dl>
-    </div>
+    <section class="od-card" aria-labelledby="odc-br-decision">
+        <header class="od-card__head"><h2 class="od-card__title" id="odc-br-decision">{{ __('blood_desk.section_decision') }}</h2></header>
+        <div class="od-card__body">
+            <dl class="odc-kv">
+                <div><dt>{{ __('blood_desk.lbl_status') }}</dt><dd><span class="od-pill od-pill--{{ $statusPill }}">{{ __('blood_desk.status_' . $bloodRequest->status->value) }}</span></dd></div>
+                <div><dt>{{ __('blood_desk.lbl_decided_by') }}</dt><dd>{{ $bloodRequest->decided_by ?: __('blood_desk.not_recorded') }}</dd></div>
+                <div><dt>{{ __('blood_desk.lbl_decided_at') }}</dt><dd>{{ optional($bloodRequest->decided_at)->translatedFormat('M d, Y H:i') ?: __('blood_desk.not_recorded') }}</dd></div>
+                <div class="odc-span"><dt>{{ __('blood_desk.lbl_facility_note') }}</dt><dd>{{ $bloodRequest->facility_note ?: __('blood_desk.not_recorded') }}</dd></div>
+            </dl>
+        </div>
+    </section>
 </div>
 
-{{-- Identity only, and only because a clerk at the counter has to match the
-     person in front of them to the request. No chart, no address, no history. --}}
-<div class="panel mb-6">
-    <div class="panel-header"><h3>{{ __('blood_desk.section_patient') }}</h3></div>
-    <div class="panel-body">
-        <dl class="detail-list">
-            <dt>{{ __('blood_desk.lbl_name') }}</dt>
-            <dd>{{ $bloodRequest->patient ? trim($bloodRequest->patient->first_name . ' ' . $bloodRequest->patient->last_name) : __('blood_desk.not_recorded') }}</dd>
-
-            <dt>{{ __('blood_desk.lbl_health_id') }}</dt>
-            <dd><span class="mono">{{ $bloodRequest->patient?->health_id ?: __('blood_desk.not_recorded') }}</span></dd>
-
-            <dt>{{ __('blood_desk.lbl_phone') }}</dt>
-            <dd>{{ $bloodRequest->contact_phone ?: __('blood_desk.not_recorded') }}</dd>
-        </dl>
-    </div>
-</div>
-
-<div class="panel mb-6">
-    <div class="panel-header"><h3>{{ __('blood_desk.section_decision') }}</h3></div>
-    <div class="panel-body">
-        <dl class="detail-list">
-            <dt>{{ __('blood_desk.lbl_status') }}</dt>
-            <dd><span class="badge {{ $statusBadge }}">{{ __('blood_desk.status_' . $bloodRequest->status->value) }}</span></dd>
-
-            <dt>{{ __('blood_desk.lbl_decided_by') }}</dt>
-            <dd>{{ $bloodRequest->decided_by ?: __('blood_desk.not_recorded') }}</dd>
-
-            <dt>{{ __('blood_desk.lbl_decided_at') }}</dt>
-            <dd>{{ optional($bloodRequest->decided_at)->translatedFormat('M d, Y H:i') ?: __('blood_desk.not_recorded') }}</dd>
-
-            <dt>{{ __('blood_desk.lbl_facility_note') }}</dt>
-            <dd>{{ $bloodRequest->facility_note ?: __('blood_desk.not_recorded') }}</dd>
-        </dl>
-    </div>
-</div>
-
-<div class="panel">
-    <div class="panel-header"><h3>{{ __('blood_desk.section_actions') }}</h3></div>
-    <div class="panel-body">
+<section class="od-card" aria-labelledby="odc-br-actions">
+    <header class="od-card__head"><h2 class="od-card__title" id="odc-br-actions">{{ __('blood_desk.section_actions') }}</h2></header>
+    <div class="od-card__body od-stack">
         @if($moves === [])
-            <p class="td-muted">{{ __('blood_desk.no_moves') }}</p>
+            <div class="od-empty od-empty--compact">
+                <span class="od-empty__icon"><i data-lucide="lock"></i></span>
+                <p class="od-empty__text">{{ __('blood_desk.no_moves') }}</p>
+            </div>
         @else
             {{-- Said on the screen because it is the thing staff most easily
                  get wrong: confirming reserves nothing. --}}
-            <div class="alert alert-info mb-6">
+            <div class="odc-note odc-note--info">
                 <i data-lucide="info"></i>
                 <div>{{ __('blood_desk.no_hold_notice') }}</div>
             </div>
 
-            <form method="POST" action="{{ route('portals.staff.blood_requests.decide', $bloodRequest->id) }}" id="decide-form">
+            <form method="POST" action="{{ route('portals.staff.blood_requests.decide', $bloodRequest->id) }}" id="decide-form" class="odc-form">
                 @csrf
-                <label class="form-label" for="note">{{ __('blood_desk.note_label') }}</label>
-                <textarea name="note" id="note" rows="3" maxlength="500" class="form-control mb-6"
-                          placeholder="{{ __('blood_desk.note_placeholder') }}"></textarea>
+                <label class="odc-label" for="note">{{ __('blood_desk.note_label') }}
+                    <textarea name="note" id="note" rows="3" maxlength="500" class="odc-textarea"
+                              placeholder="{{ __('blood_desk.note_placeholder') }}"></textarea>
+                </label>
 
-                <div class="row-actions-inline">
-                    @if(in_array('confirmed', $moves, true))
-                        <button type="submit" name="decision" value="confirmed" class="btn btn-primary btn-sm fs-tap" data-confirm="{{ __('hospital_desk.confirm_blood_confirm') }}">
-                            <i data-lucide="check-circle"></i>
-                            {{ __('blood_desk.action_confirm') }}
-                        </button>
-                    @endif
+                <div class="odc-actions">
                     @if(in_array('rejected', $moves, true))
-                        <button type="submit" name="decision" value="rejected" class="btn btn-danger btn-sm fs-tap" data-confirm="{{ __('hospital_desk.confirm_blood_reject') }}">
+                        <button type="submit" name="decision" value="rejected" class="od-btn odc-btn-danger" data-confirm="{{ __('hospital_desk.confirm_blood_reject') }}">
                             <i data-lucide="x-circle"></i>
                             {{ __('blood_desk.action_reject') }}
+                        </button>
+                    @endif
+                    @if(in_array('confirmed', $moves, true))
+                        <button type="submit" name="decision" value="confirmed" class="od-btn od-btn--primary" data-confirm="{{ __('hospital_desk.confirm_blood_confirm') }}">
+                            <i data-lucide="check-circle"></i>
+                            {{ __('blood_desk.action_confirm') }}
                         </button>
                     @endif
                 </div>
@@ -158,11 +164,11 @@
             {{-- `ready` and `fulfilled` are counter events, not decisions, so
                  they get their own verbs — the same split the mobile desk
                  makes. Both still travel through the one enum transition. --}}
-            <div class="row-actions-inline mt-6">
+            <div class="odc-actions">
                 @if(in_array('ready', $moves, true))
                     <form method="POST" action="{{ route('portals.staff.blood_requests.ready', $bloodRequest->id) }}" data-confirm="{{ __('hospital_desk.confirm_blood_ready') }}">
                         @csrf
-                        <button type="submit" class="btn btn-primary btn-sm fs-tap">
+                        <button type="submit" class="od-btn od-btn--primary">
                             <i data-lucide="package-check"></i>
                             {{ __('blood_desk.action_ready') }}
                         </button>
@@ -171,7 +177,7 @@
                 @if(in_array('fulfilled', $moves, true))
                     <form method="POST" action="{{ route('portals.staff.blood_requests.fulfil', $bloodRequest->id) }}" data-confirm="{{ __('hospital_desk.confirm_blood_fulfil') }}">
                         @csrf
-                        <button type="submit" class="btn btn-success btn-sm fs-tap">
+                        <button type="submit" class="od-btn odc-btn-ok">
                             <i data-lucide="hand-heart"></i>
                             {{ __('blood_desk.action_fulfil') }}
                         </button>
@@ -180,6 +186,8 @@
             </div>
         @endif
     </div>
-</div>
+</section>
 
+</div>
+</div>
 @endsection

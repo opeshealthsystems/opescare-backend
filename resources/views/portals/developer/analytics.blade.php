@@ -2,6 +2,10 @@
 @section('title', __('developer_ext.an_page_title'))
 @php $l = app()->getLocale(); @endphp
 
+@section('head')
+    <link rel="stylesheet" href="{{ asset('css/od-pro.css') }}?v={{ @filemtime(public_path('css/od-pro.css')) ?: '1' }}">
+@endsection
+
 @section('content')
 
     <style>
@@ -78,9 +82,9 @@
                     @foreach($perDay as $d)
                         @php $h = $d['requests'] > 0 ? max(2, (int) round($d['requests'] / $maxPerDay * 100)) : 0; @endphp
                         <div class="an-chart__col" title="{{ $d['day'] }}: {{ number_format($d['requests']) }} / {{ number_format($d['errors']) }}">
-                            <div class="an-chart__bar" style="height: {{ $h }}%">
+                            <div class="an-chart__bar ods-h-{{ max(0, min(100, (int) $h)) }}">
                                 @if($d['requests'] > 0 && $d['errors'] > 0)
-                                    <div class="an-chart__err" style="height: {{ (int) round($d['errors'] / $d['requests'] * 100) }}%"></div>
+                                    <div class="an-chart__err ods-h-{{ max(0, min(100, (int) round($d['errors'] / $d['requests'] * 100))) }}"></div>
                                 @endif
                             </div>
                             <div class="an-chart__lbl">{{ \Carbon\Carbon::parse($d['day'])->format('d') }}</div>

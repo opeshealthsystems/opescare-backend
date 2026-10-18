@@ -1,0 +1,95 @@
+/* ==========================================================================
+   od-public.css: the landing-page language (public/css/landing-v2.css) for
+   the public shell (layouts/finder.blade.php: public/*, care_map/*, the
+   finders) and the auth shell (layouts/auth.blade.php: login, register, MFA,
+   password reset, facility selection).
+
+   White / canvas #EEF3F9, ink #0F2340, muted #5B6B80, hairline #E2E8F0, ONE
+   accent #0F4C81 (+ #0B3C68), self-hosted Inter, flat cards (radius 16, no
+   shadow, no gradient, no glow), monochrome line icons. Loaded LAST in both
+   layouts so it re-bases the --f-* tokens and the legacy auth.css classes
+   without touching any markup, field, route or script.
+   ========================================================================== */
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 400; font-display: swap; src: url("../fonts/inter/inter-400.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 500; font-display: swap; src: url("../fonts/inter/inter-500.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 600; font-display: swap; src: url("../fonts/inter/inter-600.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 700; font-display: swap; src: url("../fonts/inter/inter-700.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 800; font-display: swap; src: url("../fonts/inter/inter-800.woff2") format("woff2"); }
+
+:root {
+  --f-ground: #EEF3F9;
+  --f-surface: #FFFFFF;
+  --f-ink: #0F2340;
+  --f-ink-soft: #1F3654;
+  --f-muted: #5B6B80;
+  --f-line: #E2E8F0;
+  --f-brand: #0F4C81;
+  --f-brand-ink: #0B3C68;
+  --f-wash: #EEF3F9;
+  --f-font: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --f-shadow: none;
+}
+body { font-family: var(--f-font); font-feature-settings: "cv11", "ss01"; -webkit-font-smoothing: antialiased; color: var(--f-ink); }
+button, input, select, textarea { font-family: inherit; }
+
+/* Brand + header: one accent, no glow */
+.f-brand { font-weight: 800; letter-spacing: -.01em; color: var(--f-ink); }
+.f-brand__mark { color: var(--f-brand); }
+.f-header, .f-auth__header { background: #FFFFFF; border-bottom: 1px solid var(--f-line); box-shadow: none; }
+.f-nav__login { white-space: nowrap; }
+@media (min-width: 1024px) and (max-width: 1499px) { .f-nav a { font-size: 14px; } }
+
+/* ONE flat card */
+.f-card, .f-auth-card, .auth-card, .f-panel {
+  background: #FFFFFF; border: 1px solid var(--f-line); border-radius: 16px; box-shadow: none !important; background-image: none !important;
+}
+.f-card:hover { box-shadow: none !important; transform: none !important; }
+
+/* Buttons: flat, 44px+, one accent */
+.f-btn, .auth-btn, .auth-btn-primary, .auth-btn-secondary { box-shadow: none !important; background-image: none !important; border-radius: 10px; font-weight: 600; min-height: 44px; }
+.f-btn--primary, .auth-btn-primary, .auth-btn:not(.auth-btn-secondary) { background: #0F4C81; border-color: #0F4C81; color: #FFFFFF; }
+.f-btn--primary:hover, .auth-btn-primary:hover, .auth-btn:not(.auth-btn-secondary):hover { background: #0B3C68; border-color: #0B3C68; }
+
+/* Inputs: 48px, hairline, accent focus ring */
+.f-input, .auth-input, .f-auth input[type="text"], .f-auth input[type="email"], .f-auth input[type="password"], .f-auth input[type="tel"], .f-auth select {
+  min-height: 48px; border-radius: 12px; border: 1px solid #DCE4EE; box-shadow: none; background-color: #FFFFFF; color: var(--f-ink);
+}
+.f-input:focus, .auth-input:focus { border-color: #0F4C81; box-shadow: 0 0 0 3px rgba(15,76,129,.14); outline: 0; }
+
+/* Auth surface */
+body.f-auth { background: #EEF3F9; }
+.f-auth h1, .f-auth h2 { color: var(--f-ink); letter-spacing: -.015em; font-weight: 800; }
+
+/* Demo panel: neutral and flat (was amber/orange with tinted role buttons) */
+.f-auth .demo-panel { background: #FFFFFF; border: 1px solid var(--f-line); border-radius: 16px; box-shadow: none; overflow: hidden; }
+.f-auth .demo-panel-header { background: #FFFFFF; border: 0; border-bottom: 1px solid var(--f-line); }
+.f-auth .demo-panel-header:hover { background: #F7F9FC; }
+.f-auth .demo-panel-header strong { color: var(--f-ink); }
+.f-auth .demo-panel-header span { color: var(--f-muted); }
+.f-auth .demo-panel-header svg { color: var(--f-ink); }
+.f-auth .demo-badge { background: #EEF3F9; color: #0F4C81; border: 0; box-shadow: none; }
+.f-auth .demo-panel-body { background: #FFFFFF; }
+.f-auth .demo-notice { background: #EEF3F9; border: 0; color: var(--f-ink-soft); border-radius: 12px; }
+.f-auth .demo-notice svg { color: #0F4C81; }
+.f-auth .demo-tabs { background: #EEF3F9; border: 0; border-radius: 12px; }
+.f-auth .demo-tab-btn { color: var(--f-ink-soft); background: transparent; box-shadow: none; }
+.f-auth .demo-tab-btn:hover { background: #FFFFFF; color: var(--f-ink); }
+.f-auth .demo-tab-btn.active { background: #0F4C81; color: #FFFFFF; box-shadow: none; }
+.f-auth .demo-login-btn,
+.f-auth .demo-btn-clinical, .f-auth .demo-btn-facility, .f-auth .demo-btn-patient,
+.f-auth .demo-btn-admin, .f-auth .demo-btn-developer {
+  background: #FFFFFF; border: 1px solid var(--f-line); color: var(--f-ink); box-shadow: none; transform: none;
+}
+.f-auth .demo-login-btn:hover { background: #F7F9FC; border-color: #C3D2E3; transform: none; box-shadow: none; }
+.f-auth .demo-login-btn svg { color: #0F4C81; }
+.f-auth .demo-login-btn small { color: var(--f-muted); }
+.f-auth .demo-sandbox-creds { background: #EEF3F9; border: 0; color: var(--f-ink-soft); }
+
+/* Alerts: flat tints, no borders */
+.f-alert, .auth-alert { border: 0; box-shadow: none; border-radius: 12px; }
+
+/* Facility picker (auth/select_facility) */
+.facility-card { background: #FFFFFF; border: 1px solid var(--f-line); border-radius: 14px; box-shadow: none !important; }
+.facility-card:hover, .facility-card.selected { border-color: #0F4C81; background: #F7F9FC; }
+.facility-card__icon { background: #EEF3F9; color: #0F4C81; }
+.f-auth .demo-panel-header, .f-auth .demo-panel-header.open { border-bottom: 1px solid var(--f-line) !important; }

@@ -7,6 +7,7 @@
 
 @section('head')
     @include('portals.patient._finder_head')
+    <link rel="stylesheet" href="{{ asset('css/od-patient.css') }}?v={{ @filemtime(public_path('css/od-patient.css')) ?: '1' }}">
 @endsection
 
 @section('patient_banner')
@@ -36,11 +37,11 @@
     </div>
 
     @if(!$patient || $events->isEmpty())
-    <div class="f-card" style="text-align:center;padding:40px 20px;" data-section="timeline-empty">
-        <div class="pf-qa__icon" style="margin:0 auto 12px;width:48px;height:48px;">
-            <i data-lucide="activity" aria-hidden="true" style="width:24px;height:24px;"></i>
+    <div class="f-card ods-99e8a36" data-section="timeline-empty">
+        <div class="pf-qa__icon ods-4ef0061">
+            <i class="ods-f70f93d" data-lucide="activity" aria-hidden="true"></i>
         </div>
-        <p class="f-muted" style="margin:0;">{{ __('family.tl_empty') }}</p>
+        <p class="f-muted ods-1386d50">{{ __('family.tl_empty') }}</p>
     </div>
     @else
     <div class="pf-stack" data-section="timeline">

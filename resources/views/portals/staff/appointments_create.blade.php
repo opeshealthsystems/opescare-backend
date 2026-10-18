@@ -9,51 +9,54 @@
 @section('breadcrumb_section', __('public.staff_portal.btn_book_appointment', [], app()->getLocale()))
 
 @section('head')
-@include('portals.pharmacy._supply_styles')
+<link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">
 @endsection
 
 @section('content')
+<div class="od-page odc-page">
 
-<div class="page-header">
+<header class="od-page__head odc-head">
     <div>
-        <h1 class="page-title">{{ __('public.staff_portal.btn_book_appointment', [], app()->getLocale()) }}</h1>
-        <p class="page-subtitle">{{ __('public.staff_portal.appointments_subtitle', [], app()->getLocale()) }}</p>
+        <h1 class="od-page__title">{{ __('public.staff_portal.btn_book_appointment', [], app()->getLocale()) }}</h1>
+        <p class="od-page__sub">{{ __('public.staff_portal.appointments_subtitle', [], app()->getLocale()) }}</p>
     </div>
-    <a href="{{ route('portals.staff.appointments') }}" class="btn btn-ghost btn-sm">
-        <i data-lucide="arrow-left"></i>
-        {{ __('public.stf_back') }}
-    </a>
-</div>
+    <div class="odc-head__actions">
+        <a href="{{ route('portals.staff.appointments') }}" class="od-btn od-btn--secondary">
+            <i data-lucide="arrow-left"></i>
+            {{ __('public.stf_back') }}
+        </a>
+    </div>
+</header>
 
 @if(session('error'))
-    <div class="auth-alert auth-alert-danger mb-4">
+    <div class="odc-note odc-note--err" role="alert">
         <i data-lucide="triangle-alert"></i><div>{{ session('error') }}</div>
     </div>
 @endif
 
-<div class="panel">
-    <div class="panel-body">
-        <form method="POST" action="{{ route('portals.staff.appointments.store') }}">
-            @csrf
+<form method="POST" action="{{ route('portals.staff.appointments.store') }}" class="odc-form">
+    @csrf
 
-            @if(!empty($waitlistEntry))
-                {{-- Booking off the waitlist: the entry is closed when this saves. --}}
-                <input type="hidden" name="waitlist_id" value="{{ $waitlistEntry->id }}">
-                <div class="alert alert-info mb-4">
-                    <i data-lucide="list-ordered"></i>
-                    <div>
-                        {{ __('waitlist.booking_from', ['health_id' => $waitlistEntry->patient?->health_id ?? '—']) }}
-                        @if($waitlistEntry->notes)
-                            <div class="td-muted">{{ $waitlistEntry->notes }}</div>
-                        @endif
-                    </div>
-                </div>
-            @endif
+    @if(!empty($waitlistEntry))
+        {{-- Booking off the waitlist: the entry is closed when this saves. --}}
+        <input type="hidden" name="waitlist_id" value="{{ $waitlistEntry->id }}">
+        <div class="odc-note odc-note--info">
+            <i data-lucide="list-ordered"></i>
+            <div>
+                {{ __('waitlist.booking_from', ['health_id' => $waitlistEntry->patient?->health_id ?? '—']) }}
+                @if($waitlistEntry->notes)
+                    <div class="od-muted">{{ $waitlistEntry->notes }}</div>
+                @endif
+            </div>
+        </div>
+    @endif
 
-            <div class="form-group mb-4">
-                <label class="form-label">{{ __('public.stf_appt_patient_id') }}</label>
+    <section class="od-card">
+        <header class="od-card__head"><h2 class="od-card__title">{{ rtrim(__('public.stf_appt_patient_id'), ' *') }}</h2></header>
+        <div class="od-card__body odc-grid">
+            <label class="odc-label">{{ __('public.stf_appt_patient_id') }}
                 @if(count($patients) > 0)
-                    <select name="patient_id" class="form-control" required>
+                    <select name="patient_id" class="od-select" required>
                         <option value="">{{ __('public.stf_select_patient') }}</option>
                         @foreach($patients as $p)
                             <option value="{{ $p->id }}" {{ old('patient_id') == $p->id ? 'selected' : '' }}>
@@ -62,81 +65,80 @@
                         @endforeach
                     </select>
                 @else
-                    <input type="text" name="patient_id" class="form-control" required
+                    <input type="text" name="patient_id" class="od-input" required
                         placeholder="{{ __('public.stf_appt_enter_patient_id') }}" value="{{ old('patient_id', !empty($waitlistEntry) ? ($waitlistEntry->patient?->health_id ?? $waitlistEntry->patient_id) : request('patient_id')) }}">
                 @endif
-                @error('patient_id')<p class="form-error">{{ $message }}</p>@enderror
-            </div>
+                @error('patient_id')<span class="odc-error">{{ $message }}</span>@enderror
+            </label>
 
             {{-- The facility is the one this session is working in, shown rather
                  than chosen. It used to be a free choice posted in the body, so a
                  clerk could book into any facility in the country by picking a
                  different option; the controller now takes it from the session and
                  ignores the field entirely, so offering a picker would only mislead. --}}
-            <div class="form-group mb-4">
-                <label class="form-label">{{ __('public.stf_appt_facility') }}</label>
-                <input type="text" class="form-control" disabled
+            <label class="odc-label">{{ __('public.stf_appt_facility') }}
+                <input type="text" class="od-input" disabled
                        value="{{ $activeFacilityName ?? __('public.stf_appt_facility_session') }}">
-            </div>
+            </label>
+        </div>
+    </section>
 
-            <div class="form-row mb-4">
-                <div class="form-group">
-                    <label class="form-label">{{ __('public.stf_appt_type') }}</label>
-                    <select name="appointment_type" class="form-control" required>
-                        <option value="general" {{ old('appointment_type') === 'general' ? 'selected' : '' }}>
-                            {{ __('public.staff_portal.type_general', [], app()->getLocale()) }}
-                        </option>
-                        <option value="follow_up" {{ old('appointment_type') === 'follow_up' ? 'selected' : '' }}>
-                            {{ __('public.staff_portal.type_followup', [], app()->getLocale()) }}
-                        </option>
-                        <option value="specialist" {{ old('appointment_type') === 'specialist' ? 'selected' : '' }}>
-                            {{ __('public.staff_portal.type_specialist', [], app()->getLocale()) }}
-                        </option>
-                        <option value="lab" {{ old('appointment_type') === 'lab' ? 'selected' : '' }}>
-                            {{ __('public.staff_portal.type_lab', [], app()->getLocale()) }}
-                        </option>
-                        <option value="pharmacy" {{ old('appointment_type') === 'pharmacy' ? 'selected' : '' }}>
-                            {{ __('public.staff_portal.type_pharmacy', [], app()->getLocale()) }}
-                        </option>
-                        <option value="dental" {{ old('appointment_type') === 'dental' ? 'selected' : '' }}>
-                            {{ __('public.appt_type_dental') }}
-                        </option>
-                        <option value="emergency" {{ old('appointment_type') === 'emergency' ? 'selected' : '' }}>
-                            {{ __('public.staff_portal.type_emergency', [], app()->getLocale()) }}
-                        </option>
-                        {{-- Maternity presets imported from the platform MaternityService. --}}
-                        <optgroup label="{{ __('public.appt_preset_group_maternity') }}">
-                            @foreach(\App\Modules\Maternity\Services\MaternityService::appointmentPresets() as $preset)
-                            <option value="{{ $preset }}" @selected(old('appointment_type') === $preset)>{{ __('public.appt_type_' . $preset) }}</option>
-                            @endforeach
-                        </optgroup>
-                    </select>
-                    <p class="form-hint">{{ __('public.appt_preset_anc_weeks_hint', ['weeks' => implode(', ', \App\Modules\Maternity\Services\MaternityService::recommendedVisitWeeks())]) }}</p>
-                    @error('appointment_type')<p class="form-error">{{ $message }}</p>@enderror
-                </div>
-                <div class="form-group">
-                    <label class="form-label">{{ __('public.stf_appt_datetime') }}</label>
-                    <input type="datetime-local" name="scheduled_at" class="form-control" required
-                        value="{{ old('scheduled_at', now()->addDay()->format('Y-m-d\TH:i')) }}">
-                    @error('scheduled_at')<p class="form-error">{{ $message }}</p>@enderror
-                </div>
-            </div>
-
-            <div class="form-group mb-6">
-                <label class="form-label">{{ __('public.stf_appt_reason') }}</label>
-                <textarea name="reason" class="form-control" rows="3" maxlength="500"
+    <section class="od-card">
+        <header class="od-card__head"><h2 class="od-card__title">{{ rtrim(__('public.stf_appt_datetime'), ' *') }}</h2></header>
+        <div class="od-card__body odc-grid">
+            <label class="odc-label">{{ __('public.stf_appt_type') }}
+                <select name="appointment_type" class="od-select" required>
+                    <option value="general" {{ old('appointment_type') === 'general' ? 'selected' : '' }}>
+                        {{ __('public.staff_portal.type_general', [], app()->getLocale()) }}
+                    </option>
+                    <option value="follow_up" {{ old('appointment_type') === 'follow_up' ? 'selected' : '' }}>
+                        {{ __('public.staff_portal.type_followup', [], app()->getLocale()) }}
+                    </option>
+                    <option value="specialist" {{ old('appointment_type') === 'specialist' ? 'selected' : '' }}>
+                        {{ __('public.staff_portal.type_specialist', [], app()->getLocale()) }}
+                    </option>
+                    <option value="lab" {{ old('appointment_type') === 'lab' ? 'selected' : '' }}>
+                        {{ __('public.staff_portal.type_lab', [], app()->getLocale()) }}
+                    </option>
+                    <option value="pharmacy" {{ old('appointment_type') === 'pharmacy' ? 'selected' : '' }}>
+                        {{ __('public.staff_portal.type_pharmacy', [], app()->getLocale()) }}
+                    </option>
+                    <option value="dental" {{ old('appointment_type') === 'dental' ? 'selected' : '' }}>
+                        {{ __('public.appt_type_dental') }}
+                    </option>
+                    <option value="emergency" {{ old('appointment_type') === 'emergency' ? 'selected' : '' }}>
+                        {{ __('public.staff_portal.type_emergency', [], app()->getLocale()) }}
+                    </option>
+                    {{-- Maternity presets imported from the platform MaternityService. --}}
+                    <optgroup label="{{ __('public.appt_preset_group_maternity') }}">
+                        @foreach(\App\Modules\Maternity\Services\MaternityService::appointmentPresets() as $preset)
+                        <option value="{{ $preset }}" @selected(old('appointment_type') === $preset)>{{ __('public.appt_type_' . $preset) }}</option>
+                        @endforeach
+                    </optgroup>
+                </select>
+                <span class="odc-hint">{{ __('public.appt_preset_anc_weeks_hint', ['weeks' => implode(', ', \App\Modules\Maternity\Services\MaternityService::recommendedVisitWeeks())]) }}</span>
+                @error('appointment_type')<span class="odc-error">{{ $message }}</span>@enderror
+            </label>
+            <label class="odc-label">{{ __('public.stf_appt_datetime') }}
+                <input type="datetime-local" name="scheduled_at" class="od-input" required
+                    value="{{ old('scheduled_at', now()->addDay()->format('Y-m-d\TH:i')) }}">
+                @error('scheduled_at')<span class="odc-error">{{ $message }}</span>@enderror
+            </label>
+            <label class="odc-label odc-span">{{ __('public.stf_appt_reason') }}
+                <textarea name="reason" class="odc-textarea" rows="3" maxlength="500"
                     placeholder="{{ __('public.stf_appt_reason_placeholder') }}">{{ old('reason') }}</textarea>
-            </div>
+            </label>
+        </div>
+    </section>
 
-            <div class="row-actions-inline">
-                <button type="submit" class="btn btn-primary fs-tap">
-                    <i data-lucide="calendar-plus"></i>
-                    {{ __('public.staff_portal.btn_book_appointment', [], app()->getLocale()) }}
-                </button>
-                <a href="{{ route('portals.staff.appointments') }}" class="btn btn-ghost">{{ __('public.stf_cancel') }}</a>
-            </div>
-        </form>
+    <div class="odc-actions">
+        <a href="{{ route('portals.staff.appointments') }}" class="od-btn od-btn--secondary">{{ __('public.stf_cancel') }}</a>
+        <button type="submit" class="od-btn od-btn--primary">
+            <i data-lucide="calendar-plus"></i>
+            {{ __('public.staff_portal.btn_book_appointment', [], app()->getLocale()) }}
+        </button>
     </div>
-</div>
+</form>
 
+</div>
 @endsection

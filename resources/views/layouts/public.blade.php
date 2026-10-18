@@ -30,6 +30,7 @@
     <!-- CSS -->
     <link rel="stylesheet" href="{{ asset('css/landing.css') }}">
     <link rel="stylesheet" href="{{ asset('css/public.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/od-public.css') }}?v={{ @filemtime(public_path('css/od-public.css')) ?: '1' }}">
     
     <!-- Lucide Icons -->
     <script src="{{ asset('js/lucide.min.js') }}"></script>

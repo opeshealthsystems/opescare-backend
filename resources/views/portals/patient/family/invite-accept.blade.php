@@ -8,20 +8,20 @@
     <link rel="stylesheet" href="{{ asset('assets/finder.css') }}">
 </head>
 <body>
-<main style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;">
-    <div class="f-card" style="max-width:480px;width:100%;text-align:center;">
+<main class="ods-b5553ba">
+    <div class="f-card ods-93f49cc">
         @if($error)
-            <div style="display:flex;gap:10px;align-items:flex-start;text-align:left;padding:12px 14px;border-radius:var(--f-r);background:var(--f-danger-wash);color:var(--f-danger);margin-bottom:16px;">
+            <div class="ods-c06b534">
                 @include('partials.finder.icon', ['name' => 'alert-circle', 'size' => 18])
-                <p style="margin:0;">{{ $error }}</p>
+                <p class="ods-1386d50">{{ $error }}</p>
             </div>
-            <a href="{{ route('login') }}" class="f-btn f-btn--primary" style="min-height:48px;">{{ __('public.portal.invite_accept_go_login') }}</a>
+            <a href="{{ route('login') }}" class="f-btn f-btn--primary ods-a27b458">{{ __('public.portal.invite_accept_go_login') }}</a>
         @else
-            <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--f-wash);color:var(--f-brand);margin:0 auto 12px;">
+            <div class="ods-a425013">
                 @include('partials.finder.icon', ['name' => 'users', 'size' => 24])
             </div>
-            <h1 style="font-size:1.25rem;font-weight:800;margin:0 0 10px;">{{ __('public.portal.invite_accept_h3') }}</h1>
-            <p style="color:var(--f-ink-soft);margin:0 0 20px;">
+            <h1 class="ods-ec0ea8b">{{ __('public.portal.invite_accept_h3') }}</h1>
+            <p class="ods-a132887">
                 <strong>{{ $link->guardianUser->name ?? $link->guardianUser->email }}</strong> {{ __('public.portal.invite_accept_wants') }}
                 <strong>{{ $link->dependentPatient->first_name }} {{ $link->dependentPatient->last_name }}</strong>{{ __('public.portal.invite_accept_records') }}
                 <strong>@enum($link->relationship)</strong>
@@ -29,8 +29,8 @@
             </p>
             <form method="POST" action="{{ route('portals.patient.family.invite.confirm', $token) }}">
                 @csrf
-                <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
-                    <button type="submit" class="f-btn f-btn--primary" style="min-height:48px;">
+                <div class="ods-d6bd826">
+                    <button type="submit" class="f-btn f-btn--primary ods-a27b458">
                         @include('partials.finder.icon', ['name' => 'check', 'size' => 16])
                         {{ __('public.portal.invite_accept_btn') }}
                     </button>

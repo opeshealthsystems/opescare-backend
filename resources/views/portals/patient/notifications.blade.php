@@ -8,6 +8,7 @@
 
 @section('head')
     @include('portals.patient._finder_head')
+    <link rel="stylesheet" href="{{ asset('css/od-patient.css') }}?v={{ @filemtime(public_path('css/od-patient.css')) ?: '1' }}">
 @endsection
 
 @section('patient_banner')
@@ -56,18 +57,18 @@
 
     @if($readOnly)
     <div class="pf-alert" data-section="read-only-note">
-        <i data-lucide="lock" aria-hidden="true" style="width:18px;height:18px;flex:none;margin-top:2px;"></i>
+        <i class="ods-d9ea87f" data-lucide="lock" aria-hidden="true"></i>
         <p id="mark-read-disabled-reason">{{ __('family.inbox_read_only_mark_read', ['name' => $viewingName]) }}</p>
     </div>
     @endif
 
     @if($events->isEmpty())
-    <div class="f-card" style="text-align:center;padding:40px 20px;">
-        <div class="pf-qa__icon" style="margin:0 auto 12px;width:48px;height:48px;">
+    <div class="f-card ods-99e8a36">
+        <div class="pf-qa__icon ods-4ef0061">
             @include('partials.finder.icon', ['name' => 'bell', 'size' => 24])
         </div>
-        <h2 style="font-size:1.125rem;font-weight:750;margin:0 0 6px;">{{ __('notifications.empty_title') }}</h2>
-        <p class="f-muted" style="margin:0;">{{ __('notifications.empty_body') }}</p>
+        <h2 class="ods-40b57ba">{{ __('notifications.empty_title') }}</h2>
+        <p class="f-muted ods-1386d50">{{ __('notifications.empty_body') }}</p>
     </div>
     @else
     <div class="pf-rows">
@@ -85,7 +86,7 @@
                         @if($isUnread)<span class="f-badge">{{ __('notifications.new') }}</span>@endif
                         @if(($ev->priority ?? 'normal') !== 'normal')<span class="f-badge f-badge--warn">@enum($ev->priority, 'priority')</span>@endif
                     </div>
-                    <p class="f-small f-muted" style="margin:2px 0 0;white-space:normal;">{{ \Illuminate\Support\Str::limit($msg, 180) }}</p>
+                    <p class="f-small f-muted ods-d24030b">{{ \Illuminate\Support\Str::limit($msg, 180) }}</p>
                 </div>
                 <div class="pf-row__aside">
                     <span>{{ $createdAt?->isoFormat('D MMM, HH:mm') }}</span>

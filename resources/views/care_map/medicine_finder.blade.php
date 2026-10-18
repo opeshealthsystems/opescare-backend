@@ -50,22 +50,26 @@
 </script>
 @endpush
 
+@push('head')
+    @include('public.partials._od_pages_css')
+@endpush
+
 @section('content')
 
 <section class="f-section--wash f-section--tight">
     <div class="f-container">
         <span class="f-eyebrow">@include('partials.finder.icon', ['name' => 'pill', 'size' => 14]) {{ __('public.network_medicine.badge') }}</span>
         <h1 class="f-h1">{{ __('public.network_medicine.hero_title') }}</h1>
-        <p class="f-lead" style="margin-top:10px;">{{ __('finder_search.medicine.intro') }}</p>
+        <p class="f-lead odp-mt-12">{{ __('finder_search.medicine.intro') }}</p>
 
-        <form method="GET" action="{{ route('public.network.medicine-finder') }}" role="search" style="margin-top:24px;max-width:640px;">
+        <form class="odp-search" method="GET" action="{{ route('public.network.medicine-finder') }}" role="search">
             <label class="f-label" for="medicine-q">{{ __('finder_search.medicine.search_label') }}</label>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                <input class="f-input" style="flex:1 1 240px;" id="medicine-q" name="q" type="search"
+            <div class="odp-row">
+                <input class="f-input odp-grow" id="medicine-q" name="q" type="search"
                        value="{{ $query }}" placeholder="{{ __('finder_search.medicine.search_placeholder') }}"
                        minlength="2" maxlength="120" required autocomplete="off"
                        @if($query === '') autofocus @endif>
-                <button class="f-btn f-btn--primary" type="submit" style="flex:0 0 auto;">
+                <button class="f-btn f-btn--primary odp-shrink" type="submit">
                     @include('partials.finder.icon', ['name' => 'search', 'size' => 18])
                     {{ __('finder_search.common.search') }}
                 </button>
@@ -74,7 +78,7 @@
             <input type="hidden" name="lat" id="finder-lat" value="{{ $lat }}">
             <input type="hidden" name="lng" id="finder-lng" value="{{ $lng }}">
 
-            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;">
+            <div class="odp-search__meta">
                 <button class="f-chip" type="button" id="finder-locate">
                     @include('partials.finder.icon', ['name' => 'navigation', 'size' => 15])
                     {{ __('finder_search.common.use_my_location') }}
@@ -95,11 +99,11 @@
             {{-- THE EMPTY STATE IS A FEATURE: say exactly what is and is not
                  known. No pharmacy reported this stock — the platform did not
                  check any shelf, so it cannot say more than that. --}}
-            <div class="f-card" style="text-align:center;padding:36px 20px;max-width:560px;margin-inline:auto;">
+            <div class="f-card odp-empty">
                 @include('partials.finder.icon', ['name' => 'pill', 'size' => 36, 'class' => 'f-muted'])
-                <h2 class="f-h2" style="margin-top:12px;">{{ __('finder_search.medicine.empty_title') }}</h2>
-                <p class="f-muted" style="margin-top:10px;line-height:1.6;">{{ __('finder_search.medicine.empty_body') }}</p>
-                <div style="margin-top:20px;">
+                <h2 class="f-h2 odp-mt-12">{{ __('finder_search.medicine.empty_title') }}</h2>
+                <p class="f-muted odp-mt-8 odp-soft">{{ __('finder_search.medicine.empty_body') }}</p>
+                <div class="odp-mt-20">
                     <a class="f-btn f-btn--primary" href="{{ route('public.care-map', ['facility_type' => 'pharmacy']) }}">
                         @include('partials.finder.icon', ['name' => 'map-pin', 'size' => 18])
                         {{ __('finder_search.medicine.empty_cta') }}
@@ -109,17 +113,17 @@
 
         @else
 
-            <p style="font-weight:650;">{{ trans_choice('finder_search.medicine.results_count', $results->count(), ['count' => $results->count()]) }}</p>
+            <p class="odp-strong">{{ trans_choice('finder_search.medicine.results_count', $results->count(), ['count' => $results->count()]) }}</p>
 
             {{-- The decision is made here, so the caution is repeated here. --}}
-            <p class="f-small f-muted" style="display:flex;gap:8px;align-items:flex-start;margin-top:6px;max-width:62ch;">
+            <p class="f-small f-muted odp-note odp-mt-8">
                 @include('partials.finder.icon', ['name' => 'alert-circle', 'size' => 16])
                 <span>{{ __('finder_search.medicine.before_you_travel') }}</span>
             </p>
 
             @php $shown = $results->take(30); @endphp
             @include('partials.finder.map', ['facilities' => $shown, 'mapId' => 'medicine-map', 'height' => '340px'])
-            <div style="display:grid;gap:12px;margin-top:16px;">
+            <div class="odp-results">
                 @foreach($shown as $f)
                     @php
                         $stock    = $f->matched_stock;
@@ -143,47 +147,47 @@
                             ->filter()->implode(' · ');
                     @endphp
                     <article class="f-card">
-                        <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;">
-                            <h3 style="font-size:1.0625rem;font-weight:700;line-height:1.35;">{{ $f->facility_name }}</h3>
+                        <div class="odp-row odp-row--between">
+                            <h3 class="odp-title">{{ $f->facility_name }}</h3>
                             @if($f->distance !== null)
-                                <span class="f-badge" style="flex-shrink:0;">{{ __('finder_search.common.distance_km', ['distance' => round($f->distance, 1)]) }}</span>
+                                <span class="f-badge odp-shrink">{{ __('finder_search.common.distance_km', ['distance' => round($f->distance, 1)]) }}</span>
                             @endif
                         </div>
 
-                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px;">
+                        <div class="odp-row odp-mt-8">
                             <span class="f-badge {{ $statusClass }}">{{ __($statusKey) }}</span>
                             @if($medLabel !== '')<span class="f-small f-muted">{{ $medLabel }}</span>@endif
                         </div>
 
-                        <div class="f-small" style="display:grid;gap:5px;margin-top:10px;color:var(--f-ink-soft);">
+                        <div class="f-small odp-meta">
                             @if(!empty($stock['price']))
-                                <span style="font-weight:700;color:var(--f-ink);">
+                                <span class="odp-bold">
                                     {{ __('finder_search.medicine.price_fcfa', ['price' => number_format((float) $stock['price'], 0, '.', ' ')]) }}
-                                    @if(!empty($stock['pack_size'])) <span class="f-muted" style="font-weight:400;">— {{ __('finder_search.medicine.pack_of', ['size' => $stock['pack_size']]) }}</span>@endif
+                                    @if(!empty($stock['pack_size'])) <span class="f-muted odp-normal">— {{ __('finder_search.medicine.pack_of', ['size' => $stock['pack_size']]) }}</span>@endif
                                 </span>
                             @endif
                             @if($reportedAt)
-                                <span style="display:flex;gap:6px;align-items:center;">
+                                <span class="odp-inline">
                                     @include('partials.finder.icon', ['name' => 'clock', 'size' => 14])
                                     {{ __('finder_search.medicine.reported_line', ['time' => $reportedAt->diffForHumans()]) }}
                                 </span>
                             @endif
                             @if($address !== '')
-                                <span style="display:flex;gap:6px;align-items:center;">
+                                <span class="odp-inline">
                                     @include('partials.finder.icon', ['name' => 'map-pin', 'size' => 14])
                                     {{ $address }}
                                 </span>
                             @endif
                         </div>
 
-                        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
+                        <div class="odp-row odp-mt-16">
                             @if($phone)
                                 <a class="f-btn f-btn--primary" href="tel:{{ $phone }}">
                                     @include('partials.finder.icon', ['name' => 'phone', 'size' => 16])
                                     {{ __('finder_search.common.call') }}
                                 </a>
                             @else
-                                <span class="f-small f-muted" style="align-self:center;">{{ __('finder_search.common.no_phone') }}</span>
+                                <span class="f-small f-muted odp-self-center">{{ __('finder_search.common.no_phone') }}</span>
                             @endif
                             @if($dirUrl)
                                 <button type="button" class="f-btn" data-finder-directions="{{ $f->id }}">
@@ -200,7 +204,7 @@
             </div>
 
             @if($results->count() > $shown->count())
-                <p class="f-small f-muted" style="margin-top:12px;">{{ __('finder_search.common.showing_first', ['count' => $shown->count()]) }}</p>
+                <p class="f-small f-muted odp-mt-12">{{ __('finder_search.common.showing_first', ['count' => $shown->count()]) }}</p>
             @endif
 
         @endif
@@ -210,9 +214,9 @@
 
 <section class="f-section--tight f-section--surface">
     <div class="f-container">
-        <div class="f-card" style="max-width:640px;">
-            <p class="f-small" style="font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--f-brand);margin-bottom:6px;">{{ __('public.network_medicine.publish_label') }}</p>
-            <p class="f-small" style="color:var(--f-ink-soft);line-height:1.6;">{{ __('public.network_medicine.publish_body') }}</p>
+        <div class="f-card odp-narrow">
+            <p class="f-small odp-kicker">{{ __('public.network_medicine.publish_label') }}</p>
+            <p class="f-small odp-soft">{{ __('public.network_medicine.publish_body') }}</p>
         </div>
     </div>
 </section>

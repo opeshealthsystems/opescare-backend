@@ -243,10 +243,38 @@ class PatientPortalController extends Controller
                 ->get()
             : collect();
 
+        // Home summary (calm patient home): every figure is an existing count
+        // over the patient's own rows — never estimated, never padded.
+        $activePrescriptionsCount = $patient
+            ? Prescription::where('patient_id', $patient->id)->whereIn('status', Prescription::OPEN_STATUSES)->count()
+            : 0;
+        $recentResults = $patient
+            ? \App\Models\LabResult::where('patient_id', $patient->id)
+                ->whereNotNull('resulted_at')
+                ->orderByDesc('resulted_at')
+                ->limit(5)
+                ->get(['id', 'parameter_name', 'value', 'unit', 'flag', 'resulted_at'])
+            : collect();
+        $newResultsCount = $patient
+            ? \App\Models\LabResult::where('patient_id', $patient->id)
+                ->where('resulted_at', '>=', now()->subDays(30))
+                ->count()
+            : 0;
+        $pendingConsentRequests = $patient
+            ? ConsentRequest::where('patient_id', $patient->id)
+                ->whereIn('status', \App\Modules\Governance\Services\ConsentService::OPEN_STATUSES)
+                ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+                ->with('requestingFacility:id,name')
+                ->orderByDesc('created_at')
+                ->limit(5)
+                ->get()
+            : collect();
+
         return view('portals.patient.index', compact(
             'patient', 'qrToken', 'staticQrDataUri',
             'criticalAllergies', 'activeAllergies', 'activeConditions', 'onboarding',
-            'upcomingAppointments', 'guardianLink', 'isViewing', 'canWrite'
+            'upcomingAppointments', 'guardianLink', 'isViewing', 'canWrite',
+            'activePrescriptionsCount', 'recentResults', 'newResultsCount', 'pendingConsentRequests'
         ));
     }
 

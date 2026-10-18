@@ -2,27 +2,27 @@
      authority — and every flag names its source. `unflagged` means nobody
      compared the value; it is rendered as "Not recorded", never as normal. --}}
 @php
-    $flagBadge = fn (string $severity) => 'badge badge-' . match ($severity) {
-        'critical' => 'danger',
-        'warning'  => 'warning',
-        'success'  => 'success',
+    $flagBadge = fn (string $severity) => 'od-pill od-pill--' . match ($severity) {
+        'critical' => 'urgent',
+        'warning'  => 'pending',
+        'success'  => 'ready',
         default    => 'neutral',
     };
     $labBadge = \App\Enums\VitalProvenance::LaboratoryResult;
 @endphp
-<div class="panel mb-4">
-    <div class="panel-header">
-        <h2 class="panel-title"><i data-lucide="flask-conical"></i> {{ __('chart.tabs.labs') }}</h2>
-        <span class="badge badge-success">{{ __($labBadge->labelKey()) }}</span>
+<div class="od-card">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('chart.tabs.labs') }}</h2>
+        <span class="od-pill od-pill--ready">{{ __($labBadge->labelKey()) }}</span>
     </div>
-    <div class="panel-body">
-        <p class="form-hint mb-4">{{ __('chart.labs_note') }}</p>
+    <div class="od-card__body">
+        <p class="odc-hint">{{ __('chart.labs_note') }}</p>
 
         @if($labs->isEmpty())
-            <p class="td-muted">{{ __('chart.labs_none') }}</p>
+            <p class="od-muted">{{ __('chart.labs_none') }}</p>
         @else
-            <div class="table-wrapper">
-                <table class="data-table">
+            <div class="od-table-wrap">
+                <table class="od-table">
                     <thead>
                     <tr>
                         <th>{{ __('chart.col_resulted') }}</th>
@@ -36,18 +36,18 @@
                     <tbody>
                     @foreach($labs as $r)
                         <tr>
-                            <td class="td-muted">{{ $r['resulted_at']?->translatedFormat('d M Y H:i') ?? '—' }}</td>
-                            <td class="td-strong">{{ $r['parameter'] ?: '—' }}</td>
-                            <td class="td-muted">
+                            <td class="od-muted">{{ $r['resulted_at']?->translatedFormat('d M Y H:i') ?? '—' }}</td>
+                            <td class="odc-strong">{{ $r['parameter'] ?: '—' }}</td>
+                            <td class="od-muted">
                                 {{ $r['loinc_code'] ?: '—' }}
                                 @if($r['loinc_display'])<br><small>{{ $r['loinc_display'] }}</small>@endif
                             </td>
-                            <td>{{ $r['value'] ?? '—' }} <span class="td-muted">{{ $r['unit'] }}</span></td>
-                            <td class="td-muted">{{ $r['reference_range'] ?: '—' }}</td>
+                            <td>{{ $r['value'] ?? '—' }} <span class="od-muted">{{ $r['unit'] }}</span></td>
+                            <td class="od-muted">{{ $r['reference_range'] ?: '—' }}</td>
                             <td>
                                 <span class="{{ $flagBadge($r['severity']) }}">{{ __('labs.flag.' . $r['flag']) }}</span>
                                 @if($r['flag_source'])
-                                    <br><small class="td-muted">{{ __('chart.flag_source.' . $r['flag_source']) }}</small>
+                                    <br><small class="od-muted">{{ __('chart.flag_source.' . $r['flag_source']) }}</small>
                                 @endif
                             </td>
                         </tr>

@@ -11,14 +11,15 @@
 --}}
 
 @section('content')
+<link rel="stylesheet" href="{{ asset('css/od-patient.css') }}?v={{ @filemtime(public_path('css/od-patient.css')) ?: '1' }}">
     <div class="auth-card">
         <h1 class="auth-headline">{{ __('onboarding.guardian.complete_headline') }}</h1>
         <p class="auth-subheadline">{{ __('onboarding.guardian.complete_subheadline') }}</p>
 
         @if ($errors->any())
             <div class="auth-alert auth-alert--error" role="alert">
-                <i data-lucide="alert-triangle" style="width:1.05rem;height:1.05rem;flex-shrink:0;"></i>
-                <ul style="margin:0;padding-left:1rem;">
+                <i class="ods-fe2db25" data-lucide="alert-triangle"></i>
+                <ul class="ods-27a75ac">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach

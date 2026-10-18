@@ -8,6 +8,7 @@
 
 @section('head')
     @include('portals.patient._finder_head')
+    <link rel="stylesheet" href="{{ asset('css/od-patient.css') }}?v={{ @filemtime(public_path('css/od-patient.css')) ?: '1' }}">
 @endsection
 
 @section('patient_banner')
@@ -43,20 +44,20 @@
 
     @if($readOnly)
     <div class="pf-alert" data-section="read-only-note">
-        <i data-lucide="lock" aria-hidden="true" style="width:18px;height:18px;flex:none;margin-top:2px;"></i>
+        <i class="ods-d9ea87f" data-lucide="lock" aria-hidden="true"></i>
         <p>{{ __('family.inbox_read_only_compose', ['name' => $viewingName]) }}</p>
     </div>
     @endif
 
     @if($threads->isEmpty())
-    <div class="f-card" style="text-align:center;padding:40px 20px;">
-        <div class="pf-qa__icon" style="margin:0 auto 12px;width:48px;height:48px;">
+    <div class="f-card ods-99e8a36">
+        <div class="pf-qa__icon ods-4ef0061">
             @include('partials.finder.icon', ['name' => 'message-square', 'size' => 24])
         </div>
-        <h2 style="font-size:1.125rem;font-weight:750;margin:0 0 6px;">{{ __('messaging.empty_title') }}</h2>
-        <p class="f-muted" style="margin:0 0 18px;">{{ __('messaging.empty_body') }}</p>
+        <h2 class="ods-40b57ba">{{ __('messaging.empty_title') }}</h2>
+        <p class="f-muted ods-7307c03">{{ __('messaging.empty_body') }}</p>
         @unless($readOnly)
-        <a href="{{ route('portals.patient.messages.compose') }}" class="f-btn f-btn--primary" style="min-height:48px;">
+        <a href="{{ route('portals.patient.messages.compose') }}" class="f-btn f-btn--primary ods-a27b458">
             {{ __('messaging.compose_btn') }}
         </a>
         @endunless

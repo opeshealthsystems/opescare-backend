@@ -4,48 +4,147 @@
 @section('breadcrumb_home', __('admin_extra.breadcrumb_admin', [], app()->getLocale()))
 @section('breadcrumb_home_url', route('portals.admin'))
 @section('breadcrumb_section', __('public.adm_users_idx_breadcrumb_section'))
+@section('head')<link rel="stylesheet" href="{{ asset('css/od-admin.css') }}?v={{ @filemtime(public_path('css/od-admin.css')) ?: '1' }}">@endsection
+@php
+    $gcTones = ['blue', 'amber', 'teal', 'rose', 'sky', 'green'];
+    $gcTone = fn ($s) => $gcTones[crc32((string) $s) % count($gcTones)];
+    $gcInit = fn ($n) => mb_strtoupper(collect(preg_split('/\s+/', trim((string) $n)))->filter()->take(2)->map(fn ($w) => mb_substr($w, 0, 1))->implode('')) ?: '?';
+@endphp
 @section('content')
+<div class="od-page">
 
-<div class="breadcrumb">
+<nav class="oda-gc-crumbs" aria-label="breadcrumb">
     <a href="{{ route('admin.users.index') }}">{{ __('public.adm_users_idx_breadcrumb_users') }}</a>
     <i data-lucide="chevron-right"></i>
     <span>{{ __('public.adm_users_idx_breadcrumb_dir') }}</span>
-</div>
+</nav>
 
-<div class="page-header">
+<div class="od-page__head">
     <div>
-        <h1 class="page-title">{{ __('public.adm_users_idx_heading') }}</h1>
-        <p class="page-subtitle">{{ __('public.adm_users_idx_subtitle') }}</p>
+        <h1 class="od-page__title">{{ __('public.adm_users_idx_heading') }}</h1>
+        <p class="od-page__sub">{{ __('public.adm_users_idx_subtitle') }}</p>
+    </div>
+    <div class="od-row">
+        <a href="#new_user_name" class="od-btn od-btn--primary"><i data-lucide="user-plus"></i> {{ __('admin_extra.users_create_title') }}</a>
     </div>
 </div>
 
-@if(session('success'))<div class="alert alert-success mb-6"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
-@if(session('error'))<div class="alert alert-danger mb-6"><i data-lucide="alert-circle"></i><div>{{ session('error') }}</div></div>@endif
+@if(session('success'))<div class="oda-gc-flash oda-gc-flash--ok"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
+@if(session('error'))<div class="oda-gc-flash oda-gc-flash--err"><i data-lucide="alert-circle"></i><div>{{ session('error') }}</div></div>@endif
 
-<form method="GET" action="{{ route('admin.users.index') }}" class="filter-bar">
-    <label class="filter-search">
-        <i data-lucide="search"></i>
-        <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('public.adm_users_idx_ph_search') }}" aria-label="{{ __('public.aria_search_users') }}">
-    </label>
-    <select name="role_id" class="filter-select" aria-label="{{ __('admin_extra.aria_role', [], app()->getLocale()) }}" data-autosubmit>
-        <option value="">{{ __('public.adm_users_idx_filter_all_roles') }}</option>
-        @foreach($roles as $role)<option value="{{ $role->id }}" {{ request('role_id') == $role->id ? 'selected' : '' }}>{{ $role->name }}</option>@endforeach
-    </select>
-    <select name="status" class="filter-select" aria-label="{{ __('public.aria_status') }}" data-autosubmit>
-        <option value="">{{ __('public.adm_users_idx_filter_all') }}</option>
-        <option value="active" {{ request('status')==='active' ? 'selected' : '' }}>{{ __('public.adm_users_idx_filter_active') }}</option>
-        <option value="pending" {{ request('status')==='pending' ? 'selected' : '' }}>{{ __('public.adm_users_idx_filter_pending') }}</option>
-        <option value="suspended" {{ request('status')==='suspended' ? 'selected' : '' }}>{{ __('public.adm_users_idx_filter_suspended') }}</option>
-    </select>
-    <button type="submit" class="btn btn-secondary btn-sm"><i data-lucide="filter"></i> {{ __('public.adm_users_idx_btn_filter') }}</button>
-    <a href="{{ route('admin.users.index') }}" class="btn btn-ghost btn-sm">{{ __('public.adm_users_idx_btn_reset') }}</a>
-</form>
-
-<div class="panel mb-6">
-    <div class="panel-header">
-        <h3 class="panel-title"><i data-lucide="user-plus"></i> {{ __('admin_extra.users_create_title') }}</h3>
+<div class="od-stack">
+<section class="od-card">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('public.adm_users_idx_breadcrumb_users') }} <span class="od-card__count">({{ $users->total() }})</span></h2>
     </div>
-    <div class="panel-body">
+
+    <form method="GET" action="{{ route('admin.users.index') }}" class="oda-toolbar">
+        <label class="od-field">
+            <i data-lucide="search"></i>
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('public.adm_users_idx_ph_search') }}" aria-label="{{ __('public.aria_search_users') }}">
+        </label>
+        <select name="role_id" class="od-select" aria-label="{{ __('admin_extra.aria_role', [], app()->getLocale()) }}" data-autosubmit>
+            <option value="">{{ __('public.adm_users_idx_filter_all_roles') }}</option>
+            @foreach($roles as $role)<option value="{{ $role->id }}" {{ request('role_id') == $role->id ? 'selected' : '' }}>{{ $role->name }}</option>@endforeach
+        </select>
+        <select name="status" class="od-select" aria-label="{{ __('public.aria_status') }}" data-autosubmit>
+            <option value="">{{ __('public.adm_users_idx_filter_all') }}</option>
+            <option value="active" {{ request('status')==='active' ? 'selected' : '' }}>{{ __('public.adm_users_idx_filter_active') }}</option>
+            <option value="pending" {{ request('status')==='pending' ? 'selected' : '' }}>{{ __('public.adm_users_idx_filter_pending') }}</option>
+            <option value="suspended" {{ request('status')==='suspended' ? 'selected' : '' }}>{{ __('public.adm_users_idx_filter_suspended') }}</option>
+        </select>
+        <button type="submit" class="od-btn od-btn--secondary"><i data-lucide="filter"></i> {{ __('public.adm_users_idx_btn_filter') }}</button>
+        <a href="{{ route('admin.users.index') }}" class="od-btn od-btn--ghost">{{ __('public.adm_users_idx_btn_reset') }}</a>
+    </form>
+
+    <p class="oda-gc-note"><i data-lucide="users"></i> {{ __('admin_extra.count_users', ['n' => $users->total()], app()->getLocale()) ?: $users->total().' users' }}</p>
+
+    <div class="od-table-wrap">
+        <table class="od-table">
+            <thead>
+                <tr>
+                    <th>{{ __('public.adm_users_idx_col_name') }} / {{ __('public.adm_users_idx_col_email') }}</th>
+                    <th>{{ __('public.adm_users_idx_col_role') }}</th>
+                    <th>{{ __('admin_extra.users_col_facility') }}</th>
+                    <th>{{ __('public.adm_users_idx_col_status') }}</th>
+                    <th>{{ __('public.adm_users_idx_col_created') }}</th>
+                    <th class="od-table__actions">{{ __('public.adm_users_idx_col_actions') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+            @forelse($users as $user)
+                <tr>
+                    <td data-label="{{ __('public.adm_users_idx_col_name') }}">
+                        <div class="od-table__person">
+                            <span class="od-avatar od-tint--{{ $gcTone($user->email) }}" aria-hidden="true">{{ $gcInit($user->name) }}</span>
+                            <div>
+                                <a href="{{ route('admin.users.show', $user->id) }}" class="od-table__name">{{ $user->name }}</a>
+                                <span class="od-table__sub">{{ $user->email }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td data-label="{{ __('public.adm_users_idx_col_role') }}"><span class="od-pill od-pill--neutral">{{ $user->role?->name ?? (__('admin_extra.users_role_none', [], app()->getLocale())) }}</span></td>
+                    <td data-label="{{ __('admin_extra.users_col_facility') }}">
+                        @if($user->primaryFacility)
+                            {{ $user->primaryFacility->name }}
+                        @else
+                            <span class="od-pill od-pill--pending">{{ __('admin_extra.users_facility_none') }}</span>
+                        @endif
+                    </td>
+                    <td data-label="{{ __('public.adm_users_idx_col_status') }}">
+                        @if($user->status==='active')<span class="od-pill od-pill--ready od-pill--dot">{{ __('public.adm_users_idx_badge_active') }}</span>
+                        @elseif($user->status==='suspended')<span class="od-pill od-pill--urgent od-pill--dot">{{ __('public.adm_users_idx_badge_suspended') }}</span>
+                        @else<span class="od-pill od-pill--pending od-pill--dot">@enum($user->status)</span>@endif
+                    </td>
+                    <td data-label="{{ __('public.adm_users_idx_col_created') }}" class="oda-gc-muted">{{ $user->created_at?->translatedFormat('d M Y') }}</td>
+                    <td class="od-table__actions" data-label="{{ __('public.adm_users_idx_col_actions') }}">
+                        <div class="oda-gc-actions">
+                        <a href="{{ route('admin.users.show', $user->id) }}" class="od-btn od-btn--row" aria-label="{{ __('public.aria_view_user') }}" title="{{ __('admin_extra.title_view', [], app()->getLocale()) }}">{{ __('admin_extra.title_view', [], app()->getLocale()) }}</a>
+                        @if($user->status!=='active')
+                        <form method="POST" action="{{ route('admin.users.activate',$user->id) }}" class="oda-inline-form">@csrf
+                            <button type="submit" class="od-btn od-btn--ghost od-btn--icon" aria-label="{{ __('public.aria_activate_user') }}" title="{{ __('public.aria_activate') }}"><i data-lucide="check-circle"></i></button>
+                        </form>
+                        @endif
+                        @if($user->status!=='suspended')
+                        <form method="POST" action="{{ route('admin.users.suspend',$user->id) }}" data-confirm="{{ __('admin_desk.confirm_suspend_user') }}" class="oda-inline-form">@csrf
+                            <button type="submit" class="od-btn od-btn--ghost od-btn--icon" aria-label="{{ __('public.aria_suspend_user') }}" title="{{ __('public.aria_suspend') }}"><i data-lucide="ban"></i></button>
+                        </form>
+                        @endif
+                        <button type="button" class="od-btn od-btn--ghost od-btn--icon" aria-label="{{ __('public.aria_delete_user') }}" title="{{ __('public.aria_delete') }}" data-call="opOpenModal" data-args="[&quot;delete-user-{{ $user->id }}&quot;]"><i data-lucide="trash-2"></i></button>
+                        </div>
+                        <div id="delete-user-{{ $user->id }}" class="modal-backdrop" hidden>
+                            <div class="od-card oda-modal" role="dialog" aria-modal="true">
+                                <div class="od-card__head"><h3 class="od-card__title"><i data-lucide="alert-triangle"></i> {{ __('public.adm_users_idx_modal_delete_title') }}</h3></div>
+                                <form method="POST" action="{{ route('admin.users.destroy',$user->id) }}" class="od-card__body">@csrf @method('DELETE')
+                                    <p>{{ __('public.adm_users_idx_modal_delete_title') }} <strong>{{ $user->name }}</strong>?</p>
+                                    <div class="oda-form__actions">
+                                        <button type="button" class="od-btn od-btn--ghost" data-call="opCloseModal" data-args="[&quot;delete-user-{{ $user->id }}&quot;]">{{ __('public.adm_users_idx_modal_delete_btn_cancel') }}</button>
+                                        <button type="submit" class="od-btn od-btn--danger">{{ __('public.adm_users_idx_modal_delete_btn_delete') }}</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            @empty
+                <tr><td colspan="6">
+                    <div class="od-empty">
+                        <span class="od-empty__icon"><i data-lucide="users"></i></span>
+                        <p class="od-empty__text">{{ __('public.adm_users_idx_empty') }}</p>
+                    </div>
+                </td></tr>
+            @endforelse
+            </tbody>
+        </table>
+    </div>
+    <div class="od-card__foot">{{ $users->links() }}</div>
+</section>
+
+<section class="od-card">
+    <div class="od-card__head">
+        <h2 class="od-card__title"><i data-lucide="user-plus"></i> {{ __('admin_extra.users_create_title') }}</h2>
+    </div>
+    <div class="od-card__body">
         @include('portals.admin.users._facility_finder', [
             'searchAction' => route('admin.users.index'),
             'carry'        => [
@@ -55,119 +154,45 @@
             ],
         ])
 
-        <form method="POST" action="{{ route('admin.users.store') }}">
+        <form method="POST" action="{{ route('admin.users.store') }}" class="oda-form">
             @csrf
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label form-label-required" for="new_user_name">{{ __('admin_extra.users_create_name') }}</label>
-                    <input type="text" id="new_user_name" name="name" class="form-control" value="{{ old('name') }}" required>
-                    @error('name')<div class="form-hint">{{ $message }}</div>@enderror
-                </div>
-                <div class="form-group">
-                    <label class="form-label form-label-required" for="new_user_email">{{ __('admin_extra.users_create_email') }}</label>
-                    <input type="email" id="new_user_email" name="email" class="form-control" value="{{ old('email') }}" required>
-                    @error('email')<div class="form-hint">{{ $message }}</div>@enderror
-                </div>
-            </div>
-            <div class="form-row mt-6">
-                <div class="form-group">
-                    <label class="form-label form-label-required" for="new_user_password">{{ __('admin_extra.users_create_pw') }}</label>
-                    <input type="password" id="new_user_password" name="password" class="form-control" required>
-                    @error('password')<div class="form-hint">{{ $message }}</div>@enderror
-                </div>
-                <div class="form-group">
-                    <label class="form-label form-label-required" for="new_user_role">{{ __('admin_extra.users_create_role') }}</label>
-                    <select id="new_user_role" name="role_id" class="form-control" required>
-                        <option value="">{{ __('admin_extra.users_create_role_ph') }}</option>
-                        @foreach($roles as $role)
-                        <option value="{{ $role->id }}" @selected(old('role_id') == $role->id)>{{ $role->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('role_id')<div class="form-hint">{{ $message }}</div>@enderror
-                </div>
-            </div>
+            <label class="oda-label" for="new_user_name">
+                <span class="oda-label__text">{{ __('admin_extra.users_create_name') }} *</span>
+                <input type="text" id="new_user_name" name="name" class="od-input" value="{{ old('name') }}" required>
+                @error('name')<span class="oda-error">{{ $message }}</span>@enderror
+            </label>
+            <label class="oda-label" for="new_user_email">
+                <span class="oda-label__text">{{ __('admin_extra.users_create_email') }} *</span>
+                <input type="email" id="new_user_email" name="email" class="od-input" value="{{ old('email') }}" required>
+                @error('email')<span class="oda-error">{{ $message }}</span>@enderror
+            </label>
+            <label class="oda-label" for="new_user_password">
+                <span class="oda-label__text">{{ __('admin_extra.users_create_pw') }} *</span>
+                <input type="password" id="new_user_password" name="password" class="od-input" required>
+                @error('password')<span class="oda-error">{{ $message }}</span>@enderror
+            </label>
+            <label class="oda-label" for="new_user_role">
+                <span class="oda-label__text">{{ __('admin_extra.users_create_role') }} *</span>
+                <select id="new_user_role" name="role_id" class="od-select" required>
+                    <option value="">{{ __('admin_extra.users_create_role_ph') }}</option>
+                    @foreach($roles as $role)
+                    <option value="{{ $role->id }}" @selected(old('role_id') == $role->id)>{{ $role->name }}</option>
+                    @endforeach
+                </select>
+                @error('role_id')<span class="oda-error">{{ $message }}</span>@enderror
+            </label>
 
             @include('portals.admin.users._facility_picker', ['selected' => null])
 
-            <div class="mt-6">
-                <button type="submit" class="btn btn-primary"><i data-lucide="user-plus"></i> {{ __('admin_extra.users_create_btn') }}</button>
+            <div class="oda-form__actions">
+                <button type="submit" class="od-btn od-btn--primary"><i data-lucide="user-plus"></i> {{ __('admin_extra.users_create_btn') }}</button>
             </div>
         </form>
     </div>
+</section>
 </div>
 
-<div class="panel">
-    <div class="panel-header">
-        <h3 class="panel-title"><i data-lucide="users"></i> {{ __('admin_extra.count_users', ['n' => $users->total()], app()->getLocale()) ?: $users->total().' users' }}</h3>
-    </div>
-    <div class="table-wrapper">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>{{ __('public.adm_users_idx_col_name') }}</th>
-                    <th>{{ __('public.adm_users_idx_col_email') }}</th>
-                    <th>{{ __('public.adm_users_idx_col_role') }}</th>
-                    <th>{{ __('admin_extra.users_col_facility') }}</th>
-                    <th>{{ __('public.adm_users_idx_col_status') }}</th>
-                    <th>{{ __('public.adm_users_idx_col_created') }}</th>
-                    <th class="row-actions">{{ __('public.adm_users_idx_col_actions') }}</th>
-                </tr>
-            </thead>
-            <tbody>
-            @forelse($users as $user)
-                <tr>
-                    <td data-label="{{ __('public.adm_users_idx_col_name') }}"><span class="td-strong">{{ $user->name }}</span></td>
-                    <td data-label="{{ __('public.adm_users_idx_col_email') }}">{{ $user->email }}</td>
-                    <td data-label="{{ __('public.adm_users_idx_col_role') }}"><span class="badge badge-neutral">{{ $user->role?->name ?? (__('admin_extra.users_role_none', [], app()->getLocale())) }}</span></td>
-                    <td data-label="{{ __('admin_extra.users_col_facility') }}">
-                        @if($user->primaryFacility)
-                            {{ $user->primaryFacility->name }}
-                        @else
-                            <span class="badge badge-warning">{{ __('admin_extra.users_facility_none') }}</span>
-                        @endif
-                    </td>
-                    <td data-label="{{ __('public.adm_users_idx_col_status') }}">
-                        @if($user->status==='active')<span class="badge badge-success">{{ __('public.adm_users_idx_badge_active') }}</span>
-                        @elseif($user->status==='suspended')<span class="badge badge-danger">{{ __('public.adm_users_idx_badge_suspended') }}</span>
-                        @else<span class="badge badge-warning">@enum($user->status)</span>@endif
-                    </td>
-                    <td data-label="{{ __('public.adm_users_idx_col_created') }}" class="td-muted">{{ $user->created_at?->translatedFormat('d M Y') }}</td>
-                    <td class="row-actions" data-label="{{ __('public.adm_users_idx_col_actions') }}">
-                        <a href="{{ route('admin.users.show', $user->id) }}" class="icon-btn" aria-label="{{ __('public.aria_view_user') }}" title="{{ __('admin_extra.title_view', [], app()->getLocale()) }}"><i data-lucide="eye"></i></a>
-                        @if($user->status!=='active')
-                        <form method="POST" action="{{ route('admin.users.activate',$user->id) }}" class="inline-form">@csrf
-                            <button type="submit" class="icon-btn" aria-label="{{ __('public.aria_activate_user') }}" title="{{ __('public.aria_activate') }}"><i data-lucide="check-circle"></i></button>
-                        </form>
-                        @endif
-                        @if($user->status!=='suspended')
-                        <form method="POST" action="{{ route('admin.users.suspend',$user->id) }}" data-confirm="{{ __('admin_desk.confirm_suspend_user') }}" class="inline-form">@csrf
-                            <button type="submit" class="icon-btn" aria-label="{{ __('public.aria_suspend_user') }}" title="{{ __('public.aria_suspend') }}"><i data-lucide="ban"></i></button>
-                        </form>
-                        @endif
-                        <button type="button" class="icon-btn" aria-label="{{ __('public.aria_delete_user') }}" title="{{ __('public.aria_delete') }}" data-call="opOpenModal" data-args="[&quot;delete-user-{{ $user->id }}&quot;]"><i data-lucide="trash-2"></i></button>
-                        <div id="delete-user-{{ $user->id }}" class="modal-backdrop mt-6" hidden>
-                            <div class="modal" role="dialog" aria-modal="true">
-                                <h3 class="modal__title"><i data-lucide="alert-triangle"></i> {{ __('public.adm_users_idx_modal_delete_title') }}</h3>
-                                <form method="POST" action="{{ route('admin.users.destroy',$user->id) }}">@csrf @method('DELETE')
-                                    <div class="modal__body"><p>{{ __('public.adm_users_idx_modal_delete_title') }} <strong>{{ $user->name }}</strong>?</p></div>
-                                    <div class="modal__footer">
-                                        <button type="button" class="btn btn-ghost" data-call="opCloseModal" data-args="[&quot;delete-user-{{ $user->id }}&quot;]">{{ __('public.adm_users_idx_modal_delete_btn_cancel') }}</button>
-                                        <button type="submit" class="btn btn-danger">{{ __('public.adm_users_idx_modal_delete_btn_delete') }}</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-            @empty
-                <tr><td colspan="7" class="td-muted empty-cell">{{ __('public.adm_users_idx_empty') }}</td></tr>
-            @endforelse
-            </tbody>
-        </table>
-    </div>
-    <div class="panel-body">{{ $users->links() }}</div>
 </div>
-
 @endsection
 @section('scripts')
 <script @cspNonce>

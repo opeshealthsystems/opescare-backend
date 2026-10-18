@@ -17,6 +17,10 @@
     icon font — the checkmarks and the rule below are CSS, not characters.
 --}}
 
+@push('head')
+    @include('public.partials._od_pages_css')
+@endpush
+
 @section('content')
 
     <style>
@@ -72,7 +76,7 @@
             {{-- How --}}
             <section class="ad-section">
                 <h2>{{ __('account_deletion.web.how_title') }}</h2>
-                <p style="color:var(--f-muted);margin-top:0;">{{ __('account_deletion.web.how_intro') }}</p>
+                <p class="odp-muted odp-m0">{{ __('account_deletion.web.how_intro') }}</p>
                 <ol class="ad-steps">
                     <li>{{ __('account_deletion.web.step_app') }}</li>
                     <li>{{ __('account_deletion.web.step_confirm') }}</li>
@@ -83,7 +87,7 @@
             {{-- Erased --}}
             <section class="ad-section">
                 <h2>{{ __('account_deletion.erased.title') }}</h2>
-                <p style="color:var(--f-muted);margin-top:0;">{{ __('account_deletion.erased.note') }}</p>
+                <p class="odp-muted odp-m0">{{ __('account_deletion.erased.note') }}</p>
                 <ul class="ad-list">
                     @foreach (['sign_in', 'password', 'pin', 'sessions', 'devices', 'phone', 'email', 'address', 'emergency_contact', 'national_id', 'referral_code'] as $item)
                         <li>{{ __('account_deletion.erased.items.' . $item) }}</li>
@@ -94,7 +98,7 @@
             {{-- De-identified --}}
             <section class="ad-section">
                 <h2>{{ __('account_deletion.deidentified.title') }}</h2>
-                <p style="color:var(--f-muted);margin-top:0;">{{ __('account_deletion.deidentified.note') }}</p>
+                <p class="odp-muted odp-m0">{{ __('account_deletion.deidentified.note') }}</p>
                 <ul class="ad-list">
                     @foreach (['name', 'record_marked'] as $item)
                         <li>{{ __('account_deletion.deidentified.items.' . $item) }}</li>
@@ -105,8 +109,8 @@
             {{-- Retained --}}
             <section class="ad-section ad-kept">
                 <h2>{{ __('account_deletion.retained.title') }}</h2>
-                <p style="color:var(--f-muted);margin-top:0;">{{ __('account_deletion.retained.note') }}</p>
-                <p style="color:var(--f-muted);">{{ __('account_deletion.retained.legal_basis', ['years' => $retentionYears]) }}</p>
+                <p class="odp-muted odp-m0">{{ __('account_deletion.retained.note') }}</p>
+                <p class="odp-muted">{{ __('account_deletion.retained.legal_basis', ['years' => $retentionYears]) }}</p>
             </section>
 
             {{-- What we cannot delete. Named on the public page too, not only
@@ -133,7 +137,7 @@
                 <h2>{{ __('account_deletion.web.no_app_title') }}</h2>
                 <div class="ad-card ad-contact">
                     <p>{{ __('account_deletion.web.no_app_body', ['days' => $graceDays]) }}</p>
-                    <p style="margin-top:.75rem;">
+                    <p class="odp-mt-12">
                         <strong>{{ __('account_deletion.web.contact_label') }}:</strong>
                         <a href="mailto:{{ $contactEmail }}">{{ $contactEmail }}</a>
                     </p>

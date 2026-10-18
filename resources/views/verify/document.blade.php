@@ -9,7 +9,7 @@
     @include('partials.favicons')
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    @include('public.partials._od_pages_css')
     <script src="{{ asset('js/lucide.min.js') }}"></script>
     <style>
         {{--
@@ -27,15 +27,15 @@
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html, body { min-height: 100%; }
         body {
-            font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif;
+            font-family: Inter, 'Segoe UI', system-ui, sans-serif;
             color: var(--ink);
-            background: linear-gradient(160deg, var(--navy) 0%, var(--deep) 55%, var(--navy) 100%);
+            background: var(--navy);
             display: flex; flex-direction: column; min-height: 100vh; position: relative; overflow-x: hidden;
         }
         .bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
-        .bg .field { position: absolute; inset: 0; background: url("{{ asset('images/health-id/circuit-field.png') }}") center/cover no-repeat; opacity: .38; }
-        .bg .helix { position: absolute; top: 0; right: -18px; width: 90px; height: 100%; background: url("{{ asset('images/health-id/dna-helix.png') }}") center/cover no-repeat; opacity: .32; }
-        .bg .wave  { position: absolute; left: 0; right: 0; bottom: 0; height: 320px; background: url("{{ asset('images/health-id/holo-wave.png') }}") center/cover no-repeat; opacity: .35; }
+        .bg .field { display: none; } /* glow layers removed: flat navy ground only */
+        .bg .helix { display: none; } /* glow layers removed: flat navy ground only */
+        .bg .wave { display: none; } /* glow layers removed: flat navy ground only */
 
         .topbar { position: relative; z-index: 1; padding: .9rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
         .brand { display: flex; align-items: center; gap: .6rem; color: #fff; text-decoration: none; font-weight: 700; font-size: 1.05rem; }
@@ -44,10 +44,10 @@
         .eyebrow { font-size: .62rem; letter-spacing: .18em; text-transform: uppercase; color: #C8DCEF; font-weight: 600; }
 
         .wrap { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; align-items: center; padding: 1.25rem 1rem 3rem; }
-        .card { width: 100%; max-width: 520px; background: var(--surface); border-radius: 22px; overflow: hidden; box-shadow: 0 24px 60px rgba(6,11,22,.45); animation: rise .35s ease; }
+        .card { width: 100%; max-width: 520px; background: var(--surface); border-radius: 16px; overflow: hidden; animation: rise .35s ease; }
         @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
-        .head { position: relative; padding: 1.4rem 1.5rem 1.25rem; color: #fff; background: linear-gradient(135deg, var(--navy), var(--deep) 60%, var(--brand)); overflow: hidden; }
+        .head { position: relative; padding: 1.4rem 1.5rem 1.25rem; color: #fff; background: var(--deep); overflow: hidden; }
         .head::before { content: ""; position: absolute; inset: 0; background: url("{{ asset('images/health-id/document-sheet-a4.jpg') }}") center/cover no-repeat; opacity: .18; }
         .head .corner { position: absolute; width: 18px; height: 18px; border: 2px solid rgba(234,241,248,.6); }
         .head .tl { top: 10px; left: 10px; border-right: 0; border-bottom: 0; border-top-left-radius: 8px; }
@@ -57,7 +57,7 @@
         .head-row { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
         .head h1 { font-size: 1.2rem; font-weight: 700; line-height: 1.25; margin-top: .2rem; }
         .head p { font-size: .8rem; color: #D6E6F5; margin-top: .3rem; max-width: 34ch; }
-        .seal { width: 72px; height: 72px; flex-shrink: 0; filter: drop-shadow(0 6px 14px rgba(0,0,0,.35)); }
+        .seal { width: 72px; height: 72px; flex-shrink: 0; }
 
         .state { display: flex; align-items: center; gap: 1rem; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--line); }
         .state img { width: 64px; height: 64px; flex-shrink: 0; }
@@ -69,7 +69,7 @@
 
         .body { padding: 1.25rem 1.5rem 1.5rem; display: grid; gap: 1rem; }
 
-        .doc { display: flex; align-items: center; gap: .9rem; padding: 1rem; border: 1px solid var(--line); border-radius: 16px; background: linear-gradient(180deg, #FFFFFF, #F7FAFD); }
+        .doc { display: flex; align-items: center; gap: .9rem; padding: 1rem; border: 1px solid var(--line); border-radius: 16px; background: #FFFFFF; }
         .doc .icon { width: 52px; height: 52px; border-radius: 14px; background: var(--soft); color: var(--brand); display: grid; place-items: center; flex-shrink: 0; }
         .doc .icon i { width: 26px; height: 26px; }
         .doc .type { font-weight: 700; font-size: 1.05rem; line-height: 1.2; }
@@ -94,7 +94,7 @@
         .note i { width: 1rem; height: 1rem; flex-shrink: 0; color: var(--brand); margin-top: .1rem; }
         .note.bad { background: var(--bad-bg); color: #7A2626; } .note.bad i { color: var(--bad); }
 
-        .cta { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; width: 100%; padding: .85rem 1.25rem; border-radius: 999px; background: linear-gradient(90deg, var(--deep), var(--light)); color: #fff; font-weight: 600; font-size: .95rem; text-decoration: none; }
+        .cta { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; width: 100%; padding: .85rem 1.25rem; border-radius: 8px; background: var(--brand); color: #fff; font-weight: 600; font-size: .95rem; text-decoration: none; }
         .cta i { width: 1rem; height: 1rem; }
 
         .sig { display: flex; align-items: center; justify-content: center; gap: 1.4rem; padding: 1.1rem 1.5rem 0; }

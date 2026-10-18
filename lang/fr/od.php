@@ -18,4 +18,13 @@ return [
     'open_navigation'     => 'Ouvrir la navigation',
     'language_switch'     => 'Passer la langue en :lang',
     'nav_pending_count'   => ':count en attente',
+    'brand_care'          => 'SOINS',
+    'brand_admin'         => 'ADMIN',
+    'brand_health'        => 'SANTÉ',
+    'brand_pro'           => 'PRO',
+    'search_clinic'       => 'Rechercher établissements, documents, médicaments, examens…',
+    'search_admin'        => 'Rechercher un utilisateur par nom, e-mail ou téléphone…',
+    'search_patient'      => 'Trouver un médicament en stock près de chez vous…',
+    'search_pro'          => 'Trouver un médicament en stock à proximité…',
+    'search_go'           => 'Rechercher',
 ];

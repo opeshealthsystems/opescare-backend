@@ -7,7 +7,7 @@
 @section('breadcrumb_section', __('public.portal.nav_appointments', [], app()->getLocale()))
 
 @section('head')
-@include('portals.pharmacy._supply_styles')
+<link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">
 @endsection
 
 @php
@@ -20,154 +20,156 @@
     $otherAppointments = $appointments
         ->reject(fn ($a) => \Carbon\Carbon::parse($a->scheduled_at ?? $a->created_at)->isToday())
         ->values();
+    $apptTotal = method_exists($appointments, 'total') ? $appointments->total() : count($appointments);
 @endphp
 
 @section('content')
+<div class="od-page odc-page">
 
-<div class="page-header">
+<header class="od-page__head odc-head">
     <div>
-        <h1 class="page-title">{{ __('public.portal.nav_appointments', [], app()->getLocale()) }}</h1>
-        <p class="page-subtitle">{{ __('public.staff_portal.appointments_subtitle', [], app()->getLocale()) }}</p>
+        <h1 class="od-page__title">{{ __('public.portal.nav_appointments', [], app()->getLocale()) }}</h1>
+        <p class="od-page__sub">{{ __('public.staff_portal.appointments_subtitle', [], app()->getLocale()) }}</p>
     </div>
-    <div>
+    <div class="odc-head__actions">
         {{-- Mirrors the gate on portals.staff.appointments.create (routes/web.php). --}}
         @capability('front_desk', 'schedule')
-        <a href="{{ route('portals.staff.appointments.waitlist') }}" class="btn btn-ghost fs-tap">
+        <a href="{{ route('portals.staff.appointments.waitlist') }}" class="od-btn od-btn--secondary">
             <i data-lucide="list-ordered"></i>
             {{ __('waitlist.staff_title') }}
         </a>
-        <a href="{{ route('portals.staff.appointments.create') }}" class="btn btn-primary fs-tap">
+        <a href="{{ route('portals.staff.appointments.create') }}" class="od-btn od-btn--primary">
             <i data-lucide="calendar-plus"></i>
             {{ __('public.staff_portal.btn_book_appointment', [], app()->getLocale()) }}
         </a>
         @endcapability
     </div>
-</div>
+</header>
 
 {{-- Confirm / cancel / no-show land back here with a flash. --}}
 @if(session('success'))
-    <div class="alert alert-success mb-4"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>
+    <div class="odc-note odc-note--ok" role="status"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>
 @endif
 @if(session('error'))
-    <div class="alert alert-danger mb-4"><i data-lucide="alert-circle"></i><div>{{ session('error') }}</div></div>
+    <div class="odc-note odc-note--err" role="alert"><i data-lucide="alert-circle"></i><div>{{ session('error') }}</div></div>
 @endif
 @if($errors->any())
-    <div class="alert alert-danger mb-4"><i data-lucide="alert-circle"></i><div>{{ $errors->first() }}</div></div>
+    <div class="odc-note odc-note--err" role="alert"><i data-lucide="alert-circle"></i><div>{{ $errors->first() }}</div></div>
 @endif
 
-{{-- Filter Bar --}}
-<form method="GET" action="{{ route('portals.staff.appointments') }}" class="filter-bar">
-    <div class="form-search">
-        <span class="search-icon">
+<section class="od-card" aria-labelledby="odc-appt-title">
+    <header class="od-card__head">
+        <h2 class="od-card__title" id="odc-appt-title">{{ __('public.portal.nav_appointments', [], app()->getLocale()) }} <span class="od-card__count">({{ $apptTotal }})</span></h2>
+    </header>
+    <div class="od-card__body">
+    {{-- Filter Bar --}}
+    <form method="GET" action="{{ route('portals.staff.appointments') }}" class="odc-toolbar">
+        <label class="od-field">
             <i data-lucide="search"></i>
-        </span>
+            <input
+                type="text"
+                name="patient_id"
+                class="od-input"
+                placeholder="{{ __('public.staff_portal.filter_patient_id', [], app()->getLocale()) }}"
+                aria-label="{{ __('public.staff_portal.filter_patient_id', [], app()->getLocale()) }}"
+                value="{{ request('patient_id') }}"
+            >
+        </label>
+        {{-- No facility filter: the facility a desk acts for is the session's
+             active facility (RequireFacilityContext), never a typed id. --}}
+        {{-- The clinicians posted here, by name. A clerk cannot know a uuid, and
+             the controller still filters on the exact id it sends. --}}
+        <select name="provider_id" class="od-select" aria-label="{{ __('staff.desk.col_clinician') }}">
+            <option value="">{{ __('staff.desk.filter_any_clinician') }}</option>
+            @foreach($clinicians ?? [] as $clinician)
+                <option value="{{ $clinician->id }}" @selected(request('provider_id') === (string) $clinician->id)>{{ $clinician->name }}</option>
+            @endforeach
+        </select>
+        {{-- The controller always honoured ?status=…; the form never offered it. --}}
+        <select name="status" class="od-select" aria-label="{{ __('public.staff_portal.col_status', [], app()->getLocale()) }}">
+            <option value="">{{ __('staff.desk.filter_any_status') }}</option>
+            @foreach($statuses ?? [] as $s)
+                <option value="{{ $s }}" @selected(request('status') === $s)>@enum($s)</option>
+            @endforeach
+        </select>
         <input
-            type="text"
-            name="patient_id"
-            class="form-control"
-            placeholder="{{ __('public.staff_portal.filter_patient_id', [], app()->getLocale()) }}"
-            value="{{ request('patient_id') }}"
+            type="date"
+            name="date"
+            class="od-input"
+            aria-label="{{ __('public.staff_portal.col_datetime', [], app()->getLocale()) }}"
+            value="{{ request('date') }}"
         >
-    </div>
-    {{-- No facility filter: the facility a desk acts for is the session's
-         active facility (RequireFacilityContext), never a typed id. --}}
-    {{-- The clinicians posted here, by name. A clerk cannot know a uuid, and
-         the controller still filters on the exact id it sends. --}}
-    <select name="provider_id" class="form-control" aria-label="{{ __('staff.desk.col_clinician') }}">
-        <option value="">{{ __('staff.desk.filter_any_clinician') }}</option>
-        @foreach($clinicians ?? [] as $clinician)
-            <option value="{{ $clinician->id }}" @selected(request('provider_id') === (string) $clinician->id)>{{ $clinician->name }}</option>
-        @endforeach
-    </select>
-    {{-- The controller always honoured ?status=…; the form never offered it. --}}
-    <select name="status" class="form-control" aria-label="{{ __('public.staff_portal.col_status', [], app()->getLocale()) }}">
-        <option value="">{{ __('staff.desk.filter_any_status') }}</option>
-        @foreach($statuses ?? [] as $s)
-            <option value="{{ $s }}" @selected(request('status') === $s)>@enum($s)</option>
-        @endforeach
-    </select>
-    <input
-        type="date"
-        name="date"
-        class="form-control"
-        value="{{ request('date') }}"
-    >
-    <button type="submit" class="btn btn-primary btn-sm fs-tap">
-        <i data-lucide="filter"></i>
-        {{ __('public.staff_portal.filter_apply', [], app()->getLocale()) }}
-    </button>
-    <a href="{{ route('portals.staff.appointments') }}" class="btn btn-ghost btn-sm fs-tap">
-        {{ __('public.staff_portal.filter_clear', [], app()->getLocale()) }}
-    </a>
-</form>
+        <button type="submit" class="od-btn od-btn--secondary">
+            <i data-lucide="filter"></i>
+            {{ __('public.staff_portal.filter_apply', [], app()->getLocale()) }}
+        </button>
+        <a href="{{ route('portals.staff.appointments') }}" class="od-btn od-btn--ghost">
+            {{ __('public.staff_portal.filter_clear', [], app()->getLocale()) }}
+        </a>
+    </form>
 
 @if(count($appointments) === 0)
-    <div class="panel">
-        <div class="panel-body panel-body--flush">
-            <div class="empty-state">
-                <div class="empty-state-icon">
-                    <i data-lucide="calendar-x-2"></i>
-                </div>
-                <h3>{{ __('public.staff_portal.no_appointments_title', [], app()->getLocale()) }}</h3>
-                <p>{{ __('public.staff_portal.no_appointments_desc', [], app()->getLocale()) }}</p>
-                <a href="{{ route('portals.staff.appointments.create') }}" class="btn btn-primary btn-sm mt-6"><i data-lucide="calendar-plus"></i> {{ __('hospital_desk.empty_appointments_action') }}</a>
-            </div>
-        </div>
+    <div class="od-empty">
+        <span class="od-empty__icon"><i data-lucide="calendar-x-2"></i></span>
+        <div class="od-empty__title">{{ __('public.staff_portal.no_appointments_title', [], app()->getLocale()) }}</div>
+        <p class="od-empty__text">{{ __('public.staff_portal.no_appointments_desc', [], app()->getLocale()) }}</p>
+        <a href="{{ route('portals.staff.appointments.create') }}" class="od-btn od-btn--primary"><i data-lucide="calendar-plus"></i> {{ __('hospital_desk.empty_appointments_action') }}</a>
     </div>
 @else
 
-    <div class="fs-day-head">
-        @include('partials.finder.icon', ['name' => 'calendar', 'size' => 15])
+    <h3 class="odc-day">
+        <i data-lucide="calendar"></i>
         {{ __('finder_supply.appt_today') }}
-        <span class="fs-day-count">{{ $todayAppointments->count() }}</span>
-    </div>
+        <span class="od-pill od-pill--normal">{{ $todayAppointments->count() }}</span>
+    </h3>
 
     @if($todayAppointments->isEmpty())
-        <p class="page-subtitle mb-6">{{ __('finder_supply.appt_today_empty') }}</p>
+        <p class="od-muted odc-gap">{{ __('finder_supply.appt_today_empty') }}</p>
     @else
         @include('portals.staff._appointments_table', ['rows' => $todayAppointments, 'timeOnly' => true, 'facilityName' => $facilityName ?? null])
     @endif
 
     @if($otherAppointments->isNotEmpty())
-        <div class="fs-day-head">
-            @include('partials.finder.icon', ['name' => 'clock', 'size' => 15])
+        <h3 class="odc-day">
+            <i data-lucide="clock"></i>
             {{ __('finder_supply.appt_other') }}
-            <span class="fs-day-count">{{ $otherAppointments->count() }}</span>
-        </div>
+            <span class="od-pill od-pill--neutral">{{ $otherAppointments->count() }}</span>
+        </h3>
         @include('portals.staff._appointments_table', ['rows' => $otherAppointments, 'timeOnly' => false, 'facilityName' => $facilityName ?? null])
     @endif
+
+@endif
+    </div>
 
     {{-- 50 per page: the book of a hospital is thousands of rows, and the
          previous limit(100) simply dropped the rest with no page 2. --}}
     @if(method_exists($appointments, 'hasPages') && $appointments->hasPages())
-        <p class="td-muted mb-2">{{ __('staff.desk.showing_page', ['page' => $appointments->currentPage(), 'last' => $appointments->lastPage(), 'total' => $appointments->total()]) }}</p>
-        <div class="mb-6">{{ $appointments->links() }}</div>
+    <footer class="od-card__foot odc-pager">
+        <span>{{ __('staff.desk.showing_page', ['page' => $appointments->currentPage(), 'last' => $appointments->lastPage(), 'total' => $appointments->total()]) }}</span>
+        <div>{{ $appointments->links() }}</div>
+    </footer>
     @endif
-
-@endif
+</section>
 
 {{-- Cancel needs a reason (the controller validates it); everything else is one tap. --}}
-<div id="appt-cancel-modal" class="modal-backdrop mt-6" hidden>
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="appt-cancel-title">
-        <h3 id="appt-cancel-title" class="modal__title">
-            @include('partials.finder.icon', ['name' => 'x', 'size' => 18])
+<div id="appt-cancel-modal" class="odc-modal" hidden>
+    <div class="odc-modal__box" role="dialog" aria-modal="true" aria-labelledby="appt-cancel-title">
+        <h3 id="appt-cancel-title" class="odc-modal__title">
+            <i data-lucide="x-circle"></i>
             {{ __('finder_supply.cancel_title') }}
         </h3>
-        <form id="appt-cancel-form" method="POST" action="">
+        <form id="appt-cancel-form" method="POST" action="" class="odc-form">
             @csrf
-            <div class="modal__body">
-                <p id="appt-cancel-label" class="td-muted"></p>
-                <div class="form-group">
-                    <label class="form-label" for="appt-cancel-reason">{{ __('finder_supply.cancel_reason_label') }}</label>
-                    <textarea id="appt-cancel-reason" name="reason" class="form-control" rows="3"
-                              required minlength="5" maxlength="500"
-                              placeholder="{{ __('finder_supply.cancel_reason_ph') }}"></textarea>
-                </div>
-            </div>
-            <div class="modal__footer">
-                <button type="button" class="btn btn-ghost btn-sm fs-tap" data-call="closeApptCancelModal">{{ __('finder_supply.btn_keep') }}</button>
-                <button type="submit" class="fs-act-btn fs-act-btn--danger">
-                    @include('partials.finder.icon', ['name' => 'x', 'size' => 15])
+            <p id="appt-cancel-label" class="od-muted"></p>
+            <label class="odc-label" for="appt-cancel-reason">{{ __('finder_supply.cancel_reason_label') }}
+                <textarea id="appt-cancel-reason" name="reason" class="odc-textarea" rows="3"
+                          required minlength="5" maxlength="500"
+                          placeholder="{{ __('finder_supply.cancel_reason_ph') }}"></textarea>
+            </label>
+            <div class="odc-actions">
+                <button type="button" class="od-btn od-btn--secondary" data-call="closeApptCancelModal">{{ __('finder_supply.btn_keep') }}</button>
+                <button type="submit" class="od-btn od-btn--danger">
+                    <i data-lucide="x"></i>
                     {{ __('finder_supply.btn_cancel_confirm') }}
                 </button>
             </div>
@@ -175,6 +177,7 @@
     </div>
 </div>
 
+</div>
 @endsection
 
 @section('scripts')

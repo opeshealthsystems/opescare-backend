@@ -7,70 +7,68 @@
 --}}
 @php $linked = $listing !== null; @endphp
 
-<div class="panel mb-6">
-    <div class="panel-header">
-        <h3 class="panel-title"><i data-lucide="map-pin"></i> {{ __($ns . '.section_location') }}</h3>
-    </div>
-    <div class="panel-body">
-        @unless($linked)<p class="lst-note">{{ __($ns . '.not_linked_forms') }}</p>@endunless
-        <p class="lst-note">{{ __($ns . '.location_intro') }} {{ __($ns . '.map_locate_hint') }}</p>
+<section class="od-card">
+    <header class="od-card__head">
+        <h2 class="od-card__title">{{ __($ns . '.section_location') }}</h2>
+        <span class="od-avatar odc-ico-avatar od-tint--teal" aria-hidden="true"><i data-lucide="map-pin"></i></span>
+    </header>
+    <div class="od-card__body">
+        @unless($linked)<p class="odc-muted">{{ __($ns . '.not_linked_forms') }}</p>@endunless
+        <p class="odc-muted">{{ __($ns . '.location_intro') }} {{ __($ns . '.map_locate_hint') }}</p>
 
         <form method="POST" action="{{ $action }}">
             @csrf
-            <fieldset @class(['ps-locked' => ! $linked]) @disabled(! $linked)>
-                <div class="form-group">
-                    <label class="form-label form-label-required" for="address">{{ __($ns . '.label_address') }}</label>
-                    <input type="text" id="address" name="address" class="form-control" maxlength="255" required
-                           value="{{ old('address', $listing?->address) }}">
-                    @error('address')<div class="form-hint form-error">{{ $message }}</div>@enderror
-                </div>
-
-                <div class="form-row" style="margin-top:var(--p-space-4)">
-                    <div class="form-group">
-                        <label class="form-label form-label-required" for="city">{{ __($ns . '.label_city') }}</label>
-                        <input type="text" id="city" name="city" class="form-control" maxlength="120" required
+            <fieldset @class(['odc-fieldset', 'odc-locked' => ! $linked]) @disabled(! $linked)>
+                <div class="odc-form odc-form--2">
+                    <div class="odc-span">
+                        <label class="odc-label" for="address">{{ __($ns . '.label_address') }}</label>
+                        <input type="text" id="address" name="address" class="od-input" maxlength="255" required
+                               value="{{ old('address', $listing?->address) }}">
+                        @error('address')<p class="odc-error">{{ $message }}</p>@enderror
+                    </div>
+                    <div>
+                        <label class="odc-label" for="city">{{ __($ns . '.label_city') }}</label>
+                        <input type="text" id="city" name="city" class="od-input" maxlength="120" required
                                value="{{ old('city', $listing?->city) }}">
-                        @error('city')<div class="form-hint form-error">{{ $message }}</div>@enderror
+                        @error('city')<p class="odc-error">{{ $message }}</p>@enderror
                     </div>
-                    <div class="form-group">
-                        <label class="form-label" for="region">{{ __($ns . '.label_region') }}</label>
-                        <input type="text" id="region" name="region" class="form-control" maxlength="120"
+                    <div>
+                        <label class="odc-label" for="region">{{ __($ns . '.label_region') }}</label>
+                        <input type="text" id="region" name="region" class="od-input" maxlength="120"
                                value="{{ old('region', $listing?->region) }}">
-                        @error('region')<div class="form-hint form-error">{{ $message }}</div>@enderror
+                        @error('region')<p class="odc-error">{{ $message }}</p>@enderror
                     </div>
-                </div>
 
-                @if($linked)
-                <div class="ps-map">
-                    @include('partials.finder.map', [
-                        'mapId'    => $mapId,
-                        'height'   => '360px',
-                        'pick'     => ['lat' => 'latitude', 'lng' => 'longitude'],
-                        'pickType' => $pickType,
-                    ])
-                </div>
-                @endif
+                    @if($linked)
+                    <div class="odc-span odc-map">
+                        @include('partials.finder.map', [
+                            'mapId'    => $mapId,
+                            'height'   => '360px',
+                            'pick'     => ['lat' => 'latitude', 'lng' => 'longitude'],
+                            'pickType' => $pickType,
+                        ])
+                    </div>
+                    @endif
 
-                <div class="ps-coords">
-                    <div class="form-group">
-                        <label class="form-label" for="latitude">{{ __($ns . '.label_latitude') }}</label>
-                        <input type="text" id="latitude" name="latitude" class="form-control fs-mono" inputmode="decimal"
+                    <div>
+                        <label class="odc-label" for="latitude">{{ __($ns . '.label_latitude') }}</label>
+                        <input type="text" id="latitude" name="latitude" class="od-input fs-mono" inputmode="decimal"
                                value="{{ old('latitude', $listing?->latitude) }}">
-                        @error('latitude')<div class="form-hint form-error">{{ $message }}</div>@enderror
+                        @error('latitude')<p class="odc-error">{{ $message }}</p>@enderror
                     </div>
-                    <div class="form-group">
-                        <label class="form-label" for="longitude">{{ __($ns . '.label_longitude') }}</label>
-                        <input type="text" id="longitude" name="longitude" class="form-control fs-mono" inputmode="decimal"
+                    <div>
+                        <label class="odc-label" for="longitude">{{ __($ns . '.label_longitude') }}</label>
+                        <input type="text" id="longitude" name="longitude" class="od-input fs-mono" inputmode="decimal"
                                value="{{ old('longitude', $listing?->longitude) }}">
-                        @error('longitude')<div class="form-hint form-error">{{ $message }}</div>@enderror
+                        @error('longitude')<p class="odc-error">{{ $message }}</p>@enderror
                     </div>
+                    <p class="odc-hint odc-span">{{ __($ns . '.hint_coordinates') }}</p>
                 </div>
-                <div class="form-hint">{{ __($ns . '.hint_coordinates') }}</div>
 
-                <div style="margin-top:var(--p-space-5)">
-                    <button type="submit" class="btn btn-primary fs-tap"><i data-lucide="save"></i> {{ __($ns . '.btn_save_location') }}</button>
+                <div class="odc-form-foot">
+                    <button type="submit" class="od-btn od-btn--primary fs-tap"><i data-lucide="save"></i> {{ __($ns . '.btn_save_location') }}</button>
                 </div>
             </fieldset>
         </form>
     </div>
-</div>
+</section>

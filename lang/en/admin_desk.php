@@ -77,4 +77,24 @@ return [
     'incident_detail'    => 'Incident',
     'opened_by'          => 'Opened by',
 
+    // ── Admin landing (od) ──
+    'home_hello'               => 'Welcome back',
+    'home_kpi_facilities_sub'  => 'Registered on the platform',
+    'home_kpi_users_sub'       => 'Staff and admin accounts',
+    'home_quick_title'         => 'Quick actions',
+    'home_quick_facilities'    => 'Facilities',
+    'home_quick_users'         => 'Staff accounts',
+    'home_quick_mpi'           => 'Identity review',
+    'home_quick_security'      => 'Security centre',
+    'home_quick_verifications' => 'Verifications',
+    'home_quick_control'       => 'Control centre',
+    'home_events_empty_title'  => 'No recent activity',
+    'home_alerts_title'        => 'Security alerts',
+
+    // ── Group A: control center, security ops, MPI ──
+    'ga_until'          => 'Until :when',
+    'ga_toggle'         => 'Toggle :label',
+    'ga_enable'         => 'Enable :label',
+    'ga_disable'        => 'Disable :label',
+
 ];

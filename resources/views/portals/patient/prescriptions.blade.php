@@ -7,6 +7,7 @@
 
 @section('head')
     @include('portals.patient._finder_head')
+    <link rel="stylesheet" href="{{ asset('css/od-patient.css') }}?v={{ @filemtime(public_path('css/od-patient.css')) ?: '1' }}">
 @endsection
 
 @section('patient_banner')
@@ -27,27 +28,27 @@
     </div>
 
     @if(!$patient)
-    <div class="f-card" style="text-align:center;padding:40px 20px;">
-        <div class="pf-qa__icon" style="margin:0 auto 12px;width:48px;height:48px;">
+    <div class="f-card ods-99e8a36">
+        <div class="pf-qa__icon ods-4ef0061">
             @include('partials.finder.icon', ['name' => 'alert-circle', 'size' => 24])
         </div>
-        <h2 style="font-size:1.125rem;font-weight:750;margin:0 0 6px;">{{ __('public.portal.no_profile_found_title', [], $l) }}</h2>
-        <p class="f-muted" style="margin:0;">{{ __('public.portal.no_profile_found_desc', [], $l) }}</p>
+        <h2 class="ods-40b57ba">{{ __('public.portal.no_profile_found_title', [], $l) }}</h2>
+        <p class="f-muted ods-1386d50">{{ __('public.portal.no_profile_found_desc', [], $l) }}</p>
     </div>
     @elseif($prescriptions->isEmpty())
-    <div class="f-card" style="text-align:center;padding:40px 20px;">
-        <div class="pf-qa__icon" style="margin:0 auto 12px;width:48px;height:48px;">
+    <div class="f-card ods-99e8a36">
+        <div class="pf-qa__icon ods-4ef0061">
             @include('partials.finder.icon', ['name' => 'pill', 'size' => 24])
         </div>
-        <h2 style="font-size:1.125rem;font-weight:750;margin:0 0 6px;">{{ __('public.portal.no_prescriptions_title', [], $l) }}</h2>
-        <p class="f-muted" style="margin:0;">{{ __('public.portal.no_prescriptions_desc', [], $l) }}</p>
+        <h2 class="ods-40b57ba">{{ __('public.portal.no_prescriptions_title', [], $l) }}</h2>
+        <p class="f-muted ods-1386d50">{{ __('public.portal.no_prescriptions_desc', [], $l) }}</p>
     </div>
     @else
 
     <div class="pf-stack">
         @foreach($prescriptions as $rx)
         <div class="f-card">
-            <h2 class="pf-card-head" style="flex-wrap:wrap;">
+            <h2 class="pf-card-head ods-901210d">
                 @include('partials.finder.icon', ['name' => 'pill', 'size' => 18])
                 {{ __('public.portal.rx_heading_prefix', [], $l) }} {{ $rx->prescribed_at?->translatedFormat('d M Y') ?? (__('public.portal.rx_unknown_date', [], $l)) }}
                 @php
@@ -55,10 +56,10 @@
                         'success' => 'f-badge--good', 'info' => '', default => 'pf-badge--muted'
                     };
                 @endphp
-                <span class="f-badge {{ $stCls }}" style="margin-left:auto;">@enum($rx->status)</span>
+                <span class="f-badge {{ $stCls }} ods-8345637">@enum($rx->status)</span>
             </h2>
             @if($rx->facility)
-            <p class="f-small f-muted" style="margin:-6px 0 10px;display:flex;align-items:center;gap:5px;">
+            <p class="f-small f-muted ods-53efc3e">
                 @include('partials.finder.icon', ['name' => 'map-pin', 'size' => 14])
                 {{ $rx->facility->name }}
             </p>
@@ -66,19 +67,19 @@
             {{-- The code any OpesCare pharmacy looks this prescription up by —
                  the patient needs it when the paper is left at home. --}}
             @if(filled($rx->reference))
-            <p class="f-small" style="margin:-4px 0 10px;display:flex;align-items:center;gap:5px;" title="{{ __('prescriber.rx_code_hint') }}">
+            <p class="f-small ods-633a6d0" title="{{ __('prescriber.rx_code_hint') }}">
                 @include('partials.finder.icon', ['name' => 'qr-code', 'size' => 14])
                 {{ __('prescriber.rx_code') }}: <strong data-rx-code>{{ $rx->reference }}</strong>
             </p>
-            <p class="f-small f-muted" style="margin:-6px 0 10px;">{{ __('prescriber.rx_code_hint') }}</p>
+            <p class="f-small f-muted ods-4e3268c">{{ __('prescriber.rx_code_hint') }}</p>
             @endif
 
             @if($rx->items->isNotEmpty())
-            <div style="display:grid;gap:8px;">
+            <div class="ods-b1b744e">
                 @foreach($rx->items as $item)
-                <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 0;border-top:1px solid var(--f-line);">
-                    <div style="min-width:0;">
-                        <div style="font-weight:700;color:var(--f-ink);">{{ $item->drug_name }}</div>
+                <div class="ods-1625a0f">
+                    <div class="ods-3f9f96c">
+                        <div class="ods-1bdf003">{{ $item->drug_name }}</div>
                         <div class="f-small f-muted">
                             {{ $item->dose }} ({{ $item->route }}) &middot; {{ $item->frequency }}
                             @if($item->duration_days)

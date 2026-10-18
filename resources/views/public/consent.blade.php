@@ -3,6 +3,10 @@
 @section('title', __('public.consent_page.page_title'))
 @section('description', __('public.consent_page.meta_description'))
 
+@push('head')
+    @include('public.partials._od_pages_css')
+@endpush
+
 @section('content')
 
     {{--
@@ -118,7 +122,7 @@
             <div class="fc-two-col">
                 <div>
                     <span class="f-badge f-badge--danger">{{ __('public.consent_page.emergency_badge') }}</span>
-                    <h2 class="f-h2" style="margin-top: 0.75rem;">{{ __('public.consent_page.emergency_title') }}</h2>
+                    <h2 class="f-h2 odp-mt-12">{{ __('public.consent_page.emergency_title') }}</h2>
                     <p class="f-lead">{{ __('public.consent_page.emergency_body') }}</p>
                     <ul class="fc-list">
                         <li>
@@ -147,15 +151,15 @@
                     <div class="fc-demo__grid">
                         <div class="fc-demo__row">
                             <div class="fc-demo__label">{{ __('public.consent_page.emerg_identity') }}</div>
-                            <div style="font-weight:600;">{{ __('public.consent_page.emerg_sample_identity') }}</div>
+                            <div class="odp-strong">{{ __('public.consent_page.emerg_sample_identity') }}</div>
                         </div>
                         <div class="fc-demo__row">
                             <div class="fc-demo__label">{{ __('public.consent_page.emerg_allergies') }}</div>
-                            <div style="font-weight:600;">{{ __('public.consent_page.emerg_sample_allergy') }}</div>
+                            <div class="odp-strong">{{ __('public.consent_page.emerg_sample_allergy') }}</div>
                         </div>
                         <div class="fc-demo__row">
                             <div class="fc-demo__label">{{ __('public.consent_page.emerg_conditions') }}</div>
-                            <div style="font-weight:600;">{{ __('public.consent_page.emerg_sample_conditions') }}</div>
+                            <div class="odp-strong">{{ __('public.consent_page.emerg_sample_conditions') }}</div>
                         </div>
                         <div class="fc-demo__note">
                             @include('partials.finder.icon', ['name' => 'alert-circle', 'size' => 14])

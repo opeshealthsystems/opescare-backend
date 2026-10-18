@@ -4,30 +4,40 @@
 @section('breadcrumb_home', __('terminology.breadcrumb_home'))
 @section('breadcrumb_home_url', route('portals.admin'))
 @section('breadcrumb_section', __('terminology.log_title'))
+@section('head')<link rel="stylesheet" href="{{ asset('css/od-admin.css') }}?v={{ @filemtime(public_path('css/od-admin.css')) ?: '1' }}">@endsection
 
 @section('content')
-<div class="page-head">
-    <h2>{{ __('terminology.log_title') }}</h2>
-    <a href="{{ route('portals.admin.terminology.index') }}" class="btn btn-ghost btn-sm">
-        <i data-lucide="arrow-left"></i> {{ __('terminology.btn_back') }}
-    </a>
+<div class="od-page">
+<div class="od-page__head">
+    <div>
+        <h1 class="od-page__title">{{ __('terminology.log_title') }}</h1>
+        {{-- This is what makes an applied code answerable. Every row carries the
+             mapping, the actor and the state the record was in before the write, so a
+             code on a result can always be traced back — and put back. --}}
+        <p class="od-page__sub">{{ __('terminology.log_subtitle') }}</p>
+    </div>
+    <div class="od-row">
+        <a href="{{ route('portals.admin.terminology.index') }}" class="od-btn od-btn--ghost od-btn--sm">
+            <i data-lucide="arrow-left"></i> {{ __('terminology.btn_back') }}
+        </a>
+    </div>
 </div>
-{{-- This is what makes an applied code answerable. Every row carries the
-     mapping, the actor and the state the record was in before the write, so a
-     code on a result can always be traced back — and put back. --}}
-<p class="page-subtitle mb-6">{{ __('terminology.log_subtitle') }}</p>
 
-<div class="panel">
-    <div class="panel-body panel-body--flush">
+<section class="od-card">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('terminology.log_title') }}</h2>
+        <span class="od-card__count">{{ method_exists($events, 'total') ? $events->total() : $events->count() }}</span>
+    </div>
+    <div class="od-card__body od-card__body--flush">
         @if($events->isEmpty())
-            <div class="empty-state">
-                <div class="empty-state-icon"><i data-lucide="scroll-text"></i></div>
-                <h3>{{ __('terminology.log_empty_heading') }}</h3>
-                <p>{{ __('terminology.log_empty_body') }}</p>
+            <div class="od-empty">
+                <div class="od-empty__icon"><i data-lucide="scroll-text"></i></div>
+                <h3 class="od-empty__title">{{ __('terminology.log_empty_heading') }}</h3>
+                <p class="od-empty__text">{{ __('terminology.log_empty_body') }}</p>
             </div>
         @else
-        <div class="table-wrapper">
-            <table class="data-table">
+        <div class="od-table-wrap">
+            <table class="od-table">
                 <thead><tr>
                     <th>{{ __('terminology.col_when') }}</th>
                     <th>{{ __('terminology.col_action') }}</th>
@@ -40,19 +50,19 @@
                 @foreach($events as $ev)
                 <tr>
                     <td data-label="{{ __('terminology.col_when') }}">{{ $ev->created_at?->toDayDateTimeString() }}</td>
-                    <td data-label="{{ __('terminology.col_action') }}"><code>{{ $ev->action_type }}</code></td>
+                    <td data-label="{{ __('terminology.col_action') }}"><code class="oda-mono">{{ $ev->action_type }}</code></td>
                     <td data-label="{{ __('terminology.col_actor') }}">{{ $ev->actor_role ?: '—' }}</td>
                     <td data-label="{{ __('terminology.col_mapping') }}">
                         @if($ev->resource_id)
                             <a href="{{ route('portals.admin.terminology.show', $ev->resource_id) }}">
-                                <code>{{ substr($ev->resource_id, 0, 8) }}</code>
+                                <code class="oda-mono">{{ substr($ev->resource_id, 0, 8) }}</code>
                             </a>
                         @else
                             —
                         @endif
                     </td>
-                    <td data-label="{{ __('terminology.col_before') }}" class="td-muted">{{ json_encode($ev->before_state) }}</td>
-                    <td data-label="{{ __('terminology.col_after') }}" class="td-muted">{{ json_encode($ev->after_state) }}</td>
+                    <td data-label="{{ __('terminology.col_before') }}"><span class="od-table__sub oda-mono">{{ json_encode($ev->before_state) }}</span></td>
+                    <td data-label="{{ __('terminology.col_after') }}"><span class="od-table__sub oda-mono">{{ json_encode($ev->after_state) }}</span></td>
                 </tr>
                 @endforeach
                 </tbody>
@@ -60,7 +70,8 @@
         </div>
         @endif
     </div>
-</div>
+</section>
 
-<div class="mt-4">{{ $events->links() }}</div>
+<div class="oda-gb-pager">{{ $events->links() }}</div>
+</div>
 @endsection

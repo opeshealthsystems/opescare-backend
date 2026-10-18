@@ -32,6 +32,8 @@
     {{-- Canonical, hreflang, OG/Twitter cards, geo.region + site JSON-LD (SEO layer) --}}
     @include('partials.finder.schema.site')
 
+    {{-- Landing-page language for the public + auth shells (Inter, #EEF3F9, one accent, flat cards). Loads last. --}}
+    <link rel="stylesheet" href="{{ asset('css/od-public.css') }}?v={{ @filemtime(public_path('css/od-public.css')) ?: '1' }}">
     @stack('head')
     @stack('schema')
 </head>

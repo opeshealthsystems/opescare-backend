@@ -7,6 +7,7 @@
 
 @section('head')
     @include('portals.patient._finder_head')
+    <link rel="stylesheet" href="{{ asset('css/od-patient.css') }}?v={{ @filemtime(public_path('css/od-patient.css')) ?: '1' }}">
 @endsection
 
 @section('patient_banner')
@@ -27,12 +28,12 @@
     </div>
 
     @if(!$patient)
-    <div class="f-card" style="text-align:center;padding:40px 20px;">
-        <div class="pf-qa__icon" style="margin:0 auto 12px;width:48px;height:48px;">
+    <div class="f-card ods-99e8a36">
+        <div class="pf-qa__icon ods-4ef0061">
             @include('partials.finder.icon', ['name' => 'alert-triangle', 'size' => 24])
         </div>
-        <h2 style="font-size:1.125rem;font-weight:750;margin:0 0 6px;">{{ __('public.portal.profile_no_profile_h3', [], $l) }}</h2>
-        <p class="f-muted" style="margin:0;">{{ __('public.portal.profile_no_profile_p', [], $l) }}</p>
+        <h2 class="ods-40b57ba">{{ __('public.portal.profile_no_profile_h3', [], $l) }}</h2>
+        <p class="f-muted ods-1386d50">{{ __('public.portal.profile_no_profile_p', [], $l) }}</p>
     </div>
     @else
 
@@ -42,7 +43,7 @@
     <div class="pf-cols">
 
         {{-- ── LEFT COLUMN ─────────────────────────────────────────────── --}}
-        <div class="pf-stack" style="gap:16px;">
+        <div class="pf-stack ods-7e08abf">
 
             {{-- Contact details --}}
             <div class="f-card">
@@ -71,7 +72,7 @@
                     @error('address')<p class="f-error">{{ $message }}</p>@enderror
                 </div>
 
-                <div class="f-field" style="margin-bottom:0;">
+                <div class="f-field ods-e7ec540">
                     <label class="f-label" for="date_of_birth">{{ __('public.portal.field_date_of_birth', [], $l) }}</label>
                     <input type="date" id="date_of_birth" name="date_of_birth" class="f-input"
                         value="{{ old('date_of_birth', $patient->date_of_birth?->format('Y-m-d')) }}"
@@ -92,7 +93,7 @@
 
                 <div class="f-field">
                     <label class="f-label" for="blood_group">{{ __('public.portal.field_blood_group', [], $l) }}</label>
-                    <select id="blood_group" name="blood_group" class="f-input" style="max-width:220px;">
+                    <select id="blood_group" name="blood_group" class="f-input ods-ac5a411">
                         <option value="">{{ __('public.portal.opt_not_set', [], $l) }}</option>
                         @foreach(['A+','A-','B+','B-','AB+','AB-','O+','O-'] as $bg)
                             <option value="{{ $bg }}" {{ old('blood_group', $patient->blood_group) === $bg ? 'selected' : '' }}>{{ $bg }}</option>
@@ -106,12 +107,12 @@
                 <div class="f-field">
                     <span class="f-label">{{ __('public.portal.lbl_active_allergies', [], $l) }}</span>
                     @if($allergies->isEmpty())
-                        <p class="f-muted f-small" style="display:flex;align-items:center;gap:6px;margin:4px 0 0;">
+                        <p class="f-muted f-small ods-217e066">
                             @include('partials.finder.icon', ['name' => 'check', 'size' => 15])
                             {{ __('public.portal.lbl_no_allergies', [], $l) }}
                         </p>
                     @else
-                        <div style="display:flex;flex-direction:column;gap:6px;">
+                        <div class="ods-3503bab">
                             @foreach($allergies as $allergy)
                             @php
                                 $sevCls = match(strtolower($allergy->severity ?? '')) {
@@ -120,8 +121,8 @@
                                     default                            => 'pf-badge--muted',
                                 };
                             @endphp
-                            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--f-line);">
-                                <span style="font-weight:650;">{{ $allergy->substance }}</span>
+                            <div class="ods-6db2e0c">
+                                <span class="ods-4777d93">{{ $allergy->substance }}</span>
                                 <span class="f-badge {{ $sevCls }}">@enum($allergy->severity ?? 'unknown', 'severity')</span>
                             </div>
                             @endforeach
@@ -131,18 +132,18 @@
                 </div>
 
                 {{-- Conditions (read-only) --}}
-                <div class="f-field" style="margin-bottom:0;">
+                <div class="f-field ods-e7ec540">
                     <span class="f-label">{{ __('public.portal.lbl_active_conditions', [], $l) }}</span>
                     @if($conditions->isEmpty())
-                        <p class="f-muted f-small" style="display:flex;align-items:center;gap:6px;margin:4px 0 0;">
+                        <p class="f-muted f-small ods-217e066">
                             @include('partials.finder.icon', ['name' => 'check', 'size' => 15])
                             {{ __('public.portal.lbl_no_conditions', [], $l) }}
                         </p>
                     @else
-                        <div style="display:flex;flex-direction:column;gap:6px;">
+                        <div class="ods-3503bab">
                             @foreach($conditions as $condition)
-                            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--f-line);">
-                                <span style="font-weight:650;">{{ $condition->display_name ?? $condition->code ?? '—' }}</span>
+                            <div class="ods-6db2e0c">
+                                <span class="ods-4777d93">{{ $condition->display_name ?? $condition->code ?? '—' }}</span>
                                 <span class="f-badge">@enum($condition->status)</span>
                             </div>
                             @endforeach
@@ -166,7 +167,7 @@
                     <label class="f-label" for="ec_phone">{{ __('public.portal.field_ec_phone', [], $l) }}</label>
                     <input type="text" id="ec_phone" name="emergency_contact[phone]" class="f-input" inputmode="tel" value="{{ old('emergency_contact.phone', ($patient->emergency_contact ?? [])['phone'] ?? '') }}">
                 </div>
-                <div class="f-field" style="margin-bottom:0;">
+                <div class="f-field ods-e7ec540">
                     <label class="f-label" for="ec_rel">{{ __('public.portal.field_ec_relationship', [], $l) }}</label>
                     <input type="text" id="ec_rel" name="emergency_contact[relationship]" class="f-input" value="{{ old('emergency_contact.relationship', ($patient->emergency_contact ?? [])['relationship'] ?? '') }}">
                 </div>
@@ -175,7 +176,7 @@
         </div>
 
         {{-- ── RIGHT COLUMN ────────────────────────────────────────────── --}}
-        <div class="pf-stack" style="gap:16px;">
+        <div class="pf-stack ods-7e08abf">
 
             {{-- Identity (read-only) --}}
             <div class="f-card">
@@ -186,12 +187,12 @@
                 <dl class="pf-kv">
                     <div>
                         <dt>{{ __('public.portal.lbl_health_id', [], $l) }}</dt>
-                        <dd style="font-family:ui-monospace,Menlo,Consolas,monospace;">{{ $patient->health_id }}</dd>
+                        <dd class="ods-9709411">{{ $patient->health_id }}</dd>
                     </div>
                     @if($patient->cnamgs_id)
                     <div>
                         <dt>{{ __('public.portal.lbl_cnamgs_id', [], $l) }}</dt>
-                        <dd style="font-family:ui-monospace,Menlo,Consolas,monospace;">{{ $patient->cnamgs_id }}</dd>
+                        <dd class="ods-9709411">{{ $patient->cnamgs_id }}</dd>
                     </div>
                     @endif
                     <div>
@@ -220,7 +221,7 @@
                     <input type="checkbox" name="privacy_require_consent" value="1"
                         {{ ($patient->privacy_preferences['require_consent_for_full_record'] ?? true) ? 'checked' : '' }}>
                     <span>
-                        <span style="display:block;font-weight:700;">{{ __('public.portal.chk_require_consent_lbl', [], $l) }}</span>
+                        <span class="ods-de62e14">{{ __('public.portal.chk_require_consent_lbl', [], $l) }}</span>
                         <span class="f-small f-muted">{{ __('public.portal.chk_require_consent_hint', [], $l) }}</span>
                     </span>
                 </label>
@@ -230,16 +231,16 @@
                     <input type="checkbox" name="privacy_emergency_access" value="1"
                         {{ ($patient->privacy_preferences['emergency_access_allowed'] ?? true) ? 'checked' : '' }}>
                     <span>
-                        <span style="display:block;font-weight:700;">{{ __('public.portal.chk_emergency_access_lbl', [], $l) }}</span>
+                        <span class="ods-de62e14">{{ __('public.portal.chk_emergency_access_lbl', [], $l) }}</span>
                         <span class="f-small f-muted">{{ __('public.portal.chk_emergency_access_hint', [], $l) }}</span>
                     </span>
                 </label>
 
-                <p class="f-hint" style="border-top:1px solid var(--f-line);padding-top:12px;margin-top:8px;">{{ __('public.portal.data_export_hint', [], $l) }}</p>
+                <p class="f-hint ods-83bd447">{{ __('public.portal.data_export_hint', [], $l) }}</p>
             </div>
 
             {{-- Save --}}
-            <button type="submit" class="f-btn f-btn--primary f-btn--block" style="min-height:48px;">
+            <button type="submit" class="f-btn f-btn--primary f-btn--block ods-a27b458">
                 @include('partials.finder.icon', ['name' => 'check', 'size' => 16])
                 {{ __('public.portal.btn_save_changes_form', [], $l) }}
             </button>

@@ -79,7 +79,35 @@ class StaffPortalController extends Controller
             ];
         }
 
-        return view('portals.staff.index', compact('kpis', 'verification'));
+        // The hospital dashboard panels. Every row comes from the same
+        // facility-scoped queries the desks themselves use; with no active
+        // facility the panels stay empty rather than reading every facility.
+        $facilityId = $this->ctx->facilityId();
+        $kpis['rx_today'] = $facilityId
+            ? \App\Models\Prescription::query()
+                ->where('facility_id', $facilityId)
+                ->whereBetween('created_at', [$todayStart, $todayEnd])
+                ->count()
+            : 0;
+
+        $queueToday = $facilityId
+            ? app(PatientQueueService::class)->ranked($facilityId)
+                ->whereBetween('queue_tickets.checked_in_at', [$todayStart, $todayEnd])
+                ->with('patient:id,health_id,first_name,last_name,date_of_birth')
+                ->limit(6)
+                ->get()
+            : collect();
+        $urgentWaiting = $queueToday->filter(fn ($t) => (int) ($t->priority_rank ?? 6) <= 2)->count();
+
+        $appointmentsToday = $facilityId
+            ? (clone $apptQuery)
+                ->with(['patient:id,health_id,first_name,last_name', 'provider:id,name'])
+                ->orderBy('scheduled_at')
+                ->limit(6)
+                ->get()
+            : collect();
+
+        return view('portals.staff.index', compact('kpis', 'verification', 'queueToday', 'appointmentsToday', 'urgentWaiting'));
     }
 
     // ─── Appointments ─────────────────────────────────────────────

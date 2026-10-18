@@ -5,22 +5,26 @@
 @section('breadcrumb_home_url', route('portals.billing.index'))
 @section('breadcrumb_section', $invoice->invoice_number)
 
+@section('head')
+<link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">
+@endsection
+
 @php
     use App\Services\Billing\BillingDeskService;
     use App\Services\Billing\Xaf;
 
-    $statusBadge = fn (string $s) => 'badge badge-' . match ($s) {
-        'paid'      => 'success',
-        'part_paid' => 'info',
-        'issued'    => 'warning',
-        'void'      => 'danger',
+    $statusPill = fn (string $s): string => match ($s) {
+        'paid'      => 'ready',
+        'part_paid' => 'verifying',
+        'issued'    => 'pending',
+        'void'      => 'low',
         default     => 'neutral',
     };
-    $refundBadge = fn (string $s) => 'badge badge-' . match ($s) {
-        'processed' => 'success',
-        'approved'  => 'info',
-        'pending'   => 'warning',
-        'rejected'  => 'danger',
+    $refundPill = fn (string $s): string => match ($s) {
+        'processed' => 'ready',
+        'approved'  => 'normal',
+        'pending'   => 'pending',
+        'rejected'  => 'low',
         default     => 'neutral',
     };
     $methodLabel = fn (string $m) => $m === BillingDeskService::METHOD_CASH
@@ -28,123 +32,120 @@
         : (\App\Services\Payments\Domain\PaymentMethod::tryFrom($m)?->label() ?? $m);
 
     $pName   = trim(($patient->first_name ?? '') . ' ' . ($patient->last_name ?? ''));
+    $pInit   = mb_strtoupper(mb_substr(trim((string) ($patient->first_name ?? '')), 0, 1) . mb_substr(trim((string) ($patient->last_name ?? '')), 0, 1));
+    $pTone   = ['blue', 'amber', 'teal', 'rose', 'sky', 'green'][crc32($pName !== '' ? $pName : (string) $invoice->patient_id) % 6];
     $balance = Xaf::int($invoice->balance_amount);
     $payable = in_array($invoice->status, [BillingDeskService::STATUS_ISSUED, BillingDeskService::STATUS_PART_PAID], true);
 @endphp
 
 @section('content')
+<div class="od-page">
 
-<div class="page-header">
+<div class="od-page__head">
     <div>
-        <h1 class="page-title">{{ __('billing_desk.invoice') }} {{ $invoice->invoice_number }}
-            <span class="{{ $statusBadge($invoice->status) }}">{{ __('billing_desk.status.'.$invoice->status) }}</span>
-        </h1>
-        <p class="page-subtitle">
-            <span class="td-strong">{{ $pName !== '' ? $pName : '—' }}</span>
-            @if($patient?->health_id) · {{ $patient->health_id }} @endif
-        </p>
+        <h1 class="od-page__title">{{ __('billing_desk.invoice') }} {{ $invoice->invoice_number }}</h1>
+        <p class="od-page__sub">{{ __('billing_desk.raised_on') }} {{ $invoice->created_at?->translatedFormat('d M Y H:i') }}@if($invoice->issued_at) · {{ __('billing_desk.issued_on') }} {{ $invoice->issued_at->translatedFormat('d M Y H:i') }}@endif</p>
     </div>
-    <a href="{{ route('portals.billing.index') }}" class="btn btn-secondary"><i data-lucide="arrow-left"></i> {{ __('billing_desk.back_to_list') }}</a>
+    <a href="{{ route('portals.billing.index') }}" class="od-btn od-btn--secondary"><i data-lucide="arrow-left"></i> {{ __('billing_desk.back_to_list') }}</a>
 </div>
 
-@if(session('success'))<div class="alert alert-success mb-6"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
-@if(session('error'))<div class="alert alert-danger mb-6"><i data-lucide="alert-circle"></i><div>{{ session('error') }}</div></div>@endif
+@if(session('success'))<div class="odc-note odc-note--ok" role="status"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
+@if(session('error'))<div class="odc-note odc-note--err" role="alert"><i data-lucide="alert-circle"></i><div>{{ session('error') }}</div></div>@endif
 @if($errors->any())
-<div class="alert alert-danger mb-6" role="alert"><i data-lucide="alert-circle"></i>
-    <div><ul class="alert-list">@foreach($errors->all() as $message)<li>{{ $message }}</li>@endforeach</ul></div>
-</div>
+<div class="odc-note odc-note--err" role="alert"><i data-lucide="alert-circle"></i><div><ul>@foreach($errors->all() as $message)<li>{{ $message }}</li>@endforeach</ul></div></div>
 @endif
 
+<div class="od-grid od-grid--main">
+
+<div class="od-stack">
 {{-- ── Lines ──────────────────────────────────────────────────────────── --}}
-<div class="panel mb-6">
-    <div class="panel-header">
-        <h2 class="panel-title"><i data-lucide="receipt"></i> {{ __('billing_desk.lines_title') }}</h2>
-        <div class="td-muted">
-            {{ __('billing_desk.raised_on') }} {{ $invoice->created_at?->translatedFormat('d M Y H:i') }}
-            @if($invoice->issued_at) · {{ __('billing_desk.issued_on') }} {{ $invoice->issued_at->translatedFormat('d M Y H:i') }} @endif
+<section class="od-card">
+    <header class="od-card__head">
+        <h2 class="od-card__title">{{ __('billing_desk.lines_title') }} <span class="od-card__count">({{ $invoice->items->count() }})</span></h2>
+    </header>
+    <div class="od-card__body">
+        <div class="od-table-wrap">
+            <table class="od-table odc-nowrap">
+                <thead><tr>
+                    <th class="od-table__num">#</th>
+                    <th>{{ __('billing_desk.col_description') }}</th>
+                    <th>{{ __('billing_desk.col_qty') }}</th>
+                    <th>{{ __('billing_desk.col_unit') }}</th>
+                    <th>{{ __('billing_desk.col_line_total') }}</th>
+                </tr></thead>
+                <tbody>
+                @foreach($invoice->items as $item)
+                    <tr>
+                        <td class="od-table__num">{{ $loop->iteration }}</td>
+                        <td><span class="od-table__name">{{ $item->description }}</span><span class="od-table__sub">{{ __('billing_desk.col_code') }}: {{ $item->service_code ?? '—' }}</span></td>
+                        <td>{{ Xaf::int($item->quantity) }}</td>
+                        <td class="odc-money">{{ Xaf::format(Xaf::int($item->unit_price)) }}</td>
+                        <td class="odc-money odc-strong">{{ Xaf::format(Xaf::int($item->line_total_amount)) }}</td>
+                    </tr>
+                @endforeach
+                </tbody>
+                <tfoot>
+                    <tr><td colspan="4" class="od-muted">{{ __('billing_desk.total_due') }}</td><td class="odc-money odc-strong">{{ Xaf::format(Xaf::int($invoice->patient_responsibility_amount)) }}</td></tr>
+                    <tr><td colspan="4" class="od-muted">{{ __('billing_desk.paid') }}</td><td class="odc-money">{{ Xaf::format(Xaf::int($invoice->paid_amount)) }}</td></tr>
+                    @if(Xaf::int($invoice->refunded_amount) > 0)
+                    <tr><td colspan="4" class="od-muted">{{ __('billing_desk.refunded') }}</td><td class="odc-money">{{ Xaf::format(Xaf::int($invoice->refunded_amount)) }}</td></tr>
+                    @endif
+                    <tr><td colspan="4" class="od-muted">{{ __('billing_desk.balance') }}</td><td class="odc-money odc-strong">{{ Xaf::format($balance) }}</td></tr>
+                </tfoot>
+            </table>
         </div>
-    </div>
-    <div class="table-wrapper">
-        <table class="data-table">
-            <thead><tr>
-                <th>{{ __('billing_desk.col_description') }}</th>
-                <th>{{ __('billing_desk.col_code') }}</th>
-                <th>{{ __('billing_desk.col_qty') }}</th>
-                <th>{{ __('billing_desk.col_unit') }}</th>
-                <th>{{ __('billing_desk.col_line_total') }}</th>
-            </tr></thead>
-            <tbody>
-            @foreach($invoice->items as $item)
-                <tr>
-                    <td data-label="{{ __('billing_desk.col_description') }}">{{ $item->description }}</td>
-                    <td data-label="{{ __('billing_desk.col_code') }}" class="td-muted">{{ $item->service_code ?? '—' }}</td>
-                    <td data-label="{{ __('billing_desk.col_qty') }}">{{ Xaf::int($item->quantity) }}</td>
-                    <td data-label="{{ __('billing_desk.col_unit') }}">{{ Xaf::format(Xaf::int($item->unit_price)) }}</td>
-                    <td data-label="{{ __('billing_desk.col_line_total') }}" class="td-strong">{{ Xaf::format(Xaf::int($item->line_total_amount)) }}</td>
-                </tr>
-            @endforeach
-            </tbody>
-            <tfoot>
-                <tr><td colspan="4" class="td-muted">{{ __('billing_desk.total_due') }}</td><td class="td-strong">{{ Xaf::format(Xaf::int($invoice->patient_responsibility_amount)) }}</td></tr>
-                <tr><td colspan="4" class="td-muted">{{ __('billing_desk.paid') }}</td><td>{{ Xaf::format(Xaf::int($invoice->paid_amount)) }}</td></tr>
-                @if(Xaf::int($invoice->refunded_amount) > 0)
-                <tr><td colspan="4" class="td-muted">{{ __('billing_desk.refunded') }}</td><td>{{ Xaf::format(Xaf::int($invoice->refunded_amount)) }}</td></tr>
-                @endif
-                <tr><td colspan="4" class="td-muted">{{ __('billing_desk.balance') }}</td><td class="td-strong">{{ Xaf::format($balance) }}</td></tr>
-            </tfoot>
-        </table>
-    </div>
-    @if($invoice->status === BillingDeskService::STATUS_VOID)
-        <div class="panel-body">
-            <div class="alert alert-danger"><i data-lucide="ban"></i>
+        @if($invoice->status === BillingDeskService::STATUS_VOID)
+            <div class="odc-note odc-note--err odc-note--inset"><i data-lucide="ban"></i>
                 <div>{{ __('billing_desk.voided_on') }} {{ $invoice->voided_at?->translatedFormat('d M Y H:i') }} — {{ __('billing_desk.void_reason') }}: {{ $invoice->void_reason }}</div>
             </div>
-        </div>
-    @endif
-</div>
+        @endif
+    </div>
+</section>
 
 {{-- ── Payments ───────────────────────────────────────────────────────── --}}
-<div class="panel mb-6">
-    <div class="panel-header"><h2 class="panel-title"><i data-lucide="banknote"></i> {{ __('billing_desk.payments_title') }}</h2></div>
+<section class="od-card">
+    <header class="od-card__head"><h2 class="od-card__title">{{ __('billing_desk.payments_title') }} <span class="od-card__count">({{ $payments->count() }})</span></h2></header>
     @if($payments->isEmpty())
-        <div class="panel-body td-muted">{{ __('billing_desk.payments_empty') }}</div>
+        <div class="od-empty od-empty--compact">
+            <span class="od-empty__icon"><i data-lucide="banknote"></i></span>
+            <p class="od-empty__text">{{ __('billing_desk.payments_empty') }}</p>
+        </div>
     @else
-        <div class="table-wrapper">
-            <table class="data-table">
+    <div class="od-card__body">
+        <div class="od-table-wrap">
+            <table class="od-table odc-nowrap">
                 <thead><tr>
                     <th>{{ __('billing_desk.col_reference') }}</th>
                     <th>{{ __('billing_desk.col_method') }}</th>
                     <th>{{ __('billing_desk.col_amount') }}</th>
                     <th>{{ __('billing_desk.refunded') }}</th>
                     <th>{{ __('billing_desk.col_taken_by') }}</th>
-                    <th>{{ __('billing_desk.col_taken_at') }}</th>
-                    <th class="row-actions">{{ __('billing_desk.col_receipt') }}</th>
+                    <th>{{ __('billing_desk.col_receipt') }}</th>
                 </tr></thead>
                 <tbody>
                 @foreach($payments as $payment)
                     @php $receipt = $receipts[$payment->id] ?? null; @endphp
                     <tr>
-                        <td data-label="{{ __('billing_desk.col_reference') }}"><span class="td-strong">{{ $payment->payment_reference }}</span></td>
-                        <td data-label="{{ __('billing_desk.col_method') }}">{{ $methodLabel($payment->method) }}</td>
-                        <td data-label="{{ __('billing_desk.col_amount') }}">{{ Xaf::format(Xaf::int($payment->amount)) }}</td>
-                        <td data-label="{{ __('billing_desk.refunded') }}">{{ Xaf::format(Xaf::int($payment->refunded_amount)) }}</td>
-                        <td data-label="{{ __('billing_desk.col_taken_by') }}" class="td-muted">{{ $payment->cashier?->name ?? '—' }}</td>
-                        <td data-label="{{ __('billing_desk.col_taken_at') }}" class="td-muted">{{ $payment->created_at?->translatedFormat('d M Y H:i') }}</td>
-                        <td class="row-actions" data-label="{{ __('billing_desk.col_receipt') }}">
+                        <td><span class="od-table__name">{{ $payment->payment_reference }}</span><span class="od-table__sub">{{ $payment->created_at?->translatedFormat('d M Y H:i') }}</span></td>
+                        <td>{{ $methodLabel($payment->method) }}</td>
+                        <td class="odc-money odc-strong">{{ Xaf::format(Xaf::int($payment->amount)) }}</td>
+                        <td class="odc-money">{{ Xaf::format(Xaf::int($payment->refunded_amount)) }}</td>
+                        <td>{{ $payment->cashier?->name ?? '—' }}</td>
+                        <td class="od-table__actions">
                             @if($receipt)
-                                <a href="{{ route('portals.billing.receipt', $receipt->id) }}" class="btn btn-secondary btn-sm"><i data-lucide="printer"></i> {{ $receipt->receipt_number }}</a>
+                                <a href="{{ route('portals.billing.receipt', $receipt->id) }}" class="od-btn od-btn--secondary od-btn--sm"><i data-lucide="printer"></i> {{ $receipt->receipt_number }}</a>
                             @endif
                         </td>
                     </tr>
                     @if(Xaf::int($payment->amount) - Xaf::int($payment->refunded_amount) > 0)
-                    <tr>
-                        <td colspan="7">
-                            <form method="POST" action="{{ route('portals.billing.refund.request', $payment->id) }}" class="row-actions-inline">
+                    <tr class="odc-subrow">
+                        <td colspan="6">
+                            <form method="POST" action="{{ route('portals.billing.refund.request', $payment->id) }}" class="odc-inline-form">
                                 @csrf
-                                <span class="td-muted">{{ __('billing_desk.refund.request_title') }}</span>
-                                <input type="text" inputmode="numeric" pattern="[0-9]*" name="amount_xaf" class="form-control" style="max-width:160px" placeholder="{{ __('billing_desk.amount_label') }}" required aria-label="{{ __('billing_desk.amount_label') }}">
-                                <input type="text" name="reason" class="form-control" style="flex:1;min-width:200px" placeholder="{{ __('billing_desk.refund.reason_label') }}" required minlength="3" maxlength="500" aria-label="{{ __('billing_desk.refund.reason_label') }}">
-                                <button type="submit" class="btn btn-secondary btn-sm"><i data-lucide="undo-2"></i> {{ __('billing_desk.refund.request_button') }}</button>
+                                <span class="od-muted">{{ __('billing_desk.refund.request_title') }}</span>
+                                <input type="text" inputmode="numeric" pattern="[0-9]*" name="amount_xaf" class="od-input" placeholder="{{ __('billing_desk.amount_label') }}" required aria-label="{{ __('billing_desk.amount_label') }}">
+                                <input type="text" name="reason" class="od-input" placeholder="{{ __('billing_desk.refund.reason_label') }}" required minlength="3" maxlength="500" aria-label="{{ __('billing_desk.refund.reason_label') }}">
+                                <button type="submit" class="od-btn od-btn--secondary od-btn--sm"><i data-lucide="undo-2"></i> {{ __('billing_desk.refund.request_button') }}</button>
                             </form>
                         </td>
                     </tr>
@@ -153,142 +154,189 @@
                 </tbody>
             </table>
         </div>
+    </div>
     @endif
-</div>
+</section>
 
 {{-- ── Refunds on this invoice ────────────────────────────────────────── --}}
 @if($refunds->isNotEmpty())
-<div class="panel mb-6">
-    <div class="panel-header"><h2 class="panel-title"><i data-lucide="undo-2"></i> {{ __('billing_desk.refund.title') }}</h2></div>
-    <div class="table-wrapper">
-        <table class="data-table">
-            <thead><tr>
-                <th>{{ __('billing_desk.col_amount') }}</th>
-                <th>{{ __('billing_desk.refund.col_reason') }}</th>
-                <th>{{ __('billing_desk.refund.col_status') }}</th>
-                <th>{{ __('billing_desk.refund.col_requested') }}</th>
-                <th class="row-actions">{{ __('billing_desk.refund.col_decision') }}</th>
-            </tr></thead>
-            <tbody>
-            @foreach($refunds as $refund)
-                <tr>
-                    <td data-label="{{ __('billing_desk.col_amount') }}" class="td-strong">{{ Xaf::format(Xaf::int($refund->amount)) }}</td>
-                    <td data-label="{{ __('billing_desk.refund.col_reason') }}">{{ $refund->reason }}@if($refund->status === 'rejected' && $refund->notes) <div class="td-muted">{{ $refund->notes }}</div>@endif</td>
-                    <td data-label="{{ __('billing_desk.refund.col_status') }}"><span class="{{ $refundBadge($refund->status) }}">{{ __('billing_desk.refund.status.'.$refund->status) }}</span></td>
-                    <td data-label="{{ __('billing_desk.refund.col_requested') }}" class="td-muted">{{ $refund->created_at?->translatedFormat('d M Y H:i') }}</td>
-                    <td class="row-actions" data-label="{{ __('billing_desk.refund.col_decision') }}">
-                        @if($refund->status === 'pending' && $canRefund)
-                            <form method="POST" action="{{ route('portals.billing.refund.approve', $refund->id) }}" style="display:inline">@csrf
-                                <button type="submit" class="btn btn-primary btn-sm"><i data-lucide="check"></i> {{ __('billing_desk.refund.approve') }}</button>
-                            </form>
-                        @elseif($refund->status === 'pending')
-                            <span class="td-muted">{{ __('billing_desk.refund.no_authority') }}</span>
-                        @endif
-                    </td>
-                </tr>
-            @endforeach
-            </tbody>
-        </table>
+<section class="od-card">
+    <header class="od-card__head"><h2 class="od-card__title">{{ __('billing_desk.refund.title') }} <span class="od-card__count">({{ $refunds->count() }})</span></h2></header>
+    <div class="od-card__body">
+        <div class="od-table-wrap">
+            <table class="od-table odc-nowrap">
+                <thead><tr>
+                    <th>{{ __('billing_desk.col_amount') }}</th>
+                    <th>{{ __('billing_desk.refund.col_reason') }}</th>
+                    <th>{{ __('billing_desk.refund.col_status') }}</th>
+                    <th>{{ __('billing_desk.refund.col_requested') }}</th>
+                    <th>{{ __('billing_desk.refund.col_decision') }}</th>
+                </tr></thead>
+                <tbody>
+                @foreach($refunds as $refund)
+                    <tr>
+                        <td class="odc-money odc-strong">{{ Xaf::format(Xaf::int($refund->amount)) }}</td>
+                        <td>{{ $refund->reason }}@if($refund->status === 'rejected' && $refund->notes)<span class="od-table__sub">{{ $refund->notes }}</span>@endif</td>
+                        <td><span class="od-pill od-pill--{{ $refundPill($refund->status) }}">{{ __('billing_desk.refund.status.'.$refund->status) }}</span></td>
+                        <td>{{ $refund->created_at?->translatedFormat('d M Y H:i') }}</td>
+                        <td class="od-table__actions">
+                            @if($refund->status === 'pending' && $canRefund)
+                                <form method="POST" action="{{ route('portals.billing.refund.approve', $refund->id) }}">@csrf
+                                    <button type="submit" class="od-btn od-btn--row"><i data-lucide="check"></i> {{ __('billing_desk.refund.approve') }}</button>
+                                </form>
+                            @elseif($refund->status === 'pending')
+                                <span class="od-muted">{{ __('billing_desk.refund.no_authority') }}</span>
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
+</section>
 @endif
 
 {{-- ── Mobile money prompts ───────────────────────────────────────────── --}}
 @if($charges->isNotEmpty())
-<div class="panel mb-6">
-    <div class="panel-header">
-        <h2 class="panel-title"><i data-lucide="smartphone"></i> {{ __('billing_desk.momo.title') }}</h2>
+<section class="od-card">
+    <header class="od-card__head">
+        <h2 class="od-card__title">{{ __('billing_desk.momo.title') }}</h2>
         <form method="POST" action="{{ route('portals.billing.sync_mobile', $invoice->id) }}">@csrf
-            <button type="submit" class="btn btn-secondary btn-sm"><i data-lucide="refresh-cw"></i> {{ __('billing_desk.momo.sync_button') }}</button>
+            <button type="submit" class="od-btn od-btn--secondary od-btn--sm"><i data-lucide="refresh-cw"></i> {{ __('billing_desk.momo.sync_button') }}</button>
         </form>
+    </header>
+    <div class="od-card__body">
+        <div class="od-table-wrap">
+            <table class="od-table odc-nowrap">
+                <thead><tr>
+                    <th>{{ __('billing_desk.col_method') }}</th>
+                    <th>{{ __('billing_desk.momo.col_number') }}</th>
+                    <th>{{ __('billing_desk.col_amount') }}</th>
+                    <th>{{ __('billing_desk.momo.col_status') }}</th>
+                    <th>{{ __('billing_desk.momo.col_sent') }}</th>
+                </tr></thead>
+                <tbody>
+                @foreach($charges as $charge)
+                    <tr>
+                        <td>{{ $charge->method?->label() ?? '—' }}</td>
+                        <td>{{ $charge->payer_msisdn_masked ?? '—' }}</td>
+                        <td class="odc-money">{{ Xaf::format((int) $charge->amount_minor) }}</td>
+                        <td><span class="od-pill od-pill--neutral">{{ $charge->status?->value ?? '—' }}</span></td>
+                        <td>{{ $charge->created_at?->translatedFormat('d M Y H:i') }}</td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+        </div>
     </div>
-    <div class="table-wrapper">
-        <table class="data-table">
-            <thead><tr>
-                <th>{{ __('billing_desk.col_method') }}</th>
-                <th>{{ __('billing_desk.momo.col_number') }}</th>
-                <th>{{ __('billing_desk.col_amount') }}</th>
-                <th>{{ __('billing_desk.momo.col_status') }}</th>
-                <th>{{ __('billing_desk.momo.col_sent') }}</th>
-            </tr></thead>
-            <tbody>
-            @foreach($charges as $charge)
-                <tr>
-                    <td data-label="{{ __('billing_desk.col_method') }}">{{ $charge->method?->label() ?? '—' }}</td>
-                    <td data-label="{{ __('billing_desk.momo.col_number') }}" class="td-muted">{{ $charge->payer_msisdn_masked ?? '—' }}</td>
-                    <td data-label="{{ __('billing_desk.col_amount') }}">{{ Xaf::format((int) $charge->amount_minor) }}</td>
-                    <td data-label="{{ __('billing_desk.momo.col_status') }}"><span class="badge badge-neutral">{{ $charge->status?->value ?? '—' }}</span></td>
-                    <td data-label="{{ __('billing_desk.momo.col_sent') }}" class="td-muted">{{ $charge->created_at?->translatedFormat('d M Y H:i') }}</td>
-                </tr>
-            @endforeach
-            </tbody>
-        </table>
-    </div>
-</div>
+</section>
 @endif
+</div>
 
-{{-- ── Actions ────────────────────────────────────────────────────────── --}}
-@if($invoice->status === BillingDeskService::STATUS_DRAFT)
-<div class="panel mb-6">
-    <div class="panel-body row-actions-inline">
-        <form method="POST" action="{{ route('portals.billing.issue', $invoice->id) }}">@csrf
-            <button type="submit" class="btn btn-primary"><i data-lucide="send"></i> {{ __('billing_desk.issue_button') }}</button>
-        </form>
+{{-- ── Right-hand detail panel: who, how much, what next ─────────────── --}}
+<div class="od-stack odc-aside">
+<section class="od-card">
+    <header class="od-card__head">
+        <h2 class="od-card__title">{{ __('billing_desk.invoice') }}</h2>
+        <span class="od-pill od-pill--dot od-pill--{{ $statusPill($invoice->status) }}">{{ __('billing_desk.status.'.$invoice->status) }}</span>
+    </header>
+    <div class="od-card__body od-detail">
+        <div class="od-detail__head">
+            <span class="od-avatar od-avatar--lg od-tint--{{ $pTone }}" aria-hidden="true">{{ $pInit !== '' ? $pInit : '—' }}</span>
+            <div class="od-detail__main">
+                <h3 class="od-detail__name">{{ $pName !== '' ? $pName : '—' }}</h3>
+                <div class="od-detail__ref">
+                    <span>{{ $invoice->invoice_number }}</span>
+                    <span>{{ $invoice->created_at?->translatedFormat('d M Y') }}</span>
+                </div>
+                @if($patient?->health_id)
+                <div class="od-detail__facts"><span class="od-detail__fact"><i data-lucide="id-card"></i> {{ $patient->health_id }}</span></div>
+                @endif
+            </div>
+        </div>
+        <div class="od-detail__people">
+            <div class="od-person">
+                <span class="od-person__icon"><i data-lucide="receipt"></i></span>
+                <div>
+                    <span class="od-person__label">{{ __('billing_desk.total_due') }}</span>
+                    <span class="od-person__name odc-money">{{ Xaf::format(Xaf::int($invoice->patient_responsibility_amount)) }}</span>
+                </div>
+            </div>
+            <div class="od-person">
+                <span class="od-person__icon"><i data-lucide="hand-coins"></i></span>
+                <div>
+                    <span class="od-person__label">{{ __('billing_desk.balance') }}</span>
+                    <span class="od-person__name odc-money">{{ Xaf::format($balance) }}</span>
+                </div>
+            </div>
+        </div>
+        @if($invoice->status === BillingDeskService::STATUS_DRAFT)
+            <form method="POST" action="{{ route('portals.billing.issue', $invoice->id) }}">@csrf
+                <button type="submit" class="od-btn od-btn--primary od-btn--block"><i data-lucide="send"></i> {{ __('billing_desk.issue_button') }}</button>
+            </form>
+        @endif
     </div>
-</div>
-@endif
+</section>
 
 @if($payable)
-<div class="panel form-panel mb-6">
-    <div class="panel-header"><h2 class="panel-title"><i data-lucide="hand-coins"></i> {{ __('billing_desk.take_payment') }}</h2></div>
-    <div class="panel-body">
+<section class="od-card">
+    <header class="od-card__head"><h2 class="od-card__title">{{ __('billing_desk.take_payment') }}</h2></header>
+    <div class="od-card__body">
         @if($session === null)
-            <div class="alert alert-warning mb-4"><i data-lucide="wallet"></i>
+            <div class="odc-note odc-note--warn odc-note--inset"><i data-lucide="wallet"></i>
                 <div>{{ __('billing_desk.no_open_session') }} <a href="{{ route('portals.billing.sessions') }}">{{ __('billing_desk.open_session_link') }}</a></div>
             </div>
         @endif
-        <form method="POST" action="{{ route('portals.billing.pay', $invoice->id) }}">
+        <form method="POST" action="{{ route('portals.billing.pay', $invoice->id) }}" class="odc-form">
             @csrf
-            <div class="form-group mb-4">
-                <label class="form-label form-label-required" for="pay-amount">{{ __('billing_desk.amount_label') }}</label>
-                <input type="text" inputmode="numeric" pattern="[0-9]*" id="pay-amount" name="amount_xaf" class="form-control" value="{{ old('amount_xaf', $balance) }}" required>
-                <div class="form-hint">{{ __('billing_desk.amount_hint', ['balance' => Xaf::format($balance)]) }}</div>
+            <div class="odc-field">
+                <label class="odc-label odc-label--req" for="pay-amount">{{ __('billing_desk.amount_label') }}</label>
+                <input type="text" inputmode="numeric" pattern="[0-9]*" id="pay-amount" name="amount_xaf" class="od-input" value="{{ old('amount_xaf', $balance) }}" required>
+                <p class="odc-hint">{{ __('billing_desk.amount_hint', ['balance' => Xaf::format($balance)]) }}</p>
             </div>
-            <div class="form-group mb-4">
-                <label class="form-label form-label-required" for="pay-method">{{ __('billing_desk.method_label') }}</label>
-                <select id="pay-method" name="method" class="form-control" required>
+            <div class="odc-field">
+                <label class="odc-label odc-label--req" for="pay-method">{{ __('billing_desk.method_label') }}</label>
+                <select id="pay-method" name="method" class="od-select" required>
                     <option value="{{ BillingDeskService::METHOD_CASH }}" @selected(old('method', 'cash') === 'cash')>{{ __('billing_desk.method_cash') }}</option>
                     @foreach($methods as $m)
                         <option value="{{ $m->value }}" @selected(old('method') === $m->value)>{{ $m->label() }}</option>
                     @endforeach
                 </select>
             </div>
-            <div class="form-group mb-4">
-                <label class="form-label" for="pay-phone">{{ __('billing_desk.phone_label') }}</label>
-                <input type="tel" id="pay-phone" name="phone" class="form-control" value="{{ old('phone') }}" autocomplete="off">
-                <div class="form-hint">{{ __('billing_desk.phone_hint') }}</div>
+            <div class="odc-field">
+                <label class="odc-label" for="pay-phone">{{ __('billing_desk.phone_label') }}</label>
+                <input type="tel" id="pay-phone" name="phone" class="od-input" value="{{ old('phone') }}" autocomplete="off">
+                <p class="odc-hint">{{ __('billing_desk.phone_hint') }}</p>
             </div>
-            <button type="submit" class="btn btn-primary"><i data-lucide="check-circle"></i> {{ __('billing_desk.pay_button') }}</button>
+            <div class="odc-actions">
+                <button type="submit" class="od-btn od-btn--primary"><i data-lucide="check-circle"></i> {{ __('billing_desk.pay_button') }}</button>
+            </div>
         </form>
     </div>
-</div>
+</section>
 @endif
 
 @if($invoice->status !== BillingDeskService::STATUS_VOID)
-<div class="panel form-panel">
-    <div class="panel-header"><h2 class="panel-title"><i data-lucide="ban"></i> {{ __('billing_desk.void_title') }}</h2></div>
-    <div class="panel-body">
-        <p class="form-hint mb-4">{{ __('billing_desk.void_hint') }}</p>
-        <form method="POST" action="{{ route('portals.billing.void', $invoice->id) }}">
+<section class="od-card">
+    <header class="od-card__head"><h2 class="od-card__title">{{ __('billing_desk.void_title') }}</h2></header>
+    <div class="od-card__body">
+        <form method="POST" action="{{ route('portals.billing.void', $invoice->id) }}" class="odc-form">
             @csrf
-            <div class="form-group mb-4">
-                <label class="form-label form-label-required" for="void-reason">{{ __('billing_desk.void_reason_label') }}</label>
-                <input type="text" id="void-reason" name="reason" class="form-control" required minlength="3" maxlength="500">
+            <p class="odc-hint">{{ __('billing_desk.void_hint') }}</p>
+            <div class="odc-field">
+                <label class="odc-label odc-label--req" for="void-reason">{{ __('billing_desk.void_reason_label') }}</label>
+                <input type="text" id="void-reason" name="reason" class="od-input" required minlength="3" maxlength="500">
             </div>
-            <button type="submit" class="btn btn-danger"><i data-lucide="ban"></i> {{ __('billing_desk.void_button') }}</button>
+            <div class="odc-actions">
+                <button type="submit" class="od-btn od-btn--danger"><i data-lucide="ban"></i> {{ __('billing_desk.void_button') }}</button>
+            </div>
         </form>
     </div>
-</div>
+</section>
 @endif
+</div>
 
+</div>
+</div>
 @endsection

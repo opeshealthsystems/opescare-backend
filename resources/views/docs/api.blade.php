@@ -1,5 +1,9 @@
 @extends('layouts.docs')
 @section('title', 'Connect API')
+@section('head')
+@include('public.partials._od_pages_css')
+@endsection
+
 @section('content')
 
 <h1>Connect API</h1>

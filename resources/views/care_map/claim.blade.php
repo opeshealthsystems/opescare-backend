@@ -31,6 +31,10 @@
 </style>
 @endpush
 
+@push('head')
+    @include('public.partials._od_pages_css')
+@endpush
+
 @section('content')
 <div class="clm-wrap">
 
@@ -89,7 +93,7 @@
       </div>
     @else
 
-      <p class="f-hint" style="margin-bottom:1.1rem">{{ __('caremap_claim.claim_intro') }}</p>
+      <p class="f-hint odp-mb-16">{{ __('caremap_claim.claim_intro') }}</p>
 
       <div class="clm-notice">
         @include('partials.finder.icon', ['name' => 'shield-check', 'size' => 16])
@@ -139,7 +143,7 @@
         <div class="f-field">
           <label class="f-label" for="claim_reason">
             {{ __('caremap_claim.field_reason') }}
-            <span class="f-muted" style="font-weight:400">({{ __('caremap_claim.field_optional') }})</span>
+            <span class="f-muted odp-normal">({{ __('caremap_claim.field_optional') }})</span>
           </label>
           <textarea id="claim_reason" name="claim_reason" class="f-input" maxlength="2000">{{ old('claim_reason') }}</textarea>
           <div class="f-hint">{{ __('caremap_claim.field_reason_hint') }}</div>

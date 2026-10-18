@@ -7,18 +7,19 @@
 --}}
 @php $linked = $listing !== null; @endphp
 
-<div class="panel mb-6">
-    <div class="panel-header">
-        <h3 class="panel-title"><i data-lucide="clock"></i> {{ __($ns . '.section_hours') }}</h3>
-    </div>
-    <div class="panel-body">
-        <p class="lst-note">{{ __($ns . '.hours_intro') }}</p>
+<section class="od-card">
+    <header class="od-card__head">
+        <h2 class="od-card__title">{{ __($ns . '.section_hours') }}</h2>
+        <span class="od-avatar odc-ico-avatar od-tint--amber" aria-hidden="true"><i data-lucide="clock"></i></span>
+    </header>
+    <div class="od-card__body">
+        <p class="odc-muted">{{ __($ns . '.hours_intro') }}</p>
 
         <form method="POST" action="{{ $action }}">
             @csrf
-            <fieldset @class(['ps-locked' => ! $linked]) @disabled(! $linked)>
-                <div class="table-wrapper">
-                    <table class="data-table lst-hours-table">
+            <fieldset @class(['odc-fieldset', 'odc-locked' => ! $linked]) @disabled(! $linked)>
+                <div class="od-table-wrap">
+                    <table class="od-table odc-hours-table">
                         <thead>
                             <tr>
                                 <th>{{ __('caremap_claim.hours_day') }}</th>
@@ -32,20 +33,20 @@
                         @foreach($dayLabels as $day => $label)
                             @php $h = $hours->get($day); @endphp
                             <tr>
-                                <td data-label="{{ __('caremap_claim.hours_day') }}" class="td-strong">{{ $label }}</td>
+                                <td data-label="{{ __('caremap_claim.hours_day') }}"><span class="od-table__name">{{ $label }}</span></td>
                                 <td data-label="{{ __('caremap_claim.hours_open') }}">
-                                    <input type="time" name="hours[{{ $day }}][opens_at]" class="form-control"
+                                    <input type="time" name="hours[{{ $day }}][opens_at]" class="od-input" aria-label="{{ $label }} — {{ __('caremap_claim.hours_open') }}"
                                            value="{{ $h && $h->opens_at ? substr($h->opens_at, 0, 5) : '' }}">
                                 </td>
                                 <td data-label="{{ __('caremap_claim.hours_close') }}">
-                                    <input type="time" name="hours[{{ $day }}][closes_at]" class="form-control"
+                                    <input type="time" name="hours[{{ $day }}][closes_at]" class="od-input" aria-label="{{ $label }} — {{ __('caremap_claim.hours_close') }}"
                                            value="{{ $h && $h->closes_at ? substr($h->closes_at, 0, 5) : '' }}">
                                 </td>
                                 <td data-label="{{ __('caremap_claim.hours_24') }}">
-                                    <label class="lst-check"><input type="checkbox" name="hours[{{ $day }}][is_24_hours]" value="1" @checked($h?->is_24_hours)></label>
+                                    <label class="odc-check"><input type="checkbox" name="hours[{{ $day }}][is_24_hours]" value="1" @checked($h?->is_24_hours) aria-label="{{ $label }} — {{ __('caremap_claim.hours_24') }}"></label>
                                 </td>
                                 <td data-label="{{ __('caremap_claim.hours_closed') }}">
-                                    <label class="lst-check"><input type="checkbox" name="hours[{{ $day }}][is_closed]" value="1" @checked($h?->is_closed)></label>
+                                    <label class="odc-check"><input type="checkbox" name="hours[{{ $day }}][is_closed]" value="1" @checked($h?->is_closed) aria-label="{{ $label }} — {{ __('caremap_claim.hours_closed') }}"></label>
                                 </td>
                             </tr>
                         @endforeach
@@ -53,10 +54,10 @@
                     </table>
                 </div>
 
-                <div style="margin-top:var(--p-space-5)">
-                    <button type="submit" class="btn btn-primary fs-tap"><i data-lucide="save"></i> {{ __($ns . '.btn_save_hours') }}</button>
+                <div class="odc-form-foot">
+                    <button type="submit" class="od-btn od-btn--primary fs-tap"><i data-lucide="save"></i> {{ __($ns . '.btn_save_hours') }}</button>
                 </div>
             </fieldset>
         </form>
     </div>
-</div>
+</section>

@@ -15,6 +15,10 @@
 @include('partials.finder.schema.faq')
 @endpush
 
+@push('head')
+    @include('public.partials._od_pages_css')
+@endpush
+
 @section('content')
 
     {{--

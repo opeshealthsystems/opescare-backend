@@ -2,6 +2,10 @@
 @section('title', ($client->name ?? __('public.developer_portal.lbl_unnamed_app', [], app()->getLocale())) . ' — ' . __('public.developer_portal.lbl_view', [], app()->getLocale()))
 @php $l = app()->getLocale(); @endphp
 
+@section('head')
+    <link rel="stylesheet" href="{{ asset('css/od-pro.css') }}?v={{ @filemtime(public_path('css/od-pro.css')) ?: '1' }}">
+@endsection
+
 @section('content')
 
     <div class="breadcrumb">
@@ -36,7 +40,7 @@
     {{-- App management: rotate secret / enable-disable --}}
     <div class="panel mb-6">
         <div class="panel-header"><h3 class="panel-title"><i data-lucide="settings"></i> {{ __('public.developer_portal.panel_manage', [], $l) }}</h3></div>
-        <div class="panel-body" style="display:flex;gap:.6rem;flex-wrap:wrap;">
+        <div class="panel-body ods-669a495">
             <form method="POST" action="{{ route('portals.developer.apps.rotate', $client->id) }}"
                   data-confirm="{{ __('public.developer_portal.rotate_confirm', [], $l) }}">
                 @csrf
@@ -61,22 +65,22 @@
         $barColor = $pct === null ? '#0F4C81' : ($pct >= 90 ? '#ef4444' : ($pct >= 70 ? '#f59e0b' : '#10b981'));
     @endphp
     <div class="panel mb-6">
-        <div class="panel-header" style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+        <div class="panel-header ods-19cba2d">
             <h3 class="panel-title"><i data-lucide="gauge"></i> {{ __('public.developer_portal.panel_plan_usage', [], $l) }}</h3>
-            <a href="{{ route('public.developers.pricing') }}" class="btn btn-ghost" style="font-size:.8125rem;"><i data-lucide="arrow-up-right"></i> {{ __('public.developer_portal.btn_view_plans', [], $l) }}</a>
+            <a href="{{ route('public.developers.pricing') }}" class="btn btn-ghost ods-29f1e9b"><i data-lucide="arrow-up-right"></i> {{ __('public.developer_portal.btn_view_plans', [], $l) }}</a>
         </div>
         <div class="panel-body">
-            <div style="display:flex;align-items:baseline;gap:.6rem;flex-wrap:wrap;margin-bottom:1rem;">
-                <span style="font-size:1.25rem;font-weight:800;color:#0F4C81;">{{ $plan?->name ?? 'Sandbox' }}</span>
-                <span class="td-muted" style="font-size:.8125rem;">· {{ number_format($plan?->rate_limit_per_min ?? 60, 0, ',', ' ') }} {{ __('public.developer_portal.lbl_req_min', [], $l) }} · {{ __('public.developer_portal.lbl_quota_reset', [], $l) }}</span>
+            <div class="ods-c3a81a0">
+                <span class="ods-ea75d0f">{{ $plan?->name ?? 'Sandbox' }}</span>
+                <span class="td-muted ods-29f1e9b">· {{ number_format($plan?->rate_limit_per_min ?? 60, 0, ',', ' ') }} {{ __('public.developer_portal.lbl_req_min', [], $l) }} · {{ __('public.developer_portal.lbl_quota_reset', [], $l) }}</span>
             </div>
-            <div style="display:flex;justify-content:space-between;font-size:.8125rem;color:#475569;margin-bottom:.4rem;">
-                <span>{{ __('public.developer_portal.lbl_this_month_usage', [], $l) }}: <strong style="color:#0F2744;">{{ number_format($monthlyUsage, 0, ',', ' ') }}</strong></span>
-                <span>{{ __('public.developer_portal.lbl_quota', [], $l) }}: <strong style="color:#0F2744;">{{ $quota ? number_format($quota, 0, ',', ' ') : (__('public.developer_portal.lbl_unlimited', [], $l)) }}</strong></span>
+            <div class="ods-56d1f4c">
+                <span>{{ __('public.developer_portal.lbl_this_month_usage', [], $l) }}: <strong class="ods-8998dc7">{{ number_format($monthlyUsage, 0, ',', ' ') }}</strong></span>
+                <span>{{ __('public.developer_portal.lbl_quota', [], $l) }}: <strong class="ods-8998dc7">{{ $quota ? number_format($quota, 0, ',', ' ') : (__('public.developer_portal.lbl_unlimited', [], $l)) }}</strong></span>
             </div>
             @if($pct !== null)
-            <div style="height:.5rem;background:#f1f5f9;border-radius:999px;overflow:hidden;">
-                <div style="height:100%;width:{{ $pct }}%;background:{{ $barColor }};border-radius:999px;"></div>
+            <div class="ods-8c5a8cb">
+                <div class="odpro-bar odpro-bar--{{ $pct === null ? 'blue' : ($pct >= 90 ? 'red' : ($pct >= 70 ? 'amber' : 'green')) }} ods-w-{{ max(0, min(100, (int) $pct)) }}"></div>
             </div>
             @endif
         </div>
@@ -91,9 +95,9 @@
         <div class="panel-header"><h3 class="panel-title"><i data-lucide="receipt"></i> {{ __('public.developer_portal.panel_billing', [], $l) }}</h3></div>
         <div class="panel-body">
             @if(($invoices ?? collect())->isEmpty())
-                <p class="td-muted" style="margin:0;">{{ __('public.developer_portal.lbl_no_invoices', [], $l) }}</p>
+                <p class="td-muted ods-1386d50">{{ __('public.developer_portal.lbl_no_invoices', [], $l) }}</p>
             @else
-                <table class="kv-table" style="width:100%;">
+                <table class="kv-table ods-6d56738">
                     <thead><tr>
                         <th>{{ __('public.developer_portal.lbl_invoice', [], $l) }}</th>
                         <th>{{ __('public.developer_portal.lbl_period', [], $l) }}</th>
@@ -107,23 +111,23 @@
                             <td class="mono">{{ $inv->number() }}</td>
                             <td>{{ optional($inv->period_start)->translatedFormat('M Y') }}</td>
                             <td><strong>{{ number_format($inv->total_xaf, 0, ',', ' ') }} FCFA</strong></td>
-                            <td><span class="badge" style="color:{{ $iss[0] }};background:{{ $iss[1] }};">{{ __('public.developer_portal.st_' . $inv->status, [], $l) ?: ucfirst($inv->status) }}</span></td>
+                            <td><span class="badge {{ ['issued' => 'badge-warning', 'paid' => 'badge-success', 'overdue' => 'badge-danger'][$inv->status] ?? 'badge-neutral' }}">{{ __('public.developer_portal.st_' . $inv->status, [], $l) ?: ucfirst($inv->status) }}</span></td>
                         </tr>
                     @endforeach
                     </tbody>
                 </table>
 
                 @if($unpaid)
-                <form method="POST" action="{{ route('portals.developer.apps.pay', $client->id) }}" style="margin-top:1.25rem;border-top:1px solid #f1f5f9;padding-top:1.25rem;">
+                <form class="ods-e3677aa" method="POST" action="{{ route('portals.developer.apps.pay', $client->id) }}">
                     @csrf
                     <input type="hidden" name="invoice_id" value="{{ $unpaid->id }}">
-                    <label style="display:block;font-size:.75rem;color:#64748b;margin-bottom:.4rem;">{{ __('public.developer_portal.lbl_pay_invoice', [], $l) }} {{ $unpaid->number() }} · {{ number_format($unpaid->total_xaf, 0, ',', ' ') }} FCFA</label>
-                    <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
-                        <select name="provider" class="form-control" style="max-width:170px;">
+                    <label class="ods-bf6e0d2">{{ __('public.developer_portal.lbl_pay_invoice', [], $l) }} {{ $unpaid->number() }} · {{ number_format($unpaid->total_xaf, 0, ',', ' ') }} FCFA</label>
+                    <div class="ods-2e6944a">
+                        <select name="provider" class="form-control ods-0f15e8e">
                             <option value="mtn_momo">{{ __('public.developer_portal.opt_mtn', [], $l) }}</option>
                             <option value="orange_money">{{ __('public.developer_portal.opt_orange', [], $l) }}</option>
                         </select>
-                        <input type="text" name="phone" class="form-control" placeholder="6XXXXXXXX" style="max-width:170px;" required>
+                        <input type="text" name="phone" class="form-control ods-0f15e8e" placeholder="6XXXXXXXX" required>
                         <button type="submit" class="btn btn-primary"><i data-lucide="smartphone"></i> {{ __('public.developer_portal.btn_pay', [], $l) }}</button>
                     </div>
                 </form>
@@ -160,7 +164,7 @@
                 <div class="panel-body">
                     <div class="entity-head">
                         @if($certification->badge)
-                        <div class="entity-head__icon"><i data-lucide="{{ $certification->badge->levelIcon() }}" style="color:{{ $certification->badge->levelColor() }};"></i></div>
+                        <div class="entity-head__icon"><i data-lucide="{{ $certification->badge->levelIcon() }}" class="odpro-cert odpro-cert--{{ in_array($certification->badge->certification_level, ['platinum', 'gold', 'silver'], true) ? $certification->badge->certification_level : 'bronze' }}"></i></div>
                         <div>
                             <div class="td-strong">@enum($certification->badge->certification_level, 'level') certified</div>
                             <div class="mono">{{ $certification->badge->badge_code }}</div>

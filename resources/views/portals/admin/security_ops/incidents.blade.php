@@ -4,52 +4,61 @@
 @section('breadcrumb_home', __('security_ops.breadcrumb_home'))
 @section('breadcrumb_home_url', route('portals.admin'))
 @section('breadcrumb_section', __('security_ops.inc_title'))
+@section('head')<link rel="stylesheet" href="{{ asset('css/od-admin.css') }}?v={{ @filemtime(public_path('css/od-admin.css')) ?: '1' }}">@endsection
 
 @section('content')
-<div class="page-head">
-    <h2>{{ __('security_ops.inc_title') }}</h2>
-    <div class="page-head__spacer"></div>
-    <button type="button" class="btn btn-primary btn-sm" data-show="create-modal" data-display="flex">
-        <i data-lucide="plus-circle"></i> {{ __('security_ops.inc_btn_log') }}
-    </button>
+<div class="od-page od-stack">
+<div class="od-page__head">
+    <div>
+        <h1 class="od-page__title">{{ __('security_ops.inc_title') }}</h1>
+        <p class="od-page__sub">{{ __('security_ops.inc_subtitle') }}</p>
+    </div>
+    <div class="od-row">
+        <button type="button" class="od-btn od-btn--primary" data-show="create-modal" data-display="flex">
+            <i data-lucide="plus-circle"></i> {{ __('security_ops.inc_btn_log') }}
+        </button>
+    </div>
 </div>
-<p class="page-subtitle mb-6">{{ __('security_ops.inc_subtitle') }}</p>
 
 @if(session('success'))
-    <div class="alert alert-success mb-6"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>
+    <div class="oda-ga-alert oda-ga-alert--ok"><i data-lucide="check-circle"></i><div class="oda-ga-alert__body">{{ session('success') }}</div></div>
 @endif
 @if(session('error'))
-    <div class="alert alert-danger mb-6"><i data-lucide="triangle-alert"></i><div>{{ session('error') }}</div></div>
+    <div class="oda-ga-alert oda-ga-alert--danger"><i data-lucide="triangle-alert"></i><div class="oda-ga-alert__body">{{ session('error') }}</div></div>
 @endif
 
-<form method="GET" action="{{ route('portals.admin.security.incidents') }}" class="filter-bar">
-    <select name="severity" class="filter-select" aria-label="{{ __('security_ops.inc_filter_severity') }}">
-        <option value="">{{ __('security_ops.inc_filter_all_severities') }}</option>
-        @foreach(['critical', 'high', 'medium', 'low'] as $sev)
-            <option value="{{ $sev }}" {{ request('severity') === $sev ? 'selected' : '' }}>@enum($sev, 'severity')</option>
-        @endforeach
-    </select>
-    <select name="status" class="filter-select" aria-label="{{ __('security_ops.inc_filter_status') }}">
-        <option value="">{{ __('security_ops.inc_filter_all_statuses') }}</option>
-        @foreach(['open', 'investigating', 'contained', 'resolved', 'closed'] as $st)
-            <option value="{{ $st }}" {{ request('status') === $st ? 'selected' : '' }}>@enum($st)</option>
-        @endforeach
-    </select>
-    <button type="submit" class="btn btn-primary btn-sm"><i data-lucide="filter"></i> {{ __('security_ops.btn_filter') }}</button>
-    <a href="{{ route('portals.admin.security.incidents') }}" class="btn btn-ghost btn-sm">{{ __('security_ops.btn_clear') }}</a>
-</form>
-
-<div class="panel">
-    <div class="panel-body panel-body--flush">
+<section class="od-card">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('security_ops.inc_title') }} <span class="od-card__count">({{ $incidents->total() }})</span></h2>
+    </div>
+    <div class="od-card__body">
+    <form method="GET" action="{{ route('portals.admin.security.incidents') }}" class="oda-toolbar">
+        <select name="severity" class="od-select" aria-label="{{ __('security_ops.inc_filter_severity') }}">
+            <option value="">{{ __('security_ops.inc_filter_all_severities') }}</option>
+            @foreach(['critical', 'high', 'medium', 'low'] as $sev)
+                <option value="{{ $sev }}" {{ request('severity') === $sev ? 'selected' : '' }}>@enum($sev, 'severity')</option>
+            @endforeach
+        </select>
+        <select name="status" class="od-select" aria-label="{{ __('security_ops.inc_filter_status') }}">
+            <option value="">{{ __('security_ops.inc_filter_all_statuses') }}</option>
+            @foreach(['open', 'investigating', 'contained', 'resolved', 'closed'] as $st)
+                <option value="{{ $st }}" {{ request('status') === $st ? 'selected' : '' }}>@enum($st)</option>
+            @endforeach
+        </select>
+        <button type="submit" class="od-btn od-btn--primary od-btn--sm"><i data-lucide="filter"></i> {{ __('security_ops.btn_filter') }}</button>
+        <a href="{{ route('portals.admin.security.incidents') }}" class="od-btn od-btn--ghost od-btn--sm">{{ __('security_ops.btn_clear') }}</a>
+    </form>
+    </div>
+    <div class="od-card__body od-card__body--flush">
         @if($incidents->isEmpty())
-            <div class="empty-state">
-                <div class="empty-state-icon"><i data-lucide="shield-check"></i></div>
-                <h3>{{ __('security_ops.inc_empty_heading') }}</h3>
-                <p>{{ __('security_ops.inc_empty_body') }}</p>
+            <div class="od-empty">
+                <span class="od-empty__icon"><i data-lucide="shield-check"></i></span>
+                <h3 class="od-empty__title">{{ __('security_ops.inc_empty_heading') }}</h3>
+                <p class="od-empty__text">{{ __('security_ops.inc_empty_body') }}</p>
             </div>
         @else
-        <div class="table-wrapper">
-            <table class="data-table">
+        <div class="od-table-wrap">
+            <table class="od-table">
                 <thead><tr>
                     <th>{{ __('security_ops.inc_col_type') }}</th>
                     <th>{{ __('security_ops.inc_col_severity') }}</th>
@@ -57,39 +66,39 @@
                     <th>{{ __('security_ops.inc_col_summary') }}</th>
                     <th>{{ __('security_ops.inc_col_detected') }}</th>
                     <th>{{ __('security_ops.inc_col_resolved') }}</th>
-                    <th>{{ __('security_ops.inc_col_actions') }}</th>
+                    <th class="od-table__actions">{{ __('security_ops.inc_col_actions') }}</th>
                 </tr></thead>
                 <tbody>
                     @foreach($incidents as $inc)
                     @php
                         $sevBadge = match($inc->severity) {
-                            'critical' => 'badge-danger',
-                            'high' => 'badge-warning',
-                            'medium' => 'badge-primary',
-                            default => 'badge-neutral',
+                            'critical' => 'od-pill--urgent',
+                            'high' => 'od-pill--pending',
+                            'medium' => 'od-pill--normal',
+                            default => 'od-pill--neutral',
                         };
                         $stBadge = match($inc->status) {
-                            'open' => 'badge-danger',
-                            'investigating' => 'badge-warning',
-                            'contained' => 'badge-primary',
-                            'resolved', 'closed' => 'badge-success',
-                            default => 'badge-neutral',
+                            'open' => 'od-pill--urgent',
+                            'investigating' => 'od-pill--pending',
+                            'contained' => 'od-pill--normal',
+                            'resolved', 'closed' => 'od-pill--ready',
+                            default => 'od-pill--neutral',
                         };
                     @endphp
                     <tr>
-                        <td data-label="{{ __('security_ops.inc_col_type') }}" class="td-strong">
-                            <a href="{{ route('portals.admin.security.incidents.show', $inc->id) }}">{{ $inc->incident_type }}</a>
+                        <td data-label="{{ __('security_ops.inc_col_type') }}">
+                            <a class="od-table__name" href="{{ route('portals.admin.security.incidents.show', $inc->id) }}">{{ $inc->incident_type }}</a>
                             @if($inc->is_demo)
-                                <span class="badge badge-neutral badge-sm">{{ __('security_ops.badge_demo') }}</span>
+                                <span class="od-pill od-pill--neutral">{{ __('security_ops.badge_demo') }}</span>
                             @endif
                         </td>
-                        <td data-label="{{ __('security_ops.inc_col_severity') }}"><span class="badge {{ $sevBadge }} badge-sm">@enum($inc->severity, 'severity')</span></td>
-                        <td data-label="{{ __('security_ops.inc_col_status') }}"><span class="badge {{ $stBadge }} badge-sm">@enum($inc->status)</span></td>
+                        <td data-label="{{ __('security_ops.inc_col_severity') }}"><span class="od-pill {{ $sevBadge }}">@enum($inc->severity, 'severity')</span></td>
+                        <td data-label="{{ __('security_ops.inc_col_status') }}"><span class="od-pill {{ $stBadge }}">@enum($inc->status)</span></td>
                         <td data-label="{{ __('security_ops.inc_col_summary') }}">{{ Str::limit($inc->summary, 80) }}</td>
-                        <td data-label="{{ __('security_ops.inc_col_detected') }}" class="td-muted">{{ $inc->detected_at?->translatedFormat('M d, Y') }}</td>
-                        <td data-label="{{ __('security_ops.inc_col_resolved') }}" class="td-muted">{{ $inc->resolved_at?->translatedFormat('M d, Y') ?? '—' }}</td>
-                        <td class="row-actions">
-                            <button type="button" class="btn btn-ghost btn-sm"
+                        <td data-label="{{ __('security_ops.inc_col_detected') }}" class="oda-ga-muted">{{ $inc->detected_at?->translatedFormat('M d, Y') }}</td>
+                        <td data-label="{{ __('security_ops.inc_col_resolved') }}" class="oda-ga-muted">{{ $inc->resolved_at?->translatedFormat('M d, Y') ?? '—' }}</td>
+                        <td class="od-table__actions">
+                            <button type="button" class="od-btn od-btn--row od-btn--sm"
                                 data-call="openUpdateModal" data-args="{{ json_encode([$inc->id, $inc->status, $inc->summary, $inc->contained_at?->format('Y-m-d') ?? '', $inc->resolved_at?->format('Y-m-d') ?? '']) }}" data-show="update-modal" data-display="flex">
                                 <i data-lucide="pencil"></i> {{ __('security_ops.inc_btn_update') }}
                             </button>
@@ -99,91 +108,95 @@
                 </tbody>
             </table>
         </div>
-        <div class="panel-footer">
-            {{ $incidents->links() }}
-        </div>
         @endif
     </div>
+    @unless($incidents->isEmpty())
+    <div class="od-card__foot">
+        {{ $incidents->links() }}
+    </div>
+    @endunless
+</section>
 </div>
 
 {{-- Create modal --}}
 <div id="create-modal" class="modal-fixed">
-    <div class="modal-fixed__panel">
-        <div class="modal-fixed__head">
-            <h3 class="modal-fixed__title">{{ __('security_ops.inc_modal_create_title') }}</h3>
-            <button type="button" class="icon-btn" aria-label="{{ __('security_ops.btn_close') }}" data-hide="create-modal"><i data-lucide="x"></i></button>
+    <div class="od-card oda-modal">
+        <div class="od-card__head">
+            <h3 class="od-card__title">{{ __('security_ops.inc_modal_create_title') }}</h3>
+            <button type="button" class="od-btn od-btn--ghost od-btn--icon od-btn--sm oda-modal__close" aria-label="{{ __('security_ops.btn_close') }}" data-hide="create-modal"><i data-lucide="x"></i></button>
         </div>
-        <form method="POST" action="{{ route('portals.admin.security.incidents.store') }}">
-            @csrf
-            <div class="form-row mb-3">
-                <div class="form-group">
-                    <label class="form-label" for="inc-type">{{ __('security_ops.inc_form_type') }}</label>
-                    <input id="inc-type" type="text" name="incident_type" class="form-control" required maxlength="100"
+        <div class="od-card__body">
+            <form method="POST" action="{{ route('portals.admin.security.incidents.store') }}" class="oda-form">
+                @csrf
+                <label class="oda-label" for="inc-type">
+                    <span class="oda-label__text">{{ __('security_ops.inc_form_type') }}</span>
+                    <input id="inc-type" type="text" name="incident_type" class="od-input" required maxlength="100"
                            placeholder="{{ __('security_ops.inc_form_type_placeholder') }}" value="{{ old('incident_type') }}">
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="inc-sev">{{ __('security_ops.inc_form_severity') }}</label>
-                    <select id="inc-sev" name="severity" class="form-control" required>
+                </label>
+                <label class="oda-label" for="inc-sev">
+                    <span class="oda-label__text">{{ __('security_ops.inc_form_severity') }}</span>
+                    <select id="inc-sev" name="severity" class="od-select" required>
                         @foreach(['low', 'medium', 'high', 'critical'] as $sev)
                             <option value="{{ $sev }}" {{ old('severity') === $sev ? 'selected' : '' }}>@enum($sev, 'severity')</option>
                         @endforeach
                     </select>
+                </label>
+                <label class="oda-label oda-form__full" for="inc-detected">
+                    <span class="oda-label__text">{{ __('security_ops.inc_form_detected_at') }}</span>
+                    <input id="inc-detected" type="datetime-local" name="detected_at" class="od-input" required
+                           value="{{ old('detected_at', now()->format('Y-m-d\TH:i')) }}">
+                </label>
+                <label class="oda-label oda-form__full" for="inc-summary">
+                    <span class="oda-label__text">{{ __('security_ops.inc_form_summary') }}</span>
+                    <textarea id="inc-summary" name="summary" class="oda-textarea" rows="4" required maxlength="2000"
+                              placeholder="{{ __('security_ops.inc_form_summary_placeholder') }}">{{ old('summary') }}</textarea>
+                </label>
+                @if($errors->any())<p class="oda-error oda-form__full">{{ $errors->first() }}</p>@endif
+                <div class="oda-form__actions">
+                    <button type="button" class="od-btn od-btn--ghost od-btn--sm" data-hide="create-modal">{{ __('security_ops.btn_cancel') }}</button>
+                    <button type="submit" class="od-btn od-btn--primary od-btn--sm">{{ __('security_ops.inc_btn_log') }}</button>
                 </div>
-            </div>
-            <div class="form-group mb-3">
-                <label class="form-label" for="inc-detected">{{ __('security_ops.inc_form_detected_at') }}</label>
-                <input id="inc-detected" type="datetime-local" name="detected_at" class="form-control" required
-                       value="{{ old('detected_at', now()->format('Y-m-d\TH:i')) }}">
-            </div>
-            <div class="form-group mb-4">
-                <label class="form-label" for="inc-summary">{{ __('security_ops.inc_form_summary') }}</label>
-                <textarea id="inc-summary" name="summary" class="form-control" rows="4" required maxlength="2000"
-                          placeholder="{{ __('security_ops.inc_form_summary_placeholder') }}">{{ old('summary') }}</textarea>
-            </div>
-            <div class="modal__footer">
-                <button type="button" class="btn btn-ghost btn-sm" data-hide="create-modal">{{ __('security_ops.btn_cancel') }}</button>
-                <button type="submit" class="btn btn-primary btn-sm">{{ __('security_ops.inc_btn_log') }}</button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
 
 {{-- Update modal --}}
 <div id="update-modal" class="modal-fixed">
-    <div class="modal-fixed__panel">
-        <div class="modal-fixed__head">
-            <h3 class="modal-fixed__title">{{ __('security_ops.inc_modal_update_title') }}</h3>
-            <button type="button" class="icon-btn" aria-label="{{ __('security_ops.btn_close') }}" data-hide="update-modal"><i data-lucide="x"></i></button>
+    <div class="od-card oda-modal">
+        <div class="od-card__head">
+            <h3 class="od-card__title">{{ __('security_ops.inc_modal_update_title') }}</h3>
+            <button type="button" class="od-btn od-btn--ghost od-btn--icon od-btn--sm oda-modal__close" aria-label="{{ __('security_ops.btn_close') }}" data-hide="update-modal"><i data-lucide="x"></i></button>
         </div>
-        <form id="update-form" method="POST" action="">
-            @csrf
-            <div class="form-group mb-3">
-                <label class="form-label" for="upd-status">{{ __('security_ops.inc_form_status') }}</label>
-                <select id="upd-status" name="status" class="form-control" required>
-                    @foreach(['open', 'investigating', 'contained', 'resolved', 'closed'] as $st)
-                        <option value="{{ $st }}">@enum($st)</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="form-group mb-3">
-                <label class="form-label" for="upd-summary">{{ __('security_ops.inc_form_summary') }}</label>
-                <textarea id="upd-summary" name="summary" class="form-control" rows="4" maxlength="2000"></textarea>
-            </div>
-            <div class="form-row mb-4">
-                <div class="form-group">
-                    <label class="form-label" for="upd-contained">{{ __('security_ops.inc_form_contained_at') }}</label>
-                    <input id="upd-contained" type="date" name="contained_at" class="form-control">
+        <div class="od-card__body">
+            <form id="update-form" method="POST" action="" class="oda-form">
+                @csrf
+                <label class="oda-label oda-form__full" for="upd-status">
+                    <span class="oda-label__text">{{ __('security_ops.inc_form_status') }}</span>
+                    <select id="upd-status" name="status" class="od-select" required>
+                        @foreach(['open', 'investigating', 'contained', 'resolved', 'closed'] as $st)
+                            <option value="{{ $st }}">@enum($st)</option>
+                        @endforeach
+                    </select>
+                </label>
+                <label class="oda-label oda-form__full" for="upd-summary">
+                    <span class="oda-label__text">{{ __('security_ops.inc_form_summary') }}</span>
+                    <textarea id="upd-summary" name="summary" class="oda-textarea" rows="4" maxlength="2000"></textarea>
+                </label>
+                <label class="oda-label" for="upd-contained">
+                    <span class="oda-label__text">{{ __('security_ops.inc_form_contained_at') }}</span>
+                    <input id="upd-contained" type="date" name="contained_at" class="od-input">
+                </label>
+                <label class="oda-label" for="upd-resolved">
+                    <span class="oda-label__text">{{ __('security_ops.inc_form_resolved_at') }}</span>
+                    <input id="upd-resolved" type="date" name="resolved_at" class="od-input">
+                </label>
+                <div class="oda-form__actions">
+                    <button type="button" class="od-btn od-btn--ghost od-btn--sm" data-hide="update-modal">{{ __('security_ops.btn_cancel') }}</button>
+                    <button type="submit" class="od-btn od-btn--primary od-btn--sm">{{ __('security_ops.inc_btn_save') }}</button>
                 </div>
-                <div class="form-group">
-                    <label class="form-label" for="upd-resolved">{{ __('security_ops.inc_form_resolved_at') }}</label>
-                    <input id="upd-resolved" type="date" name="resolved_at" class="form-control">
-                </div>
-            </div>
-            <div class="modal__footer">
-                <button type="button" class="btn btn-ghost btn-sm" data-hide="update-modal">{{ __('security_ops.btn_cancel') }}</button>
-                <button type="submit" class="btn btn-primary btn-sm">{{ __('security_ops.inc_btn_save') }}</button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
 @endsection

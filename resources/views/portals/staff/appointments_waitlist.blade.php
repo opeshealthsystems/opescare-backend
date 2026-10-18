@@ -7,133 +7,146 @@
 @section('breadcrumb_section', __('waitlist.staff_title'))
 
 @section('head')
-@include('portals.pharmacy._supply_styles')
+<link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">
 @endsection
 
 @php
     $lApp   = app()->getLocale();
     $canAct   = \App\Support\StaffCapabilities::can(auth()->user(), 'front_desk', 'schedule');
     $canChart = \App\Support\StaffCapabilities::can(auth()->user(), 'clinical_chart');
+    $odInitials = function ($first, $last): string {
+        $s = mb_strtoupper(mb_substr(trim((string) $first), 0, 1) . mb_substr(trim((string) $last), 0, 1));
+        return $s !== '' ? $s : '—';
+    };
+    $odTone = fn (string $key): string => ['blue', 'amber', 'teal', 'rose', 'sky', 'green'][crc32($key) % 6];
 @endphp
 
 @section('content')
+<div class="od-page odc-page">
 
-<div class="page-header">
+<header class="od-page__head odc-head">
     <div>
-        <h1 class="page-title">{{ __('waitlist.staff_title') }}</h1>
-        <p class="page-subtitle">{{ __('waitlist.staff_subtitle') }}</p>
+        <h1 class="od-page__title">{{ __('waitlist.staff_title') }}</h1>
+        <p class="od-page__sub">{{ __('waitlist.staff_subtitle') }}</p>
     </div>
-    <a href="{{ route('portals.staff.appointments') }}" class="btn btn-ghost btn-sm">
-        <i data-lucide="arrow-left"></i>
-        {{ __('public.stf_back') }}
-    </a>
-</div>
+    <div class="odc-head__actions">
+        <a href="{{ route('portals.staff.appointments') }}" class="od-btn od-btn--secondary">
+            <i data-lucide="arrow-left"></i>
+            {{ __('public.stf_back') }}
+        </a>
+    </div>
+</header>
 
 @if(session('success'))
-    <div class="alert alert-success mb-4"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>
+    <div class="odc-note odc-note--ok" role="status"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>
 @endif
 @if(session('error'))
-    <div class="alert alert-danger mb-4"><i data-lucide="alert-circle"></i><div>{{ session('error') }}</div></div>
+    <div class="odc-note odc-note--err" role="alert"><i data-lucide="alert-circle"></i><div>{{ session('error') }}</div></div>
 @endif
 
+<section class="od-card">
+    <header class="od-card__head">
+        <h2 class="od-card__title">{{ __('waitlist.staff_title') }} <span class="od-card__count">({{ method_exists($entries, 'total') ? $entries->total() : $entries->count() }})</span></h2>
+    </header>
 @if($entries->isEmpty())
-    <div class="panel">
-        <div class="panel-body panel-body--flush">
-            <div class="empty-state">
-                <div class="empty-state-icon">
-                    <i data-lucide="list-ordered"></i>
-                </div>
-                <h3>{{ __('waitlist.staff_empty_title') }}</h3>
-                <p>{{ __('waitlist.staff_empty_desc') }}</p>
-                <p class="td-muted">{{ __('hospital_desk.empty_waitlist_hint') }}</p>
-                @if($canAct)
-                <a href="{{ route('portals.staff.appointments.create') }}" class="btn btn-primary btn-sm mt-6">
-                    <i data-lucide="calendar-plus"></i> {{ __('hospital_desk.empty_appointments_action') }}
-                </a>
-                @endif
-            </div>
-        </div>
+    <div class="od-empty">
+        <span class="od-empty__icon"><i data-lucide="list-ordered"></i></span>
+        <div class="od-empty__title">{{ __('waitlist.staff_empty_title') }}</div>
+        <p class="od-empty__text">{{ __('waitlist.staff_empty_desc') }}</p>
+        <p class="od-empty__text">{{ __('hospital_desk.empty_waitlist_hint') }}</p>
+        @if($canAct)
+        <a href="{{ route('portals.staff.appointments.create') }}" class="od-btn od-btn--primary">
+            <i data-lucide="calendar-plus"></i> {{ __('hospital_desk.empty_appointments_action') }}
+        </a>
+        @endif
     </div>
 @else
-    <div class="panel mb-6">
-        <div class="panel-body panel-body--flush">
-            <div class="table-wrapper">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>{{ __('waitlist.col_patient') }}</th>
-                            <th>{{ __('public.staff_portal.col_type', [], $lApp) }}</th>
-                            <th>{{ __('waitlist.col_window') }}</th>
-                            <th>{{ __('waitlist.col_urgency') }}</th>
-                            <th>{{ __('public.staff_portal.col_status', [], $lApp) }}</th>
-                            <th>{{ __('waitlist.col_joined') }}</th>
-                            <th>{{ __('public.staff_portal.col_actions', [], $lApp) }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($entries as $entry)
-                        @php
-                            $name = trim(($entry->patient?->first_name ?? '') . ' ' . ($entry->patient?->last_name ?? ''));
-                            $healthId = $entry->patient?->health_id ?? '—';
-                            $urgencyBadge = $entry->urgency === 'urgent' ? 'badge-danger' : 'badge-neutral';
-                            $statusBadge  = $entry->status === 'notified' ? 'badge-teal' : 'badge-warning';
-                            $from = $entry->preferred_earliest_date?->translatedFormat('d M Y');
-                            $to   = $entry->preferred_latest_date?->translatedFormat('d M Y');
-                        @endphp
-                        <tr>
-                            <td data-label="{{ __('waitlist.col_patient') }}">
-                                <span class="td-strong">{{ $name !== '' ? $name : '—' }}</span>
-                                <div><span class="mono">{{ $healthId }}</span></div>
+    <div class="od-card__body od-card__body--flush">
+    <div class="od-table-wrap">
+        <table class="od-table odc-stack">
+            <thead>
+                <tr>
+                    <th class="od-table__num">#</th>
+                    <th>{{ __('waitlist.col_patient') }}</th>
+                    <th>{{ __('public.staff_portal.col_type', [], $lApp) }}</th>
+                    <th>{{ __('waitlist.col_window') }}</th>
+                    <th>{{ __('waitlist.col_urgency') }}</th>
+                    <th>{{ __('public.staff_portal.col_status', [], $lApp) }}</th>
+                    <th>{{ __('waitlist.col_joined') }}</th>
+                    <th>{{ __('public.staff_portal.col_actions', [], $lApp) }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($entries as $i => $entry)
+                @php
+                    $name = trim(($entry->patient?->first_name ?? '') . ' ' . ($entry->patient?->last_name ?? ''));
+                    $healthId = $entry->patient?->health_id ?? '—';
+                    $urgencyPill = $entry->urgency === 'urgent' ? 'urgent' : 'neutral';
+                    $statusPill  = $entry->status === 'notified' ? 'teal' : 'pending';
+                    $from = $entry->preferred_earliest_date?->translatedFormat('d M Y');
+                    $to   = $entry->preferred_latest_date?->translatedFormat('d M Y');
+                @endphp
+                <tr>
+                    <td class="od-table__num">{{ ($entries->firstItem() ?? 1) + $i }}</td>
+                    <td data-label="{{ __('waitlist.col_patient') }}">
+                        <div class="od-table__person">
+                            <span class="od-avatar od-tint--{{ $odTone($name !== '' ? $name : (string) $healthId) }}" aria-hidden="true">{{ $odInitials($entry->patient?->first_name, $entry->patient?->last_name) }}</span>
+                            <div>
+                                <span class="od-table__name">{{ $name !== '' ? $name : '—' }}</span>
+                                <span class="od-table__sub odc-mono">{{ $healthId }}</span>
                                 @if($canChart && $entry->patient?->health_id)
-                                    <div><a href="{{ route('portals.chart.index', ['health_id' => $entry->patient->health_id]) }}" class="td-muted">{{ __('hospital_desk.open_chart') }}</a></div>
+                                    <a href="{{ route('portals.chart.index', ['health_id' => $entry->patient->health_id]) }}" class="od-table__sub">{{ __('hospital_desk.open_chart') }}</a>
                                 @endif
-                            </td>
-                            <td data-label="{{ __('public.staff_portal.col_type', [], $lApp) }}">
-                                <span class="badge badge-primary">@enum($entry->appointment_type)</span>
-                            </td>
-                            <td data-label="{{ __('waitlist.col_window') }}">
-                                @if($from || $to)
-                                    {{ $from ?? '…' }} → {{ $to ?? '…' }}
-                                @else
-                                    <span class="td-muted">{{ __('waitlist.any_date') }}</span>
-                                @endif
-                            </td>
-                            <td data-label="{{ __('waitlist.col_urgency') }}">
-                                <span class="badge {{ $urgencyBadge }}">@enum($entry->urgency, 'urgency')</span>
-                            </td>
-                            <td data-label="{{ __('public.staff_portal.col_status', [], $lApp) }}">
-                                <span class="badge {{ $statusBadge }}">@enum($entry->status)</span>
-                                @if($entry->notified_at)
-                                    <div class="td-muted">{{ $entry->notified_at->translatedFormat('d M, H:i') }}</div>
-                                @endif
-                            </td>
-                            <td data-label="{{ __('waitlist.col_joined') }}">
-                                {{ $entry->created_at?->translatedFormat('d M Y') }}
-                            </td>
-                            <td data-label="{{ __('public.staff_portal.col_actions', [], $lApp) }}">
-                                @if($canAct)
-                                <a class="fs-act-btn fs-act-btn--good"
-                                   href="{{ route('portals.staff.appointments.create', ['waitlist' => $entry->id, 'patient_id' => $entry->patient_id]) }}">
-                                    @include('partials.finder.icon', ['name' => 'calendar-plus', 'size' => 15])
-                                    {{ __('waitlist.btn_book') }}
-                                </a>
-                                @else
-                                    <span class="td-muted">—</span>
-                                @endif
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td data-label="{{ __('public.staff_portal.col_type', [], $lApp) }}">
+                        <span class="od-pill od-pill--normal">@enum($entry->appointment_type)</span>
+                    </td>
+                    <td data-label="{{ __('waitlist.col_window') }}">
+                        @if($from || $to)
+                            {{ $from ?? '…' }} → {{ $to ?? '…' }}
+                        @else
+                            <span class="od-muted">{{ __('waitlist.any_date') }}</span>
+                        @endif
+                    </td>
+                    <td data-label="{{ __('waitlist.col_urgency') }}">
+                        <span class="od-pill od-pill--dot od-pill--{{ $urgencyPill }}">@enum($entry->urgency, 'urgency')</span>
+                    </td>
+                    <td data-label="{{ __('public.staff_portal.col_status', [], $lApp) }}">
+                        <span class="od-pill od-pill--{{ $statusPill }}">@enum($entry->status)</span>
+                        @if($entry->notified_at)
+                            <span class="od-table__sub">{{ $entry->notified_at->translatedFormat('d M, H:i') }}</span>
+                        @endif
+                    </td>
+                    <td data-label="{{ __('waitlist.col_joined') }}">
+                        {{ $entry->created_at?->translatedFormat('d M Y') }}
+                    </td>
+                    <td class="od-table__actions" data-label="{{ __('public.staff_portal.col_actions', [], $lApp) }}">
+                        @if($canAct)
+                        <a class="od-btn od-btn--row"
+                           href="{{ route('portals.staff.appointments.create', ['waitlist' => $entry->id, 'patient_id' => $entry->patient_id]) }}">
+                            <i data-lucide="calendar-plus"></i>
+                            {{ __('waitlist.btn_book') }}
+                        </a>
+                        @else
+                            <span class="od-muted">—</span>
+                        @endif
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
     </div>
     @if($entries->hasPages())
-    <div class="mb-6">
-        <p class="td-muted">{{ __('hospital_desk.waitlist_showing', ['from' => $entries->firstItem(), 'to' => $entries->lastItem(), 'total' => $entries->total()]) }}</p>
-        {{ $entries->links() }}
-    </div>
+    <footer class="od-card__foot odc-pager">
+        <span>{{ __('hospital_desk.waitlist_showing', ['from' => $entries->firstItem(), 'to' => $entries->lastItem(), 'total' => $entries->total()]) }}</span>
+        <div>{{ $entries->links() }}</div>
+    </footer>
     @endif
 @endif
+</section>
 
+</div>
 @endsection

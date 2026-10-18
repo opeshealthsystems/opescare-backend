@@ -10,19 +10,19 @@
     Expects: $searchAction (route), $facilityQuery (string), $carry (array).
 --}}
 @if($facilityPickerOpen)
-<form method="GET" action="{{ $searchAction }}" class="filter-bar">
+<form method="GET" action="{{ $searchAction }}" class="oda-toolbar">
     @foreach(($carry ?? []) as $carryKey => $carryValue)
         @if($carryValue !== null && $carryValue !== '')
         <input type="hidden" name="{{ $carryKey }}" value="{{ $carryValue }}">
         @endif
     @endforeach
-    <label class="filter-search">
+    <label class="od-field">
         <i data-lucide="search"></i>
         <input type="text" name="facility_q" value="{{ $facilityQuery }}"
                placeholder="{{ __('admin_extra.users_facility_find_ph') }}"
                aria-label="{{ __('admin_extra.users_facility_find') }}">
     </label>
-    <button type="submit" class="btn btn-secondary btn-sm">
+    <button type="submit" class="od-btn od-btn--secondary">
         <i data-lucide="search"></i> {{ __('admin_extra.users_facility_find_btn') }}
     </button>
 </form>

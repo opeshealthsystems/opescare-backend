@@ -10,18 +10,18 @@
     $qTriage = $ticket->triage_priority ?? null;
     $qKey    = \App\Support\TriageAcuity::labelKey($qTriage);
     $qRank   = (int) ($ticket->priority_rank ?? $ticket->priority_level ?? 6);
-    $qClass  = 'badge badge-' . match (true) {
-        $qRank <= 1 => 'danger',
-        $qRank === 2 => 'warning',
-        $qRank === 3 => 'info',
+    $qClass  = 'od-pill od-pill--' . match (true) {
+        $qRank <= 1 => 'urgent',
+        $qRank === 2 => 'pending',
+        $qRank === 3 => 'normal',
         default => 'neutral',
     };
     $qArrival = __('queue_desk.arrival_levels');
 @endphp
 @if($qKey)
     <span class="{{ $qClass }}">{{ __($qKey) }}</span>
-    <div class="td-muted">{{ __('queue_desk.priority_from_triage') }}</div>
+    <div class="od-muted">{{ __('queue_desk.priority_from_triage') }}</div>
 @else
     <span class="{{ $qClass }}">{{ $qArrival[(int) $ticket->priority_level] ?? $ticket->priority_level }}</span>
-    <div class="td-muted">{{ __('queue_desk.priority_from_arrival') }}</div>
+    <div class="od-muted">{{ __('queue_desk.priority_from_arrival') }}</div>
 @endif

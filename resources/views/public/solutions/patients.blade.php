@@ -3,6 +3,10 @@
 @section('title', __('finder_story.patients.page_title'))
 @section('description', __('finder_story.patients.meta_description'))
 
+@push('head')
+    @include('public.partials._od_pages_css')
+@endpush
+
 @section('content')
 
     {{--

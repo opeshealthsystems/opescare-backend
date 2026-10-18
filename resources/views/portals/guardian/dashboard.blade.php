@@ -22,6 +22,7 @@
         .gd-dep__links button:hover{border-color:var(--f-brand);color:var(--f-brand-ink)}
         .gd-inline-form{display:inline;margin:0}
     </style>
+    <link rel="stylesheet" href="{{ asset('css/od-patient.css') }}?v={{ @filemtime(public_path('css/od-patient.css')) ?: '1' }}">
 @endsection
 
 @section('patient_banner')
@@ -71,22 +72,22 @@
     </nav>
 
     @if($incomingCount > 0)
-    <a href="{{ route('portals.patient.family.invitations') }}" class="pf-alert" style="text-decoration:none;" data-section="incoming-invitations">
+    <a href="{{ route('portals.patient.family.invitations') }}" class="pf-alert ods-116e33d" data-section="incoming-invitations">
         @include('partials.finder.icon', ['name' => 'bell', 'size' => 18])
         <p><strong>{{ __('family.dash_incoming') }}</strong> — {{ __('family.dash_incoming_count', ['count' => $incomingCount]) }}</p>
     </a>
     @endif
 
     @if($links->isEmpty())
-    <div class="f-card" style="text-align:center;padding:40px 20px;" data-section="dependents-empty">
-        <div class="pf-qa__icon" style="margin:0 auto 12px;width:48px;height:48px;">
+    <div class="f-card ods-99e8a36" data-section="dependents-empty">
+        <div class="pf-qa__icon ods-4ef0061">
             @include('partials.finder.icon', ['name' => 'users', 'size' => 24])
         </div>
-        <h2 style="font-size:1.125rem;font-weight:750;margin:0 0 6px;">{{ __('family.dash_empty_title') }}</h2>
-        <p class="f-muted" style="margin:0 0 18px;">{{ __('family.dash_empty_body') }}</p>
-        <div class="pf-actions" style="justify-content:center;">
-            <a href="{{ route('portals.patient.family.add') }}" class="f-btn f-btn--primary" style="min-height:48px;">{{ __('family.dash_add_child') }}</a>
-            <a href="{{ route('portals.patient.family.invite') }}" class="f-btn" style="min-height:48px;">{{ __('family.dash_invite_adult') }}</a>
+        <h2 class="ods-40b57ba">{{ __('family.dash_empty_title') }}</h2>
+        <p class="f-muted ods-7307c03">{{ __('family.dash_empty_body') }}</p>
+        <div class="pf-actions ods-9b54a37">
+            <a href="{{ route('portals.patient.family.add') }}" class="f-btn f-btn--primary ods-a27b458">{{ __('family.dash_add_child') }}</a>
+            <a href="{{ route('portals.patient.family.invite') }}" class="f-btn ods-a27b458">{{ __('family.dash_invite_adult') }}</a>
         </div>
     </div>
     @else
@@ -108,14 +109,14 @@
         <div class="f-card" data-dependent="{{ $link->dependent_patient_id }}">
             <div class="gd-dep__head">
                 <div class="pf-avatar">{{ strtoupper(substr($dep?->first_name ?? 'D', 0, 1)) }}</div>
-                <div style="flex:1;min-width:0;">
-                    <div style="font-weight:750;color:var(--f-ink);display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;">
+                <div class="ods-89bd09b">
+                    <div class="ods-27b9a2f">
                         {{ $link->status === 'active' ? ($depName ?? __('public.portal.unknown_patient', [], $l)) : ($dep ? trim(($dep->first_name ?? '') . ' ' . mb_substr((string) ($dep->last_name ?? ''), 0, 1) . '.') : __('public.portal.unknown_patient', [], $l)) }}
                         @if($age !== null && $link->status === 'active')<span class="f-badge pf-badge--muted">{{ __('family.dash_age', ['age' => $age]) }}</span>@endif
                         @if($isOpen)<span class="f-badge f-badge--good">{{ __('family.dash_currently_viewing') }}</span>@endif
                     </div>
                     @if($dep && $link->status === 'active')
-                    <div class="f-small f-muted" style="font-family:ui-monospace,Menlo,Consolas,monospace;">{{ $dep->health_id }}</div>
+                    <div class="f-small f-muted ods-9709411">{{ $dep->health_id }}</div>
                     @endif
                 </div>
                 @if($link->status === 'pending_invite')
@@ -125,13 +126,13 @@
                 @endif
             </div>
 
-            <p class="f-small f-muted" style="margin:8px 0 0;">
+            <p class="f-small f-muted ods-00dd4a9">
                 {{ __('family.relationship.' . $link->relationship) !== 'family.relationship.' . $link->relationship ? __('family.relationship.' . $link->relationship) : ucfirst(str_replace('_', ' ', $link->relationship)) }}
                 @if($link->status === 'pending_invite') &middot; {{ __('family.dash_pending_invite') }} @endif
             </p>
 
             @if(!$dep)
-                <div class="pf-alert pf-alert--warn" style="margin:10px 0 0;">
+                <div class="pf-alert pf-alert--warn ods-446a577">
                     @include('partials.finder.icon', ['name' => 'alert-circle', 'size' => 18])
                     <p class="f-small">{{ __('family.dash_hidden_dependent') }}</p>
                 </div>
@@ -139,12 +140,12 @@
                 <div class="gd-dep__facts">
                     <div>
                         <div class="pf-tile__label">{{ __('family.dash_next_appointment') }}</div>
-                        <div class="pf-tile__value" style="font-size:.9375rem;">
+                        <div class="pf-tile__value ods-6907a20">
                             @if($next)
                                 {{ $next->scheduled_at->isoFormat('ddd D MMM, HH:mm') }}
-                                <div class="f-small f-muted" style="font-weight:500;">{{ $next->facility?->name ?? '—' }}</div>
+                                <div class="f-small f-muted ods-1e29eef">{{ $next->facility?->name ?? '—' }}</div>
                             @else
-                                <span class="f-muted" style="font-weight:600;">{{ __('family.dash_none_scheduled') }}</span>
+                                <span class="f-muted ods-e634e6d">{{ __('family.dash_none_scheduled') }}</span>
                             @endif
                         </div>
                     </div>
@@ -154,7 +155,7 @@
                     </div>
                     <div>
                         <div class="pf-tile__label">{{ __('family.dash_identity') }}</div>
-                        <div class="pf-tile__value" style="font-size:.9375rem;">@enum($identity ?? 'provisional', 'verification')</div>
+                        <div class="pf-tile__value ods-6907a20">@enum($identity ?? 'provisional', 'verification')</div>
                     </div>
                     <div>
                         <div class="pf-tile__label">{{ __('public.portal.blood_group', [], $l) }}</div>
@@ -163,23 +164,23 @@
                 </div>
 
                 @if($link->isExpiredByAge())
-                    <div class="pf-alert pf-alert--warn" style="margin:0 0 10px;">
+                    <div class="pf-alert pf-alert--warn ods-0998cfa">
                         @include('partials.finder.icon', ['name' => 'alert-circle', 'size' => 18])
                         <p class="f-small">{{ __('family.age_grace', ['name' => $dep->first_name, 'date' => $link->age_transition_expires_at->translatedFormat('d M Y')]) }}</p>
                     </div>
                 @elseif($link->age_transition_expires_at)
-                    <div class="pf-alert pf-alert--warn" style="margin:0 0 10px;">
+                    <div class="pf-alert pf-alert--warn ods-0998cfa">
                         @include('partials.finder.icon', ['name' => 'clock', 'size' => 18])
                         <p class="f-small">{{ __('family.age_grace', ['name' => $dep->first_name, 'date' => $link->age_transition_expires_at->translatedFormat('d M Y')]) }}</p>
                     </div>
                 @elseif($soon)
-                    <div class="pf-alert" style="margin:0 0 10px;" data-age-transition>
+                    <div class="pf-alert ods-0998cfa" data-age-transition>
                         @include('partials.finder.icon', ['name' => 'info', 'size' => 18])
                         <p class="f-small">{{ __('family.age_turns_majority', ['name' => $dep->first_name, 'age' => $majorityAge, 'date' => $turns->translatedFormat('d M Y'), 'grace' => $graceDays]) }}</p>
                     </div>
                 @endif
 
-                <div class="pf-appt__actions" style="margin-top:0;">
+                <div class="pf-appt__actions ods-53896af">
                     <form method="POST" action="{{ route('portals.patient.family.switch', $dep->id) }}" class="gd-inline-form">
                         @csrf
                         <input type="hidden" name="next" value="dashboard">

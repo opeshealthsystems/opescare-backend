@@ -17,63 +17,53 @@
     <meta name="robots" content="noindex">
     <meta name="theme-color" content="#0F4C81">
     @include('partials.favicons')
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    @include('public.partials._od_pages_css')
     <script src="{{ asset('js/lucide.min.js') }}"></script>
 <script src="{{ asset('js/op-actions.js') }}?v={{ @filemtime(public_path('js/op-actions.js')) ?: '1' }}" defer></script>
     <style>
+        /* Same language as the landing page: canvas, one flat white card, ink + muted, one accent. */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        :root {
-            --err-bg: #F0F4F8; --err-fg: #0F172A; --err-muted: #64748B; --err-note: #94A3B8;
-            --err-code: #E2E8F0; --err-border: #E2E8F0; --err-ghost: #475569; --err-ghost-hover: #0F4C81;
-            --err-icon-bg: #EFF6FF; --err-icon-fg: #0F4C81; --err-icon-border: transparent;
-        }
-        html[data-tone="dark"] {
-            --err-bg: #0F172A; --err-fg: #F1F5F9; --err-muted: #94A3B8; --err-note: #64748B;
-            --err-code: rgba(255,255,255,.08); --err-border: rgba(255,255,255,.12); --err-ghost: #94A3B8; --err-ghost-hover: #fff;
-            --err-icon-bg: rgba(185,28,28,.15); --err-icon-fg: #FCA5A5; --err-icon-border: rgba(185,28,28,.3);
-        }
-        html[data-tone="warn"] { --err-icon-bg: #FFF7ED; --err-icon-fg: #B45309; --err-icon-border: #FDE68A; }
+        :root { --err-bg: #EEF3F9; --err-fg: #0F2340; --err-muted: #5B6B80; --err-line: #E2E8F0; --err-accent: #0F4C81; --err-icon: #0F4C81; }
+        html[data-tone="dark"] { --err-icon: #B42318; }
+        html[data-tone="warn"] { --err-icon: #B54708; }
         body {
-            font-family: 'Inter', sans-serif; background: var(--err-bg); color: var(--err-fg);
-            min-height: 100vh; display: flex; flex-direction: column; align-items: center;
-            justify-content: center; padding: 2rem 1.25rem; text-align: center;
+            font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--err-bg); color: var(--err-fg);
+            min-height: 100vh; display: flex; flex-direction: column; justify-content: center;
+            padding: 48px 16px; -webkit-font-smoothing: antialiased;
         }
-        .err-icon {
-            width: 5rem; height: 5rem; background: var(--err-icon-bg); color: var(--err-icon-fg);
-            border: 1px solid var(--err-icon-border); border-radius: 1.25rem;
-            display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;
-        }
-        .err-icon i { width: 2.25rem; height: 2.25rem; }
-        .err-code { font-size: 6rem; font-weight: 900; color: var(--err-code); line-height: 1; margin-bottom: 0.5rem; letter-spacing: -0.04em; }
-        .err-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.75rem; }
-        .err-body  { font-size: 0.9375rem; color: var(--err-muted); max-width: 440px; line-height: 1.65; margin-bottom: 2rem; }
-        .err-body + .err-note { margin-top: -1.5rem; }
-        .err-note  { font-size: 0.8125rem; color: var(--err-note); max-width: 440px; line-height: 1.65; margin-bottom: 2rem; }
-        .btn-row { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; }
-        .btn-primary, .btn-ghost {
-            display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.9375rem;
-            border-radius: 0.625rem; padding: 0.75rem 1.75rem; text-decoration: none; transition: all .2s;
-        }
-        .btn-primary { background: #0F4C81; color: #fff; font-weight: 700; }
-        .btn-primary:hover { background: #1D6EA8; }
-        .btn-ghost { background: transparent; color: var(--err-ghost); font-weight: 600; border: 1.5px solid var(--err-border); }
-        .btn-ghost:hover { border-color: #0F4C81; color: var(--err-ghost-hover); }
-        .btn-row i { width: 1rem; height: 1rem; }
-        .logo-link { display: flex; align-items: center; gap: 0.5rem; text-decoration: none; font-weight: 800; font-size: 1rem; color: var(--err-fg); margin-bottom: 3rem; }
+        .err-wrap { width: 100%; max-width: 560px; margin: 0 auto; }
+        .logo-link { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-weight: 800; font-size: 20px; color: var(--err-fg); margin-bottom: 24px; }
         .logo-link img { width: 26px; height: 26px; }
-        .err-footer { margin-top: 2.5rem; font-size: 0.75rem; color: var(--err-note); }
-        .err-footer a { color: #0F4C81; text-decoration: none; }
-        html[data-tone="dark"] .err-footer a { color: #5EEAD4; }
+        .err-card { background: #fff; border-radius: 16px; padding: 32px 24px; }
+        @media (min-width: 640px) { .err-card { padding: 40px; } }
+        .err-icon { color: var(--err-icon); margin-bottom: 16px; }
+        .err-icon i, .err-icon svg { width: 28px; height: 28px; display: block; }
+        .err-code { font-size: 14px; font-weight: 600; color: var(--err-muted); margin-bottom: 8px; }
+        .err-title { font-size: clamp(26px, 4vw, 32px); line-height: 1.2; font-weight: 700; letter-spacing: -0.015em; margin-bottom: 12px; }
+        .err-body  { font-size: 16px; color: var(--err-muted); max-width: 52ch; line-height: 1.6; margin-bottom: 24px; }
+        .err-note  { font-size: 14px; color: var(--err-muted); max-width: 52ch; line-height: 1.6; margin: -8px 0 24px; }
+        .btn-row { display: flex; flex-wrap: wrap; gap: 12px; }
+        .btn-primary, .btn-ghost {
+            display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-size: 15px; font-weight: 600;
+            border-radius: 8px; padding: 0 20px; text-decoration: none; border: 1px solid transparent;
+        }
+        .btn-primary { background: var(--err-accent); color: #fff; }
+        .btn-primary:hover { background: #0B3C68; }
+        .btn-ghost { background: #fff; color: var(--err-fg); border-color: var(--err-line); }
+        .btn-ghost:hover { border-color: var(--err-fg); }
+        .btn-row i, .btn-row svg { width: 16px; height: 16px; }
+        .err-footer { margin-top: 24px; font-size: 13px; color: var(--err-muted); }
+        .err-footer a { color: var(--err-accent); }
     </style>
 </head>
 <body>
+<div class="err-wrap">
     <a href="{{ url('/') }}" class="logo-link">
         <img src="{{ asset('brand/opescare-favicon.png') }}" alt="">
         OpesCare
     </a>
 
+    <div class="err-card">
     <div class="err-icon"><i data-lucide="{{ $icon }}"></i></div>
 
     <div class="err-code">{{ $code }}</div>
@@ -85,7 +75,10 @@
         @yield('actions')
     </div>
 
+    </div>
+
     @hasSection('footer')<div class="err-footer">@yield('footer')</div>@endif
+</div>
 
     <script @cspNonce>
         document.addEventListener('DOMContentLoaded', function () {

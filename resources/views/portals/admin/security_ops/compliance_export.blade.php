@@ -6,39 +6,57 @@
 @section('breadcrumb_home', __('security_ops.breadcrumb_home'))
 @section('breadcrumb_home_url', route('portals.admin'))
 @section('breadcrumb_section', __('security_ops.ce_title'))
+@section('head')<link rel="stylesheet" href="{{ asset('css/od-admin.css') }}?v={{ @filemtime(public_path('css/od-admin.css')) ?: '1' }}">@endsection
 
 @section('content')
-<div class="page-head">
-    <h2>{{ __('security_ops.ce_title') }}</h2>
-</div>
-<p class="page-subtitle mb-6">{{ __('security_ops.ce_subtitle') }}</p>
-
-<div class="panel mb-6">
-    <div class="panel-header"><h3 class="panel-title"><i data-lucide="file-down"></i> {{ __('security_ops.ce_request') }}</h3></div>
-    <div class="panel-body">
-        <form method="POST" action="{{ route('portals.admin.security.compliance_export.download') }}" class="filter-bar">
-            @csrf
-            <select name="export_type" class="filter-select" aria-label="{{ __('security_ops.ce_lbl_type') }}">
-                @foreach($types as $t)<option value="{{ $t }}">{{ __('security_ops.ce_type_'.$t) }}</option>@endforeach
-            </select>
-            <label class="form-label" for="ce_from">{{ __('security_ops.ce_lbl_from') }}</label>
-            <input id="ce_from" type="date" name="from" class="form-control">
-            <label class="form-label" for="ce_to">{{ __('security_ops.ce_lbl_to') }}</label>
-            <input id="ce_to" type="date" name="to" class="form-control">
-            <button type="submit" class="btn btn-primary btn-sm"><i data-lucide="download"></i> {{ __('security_ops.ce_btn_download') }}</button>
-        </form>
-        <p class="td-muted text-sm mt-3"><i data-lucide="lock"></i> {{ __('security_ops.ce_no_clinical') }}</p>
+<div class="od-page od-stack">
+<div class="od-page__head">
+    <div>
+        <h1 class="od-page__title">{{ __('security_ops.ce_title') }}</h1>
+        <p class="od-page__sub">{{ __('security_ops.ce_subtitle') }}</p>
     </div>
 </div>
 
-<div class="panel">
-    <div class="panel-header"><h3 class="panel-title"><i data-lucide="history"></i> {{ __('security_ops.ce_recent') }}</h3></div>
-    <div class="panel-body panel-body--flush">
+<section class="od-card">
+    <div class="od-card__head"><h2 class="od-card__title">{{ __('security_ops.ce_request') }}</h2></div>
+    <div class="od-card__body">
+        <form method="POST" action="{{ route('portals.admin.security.compliance_export.download') }}" class="oda-form oda-form--3">
+            @csrf
+            <label class="oda-label">
+                <span class="oda-label__text">{{ __('security_ops.ce_lbl_type') }}</span>
+                <select name="export_type" class="od-select" aria-label="{{ __('security_ops.ce_lbl_type') }}">
+                    @foreach($types as $t)<option value="{{ $t }}">{{ __('security_ops.ce_type_'.$t) }}</option>@endforeach
+                </select>
+            </label>
+            <label class="oda-label" for="ce_from">
+                <span class="oda-label__text">{{ __('security_ops.ce_lbl_from') }}</span>
+                <input id="ce_from" type="date" name="from" class="od-input">
+            </label>
+            <label class="oda-label" for="ce_to">
+                <span class="oda-label__text">{{ __('security_ops.ce_lbl_to') }}</span>
+                <input id="ce_to" type="date" name="to" class="od-input">
+            </label>
+            <p class="oda-help oda-form__full"><i data-lucide="lock"></i> {{ __('security_ops.ce_no_clinical') }}</p>
+            <div class="oda-form__actions">
+                <button type="submit" class="od-btn od-btn--primary"><i data-lucide="download"></i> {{ __('security_ops.ce_btn_download') }}</button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<section class="od-card">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('security_ops.ce_recent') }} <span class="od-card__count">({{ $exports->count() }})</span></h2>
+    </div>
+    <div class="od-card__body od-card__body--flush">
         @if($exports->isEmpty())
-            <p class="td-muted empty-cell">{{ __('security_ops.ce_empty') }}</p>
+            <div class="od-empty">
+                <span class="od-empty__icon"><i data-lucide="history"></i></span>
+                <p class="od-empty__text">{{ __('security_ops.ce_empty') }}</p>
+            </div>
         @else
-        <div class="table-wrapper">
-            <table class="data-table">
+        <div class="od-table-wrap">
+            <table class="od-table">
                 <thead><tr>
                     <th>{{ __('security_ops.ce_lbl_type') }}</th>
                     <th>{{ __('security_ops.ce_col_filters') }}</th>
@@ -47,9 +65,9 @@
                 <tbody>
                 @foreach($exports as $export)
                     <tr>
-                        <td data-label="{{ __('security_ops.ce_lbl_type') }}">{{ in_array($export->export_type, $types) ? __('security_ops.ce_type_'.$export->export_type) : $export->export_type }}</td>
-                        <td data-label="{{ __('security_ops.ce_col_filters') }}" class="td-muted">{{ collect($export->filters ?? [])->map(fn ($v, $k) => $k.': '.$v)->implode(', ') ?: '—' }}</td>
-                        <td data-label="{{ __('security_ops.ce_col_when') }}" class="td-muted">{{ $export->created_at?->format('d/m/Y H:i') }}</td>
+                        <td data-label="{{ __('security_ops.ce_lbl_type') }}"><span class="od-table__name">{{ in_array($export->export_type, $types) ? __('security_ops.ce_type_'.$export->export_type) : $export->export_type }}</span></td>
+                        <td data-label="{{ __('security_ops.ce_col_filters') }}" class="oda-ga-muted">{{ collect($export->filters ?? [])->map(fn ($v, $k) => $k.': '.$v)->implode(', ') ?: '—' }}</td>
+                        <td data-label="{{ __('security_ops.ce_col_when') }}" class="oda-ga-muted">{{ $export->created_at?->format('d/m/Y H:i') }}</td>
                     </tr>
                 @endforeach
                 </tbody>
@@ -57,5 +75,6 @@
         </div>
         @endif
     </div>
+</section>
 </div>
 @endsection

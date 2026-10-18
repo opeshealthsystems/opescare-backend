@@ -8,6 +8,7 @@
 
 @section('head')
     @include('portals.patient._finder_head')
+    <link rel="stylesheet" href="{{ asset('css/od-patient.css') }}?v={{ @filemtime(public_path('css/od-patient.css')) ?: '1' }}">
 @endsection
 
 @section('patient_banner')
@@ -37,7 +38,7 @@
     @endif
 
     {{-- What is being moved --}}
-    <div class="f-card" style="margin-bottom:12px;">
+    <div class="f-card ods-fa3e1c7">
         <h2 class="pf-card-head">
             @include('partials.finder.icon', ['name' => 'calendar', 'size' => 18])
             {{ __('finder_patient.current_appointment') }}
@@ -79,7 +80,7 @@
             <p>{{ __('finder_patient.reschedule_note') }}</p>
         </div>
 
-        <button type="submit" class="f-btn f-btn--primary f-btn--block" style="min-height:48px;">
+        <button type="submit" class="f-btn f-btn--primary f-btn--block ods-a27b458">
             {{ __('public.appt_reschedule_submit') }}
         </button>
     </form>

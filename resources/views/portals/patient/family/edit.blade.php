@@ -7,6 +7,7 @@
 
 @section('head')
     @include('portals.patient._finder_head')
+    <link rel="stylesheet" href="{{ asset('css/od-patient.css') }}?v={{ @filemtime(public_path('css/od-patient.css')) ?: '1' }}">
 @endsection
 
 @php
@@ -23,7 +24,7 @@
 <div class="pf pf--form">
 
     <div class="pf-head">
-        <div style="display:flex;align-items:center;gap:12px;">
+        <div class="ods-9f0e4db">
             <div class="pf-avatar">{{ strtoupper(substr($dep?->first_name ?? 'D', 0, 1)) }}</div>
             <h1>{{ $dep ? trim(($dep->first_name ?? '') . ' ' . ($dep->last_name ?? '')) : (__('public.portal.unknown_patient', [], $l)) }}</h1>
         </div>
@@ -42,7 +43,7 @@
 
     <form method="POST" action="{{ route('portals.patient.family.update', $link->id) }}">
         @csrf
-        <div class="f-card" style="margin-bottom:12px;">
+        <div class="f-card ods-fa3e1c7">
             <div class="f-field">
                 <label class="f-label" for="relationship">{{ __('public.portal.field_relationship', [], $l) }}</label>
                 <select id="relationship" name="relationship" required class="f-input">
@@ -55,7 +56,7 @@
                 </select>
                 <p class="f-hint">{{ __('family.relationship_hint') }}</p>
             </div>
-            <div class="f-field" style="margin-bottom:0;">
+            <div class="f-field ods-e7ec540">
                 <label class="f-label" for="access_level">{{ __('public.portal.field_access_level', [], $l) }}</label>
                 <select id="access_level" name="access_level" required class="f-input">
                     <option value="full" {{ $currentLevel === 'full' ? 'selected' : '' }}>{{ __('family.access.full') }}</option>
@@ -66,7 +67,7 @@
             </div>
         </div>
 
-        <div class="f-card" style="margin-bottom:16px;">
+        <div class="f-card ods-8e86974">
             <h2 class="pf-card-head">
                 @include('partials.finder.icon', ['name' => 'filter', 'size' => 18])
                 {{ __('public.portal.notif_pref_heading', [], $l) }}
@@ -76,9 +77,9 @@
                     <thead>
                         <tr>
                             <th>{{ __('public.portal.col_event', [], $l) }}</th>
-                            <th style="text-align:center;">{{ __('public.portal.col_in_portal', [], $l) }}</th>
-                            <th style="text-align:center;">{{ __('public.portal.col_email', [], $l) }}</th>
-                            <th style="text-align:center;">{{ __('public.portal.col_sms', [], $l) }}</th>
+                            <th class="ods-13076d9">{{ __('public.portal.col_in_portal', [], $l) }}</th>
+                            <th class="ods-13076d9">{{ __('public.portal.col_email', [], $l) }}</th>
+                            <th class="ods-13076d9">{{ __('public.portal.col_sms', [], $l) }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -91,7 +92,7 @@
                     <tr>
                         <td>{{ $label }}</td>
                         @foreach(['portal','email','sms'] as $ch)
-                        <td style="text-align:center;">
+                        <td class="ods-13076d9">
                             <input type="checkbox" name="notification_prefs[{{ $key }}][{{ $ch }}]" value="1"
                                 aria-label="{{ $label }} — {{ ucfirst($ch) }}"
                                 {{ $link->notificationPrefFor($key, $ch) ? 'checked' : '' }}>
@@ -105,7 +106,7 @@
         </div>
 
         <div class="pf-actions">
-            <button type="submit" class="f-btn f-btn--primary" style="min-height:48px;">{{ __('public.portal.btn_save_changes', [], $l) }}</button>
+            <button type="submit" class="f-btn f-btn--primary ods-a27b458">{{ __('public.portal.btn_save_changes', [], $l) }}</button>
             <a href="{{ route('portals.patient.family') }}" class="f-btn">{{ __('public.portal.btn_cancel', [], $l) }}</a>
         </div>
     </form>

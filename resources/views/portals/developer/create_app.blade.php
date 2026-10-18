@@ -2,6 +2,10 @@
 @section('title', __('public.developer_portal.page_create_app', [], app()->getLocale()))
 @php $l = app()->getLocale(); @endphp
 
+@section('head')
+    <link rel="stylesheet" href="{{ asset('css/od-pro.css') }}?v={{ @filemtime(public_path('css/od-pro.css')) ?: '1' }}">
+@endsection
+
 @section('content')
 
     <div class="breadcrumb">

@@ -4,73 +4,72 @@
 @section('breadcrumb_home_url', route('portals.admin'))
 @section('breadcrumb_section', __('public.adm_cert_form_title'))
 @section('sidebar') @include('portals.admin.control_center._sidebar') @endsection
+@section('head')<link rel="stylesheet" href="{{ asset('css/od-admin.css') }}?v={{ @filemtime(public_path('css/od-admin.css')) ?: '1' }}">@endsection
 
 @section('content')
+<div class="od-page">
 
-<div class="breadcrumb">
+<nav class="oda-gc-crumbs" aria-label="breadcrumb">
     <a href="{{ route('portals.admin.certifications.index') }}">{{ __('public.adm_cert_form_breadcrumb_parent') }}</a>
     <i data-lucide="chevron-right"></i>
     <span>{{ __('public.adm_cert_form_breadcrumb_new') }}</span>
-</div>
+</nav>
 
-<div class="page-header">
+<div class="od-page__head">
     <div>
-        <h1 class="page-title">{{ __('public.adm_cert_form_heading') }}</h1>
-        <p class="page-subtitle">{{ __('public.adm_cert_form_subtitle') }}</p>
+        <h1 class="od-page__title">{{ __('public.adm_cert_form_heading') }}</h1>
+        <p class="od-page__sub">{{ __('public.adm_cert_form_subtitle') }}</p>
     </div>
 </div>
 
-<div class="panel form-panel">
-    <div class="panel-body">
-        <form method="POST" action="{{ route('portals.admin.certifications.store') }}">
+<section class="od-card oda-gc-narrow">
+    <div class="od-card__body">
+        <form method="POST" action="{{ route('portals.admin.certifications.store') }}" class="oda-form">
             @csrf
 
-            <div class="form-group mb-4">
-                <label class="form-label form-label-required">{{ __('public.adm_cert_form_lbl_integration_name') }}</label>
+            <label class="oda-label oda-form__full">
+                <span class="oda-label__text">{{ __('public.adm_cert_form_lbl_integration_name') }} *</span>
                 <input type="text" name="integration_name" value="{{ old('integration_name') }}" required
-                       class="form-control" placeholder="{{ __('public.adm_cert_form_ph_integration_name') }}">
-                @error('integration_name') <div class="form-hint">{{ $message }}</div> @enderror
-            </div>
+                       class="od-input" placeholder="{{ __('public.adm_cert_form_ph_integration_name') }}">
+                @error('integration_name') <span class="oda-error">{{ $message }}</span> @enderror
+            </label>
 
-            <div class="form-row mb-4">
-                <div class="form-group">
-                    <label class="form-label form-label-required">{{ __('public.adm_cert_form_lbl_integration_type') }}</label>
-                    <select name="integration_type" class="form-control" required>
-                        <option value="">{{ __('public.adm_cert_form_opt_select_type') }}</option>
-                        @foreach($types as $t)
-                        <option value="{{ $t }}" {{ old('integration_type') === $t ? 'selected' : '' }}>{{ strtoupper($t) }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">{{ __('public.adm_cert_form_lbl_version') }}</label>
-                    <input type="text" name="version" value="{{ old('version') }}" class="form-control" placeholder="{{ __('public.adm_cert_form_ph_version') }}">
-                </div>
-            </div>
+            <label class="oda-label">
+                <span class="oda-label__text">{{ __('public.adm_cert_form_lbl_integration_type') }} *</span>
+                <select name="integration_type" class="od-select" required>
+                    <option value="">{{ __('public.adm_cert_form_opt_select_type') }}</option>
+                    @foreach($types as $t)
+                    <option value="{{ $t }}" {{ old('integration_type') === $t ? 'selected' : '' }}>{{ strtoupper($t) }}</option>
+                    @endforeach
+                </select>
+            </label>
+            <label class="oda-label">
+                <span class="oda-label__text">{{ __('public.adm_cert_form_lbl_version') }}</span>
+                <input type="text" name="version" value="{{ old('version') }}" class="od-input" placeholder="{{ __('public.adm_cert_form_ph_version') }}">
+            </label>
 
-            <div class="form-row mb-4">
-                <div class="form-group">
-                    <label class="form-label">{{ __('public.adm_cert_form_lbl_vendor_name') }}</label>
-                    <input type="text" name="vendor_name" value="{{ old('vendor_name') }}" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">{{ __('public.adm_cert_form_lbl_vendor_contact') }}</label>
-                    <input type="text" name="vendor_contact" value="{{ old('vendor_contact') }}" class="form-control" placeholder="{{ __('public.adm_cert_form_ph_vendor_contact') }}">
-                </div>
-            </div>
+            <label class="oda-label">
+                <span class="oda-label__text">{{ __('public.adm_cert_form_lbl_vendor_name') }}</span>
+                <input type="text" name="vendor_name" value="{{ old('vendor_name') }}" class="od-input">
+            </label>
+            <label class="oda-label">
+                <span class="oda-label__text">{{ __('public.adm_cert_form_lbl_vendor_contact') }}</span>
+                <input type="text" name="vendor_contact" value="{{ old('vendor_contact') }}" class="od-input" placeholder="{{ __('public.adm_cert_form_ph_vendor_contact') }}">
+            </label>
 
-            <div class="form-group mb-6">
-                <label class="form-label">{{ __('public.adm_cert_form_lbl_scope') }}</label>
-                <textarea name="scope_description" rows="3" class="form-control"
+            <label class="oda-label oda-form__full">
+                <span class="oda-label__text">{{ __('public.adm_cert_form_lbl_scope') }}</span>
+                <textarea name="scope_description" rows="3" class="oda-textarea"
                           placeholder="{{ __('public.adm_cert_form_ph_scope') }}">{{ old('scope_description') }}</textarea>
-            </div>
+            </label>
 
-            <div class="row-actions-inline">
-                <button type="submit" class="btn btn-primary">{{ __('public.adm_cert_form_btn_start') }}</button>
-                <a href="{{ route('portals.admin.certifications.index') }}" class="btn btn-secondary">{{ __('public.adm_cert_form_btn_cancel') }}</a>
+            <div class="oda-form__actions">
+                <a href="{{ route('portals.admin.certifications.index') }}" class="od-btn od-btn--ghost">{{ __('public.adm_cert_form_btn_cancel') }}</a>
+                <button type="submit" class="od-btn od-btn--primary">{{ __('public.adm_cert_form_btn_start') }}</button>
             </div>
         </form>
     </div>
-</div>
+</section>
 
+</div>
 @endsection

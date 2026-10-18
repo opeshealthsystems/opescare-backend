@@ -7,6 +7,7 @@
 
 @section('head')
     @include('portals.patient._finder_head')
+    <link rel="stylesheet" href="{{ asset('css/od-patient.css') }}?v={{ @filemtime(public_path('css/od-patient.css')) ?: '1' }}">
 @endsection
 
 @section('patient_banner')
@@ -36,11 +37,11 @@
     </div>
 
     @if(!$patient || $logCount === 0)
-    <div class="f-card" style="text-align:center;padding:40px 20px;" data-section="access-logs-empty">
-        <div class="pf-qa__icon" style="margin:0 auto 12px;width:48px;height:48px;">
-            <i data-lucide="history" aria-hidden="true" style="width:24px;height:24px;"></i>
+    <div class="f-card ods-99e8a36" data-section="access-logs-empty">
+        <div class="pf-qa__icon ods-4ef0061">
+            <i class="ods-f70f93d" data-lucide="history" aria-hidden="true"></i>
         </div>
-        <p class="f-muted" style="margin:0;">{{ __('family.log_empty') }}</p>
+        <p class="f-muted ods-1386d50">{{ __('family.log_empty') }}</p>
     </div>
     @else
     <div class="f-card" data-section="access-logs">
@@ -58,7 +59,7 @@
                 <tbody>
                 @foreach($logs as $log)
                     <tr>
-                        <td style="white-space:nowrap;">{{ $log->created_at?->translatedFormat('d M Y, H:i') ?? '—' }}</td>
+                        <td class="ods-4ddbe90">{{ $log->created_at?->translatedFormat('d M Y, H:i') ?? '—' }}</td>
                         <td>{{ $log->actor_type ? ucfirst(str_replace('_', ' ', (string) $log->actor_type)) : '—' }}</td>
                         <td>@enum($log->access_type)</td>
                         <td>{{ $log->purpose ? ucfirst(str_replace('_', ' ', $log->purpose)) : '—' }}</td>
@@ -69,7 +70,7 @@
             </table>
         </div>
         @if(method_exists($logs, 'links'))
-        <div style="margin-top:12px;">{{ $logs->links() }}</div>
+        <div class="ods-002535c">{{ $logs->links() }}</div>
         @endif
     </div>
     @endif

@@ -2,19 +2,19 @@
      renders as "no known allergies" — the most dangerous thing a chart can say —
      so it is read on its own and its empty state says "none recorded", never
      "none". --}}
-<div class="panel mb-4">
-    <div class="panel-header">
-        <h2 class="panel-title"><i data-lucide="alert-triangle"></i> {{ __('chart.allergies_title') }}</h2>
+<div class="od-card">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('chart.allergies_title') }}</h2>
         @if($allergies->isNotEmpty())
-            <span class="badge badge-danger">{{ $allergies->count() }}</span>
+            <span class="od-pill od-pill--urgent">{{ $allergies->count() }}</span>
         @endif
     </div>
-    <div class="panel-body">
+    <div class="od-card__body">
         @if($allergies->isEmpty())
-            <p class="td-muted">{{ __('chart.allergies_none') }}</p>
+            <p class="od-muted">{{ __('chart.allergies_none') }}</p>
         @else
-            <div class="table-wrapper">
-                <table class="data-table">
+            <div class="od-table-wrap">
+                <table class="od-table">
                     <thead>
                     <tr>
                         <th>{{ __('chart.col_substance') }}</th>
@@ -26,10 +26,10 @@
                     <tbody>
                     @foreach($allergies as $a)
                         <tr>
-                            <td class="td-strong">{{ $a->substance ?: '—' }}</td>
-                            <td>@if($a->severity)<span class="badge badge-danger">@enum($a->severity, 'severity')</span>@else <span class="td-muted">{{ __('chart.not_recorded') }}</span>@endif</td>
+                            <td class="odc-strong">{{ $a->substance ?: '—' }}</td>
+                            <td>@if($a->severity)<span class="od-pill od-pill--urgent">@enum($a->severity, 'severity')</span>@else <span class="od-muted">{{ __('chart.not_recorded') }}</span>@endif</td>
                             <td>@if($a->status)@enum($a->status)@else —@endif</td>
-                            <td class="td-muted">{{ $a->created_at?->translatedFormat('d M Y') ?? '—' }}</td>
+                            <td class="od-muted">{{ $a->created_at?->translatedFormat('d M Y') ?? '—' }}</td>
                         </tr>
                     @endforeach
                     </tbody>
@@ -39,16 +39,16 @@
     </div>
 </div>
 
-<div class="panel mb-4">
-    <div class="panel-header">
-        <h2 class="panel-title"><i data-lucide="clipboard-list"></i> {{ __('chart.problems_title') }}</h2>
+<div class="od-card">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('chart.problems_title') }}</h2>
     </div>
-    <div class="panel-body">
+    <div class="od-card__body">
         @if($problems->isEmpty())
-            <p class="td-muted">{{ __('chart.problems_none') }}</p>
+            <p class="od-muted">{{ __('chart.problems_none') }}</p>
         @else
-            <div class="table-wrapper">
-                <table class="data-table">
+            <div class="od-table-wrap">
+                <table class="od-table">
                     <thead>
                     <tr>
                         <th>{{ __('chart.col_code') }}</th>
@@ -60,10 +60,10 @@
                     <tbody>
                     @foreach($problems as $p)
                         <tr>
-                            <td class="td-strong">{{ $p->icd_code ?: '—' }}</td>
+                            <td class="odc-strong">{{ $p->icd_code ?: '—' }}</td>
                             <td>{{ $p->description ?: '—' }}</td>
-                            <td class="td-muted">{{ $p->onset_date?->translatedFormat('d M Y') ?? '—' }}</td>
-                            <td>@if($p->status)<span class="badge {{ $p->status === 'active' ? 'badge-warning' : 'badge-neutral' }}">@enum($p->status)</span>@else —@endif</td>
+                            <td class="od-muted">{{ $p->onset_date?->translatedFormat('d M Y') ?? '—' }}</td>
+                            <td>@if($p->status)<span class="od-pill {{ $p->status === 'active' ? 'od-pill--pending' : 'od-pill--neutral' }}">@enum($p->status)</span>@else —@endif</td>
                         </tr>
                     @endforeach
                     </tbody>
@@ -73,16 +73,16 @@
     </div>
 </div>
 
-<div class="panel mb-4">
-    <div class="panel-header">
-        <h2 class="panel-title"><i data-lucide="pill"></i> {{ __('chart.medicines_title') }}</h2>
+<div class="od-card">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('chart.medicines_title') }}</h2>
     </div>
-    <div class="panel-body">
+    <div class="od-card__body">
         @if($medicines->isEmpty())
-            <p class="td-muted">{{ __('chart.medicines_none') }}</p>
+            <p class="od-muted">{{ __('chart.medicines_none') }}</p>
         @else
-            <div class="table-wrapper">
-                <table class="data-table">
+            <div class="od-table-wrap">
+                <table class="od-table">
                     <thead>
                     <tr>
                         <th>{{ __('chart.col_drug') }}</th>
@@ -98,14 +98,14 @@
                     <tbody>
                     @foreach($medicines as $m)
                         <tr>
-                            <td class="td-strong">{{ $m['drug_name'] ?: '—' }}</td>
+                            <td class="odc-strong">{{ $m['drug_name'] ?: '—' }}</td>
                             <td>{{ $m['dose'] ?: '—' }}</td>
                             <td>{{ $m['route'] ?: '—' }}</td>
                             <td>{{ $m['frequency'] ?: '—' }}</td>
                             <td>{{ $m['duration_days'] !== null ? __('chart.duration_days', ['days' => $m['duration_days']]) : '—' }}</td>
-                            <td class="td-muted">{{ $m['prescribed_at']?->translatedFormat('d M Y') ?? '—' }}</td>
+                            <td class="od-muted">{{ $m['prescribed_at']?->translatedFormat('d M Y') ?? '—' }}</td>
                             <td>{{ $m['prescribed_by'] ?: '—' }}</td>
-                            <td><span class="badge badge-info">@enum($m['status'])</span></td>
+                            <td><span class="od-pill od-pill--normal">@enum($m['status'])</span></td>
                         </tr>
                     @endforeach
                     </tbody>

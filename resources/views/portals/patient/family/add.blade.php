@@ -7,6 +7,7 @@
 
 @section('head')
     @include('portals.patient._finder_head')
+    <link rel="stylesheet" href="{{ asset('css/od-patient.css') }}?v={{ @filemtime(public_path('css/od-patient.css')) ?: '1' }}">
 @endsection
 
 @php
@@ -40,7 +41,7 @@
     @if($errors->any())
     <div class="pf-alert pf-alert--danger" role="alert">
         @include('partials.finder.icon', ['name' => 'alert-circle', 'size' => 18])
-        <div>@foreach($errors->all() as $e)<p class="f-small" style="margin:0;">{{ $e }}</p>@endforeach</div>
+        <div>@foreach($errors->all() as $e)<p class="f-small ods-1386d50">{{ $e }}</p>@endforeach</div>
     </div>
     @endif
 
@@ -85,8 +86,8 @@
             <p class="f-hint">{{ __('family.access_full_explained') }}</p>
             <p class="f-hint">{{ __('family.access_read_only_explained') }}</p>
         </div>
-        <div class="pf-actions" style="margin-top:8px;">
-            <button type="submit" class="f-btn f-btn--primary" style="min-height:48px;">{{ __('public.portal.btn_register_dependent', [], $l) }}</button>
+        <div class="pf-actions ods-d431697">
+            <button type="submit" class="f-btn f-btn--primary ods-a27b458">{{ __('public.portal.btn_register_dependent', [], $l) }}</button>
             <a href="{{ route('portals.patient.family') }}" class="f-btn">{{ __('public.portal.btn_cancel', [], $l) }}</a>
         </div>
     </form>

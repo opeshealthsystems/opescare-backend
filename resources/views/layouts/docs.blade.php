@@ -18,7 +18,7 @@
 <script src="{{ asset('js/op-actions.js') }}?v={{ @filemtime(public_path('js/op-actions.js')) ?: '1' }}" defer></script>
 
     <!-- Docs CSS -->
-    <link rel="stylesheet" href="{{ asset('css/docs.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/docs.css') }}?v={{ @filemtime(public_path('css/docs.css')) ?: '1' }}">
 
     @yield('head')
 {{-- Canonical, hreflang, Open Graph and schema.org --}}

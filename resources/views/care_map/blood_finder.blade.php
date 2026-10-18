@@ -63,21 +63,25 @@
 </script>
 @endpush
 
+@push('head')
+    @include('public.partials._od_pages_css')
+@endpush
+
 @section('content')
 
 <section class="f-section--wash f-section--tight">
     <div class="f-container">
         <span class="f-eyebrow">@include('partials.finder.icon', ['name' => 'droplet', 'size' => 14]) {{ __('public.network_blood.badge') }}</span>
         <h1 class="f-h1">{{ __('public.network_blood.hero_title') }}</h1>
-        <p class="f-lead" style="margin-top:10px;">{{ __('finder_search.blood.intro') }}</p>
+        <p class="f-lead odp-mt-12">{{ __('finder_search.blood.intro') }}</p>
 
-        <form method="GET" action="{{ route('public.network.blood-finder') }}" style="margin-top:24px;max-width:640px;">
-            <fieldset style="border:0;padding:0;margin:0;">
+        <form class="odp-search" method="GET" action="{{ route('public.network.blood-finder') }}">
+            <fieldset class="odp-fieldset">
                 <legend class="f-label">{{ __('finder_search.blood.group_label') }}</legend>
                 {{-- Big tap chips: radios styled as targets ≥48px tall. --}}
-                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:420px;">
+                <div class="odp-grid-4">
                     @foreach(\App\Enums\BloodGroup::cases() as $g)
-                        <label class="f-chip blood-chip" @if($group === $g->value) style="background:var(--f-wash);border-color:var(--f-brand);color:var(--f-brand-ink);" @endif>
+                        <label class="f-chip blood-chip @if($group === $g->value) is-on @endif">
                             <input type="radio" name="group" value="{{ $g->value }}" required @checked($group === $g->value)>
                             {{ $g->label() }}
                         </label>
@@ -85,7 +89,7 @@
                 </div>
             </fieldset>
 
-            <div class="f-field" style="margin-top:16px;max-width:420px;">
+            <div class="f-field odp-mt-16">
                 <label class="f-label" for="blood-component">{{ __('finder_search.blood.component_label') }}</label>
                 <select class="f-input" id="blood-component" name="component">
                     @foreach(\App\Enums\BloodComponentType::cases() as $c)
@@ -97,7 +101,7 @@
             <input type="hidden" name="lat" id="finder-lat" value="{{ $lat }}">
             <input type="hidden" name="lng" id="finder-lng" value="{{ $lng }}">
 
-            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px;">
+            <div class="odp-row odp-mt-4">
                 <button class="f-btn f-btn--primary" type="submit">
                     @include('partials.finder.icon', ['name' => 'search', 'size' => 18])
                     {{ __('finder_search.blood.search_button') }}
@@ -107,7 +111,7 @@
                     {{ __('finder_search.common.use_my_location') }}
                 </button>
             </div>
-            <p class="f-small f-muted" id="finder-locate-status" role="status" aria-live="polite" style="margin-top:8px;">
+            <p class="f-small f-muted odp-mt-8" id="finder-locate-status" role="status" aria-live="polite">
                 @if($lat !== null && $lng !== null){{ __('finder_search.common.location_active') }}@endif
             </p>
         </form>
@@ -120,18 +124,18 @@
 
         {{-- The caution comes BEFORE the results: this is where somebody
              decides whether to travel. --}}
-        <p class="f-small" style="display:flex;gap:8px;align-items:flex-start;max-width:62ch;color:var(--f-warn);background:var(--f-warn-wash);border-radius:var(--f-r);padding:10px 14px;">
+        <p class="f-small odp-note odp-note--warn">
             @include('partials.finder.icon', ['name' => 'alert-circle', 'size' => 16])
             <span>{{ __('finder_search.blood.before_you_travel') }}</span>
         </p>
 
         @if($results->isEmpty())
 
-            <div class="f-card" style="text-align:center;padding:36px 20px;max-width:560px;margin-inline:auto;margin-top:16px;">
+            <div class="f-card odp-empty odp-mt-16">
                 @include('partials.finder.icon', ['name' => 'droplet', 'size' => 36, 'class' => 'f-muted'])
-                <h2 class="f-h2" style="margin-top:12px;">{{ __('finder_search.blood.empty_title', ['group' => $group]) }}</h2>
-                <p class="f-muted" style="margin-top:10px;line-height:1.6;">{{ __('finder_search.blood.empty_body') }}</p>
-                <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:20px;">
+                <h2 class="f-h2 odp-mt-12">{{ __('finder_search.blood.empty_title', ['group' => $group]) }}</h2>
+                <p class="f-muted odp-mt-8 odp-soft">{{ __('finder_search.blood.empty_body') }}</p>
+                <div class="odp-row odp-mt-20">
                     <a class="f-btn f-btn--primary" href="{{ route('public.care-map.emergency') }}">
                         @include('partials.finder.icon', ['name' => 'heart-pulse', 'size' => 18])
                         {{ __('finder_search.blood.empty_emergency_cta') }}
@@ -145,11 +149,11 @@
 
         @else
 
-            <p style="font-weight:650;margin-top:16px;">{{ trans_choice('finder_search.blood.results_count', $results->count(), ['count' => $results->count(), 'group' => $group]) }}</p>
+            <p class="odp-strong odp-mt-16">{{ trans_choice('finder_search.blood.results_count', $results->count(), ['count' => $results->count(), 'group' => $group]) }}</p>
 
             @php $shown = $results->take(30); @endphp
             @include('partials.finder.map', ['facilities' => $shown, 'mapId' => 'blood-map', 'height' => '340px'])
-            <div style="display:grid;gap:12px;margin-top:12px;">
+            <div class="odp-stack odp-mt-12">
                 @foreach($shown as $f)
                     @php
                         $match    = $f->matched_blood;
@@ -161,43 +165,43 @@
                         $reportedAt = $match->last_updated_at?->locale(app()->getLocale());
                     @endphp
                     <article class="f-card">
-                        <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;">
-                            <h3 style="font-size:1.0625rem;font-weight:700;line-height:1.35;">{{ $f->facility_name }}</h3>
+                        <div class="odp-row odp-row--between">
+                            <h3 class="odp-title">{{ $f->facility_name }}</h3>
                             @if($f->distance !== null)
-                                <span class="f-badge" style="flex-shrink:0;">{{ __('finder_search.common.distance_km', ['distance' => round($f->distance, 1)]) }}</span>
+                                <span class="f-badge odp-shrink">{{ __('finder_search.common.distance_km', ['distance' => round($f->distance, 1)]) }}</span>
                             @endif
                         </div>
 
-                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px;">
+                        <div class="odp-row odp-mt-8">
                             <span class="f-badge f-badge--good">{{ $match->blood_group }} · {{ __('finder_search.blood.component_' . $match->component_type) }}</span>
                             @if($match->units_available_range)
-                                <span class="f-small" style="color:var(--f-ink-soft);">{{ __('finder_search.blood.units_reported', ['range' => $match->units_available_range]) }}</span>
+                                <span class="f-small odp-soft">{{ __('finder_search.blood.units_reported', ['range' => $match->units_available_range]) }}</span>
                             @endif
                         </div>
 
-                        <div class="f-small" style="display:grid;gap:5px;margin-top:10px;color:var(--f-ink-soft);">
+                        <div class="f-small odp-meta">
                             @if($reportedAt)
-                                <span style="display:flex;gap:6px;align-items:center;">
+                                <span class="odp-inline">
                                     @include('partials.finder.icon', ['name' => 'clock', 'size' => 14])
                                     {{ __('finder_search.blood.reported_line', ['time' => $reportedAt->diffForHumans()]) }}
                                 </span>
                             @endif
                             @if($address !== '')
-                                <span style="display:flex;gap:6px;align-items:center;">
+                                <span class="odp-inline">
                                     @include('partials.finder.icon', ['name' => 'map-pin', 'size' => 14])
                                     {{ $address }}
                                 </span>
                             @endif
                         </div>
 
-                        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
+                        <div class="odp-row odp-mt-16">
                             @if($phone)
                                 <a class="f-btn f-btn--primary" href="tel:{{ $phone }}">
                                     @include('partials.finder.icon', ['name' => 'phone', 'size' => 16])
                                     {{ __('finder_search.common.call') }}
                                 </a>
                             @else
-                                <span class="f-small f-muted" style="align-self:center;">{{ __('finder_search.common.no_phone') }}</span>
+                                <span class="f-small f-muted odp-self-center">{{ __('finder_search.common.no_phone') }}</span>
                             @endif
                             @if($dirUrl)
                                 <button type="button" class="f-btn" data-finder-directions="{{ $f->id }}">
@@ -214,7 +218,7 @@
             </div>
 
             @if($results->count() > $shown->count())
-                <p class="f-small f-muted" style="margin-top:12px;">{{ __('finder_search.common.showing_first', ['count' => $shown->count()]) }}</p>
+                <p class="f-small f-muted odp-mt-12">{{ __('finder_search.common.showing_first', ['count' => $shown->count()]) }}</p>
             @endif
 
         @endif
@@ -227,10 +231,10 @@
      pretend to a web form the platform does not have. --}}
 <section class="f-section--tight f-section--surface">
     <div class="f-container">
-        <div class="f-card" style="max-width:640px;">
-            <h2 class="f-h2" style="font-size:1.25rem;">{{ __('finder_search.blood.request_title') }}</h2>
-            <p class="f-small" style="color:var(--f-ink-soft);line-height:1.6;margin-top:8px;">{{ __('finder_search.blood.request_body') }}</p>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
+        <div class="f-card odp-narrow">
+            <h2 class="f-h2 odp-title">{{ __('finder_search.blood.request_title') }}</h2>
+            <p class="f-small odp-soft odp-mt-8">{{ __('finder_search.blood.request_body') }}</p>
+            <div class="odp-row odp-mt-16">
                 <a class="f-btn f-btn--primary" href="{{ route('public.care-map.emergency') }}">
                     @include('partials.finder.icon', ['name' => 'heart-pulse', 'size' => 18])
                     {{ __('finder_search.blood.empty_emergency_cta') }}
@@ -239,7 +243,7 @@
                     {{ __('finder_search.blood.request_app_cta') }}
                 </a>
             </div>
-            <p class="f-small f-muted" style="margin-top:14px;line-height:1.6;">{{ __('finder_search.blood.clinical_note') }}</p>
+            <p class="f-small f-muted odp-mt-16 odp-soft">{{ __('finder_search.blood.clinical_note') }}</p>
         </div>
     </div>
 </section>

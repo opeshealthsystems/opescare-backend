@@ -1,5 +1,9 @@
 @extends('layouts.docs')
 @section('title', 'Errors & Troubleshooting')
+@section('head')
+@include('public.partials._od_pages_css')
+@endsection
+
 @section('content')
 
 <h1>Errors & Troubleshooting</h1>

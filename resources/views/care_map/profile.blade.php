@@ -24,6 +24,7 @@
 @include('partials.finder.schema.facility', ['facility' => $facility])
 @include('partials.finder.schema.breadcrumbs', ['facility' => $facility])
 <link rel="stylesheet" href="{{ asset('assets/finder.css') }}">
+@include('public.partials._od_pages_css')
 
 @php
   use App\Models\CareFacility;
@@ -95,7 +96,10 @@
 
 <style>
 /* Page-specific layer on top of finder.css — tokens only, no new colors. */
-.p-wrap { max-width: 760px; margin-inline: auto; padding: 16px 16px 48px; }
+.p-wrap { max-width: 760px; margin-inline: auto; padding: 24px 16px 64px; }
+body.odp { background: var(--lx-canvas); }
+body.odp .p-wrap .f-card { border-color: transparent; }
+.p-card-title .f-icon { color: var(--f-brand); }
 .p-stack { display: flex; flex-direction: column; gap: 14px; }
 
 .p-head .f-badge { margin-bottom: 10px; }
@@ -106,7 +110,7 @@
 .p-actions .f-btn { flex: 1 1 auto; }
 @media (min-width: 640px) { .p-actions .f-btn { flex: 0 1 auto; } }
 
-.p-card-title { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 750; letter-spacing: 0.06em; text-transform: uppercase; color: var(--f-muted); margin: 0 0 12px; }
+.p-card-title { display: flex; align-items: center; gap: 8px; font-size: 1.0625rem; font-weight: 700; color: var(--f-ink); margin: 0 0 12px; }
 .p-row { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--f-line); font-size: 0.9rem; }
 .p-row:last-child { border-bottom: none; }
 .p-row-label { color: var(--f-muted); font-size: 0.8rem; min-width: 78px; flex-shrink: 0; padding-top: 1px; }
@@ -130,15 +134,15 @@
 
 .p-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 
-.p-note { display: flex; gap: 8px; align-items: flex-start; background: var(--f-warn-wash); border: 1px solid var(--f-line); border-radius: var(--f-r); padding: 10px 12px; font-size: 0.85rem; color: var(--f-warn); line-height: 1.55; }
+.p-note { display: flex; gap: 8px; align-items: flex-start; background: var(--f-warn-wash); border: 0; border-radius: 8px; padding: 10px 12px; font-size: 0.85rem; color: #7A2E05; line-height: 1.55; }
 .p-note .f-icon { flex-shrink: 0; margin-top: 2px; }
 .p-provenance { font-size: 0.85rem; color: var(--f-ink-soft); line-height: 1.6; margin: 0 0 8px; }
 .p-claim { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--f-line); font-size: 0.88rem; }
 .p-back { display: inline-flex; align-items: center; gap: 4px; text-decoration: none; font-weight: 650; font-size: 0.9rem; color: var(--f-brand); white-space: nowrap; }
-.p-emergency { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px; background: var(--f-danger-wash); color: var(--f-danger); font-weight: 750; font-size: 0.8rem; text-decoration: none; white-space: nowrap; }
+.p-emergency { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; background: #fff; border: 1px solid var(--f-line); color: var(--f-danger); font-weight: 600; font-size: 0.8rem; text-decoration: none; white-space: nowrap; }
 </style>
 </head>
-<body>
+<body class="odp">
 
 <header class="f-header">
   <div class="f-container f-header__row">
@@ -209,7 +213,7 @@
     @endif
   </div>
   @if($bookable)
-    <p class="f-small f-muted" style="margin:-4px 0 0 2px;">{{ __('finder_directory.booking_hint') }}</p>
+    <p class="f-small f-muted">{{ __('finder_directory.booking_hint') }}</p>
   @endif
   @endif
 
@@ -220,7 +224,7 @@
       @include('partials.finder.icon', ['name' => 'info', 'size' => 14])
       {{ __('finder_directory.about_heading') }}
     </h2>
-    <p style="margin:0; font-size:0.92rem; line-height:1.65;">{{ $facility->description }}</p>
+    <p class="odp-m0 odp-soft">{{ $facility->description }}</p>
   </section>
   @endif
 
@@ -332,7 +336,7 @@
         @endif
       </div>
     @endforeach
-    <p class="f-small f-muted" style="margin:8px 0 0; line-height:1.6;">{{ __('finder_directory.price_list_note') }}</p>
+    <p class="f-small f-muted odp-mt-8 odp-soft">{{ __('finder_directory.price_list_note') }}</p>
   </section>
   @endif
 
@@ -344,11 +348,11 @@
     </h2>
 
     @if(!$hasAvail)
-      <p class="f-small f-muted" style="margin:0; line-height:1.6;">{{ __('finder_directory.no_availability') }}</p>
+      <p class="f-small f-muted odp-m0 odp-soft">{{ __('finder_directory.no_availability') }}</p>
     @else
 
       @if($stockRows->isNotEmpty())
-        <h3 class="p-card-title" style="margin-top:6px;">
+        <h3 class="p-card-title odp-mt-6">
           @include('partials.finder.icon', ['name' => 'pill', 'size' => 13])
           {{ __('finder_directory.pharmacy_stock_heading') }}
         </h3>
@@ -367,7 +371,7 @@
       @endif
 
       @if($bloodRows->isNotEmpty())
-        <h3 class="p-card-title" style="margin-top:6px;">
+        <h3 class="p-card-title odp-mt-6">
           @include('partials.finder.icon', ['name' => 'droplet', 'size' => 13])
           {{ __('finder_directory.blood_heading') }}
         </h3>
@@ -386,7 +390,7 @@
       @endif
 
       @if($labRows->isNotEmpty())
-        <h3 class="p-card-title" style="margin-top:6px;">
+        <h3 class="p-card-title odp-mt-6">
           @include('partials.finder.icon', ['name' => 'droplet', 'size' => 13])
           {{ __('finder_directory.lab_tests_heading') }}
         </h3>
@@ -419,7 +423,7 @@
     </h2>
     <div class="p-chips">
       @foreach($facility->insurances as $ins)
-        <span class="f-chip" style="pointer-events:none;">{{ $ins->insurance_name }}</span>
+        <span class="f-chip odp-no-events">{{ $ins->insurance_name }}</span>
       @endforeach
     </div>
   </section>

@@ -8,6 +8,7 @@
 
 @section('head')
     @include('portals.patient._finder_head')
+    <link rel="stylesheet" href="{{ asset('css/od-patient.css') }}?v={{ @filemtime(public_path('css/od-patient.css')) ?: '1' }}">
 @endsection
 
 @section('patient_banner')
@@ -38,7 +39,7 @@
     @if($readOnly)
     {{-- Read-only guardian: the composer is shown but cannot be used — the reason is right above it. --}}
     <div class="pf-alert" data-section="read-only-note">
-        <i data-lucide="lock" aria-hidden="true" style="width:18px;height:18px;flex:none;margin-top:2px;"></i>
+        <i class="ods-d9ea87f" data-lucide="lock" aria-hidden="true"></i>
         <p id="compose-disabled-reason">{{ __('family.inbox_read_only_compose', ['name' => $viewingName]) }}</p>
     </div>
     @elseif($viewing)
@@ -78,13 +79,13 @@
             <p class="f-hint">{{ __('messaging.compose_about_hint') }}</p>
         </div>
 
-        <div class="f-field" id="ctx-item-wrap" style="display:none;">
+        <div class="f-field ods-cb45893" id="ctx-item-wrap">
             <label class="f-label" for="context_id">{{ __('messaging.compose_select_item') }}</label>
             <select id="context_id" name="context_id" class="f-input" @disabled($readOnly)>
                 <option value="">—</option>
                 @foreach($catalog as $type => $items)
                     @foreach($items as $item)
-                        <option value="{{ $item['id'] }}" data-ctx="{{ $type }}" style="display:none;">{{ $item['label'] }}</option>
+                        <option class="ods-cb45893" value="{{ $item['id'] }}" data-ctx="{{ $type }}">{{ $item['label'] }}</option>
                     @endforeach
                 @endforeach
             </select>
@@ -97,7 +98,7 @@
             @error('body')<p class="f-error">{{ $message }}</p>@enderror
         </div>
 
-        <button type="submit" class="f-btn f-btn--primary f-btn--block" style="min-height:48px;" @disabled($locked) @if($locked) aria-disabled="true" @endif>
+        <button type="submit" class="f-btn f-btn--primary f-btn--block ods-a27b458" @disabled($locked) @if($locked) aria-disabled="true" @endif>
             {{ __('messaging.compose_send') }}
             @include('partials.finder.icon', ['name' => 'send', 'size' => 16])
         </button>
@@ -109,11 +110,11 @@ function pfFilterCtx(type) {
     var wrap = document.getElementById('ctx-item-wrap');
     var sel  = document.getElementById('context_id');
     if (!type) { wrap.style.display = 'none'; sel.value = ''; return; }
-    wrap.style.display = '';
+    wrap.style.display = 'block';
     sel.value = '';
     Array.prototype.forEach.call(sel.options, function (o) {
         if (!o.value) { return; }
-        o.style.display = (o.getAttribute('data-ctx') === type) ? '' : 'none';
+        o.style.display = (o.getAttribute('data-ctx') === type) ? 'block' : 'none';
     });
 }
 </script>

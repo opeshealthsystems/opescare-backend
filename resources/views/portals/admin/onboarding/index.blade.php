@@ -6,41 +6,47 @@
 @section('breadcrumb_home', __('security_ops.breadcrumb_home'))
 @section('breadcrumb_home_url', route('portals.admin'))
 @section('breadcrumb_section', __('onboarding.admin_portal.idx_title'))
+@section('head')<link rel="stylesheet" href="{{ asset('css/od-admin.css') }}?v={{ @filemtime(public_path('css/od-admin.css')) ?: '1' }}">@endsection
+@php
+    $gcTones = ['blue', 'amber', 'teal', 'rose', 'sky', 'green'];
+    $gcTone = fn ($s) => $gcTones[crc32((string) $s) % count($gcTones)];
+@endphp
 
 @section('content')
+<div class="od-page">
 
-<div class="page-head">
-    <h2>{{ __('onboarding.admin_portal.idx_title') }}</h2>
-</div>
-<p class="page-subtitle mb-6">{{ __('onboarding.admin_portal.idx_desc') }}</p>
-
-{{-- KPI Strip --}}
-<div class="stat-grid mb-6">
-    <div class="stat-card stat-card--primary">
-        <div class="stat-card__head"><i data-lucide="building-2"></i><span class="stat-card__label">{{ __('onboarding.admin_portal.stat_facilities') }}</span></div>
-        <div class="stat-card__value">{{ $stats['total'] }}</div>
-    </div>
-    <div class="stat-card stat-card--success">
-        <div class="stat-card__head"><i data-lucide="check-circle-2"></i><span class="stat-card__label">{{ __('onboarding.admin_portal.stat_approved') }}</span></div>
-        <div class="stat-card__value">{{ $stats['approved'] }}</div>
-    </div>
-    <div class="stat-card stat-card--primary">
-        <div class="stat-card__head"><i data-lucide="clock"></i><span class="stat-card__label">{{ __('onboarding.admin_portal.stat_ready') }}</span></div>
-        <div class="stat-card__value">{{ $stats['ready_for_approval'] }}</div>
-    </div>
-    <div class="stat-card stat-card--warning">
-        <div class="stat-card__head"><i data-lucide="alert-circle"></i><span class="stat-card__label">{{ __('onboarding.admin_portal.stat_in_progress') }}</span></div>
-        <div class="stat-card__value">{{ $stats['pending'] }}</div>
+<div class="od-page__head">
+    <div>
+        <h1 class="od-page__title">{{ __('onboarding.admin_portal.idx_title') }}</h1>
+        <p class="od-page__sub">{{ __('onboarding.admin_portal.idx_desc') }}</p>
     </div>
 </div>
 
-<div class="panel">
-    <div class="panel-header">
-        <h3 class="panel-title"><i data-lucide="rocket"></i> {{ __('onboarding.admin_portal.panel_title') }}</h3>
+<div class="od-kpis">
+    <div class="od-kpi">
+        <span class="od-kpi__icon od-tint--blue"><i data-lucide="building-2"></i></span>
+        <div class="od-kpi__body"><span class="od-kpi__label">{{ __('onboarding.admin_portal.stat_facilities') }}</span><span class="od-kpi__value">{{ $stats['total'] }}</span></div>
     </div>
-    <div class="panel-body panel-body--flush">
-        <div class="table-wrapper">
-        <table class="data-table">
+    <div class="od-kpi">
+        <span class="od-kpi__icon od-tint--green"><i data-lucide="check-circle-2"></i></span>
+        <div class="od-kpi__body"><span class="od-kpi__label">{{ __('onboarding.admin_portal.stat_approved') }}</span><span class="od-kpi__value">{{ $stats['approved'] }}</span></div>
+    </div>
+    <div class="od-kpi">
+        <span class="od-kpi__icon od-tint--sky"><i data-lucide="clock"></i></span>
+        <div class="od-kpi__body"><span class="od-kpi__label">{{ __('onboarding.admin_portal.stat_ready') }}</span><span class="od-kpi__value">{{ $stats['ready_for_approval'] }}</span></div>
+    </div>
+    <div class="od-kpi">
+        <span class="od-kpi__icon od-tint--amber"><i data-lucide="alert-circle"></i></span>
+        <div class="od-kpi__body"><span class="od-kpi__label">{{ __('onboarding.admin_portal.stat_in_progress') }}</span><span class="od-kpi__value">{{ $stats['pending'] }}</span></div>
+    </div>
+</div>
+
+<section class="od-card">
+    <div class="od-card__head">
+        <h2 class="od-card__title"><i data-lucide="rocket"></i> {{ __('onboarding.admin_portal.panel_title') }} <span class="od-card__count">({{ $facilities->total() }})</span></h2>
+    </div>
+    <div class="od-table-wrap">
+        <table class="od-table">
             <thead>
                 <tr>
                     <th>{{ __('onboarding.admin_portal.col_facility') }}</th>
@@ -49,7 +55,7 @@
                     <th>{{ __('onboarding.admin_portal.col_score') }}</th>
                     <th>{{ __('onboarding.admin_portal.col_status') }}</th>
                     <th>{{ __('onboarding.admin_portal.col_approved') }}</th>
-                    <th class="row-actions"></th>
+                    <th class="od-table__actions"></th>
                 </tr>
             </thead>
             <tbody>
@@ -62,40 +68,50 @@
                         $pct = $total > 0 ? round($done / $total * 100) : 0;
                         $status = $r->status ?? 'pending';
                         $statusColor = match($status) {
-                            'approved' => 'success',
-                            'ready_for_approval' => 'info',
-                            default => 'warning',
+                            'approved' => 'ready',
+                            'ready_for_approval' => 'normal',
+                            default => 'pending',
                         };
                     @endphp
                     <tr>
-                        <td data-label="{{ __('onboarding.admin_portal.col_facility') }}" class="td-strong">{{ $facility->name }}</td>
+                        <td data-label="{{ __('onboarding.admin_portal.col_facility') }}">
+                            <div class="od-table__person">
+                                <span class="od-avatar od-tint--{{ $gcTone($facility->name) }}" aria-hidden="true"><i data-lucide="building-2"></i></span>
+                                <a href="{{ route('portals.admin.onboarding.show', $facility->id) }}" class="od-table__name">{{ $facility->name }}</a>
+                            </div>
+                        </td>
                         <td data-label="{{ __('onboarding.admin_portal.col_type') }}">{{ $facility->type ?? '—' }}</td>
                         <td data-label="{{ __('onboarding.admin_portal.col_progress') }}">
-                            <div class="breakdown__row breakdown__row--2col">
-                                <div class="breakdown__track">
-                                    <div class="breakdown__fill {{ $pct == 100 ? 'breakdown__fill--teal' : '' }}" style="width: {{ $pct }}%"></div>
-                                </div>
-                                <span class="td-muted">{{ $done }}/{{ $total }}</span>
+                            <div class="oda-gc-progress-row">
+                                <progress class="oda-gc-progress{{ $pct == 100 ? ' is-done' : '' }}" value="{{ $pct }}" max="100">{{ $pct }}%</progress>
+                                <span class="oda-gc-muted">{{ $done }}/{{ $total }}</span>
                             </div>
                         </td>
                         <td data-label="{{ __('onboarding.admin_portal.col_score') }}"><span data-score="{{ $facility->id }}">{{ $scores[$facility->id] ?? 0 }}%</span></td>
                         <td data-label="{{ __('onboarding.admin_portal.col_status') }}">
-                            <span class="badge badge--{{ $statusColor }} badge-sm">{{ __('onboarding.admin_portal.status_'.$status) }}</span>
+                            <span class="od-pill od-pill--dot od-pill--{{ $statusColor }}">{{ __('onboarding.admin_portal.status_'.$status) }}</span>
                         </td>
-                        <td data-label="{{ __('onboarding.admin_portal.col_approved') }}" class="td-muted">{{ $r?->approved_at?->translatedFormat('d M Y') ?? '—' }}</td>
-                        <td class="row-actions">
-                            <a href="{{ route('portals.admin.facilities.readiness', $facility->id) }}" class="btn btn-ghost btn-sm"><i data-lucide="gauge"></i> {{ __('onboarding.admin_portal.btn_readiness') }}</a>
-                            <a href="{{ route('portals.admin.onboarding.show', $facility->id) }}" class="btn btn-secondary btn-sm">{{ __('onboarding.admin_portal.btn_manage') }}</a>
+                        <td data-label="{{ __('onboarding.admin_portal.col_approved') }}" class="oda-gc-muted">{{ $r?->approved_at?->translatedFormat('d M Y') ?? '—' }}</td>
+                        <td class="od-table__actions">
+                            <div class="oda-gc-actions">
+                            <a href="{{ route('portals.admin.facilities.readiness', $facility->id) }}" class="od-btn od-btn--ghost od-btn--sm"><i data-lucide="gauge"></i> {{ __('onboarding.admin_portal.btn_readiness') }}</a>
+                            <a href="{{ route('portals.admin.onboarding.show', $facility->id) }}" class="od-btn od-btn--row">{{ __('onboarding.admin_portal.btn_manage') }}</a>
+                            </div>
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="7" class="td-muted empty-cell">{{ __('onboarding.admin_portal.idx_empty') }}</td></tr>
+                    <tr><td colspan="7">
+                        <div class="od-empty">
+                            <span class="od-empty__icon"><i data-lucide="rocket"></i></span>
+                            <p class="od-empty__text">{{ __('onboarding.admin_portal.idx_empty') }}</p>
+                        </div>
+                    </td></tr>
                 @endforelse
             </tbody>
         </table>
-        </div>
     </div>
-</div>
-<div class="mt-4">{{ $facilities->links() }}</div>
+    <div class="od-card__foot">{{ $facilities->links() }}</div>
+</section>
 
+</div>
 @endsection

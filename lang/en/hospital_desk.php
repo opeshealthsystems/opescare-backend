@@ -74,4 +74,39 @@ return [
 
     // ── Waitlist ──
     'waitlist_showing'            => 'Showing :from–:to of :total',
+
+    // ── Facility dashboard (/facility) ──
+    'dash_welcome' => 'Welcome back',
+    'dash_kpi_queue' => 'Queue waiting',
+    'dash_kpi_queue_urgent' => ':count urgent waiting',
+    'dash_kpi_rx' => 'Prescriptions today',
+    'dash_kpi_rx_sub' => 'Issued at this facility today',
+    'dash_quick' => 'Quick actions',
+    'dash_qa_book' => 'Book appointment',
+    'dash_qa_checkin' => 'Check in patient',
+    'dash_qa_triage' => 'Triage',
+    'dash_qa_rx' => 'New prescription',
+    'dash_qa_referral' => 'New referral',
+    'dash_qa_search' => 'Patient search',
+    'dash_queue_title' => 'Today\'s queue',
+    'dash_queue_empty' => 'Nobody waiting',
+    'dash_col_arrived' => 'Arrived',
+    'dash_col_priority' => 'Priority',
+    'dash_col_status' => 'Status',
+    'dash_col_action' => 'Action',
+    'dash_open' => 'Open',
+    'dash_alerts' => 'Alerts',
+    'dash_alert_urgent' => 'Urgent patients waiting',
+    'dash_alert_urgent_sub' => 'Emergency or very urgent priority, not yet seen',
+    'dash_appts_title' => 'Today\'s appointments',
+    'dash_appts_empty' => 'No appointments today',
+    'dash_appts_empty_text' => 'Nothing is booked at this facility for today.',
+
+    // ── Clinic desk restyle (2026-10-18) ──
+    'b_action_edit' => 'Edit',
+    'c_count_paren' => '(:count)',
+    'd_ref_sec_patient' => 'Patient and urgency',
+    'd_ref_sec_destination' => 'Where the patient is going',
+    'd_ref_sec_clinical' => 'Clinical handover',
+    'd_imm_doses' => '{0} No doses recorded|{1} :count dose recorded|[2,*] :count doses recorded',
 ];

@@ -3,6 +3,10 @@
 @section('title', __('public.help_page.page_title'))
 @section('description', __('public.help_page.meta_description'))
 
+@push('head')
+    @include('public.partials._od_pages_css')
+@endpush
+
 @section('content')
 
     {{--

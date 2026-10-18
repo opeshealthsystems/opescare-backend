@@ -3,6 +3,10 @@
 @section('title', __('public.privacy_page.page_title'))
 @section('description', __('public.privacy_page.meta_description'))
 
+@push('head')
+    @include('public.partials._od_pages_css')
+@endpush
+
 @section('content')
 
     {{--
@@ -35,12 +39,12 @@
 
     <header class="content-header">
         <div class="container">
-            <div class="badge" style="background:rgba(15,76,129,.12);color:#0F4C81;margin-bottom:1rem;">{{ __('public.privacy_page.badge') }}</div>
+            <div class="badge odp-mb-16">{{ __('public.privacy_page.badge') }}</div>
             <h1>{{ __('public.privacy_page.hero_title') }}</h1>
-            <p class="text-muted" style="max-width:760px;margin:0 auto;">
+            <p class="text-muted odp-measure">
                 {{ __('public.privacy_page.hero_subtitle') }}
             </p>
-            <div style="margin-top:1.5rem;display:flex;justify-content:center;gap:1.5rem;flex-wrap:wrap;font-size:0.875rem;color:var(--color-text-muted);">
+            <div class="odp-links">
                 <span><strong>{{ __('public.privacy_page.effective_date') }}</strong> 1 June 2026</span>
                 <span><strong>{{ __('public.privacy_page.last_updated') }}</strong> 7 September 2026</span>
                 <span><strong>{{ __('public.privacy_page.version') }}</strong> 2.0</span>
@@ -49,10 +53,10 @@
     </header>
 
     {{-- Quick nav --}}
-    <section style="background:var(--f-ground);border-bottom:1px solid #E2E8F0;padding:1.25rem 0;">
+    <section class="odp-band">
         <div class="container">
-            <p style="font-size:0.8125rem;color:var(--color-text-muted);margin:0 0 0.5rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">{{ __('public.privacy_page.jump_to') }}</p>
-            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+            <p class="odp-kicker">{{ __('public.privacy_page.jump_to') }}</p>
+            <div class="odp-row">
                 @foreach([
                     ['#controller','Data Controller'],
                     ['#legal-basis','Legal Basis'],
@@ -67,22 +71,22 @@
                     ['#supervisory','Supervisory Authority'],
                     ['#contact','Contact DPO'],
                 ] as [$href,$label])
-                <a href="{{ $href }}" style="font-size:0.8125rem;padding:4px 12px;background:#fff;border:1px solid #E2E8F0;border-radius:999px;color:var(--color-primary);text-decoration:none;">{{ $label }}</a>
+                <a class="odp-tag" href="{{ $href }}">{{ $label }}</a>
                 @endforeach
             </div>
         </div>
     </section>
 
     <section class="content-body">
-        <div class="container rich-text" style="max-width:860px;">
+        <div class="container rich-text odp-wide">
 
             {{-- 0. Regulatory alignment notice --}}
-            <div style="background:linear-gradient(135deg,var(--f-wash),var(--f-good-wash));border:1px solid var(--f-line);border-radius:1rem;padding:1.75rem;margin-bottom:3rem;">
-                <div style="display:flex;gap:1rem;align-items:flex-start;">
-                    <span style="color:var(--f-brand);flex-shrink:0;margin-top:0.1rem;">@include('partials.finder.icon', ['name' => 'shield-check', 'size' => 24])</span>
+            <div class="odp-panel odp-mb-48">
+                <div class="odp-row odp-row--top">
+                    <span class="odp-shrink">@include('partials.finder.icon', ['name' => 'shield-check', 'size' => 24])</span>
                     <div>
-                        <p style="margin:0 0 0.5rem;font-weight:700;color:#0F4C81;">Regulatory Alignment</p>
-                        <p style="margin:0;font-size:0.9rem;color:var(--f-ink-soft);line-height:1.65;">
+                        <p class="odp-bold odp-mb-8">Regulatory Alignment</p>
+                        <p class="odp-m0 odp-soft">
                             This policy is designed to comply with the <strong>Republic of Cameroon Law No. 2010/012 of 21 December 2010</strong> on cybersecurity and cybercriminality, <strong>Law No. 2010/021</strong> on electronic commerce, <strong>Law No. 96/03 of 4 January 1996</strong> (Framework Law on Health), and the <strong>Cameroon Ministry of Public Health (MINSANTE)</strong> National Digital Health Strategy 2026–2030. It further reflects principles of the <strong>WHO Global Strategy on Digital Health 2020–2025</strong>, the <strong>African Union Convention on Cyber Security and Personal Data Protection (Malabo Convention, 2014)</strong>, and the <strong>General Data Protection Regulation (GDPR, EU 2016/679)</strong> as an international best-practice benchmark.
                         </p>
                     </div>
@@ -92,8 +96,8 @@
             {{-- 1. Data Controller --}}
             <h2 id="controller">1. Data Controller</h2>
             <p>The data controller responsible for your personal and health data is:</p>
-            <div style="background:var(--f-ground);border:1px solid #E2E8F0;border-radius:0.875rem;padding:1.5rem;margin:1rem 0;">
-                <p style="margin:0;"><strong>Opes Health Systems Sarl</strong><br>
+            <div class="odp-panel">
+                <p class="odp-m0"><strong>Opes Health Systems Sarl</strong><br>
                 Republic of Cameroon<br>
                 Registration: RCCM / RC No. [Yaoundé Commercial Registry]<br>
                 VAT: [Numéro Identifiant Unique — NIU]<br>
@@ -127,7 +131,7 @@
             </ul>
 
             <h3>3.2 Clinical and Health Data (Special Category)</h3>
-            <p style="background:var(--f-warn-wash);border-left:4px solid var(--f-warn);padding:0.75rem 1rem;border-radius:0 0.5rem 0.5rem 0;font-size:0.9rem;"><strong>Note:</strong> Health data is a special category of personal data under Cameroon law and international standards. We apply the highest level of protection to all clinical information.</p>
+            <p class="odp-panel odp-panel--warn"><strong>Note:</strong> Health data is a special category of personal data under Cameroon law and international standards. We apply the highest level of protection to all clinical information.</p>
             <ul>
                 <li>Medical history, diagnoses, clinical conditions (ICD-10/ICD-11 coded)</li>
                 <li>Prescription records, medication lists, dispensing history</li>
@@ -163,11 +167,11 @@
 
             {{-- 4. Purposes --}}
             <h2 id="purposes">4. Purposes of Processing</h2>
-            <table style="width:100%;border-collapse:collapse;font-size:0.9rem;margin:1rem 0;">
+            <table class="odp-table">
                 <thead>
-                    <tr style="background:var(--f-wash);">
-                        <th style="padding:0.75rem 1rem;text-align:left;border-bottom:2px solid #E2E8F0;">Purpose</th>
-                        <th style="padding:0.75rem 1rem;text-align:left;border-bottom:2px solid #E2E8F0;">Legal Basis</th>
+                    <tr class="odp-panel">
+                        <th>Purpose</th>
+                        <th>Legal Basis</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -185,8 +189,8 @@
                         ['Improving platform reliability and user experience (anonymised analytics only)', 'Legitimate interest'],
                     ] as [$purpose,$basis])
                     <tr>
-                        <td style="padding:0.75rem 1rem;border-bottom:1px solid #E2E8F0;">{{ $purpose }}</td>
-                        <td style="padding:0.75rem 1rem;border-bottom:1px solid #E2E8F0;color:var(--color-primary);font-weight:600;white-space:nowrap;">{{ $basis }}</td>
+                        <td>{{ $purpose }}</td>
+                        <td class="odp-key">{{ $basis }}</td>
                     </tr>
                     @endforeach
                 </tbody>
@@ -251,7 +255,7 @@
             <h2 id="rights">8. Your Rights</h2>
             <p>As a data subject under Cameroon Law No. 2010/012 and in alignment with internationally recognised data protection standards, you have the following rights:</p>
 
-            <div style="display:grid;gap:1rem;margin:1.5rem 0;">
+            <div class="odp-stack odp-mt-24 odp-mb-16">
                 @foreach([
                     ['Right of Access (Droit d\'accès)','You have the right to obtain confirmation of whether we process personal data about you, and to receive a copy of that data in an intelligible format within 30 days of a valid request.'],
                     ['Right to Rectification (Droit de rectification)','You have the right to request correction of inaccurate or incomplete identity data. Clinical data recorded by healthcare providers must be corrected by the originating facility.'],
@@ -262,9 +266,9 @@
                     ['Right to Withdraw Consent','Where processing is based on consent, you may withdraw consent at any time via your patient portal or by contacting our Data Protection Officer. Withdrawal does not affect the lawfulness of prior processing.'],
                     ['Right not to be subject to automated decision-making','We do not make legally significant automated decisions about your health, clinical care, or insurance eligibility solely on the basis of automated processing without human review.'],
                 ] as [$right,$desc])
-                <div style="background:var(--f-ground);border:1px solid #E2E8F0;border-radius:0.875rem;padding:1.25rem 1.5rem;">
-                    <p style="margin:0 0 0.35rem;font-weight:700;color:var(--f-ink);">{{ $right }}</p>
-                    <p style="margin:0;font-size:0.9rem;color:var(--f-ink-soft);">{{ $desc }}</p>
+                <div class="odp-panel">
+                    <p class="odp-bold odp-mb-8">{{ $right }}</p>
+                    <p class="odp-m0 odp-soft">{{ $desc }}</p>
                 </div>
                 @endforeach
             </div>
@@ -316,8 +320,8 @@
             {{-- 12. Supervisory Authority --}}
             <h2 id="supervisory">12. Supervisory Authority</h2>
             <p>The competent supervisory authority for personal data protection in the Republic of Cameroon is:</p>
-            <div style="background:var(--f-ground);border:1px solid #E2E8F0;border-radius:0.875rem;padding:1.5rem;margin:1rem 0;">
-                <p style="margin:0;"><strong>Agence Nationale des Technologies de l'Information et de la Communication (ANTIC)</strong><br>
+            <div class="odp-panel">
+                <p class="odp-m0"><strong>Agence Nationale des Technologies de l'Information et de la Communication (ANTIC)</strong><br>
                 B.P. 6170, Yaoundé, Cameroon<br>
                 Web: <a href="https://www.antic.cm" target="_blank" rel="noopener noreferrer">www.antic.cm</a><br>
                 Tel: +237 222 22 35 58</p>
@@ -350,17 +354,17 @@
             {{-- 16. Contact --}}
             <h2 id="contact">16. Contact — Data Protection Officer</h2>
             <p>For all data protection enquiries, rights requests, or complaints:</p>
-            <div style="background:var(--f-ground);border:1px solid #E2E8F0;border-radius:0.875rem;padding:1.5rem;margin:1rem 0;">
-                <p style="margin:0;"><strong>Data Protection Officer — Opes Health Systems Sarl</strong><br>
+            <div class="odp-panel">
+                <p class="odp-m0"><strong>Data Protection Officer — Opes Health Systems Sarl</strong><br>
                 Email: <a href="mailto:privacy@opeshealthsystems.com">privacy@opeshealthsystems.com</a><br>
                 Subject line: <em>"DPO Request — [Your Name / Health ID]"</em><br>
                 Response time: 30 calendar days for all valid requests</p>
             </div>
 
             {{-- Footer note --}}
-            <div style="margin-top:4rem;padding:2rem;background:var(--f-ground, var(--f-ground));border:1px solid #E2E8F0;border-radius:1rem;font-size:0.875rem;color:var(--color-text-muted);">
-                <p style="margin:0 0 0.5rem;"><strong>Effective date:</strong> 1 June 2026 &nbsp;|&nbsp; <strong>Version:</strong> 2.1 &nbsp;|&nbsp; <strong>Last updated:</strong> 7 September 2026</p>
-                <p style="margin:0;">{{ __('public.privacy_page.governing_law') }} Republic of Cameroon &nbsp;|&nbsp; {{ __('public.privacy_page.footer_note') }} &nbsp;|&nbsp; For legal correspondence: <a href="mailto:legal@opeshealthsystems.com">legal@opeshealthsystems.com</a></p>
+            <div class="odp-foot">
+                <p class="odp-mb-8"><strong>Effective date:</strong> 1 June 2026 &nbsp;|&nbsp; <strong>Version:</strong> 2.1 &nbsp;|&nbsp; <strong>Last updated:</strong> 7 September 2026</p>
+                <p class="odp-m0">{{ __('public.privacy_page.governing_law') }} Republic of Cameroon &nbsp;|&nbsp; {{ __('public.privacy_page.footer_note') }} &nbsp;|&nbsp; For legal correspondence: <a href="mailto:legal@opeshealthsystems.com">legal@opeshealthsystems.com</a></p>
             </div>
 
         </div>

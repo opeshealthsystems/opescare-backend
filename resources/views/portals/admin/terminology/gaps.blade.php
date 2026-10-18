@@ -4,6 +4,7 @@
 @section('breadcrumb_home', __('terminology.breadcrumb_home'))
 @section('breadcrumb_home_url', route('portals.admin'))
 @section('breadcrumb_section', __('terminology.gaps_title'))
+@section('head')<link rel="stylesheet" href="{{ asset('css/od-admin.css') }}?v={{ @filemtime(public_path('css/od-admin.css')) ?: '1' }}">@endsection
 
 {{--
     Terminology reconciliation report.
@@ -26,72 +27,75 @@
 --}}
 
 @section('content')
-<div class="page-head">
-    <h2>{{ __('terminology.gaps_title') }}</h2>
-    <div class="flex gap-2">
-        <a href="{{ route('portals.admin.terminology.index') }}" class="btn btn-ghost btn-sm">
+<div class="od-page">
+<div class="od-page__head">
+    <div>
+        <h1 class="od-page__title">{{ __('terminology.gaps_title') }}</h1>
+        <p class="od-page__sub">{{ __('terminology.gaps_subtitle') }}</p>
+    </div>
+    <div class="od-row">
+        <a href="{{ route('portals.admin.terminology.index') }}" class="od-btn od-btn--secondary od-btn--sm">
             <i data-lucide="list-checks"></i> {{ __('terminology.dict_nav_queue') }}
         </a>
-        <a href="{{ route('portals.admin.terminology.dictionary') }}" class="btn btn-ghost btn-sm">
+        <a href="{{ route('portals.admin.terminology.dictionary') }}" class="od-btn od-btn--secondary od-btn--sm">
             <i data-lucide="library"></i> {{ __('terminology.dict_title') }}
         </a>
     </div>
 </div>
-<p class="page-subtitle mb-6">{{ __('terminology.gaps_subtitle') }}</p>
 
-<div class="alert alert-info mb-6">
+<div class="oda-gb-alert oda-gb-alert--info">
     <i data-lucide="eye"></i>
     <div>
         <div>{{ __('terminology.gaps_readonly_notice') }}</div>
-        <div class="mt-2">{{ __('terminology.propose_intro') }}</div>
+        <div>{{ __('terminology.propose_intro') }}</div>
         {{-- Said out loud rather than discovered later: a proposal for an ATC
              or CVX code is a decision that gets recorded and kept, not a code
              that will land on a row. Only laboratory rows carrying LOINC have
              a target column the applier may write. --}}
-        <div class="mt-2 text-sm">{{ __('terminology.propose_review_only') }}</div>
+        <div>{{ __('terminology.propose_review_only') }}</div>
     </div>
 </div>
 
 {{-- What is loaded to check against. A report that found nothing because no
      vocabulary exists reads exactly like a clean bill of health unless this
      is on the page. --}}
-<p class="text-muted text-sm mb-6">
+<p class="oda-gb-note">
     {{ __('terminology.gaps_vocabularies') }}
     @forelse($vocabularies as $v)
-        <span class="pill pill--muted">{{ $v['system'] }} · {{ number_format($v['active']) }}</span>
+        <span class="od-pill od-pill--neutral">{{ $v['system'] }} · {{ number_format($v['active']) }}</span>
     @empty
-        <span class="pill pill--warning">{{ __('terminology.gaps_no_vocabularies') }}</span>
+        <span class="od-pill od-pill--pending">{{ __('terminology.gaps_no_vocabularies') }}</span>
     @endforelse
 </p>
 
 @foreach($findings as $f)
-<div class="card mb-4">
-    <div class="card-head">
-        <h3 class="card-title">
-            <code>{{ $f['table'] }}.{{ $f['column'] }}</code>
-        </h3>
+<section class="od-card oda-gb-finding">
+    <div class="od-card__head">
+        <h2 class="od-card__title">
+            <code class="oda-mono">{{ $f['table'] }}.{{ $f['column'] }}</code>
+        </h2>
 
         @switch($f['state'])
             @case(\App\Services\Terminology\TerminologyReconciler::STATE_COLUMN_ABSENT)
-                <span class="pill pill--muted">{{ __('terminology.gaps_state_absent') }}</span>
+                <span class="od-pill od-pill--neutral">{{ __('terminology.gaps_state_absent') }}</span>
                 @break
             @case(\App\Services\Terminology\TerminologyReconciler::STATE_EMPTY)
-                <span class="pill pill--muted">{{ __('terminology.gaps_state_empty') }}</span>
+                <span class="od-pill od-pill--neutral">{{ __('terminology.gaps_state_empty') }}</span>
                 @break
             @case(\App\Services\Terminology\TerminologyReconciler::STATE_VOCABULARY_ABSENT)
-                <span class="pill pill--warning">{{ __('terminology.gaps_state_unbacked') }}</span>
+                <span class="od-pill od-pill--pending">{{ __('terminology.gaps_state_unbacked') }}</span>
                 @break
             @default
                 @if(count($f['unresolved']) === 0 && count($f['duplicates']) === 0)
-                    <span class="pill pill--success">{{ __('terminology.gaps_state_clean') }}</span>
+                    <span class="od-pill od-pill--ready">{{ __('terminology.gaps_state_clean') }}</span>
                 @else
-                    <span class="pill pill--warning">{{ __('terminology.gaps_state_review') }}</span>
+                    <span class="od-pill od-pill--pending">{{ __('terminology.gaps_state_review') }}</span>
                 @endif
         @endswitch
     </div>
 
-    <div class="card-body">
-        <p class="text-muted text-sm">
+    <div class="od-card__body od-stack">
+        <p class="oda-help">
             {{ __('terminology.gaps_expected', ['systems' => implode(' · ', $f['systems'])]) }}
         </p>
 
@@ -120,7 +124,7 @@
             @endif
 
             @if($f['state'] === \App\Services\Terminology\TerminologyReconciler::STATE_CHECKED && count($f['unresolved']) === 0)
-                <p class="text-success">
+                <p class="oda-gb-ok">
                     <i data-lucide="check"></i> {{ __('terminology.gaps_all_resolve') }}
                 </p>
             @endif
@@ -132,8 +136,8 @@
             @endphp
 
             @if(! empty($rows))
-            <div class="table-wrap mt-4">
-                <table class="data-table">
+            <div class="od-table-wrap">
+                <table class="od-table">
                     <thead>
                         <tr>
                             <th>{{ __('terminology.gaps_col_value') }}</th>
@@ -145,9 +149,9 @@
                     @foreach($rows as $u)
                         <tr>
                             <td>
-                                <code>{{ $u['value'] }}</code>
+                                <code class="oda-mono">{{ $u['value'] }}</code>
                                 @if(! empty($u['heading_only']))
-                                    <div class="text-muted text-sm">{{ __('terminology.gaps_heading_only') }}</div>
+                                    <div class="od-table__sub">{{ __('terminology.gaps_heading_only') }}</div>
                                 @endif
                             </td>
                             <td>{{ number_format($u['rows']) }}</td>
@@ -160,24 +164,24 @@
                                          A second proposal would put two contradictory mappings
                                          in front of the same approver, so every button for this
                                          value becomes a way to read the first one instead. --}}
-                                    <a href="{{ route('portals.admin.terminology.show', $already['id']) }}" class="btn btn-ghost btn-xs mb-2">
+                                    <a href="{{ route('portals.admin.terminology.show', $already['id']) }}" class="od-btn od-btn--ghost od-btn--sm">
                                         <i data-lucide="external-link"></i>
                                         {{ __('terminology.propose_existing', ['code' => $already['code'], 'status' => __('terminology.status_' . $already['status'])]) }}
                                     </a>
                                 @endif
 
                                 @forelse($u['suggestions'] ?? [] as $s)
-                                    <div class="mb-1">
-                                        <code>{{ $s['code'] }}</code> {{ $s['display'] }}
-                                        <span class="pill pill--muted">{{ __('terminology.gaps_basis_' . $s['basis']) }}</span>
+                                    <div class="oda-gb-suggestion">
+                                        <code class="oda-mono">{{ $s['code'] }}</code> {{ $s['display'] }}
+                                        <span class="od-pill od-pill--neutral">{{ __('terminology.gaps_basis_' . $s['basis']) }}</span>
 
                                         @if(($proposable[$f['key']] ?? false) && ! $already)
-                                            <form method="POST" action="{{ route('portals.admin.terminology.propose') }}" class="inline-form">
+                                            <form method="POST" action="{{ route('portals.admin.terminology.propose') }}" class="oda-inline-form">
                                                 @csrf
                                                 <input type="hidden" name="key" value="{{ $f['key'] }}">
                                                 <input type="hidden" name="value" value="{{ $u['value'] }}">
                                                 <input type="hidden" name="code" value="{{ $s['code'] }}">
-                                                <button type="submit" class="btn btn-ghost btn-xs">
+                                                <button type="submit" class="od-btn od-btn--row">
                                                     <i data-lucide="git-pull-request"></i>
                                                     {{ __('terminology.propose_button') }}
                                                 </button>
@@ -185,14 +189,14 @@
                                         @endif
                                     </div>
                                 @empty
-                                    <span class="text-muted">—</span>
+                                    <span class="od-table__sub">—</span>
                                 @endforelse
 
                                 @unless($proposable[$f['key']] ?? false)
                                     {{-- Not a missing button. There is no mapping to write down
                                          for this column, and the reason is on the page rather
                                          than in somebody's head. --}}
-                                    <div class="text-muted text-sm">
+                                    <div class="od-table__sub">
                                         <i data-lucide="info"></i>
                                         {{ __('terminology.propose_not_here') }}
                                         {{ __($notProposable[$f['key']] ?? 'terminology.propose_why_unknown') }}
@@ -207,39 +211,40 @@
             @endif
 
             @foreach($f['whitespace'] as $w)
-                <p class="text-warning text-sm">
+                <p class="oda-gb-warn">
                     <i data-lucide="pilcrow"></i>
                     {{ __('terminology.gaps_padded', ['value' => $w['value'], 'rows' => number_format($w['rows'])]) }}
                 </p>
             @endforeach
 
             @if(! empty($f['duplicates']))
-            <div class="mt-4">
-                <h4 class="text-sm mb-2">{{ __('terminology.gaps_duplicates_heading') }}</h4>
+            <div class="od-stack">
+                <h3 class="oda-gb-subhead">{{ __('terminology.gaps_duplicates_heading') }}</h3>
                 @foreach($f['duplicates'] as $d)
-                    <p class="text-sm">
+                    <p class="oda-gb-line">
                         <i data-lucide="git-compare"></i>
-                        @foreach($d['members'] as $m)<code>{{ $m['value'] }}</code> ({{ number_format($m['rows']) }}){{ ! $loop->last ? ' · ' : '' }}@endforeach
+                        @foreach($d['members'] as $m)<code class="oda-mono">{{ $m['value'] }}</code> ({{ number_format($m['rows']) }}){{ ! $loop->last ? ' · ' : '' }}@endforeach
                         {{-- Which rule decided this, spelled out. A curated
                              synonym and a one-character edit are not the same
                              kind of claim and the reader has to be able to
                              tell them apart before acting. --}}
-                        <span class="pill pill--muted">{{ __('terminology.gaps_rule_' . $d['rule']) }}</span>
+                        <span class="od-pill od-pill--neutral">{{ __('terminology.gaps_rule_' . $d['rule']) }}</span>
                     </p>
                 @endforeach
-                <p class="text-muted text-sm">{{ __('terminology.gaps_duplicates_caveat') }}</p>
+                <p class="oda-help">{{ __('terminology.gaps_duplicates_caveat') }}</p>
                 {{-- And there is deliberately no button on any of them: a
                      duplicate pair has no local-code-means-standard-code
                      sentence to record, so a proposal could not express it. --}}
-                <p class="text-muted text-sm">
+                <p class="oda-help">
                     <i data-lucide="info"></i> {{ __('terminology.propose_duplicates_note') }}
                 </p>
             </div>
             @endif
         @endif
     </div>
-</div>
+</section>
 @endforeach
 
-<p class="text-muted text-sm">{{ __('terminology.gaps_footer') }}</p>
+<p class="oda-help">{{ __('terminology.gaps_footer') }}</p>
+</div>
 @endsection

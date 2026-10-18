@@ -15,7 +15,7 @@
             <div class="empty-state-icon"><i data-lucide="map-pin"></i></div>
             <p>{{ __('caremap_claim.none_title') }}</p>
             <p class="td-muted">{{ __('caremap_claim.none_body') }}</p>
-            <div style="margin-top:1rem;display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap">
+            <div class="odp-row odp-mt-16">
                 <a href="{{ route('public.care-map') }}" class="btn btn-primary btn-sm">
                     <i data-lucide="map"></i> {{ __('caremap_claim.btn_find_listing') }}
                 </a>
