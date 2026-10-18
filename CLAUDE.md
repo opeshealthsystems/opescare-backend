@@ -42,7 +42,7 @@ Exactly three OpesCare working folders exist; any other `opescare*` folder is cr
 
 | Folder | What it is |
 |---|---|
-| `C:\laragon\www\opescare-finder` | **this** repo — the Finder web app (finder.opescare.cloud) |
+| `C:\laragon\www\opescare-finder` | **this** repo — the main OpesCare web app, live at **opescare.com** (finder.opescare.cloud was retired 2026-10-18) |
 | `C:\laragon\www\opescare-finder-mobile` | the Finder's Expo app, shipped via EAS |
 | `C:\laragon\www\opescare` | the platform monorepo (opescare.cloud), `main` |
 
@@ -118,4 +118,6 @@ php artisan route:list              # routes are wired
 See `README.md`. Dev DB is `opescare_finder`; tests run against a separate
 database (`DB_DATABASE=<test-db> php artisan test ...` — the suite refreshes
 the schema, so never point it at the dev DB). Deploy target:
-**finder.opescare.cloud**.
+**opescare.com** — server `root@187.124.48.135` (key `~/.ssh/opescare_deploy_ed25519`),
+install `/home/finder/htdocs/finder.opescare.cloud` (folder name kept), DB `opescare_finder`;
+always `php8.3` for artisan. opescare.cloud 301s to opescare.com.
