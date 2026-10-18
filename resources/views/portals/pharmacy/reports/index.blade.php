@@ -4,54 +4,55 @@
 @section('breadcrumb_home', __('public.pharmacy_portal.breadcrumb_home'))
 @section('breadcrumb_home_url', route('portals.pharmacy.dashboard'))
 @section('breadcrumb_section', __('pharmacy_reports.nav_reports'))
+@section('head')@include('portals.pharmacy.stock_ops._styles')@endsection
 
 @php
     $cards = [
-        'expiry'     => ['icon' => 'calendar-clock', 'title' => 'pharmacy_reports.card_expiry',     'sub' => 'pharmacy_reports.card_expiry_sub'],
-        'valuation'  => ['icon' => 'coins',          'title' => 'pharmacy_reports.card_valuation',  'sub' => 'pharmacy_reports.card_valuation_sub'],
-        'dispensing' => ['icon' => 'bar-chart-3',    'title' => 'pharmacy_reports.card_dispensing', 'sub' => 'pharmacy_reports.card_dispensing_sub'],
-        'low_stock'  => ['icon' => 'trending-down',  'title' => 'pharmacy_reports.card_low_stock',  'sub' => 'pharmacy_reports.card_low_stock_sub'],
+        'expiry'     => ['icon' => 'calendar-clock', 'tone' => 'amber', 'title' => 'pharmacy_reports.card_expiry',     'sub' => 'pharmacy_reports.card_expiry_sub'],
+        'valuation'  => ['icon' => 'coins',          'tone' => 'green', 'title' => 'pharmacy_reports.card_valuation',  'sub' => 'pharmacy_reports.card_valuation_sub'],
+        'dispensing' => ['icon' => 'bar-chart-3',    'tone' => 'blue',  'title' => 'pharmacy_reports.card_dispensing', 'sub' => 'pharmacy_reports.card_dispensing_sub'],
+        'low_stock'  => ['icon' => 'trending-down',  'tone' => 'red',   'title' => 'pharmacy_reports.card_low_stock',  'sub' => 'pharmacy_reports.card_low_stock_sub'],
     ];
     $money = fn ($v) => $v === null ? null : number_format((int) $v, 0, ',', ' ');
 @endphp
 
 @section('content')
+<div class="os-page">
 
-<div class="page-head">
-    <h2>{{ __('pharmacy_reports.index_title') }}</h2>
-    <p class="page-subtitle">{{ __('pharmacy_reports.index_subtitle') }}</p>
-</div>
-
-<div class="panel">
-    <div class="panel-header">
-        <h3 class="panel-title"><i data-lucide="sliders-horizontal"></i> {{ __('pharmacy_stock_desk.reports_window_title') }}</h3>
+<header class="os-head">
+    <div class="os-head__text">
+        <h1 class="os-head__title">{{ __('pharmacy_reports.index_title') }}</h1>
+        <p class="os-head__sub">{{ __('pharmacy_reports.index_subtitle') }}</p>
     </div>
-    <form method="GET" action="{{ route('portals.pharmacy.reports') }}" class="ph-filter-form">
-        <div class="form-row">
-            <div class="form-group">
-                <label class="form-label" for="rp-days">{{ __('pharmacy_reports.lbl_window') }}</label>
-                <select name="days" id="rp-days" class="form-control">
-                    @foreach($windows as $w)
-                        <option value="{{ $w }}" @selected($w === $days)>{{ __('pharmacy_reports.window_days', ['days' => $w]) }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="rp-from">{{ __('pharmacy_reports.lbl_from') }}</label>
-                <input type="date" name="from" id="rp-from" class="form-control" value="{{ $from }}">
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="rp-to">{{ __('pharmacy_reports.lbl_to') }}</label>
-                <input type="date" name="to" id="rp-to" class="form-control" value="{{ $to }}">
-            </div>
-            <div class="form-group form-group--actions">
-                <button type="submit" class="btn btn-primary fs-tap"><i data-lucide="filter"></i> {{ __('pharmacy_reports.btn_apply') }}</button>
-            </div>
-        </div>
-    </form>
-</div>
+</header>
 
-<div class="ph-reports">
+<section class="od-card os-card">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('pharmacy_stock_desk.reports_window_title') }}</h2>
+    </div>
+    <form method="GET" action="{{ route('portals.pharmacy.reports') }}" class="os-window">
+        <div class="os-field">
+            <label class="os-label" for="rp-days">{{ __('pharmacy_reports.lbl_window') }}</label>
+            <select name="days" id="rp-days" class="os-input">
+                @foreach($windows as $w)
+                    <option value="{{ $w }}" @selected($w === $days)>{{ __('pharmacy_reports.window_days', ['days' => $w]) }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="os-field">
+            <label class="os-label" for="rp-from">{{ __('pharmacy_reports.lbl_from') }}</label>
+            <input type="date" name="from" id="rp-from" class="os-input" value="{{ $from }}">
+        </div>
+        <div class="os-field">
+            <label class="os-label" for="rp-to">{{ __('pharmacy_reports.lbl_to') }}</label>
+            <input type="date" name="to" id="rp-to" class="os-input" value="{{ $to }}">
+        </div>
+        <button type="submit" class="od-btn od-btn--primary"><i data-lucide="filter"></i> {{ __('pharmacy_reports.btn_apply') }}</button>
+    </form>
+    <p class="os-note"><i data-lucide="info"></i> {{ __('pharmacy_stock_desk.reports_hint') }}</p>
+</section>
+
+<div class="os-reports">
 @foreach($cards as $key => $card)
 @php
     $table = $tables[$key];
@@ -66,18 +67,18 @@
     $preview = array_slice($table['rows'], 0, $previewRows);
     $total   = count($table['rows']);
 @endphp
-<div class="panel" id="report-{{ $key }}">
-    <div class="panel-header">
-        <h3 class="panel-title"><i data-lucide="{{ $card['icon'] }}"></i> {{ __($card['title']) }} <span class="ph-count-inline">({{ $total }})</span></h3>
-        <div class="panel-actions">
-            <a class="btn btn-secondary btn-sm fs-tap" href="{{ route('portals.pharmacy.reports.csv', ['report' => $key] + $query) }}"><i data-lucide="download"></i> {{ __('pharmacy_reports.btn_csv') }}</a>
-            <a class="btn btn-primary btn-sm fs-tap" href="{{ route('portals.pharmacy.reports.pdf', ['report' => $key] + $query) }}"><i data-lucide="file-text"></i> {{ __('pharmacy_reports.btn_pdf') }}</a>
+<section class="od-card os-card" id="report-{{ $key }}">
+    <div class="od-card__head">
+        <h2 class="od-card__title"><span class="os-report__icon os-report__icon--{{ $card['tone'] }}"><i data-lucide="{{ $card['icon'] }}"></i></span>{{ __($card['title']) }} <span class="od-card__count">({{ $total }})</span></h2>
+        <div class="os-head-actions">
+            <a class="od-btn od-btn--secondary" href="{{ route('portals.pharmacy.reports.csv', ['report' => $key] + $query) }}"><i data-lucide="download"></i> {{ __('pharmacy_reports.btn_csv') }}</a>
+            <a class="od-btn od-btn--primary" href="{{ route('portals.pharmacy.reports.pdf', ['report' => $key] + $query) }}"><i data-lucide="file-text"></i> {{ __('pharmacy_reports.btn_pdf') }}</a>
         </div>
     </div>
-    <p class="panel-sub">{{ __($card['sub']) }}</p>
-    <div class="fs-note"><i data-lucide="info"></i><div>{{ $summary }}</div></div>
-    <div class="table-wrapper">
-        <table class="data-table">
+    <p class="os-card__sub">{{ __($card['sub']) }}</p>
+    <p class="os-report__sum">{{ $summary }}</p>
+    <div class="os-table-wrap">
+        <table class="od-table os-table">
             <thead><tr>
                 @foreach($table['headers'] as $h)<th>{{ $h }}</th>@endforeach
             </tr></thead>
@@ -86,11 +87,11 @@
                 <tr>
                     @foreach($row as $i => $cell)
                         @php $h = $table['headers'][$i]; @endphp
-                        <td data-label="{{ $h }}" class="{{ $i === 0 ? 'td-strong' : 'fs-mono' }}">
+                        <td data-label="{{ $h }}" class="{{ $i === 0 ? 'os-cell__title' : 'os-num' }}">
                             @if($key === 'valuation' && $i >= 2)
                                 {{ $cell === null ? __('pharmacy_reports.unpriced') : $money($cell) }}
                             @elseif($key === 'low_stock' && $i === 4)
-                                <span class="badge {{ $row[1] === 0 ? 'badge-danger' : 'badge-warning' }}">{{ $cell }}</span>
+                                @include('portals.pharmacy.stock_ops._pill', ['tone' => $row[1] === 0 ? 'low' : 'reorder', 'label' => $cell])
                             @else
                                 {{ $cell ?? '—' }}
                             @endif
@@ -98,21 +99,17 @@
                     @endforeach
                 </tr>
             @empty
-                <tr><td colspan="{{ count($table['headers']) }}" class="empty-cell">
-                    <div class="empty-state">
-                        <i data-lucide="{{ $card['icon'] }}"></i>
-                        <p>{{ __('pharmacy_reports.empty') }}</p>
-                    </div>
-                </td></tr>
+                @include('portals.pharmacy.stock_ops._empty', ['cols' => count($table['headers']), 'icon' => $card['icon'], 'text' => __('pharmacy_reports.empty')])
             @endforelse
             </tbody>
         </table>
     </div>
     @if($total > $previewRows)
-        <div class="panel-foot">{{ __('pharmacy_reports.preview_hint', ['count' => $previewRows]) }} {{ __('pharmacy_reports.rows_total', ['count' => $total]) }}</div>
+        <div class="os-card__foot">{{ __('pharmacy_reports.preview_hint', ['count' => $previewRows]) }} {{ __('pharmacy_reports.rows_total', ['count' => $total]) }}</div>
     @endif
-</div>
+</section>
 @endforeach
 </div>
 
+</div>
 @endsection

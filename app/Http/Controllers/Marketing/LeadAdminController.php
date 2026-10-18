@@ -43,6 +43,19 @@ class LeadAdminController extends Controller
         ]);
     }
 
+    /**
+     * GET /admin/leads/{lead} — the lead on its own page: the message as it
+     * was sent, the dated notes the status changes left behind (the inbox
+     * never showed them), and the tenant it became if it was converted.
+     */
+    public function show(Lead $lead)
+    {
+        return view('portals.admin.leads.show', [
+            'lead'   => $lead,
+            'tenant' => $lead->isConverted() ? $lead->convertedFacility : null,
+        ]);
+    }
+
     public function updateStatus(Request $request, Lead $lead)
     {
         $validated = $request->validate([

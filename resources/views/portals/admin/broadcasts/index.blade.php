@@ -29,8 +29,8 @@
     <div class="panel-body">
         <form method="POST" action="{{ route('portals.admin.broadcasts.store') }}">
             @csrf
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-                <div style="grid-column:1/-1;"><label class="form-label" for="title">{{ __('broadcasts.field_title') }}</label>
+            <div class="adm-form-grid">
+                <div class="adm-span-2"><label class="form-label" for="title">{{ __('broadcasts.field_title') }}</label>
                     <input type="text" id="title" name="title" class="form-control" maxlength="160" value="{{ old('title') }}" required></div>
                 <div><label class="form-label" for="broadcast_type">{{ __('broadcasts.field_type') }}</label>
                     <select id="broadcast_type" name="broadcast_type" class="form-control" required>
@@ -62,22 +62,22 @@
                     </select></div>
                 <div><label class="form-label" for="expires_at">{{ __('broadcasts.field_expires') }}</label>
                     <input type="datetime-local" id="expires_at" name="expires_at" class="form-control" value="{{ old('expires_at') }}"></div>
-                <div style="grid-column:1/-1;"><label class="form-label" for="body">{{ __('broadcasts.field_body') }}</label>
+                <div class="adm-span-2"><label class="form-label" for="body">{{ __('broadcasts.field_body') }}</label>
                     <textarea id="body" name="body" class="form-control" rows="4" maxlength="5000" required>{{ old('body') }}</textarea></div>
-                <div style="grid-column:1/-1;display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center;">
-                    <label style="display:flex;gap:.4rem;align-items:center;"><input type="checkbox" name="requires_acknowledgement" value="1"> {{ __('broadcasts.field_ack') }}</label>
-                    <label style="display:flex;gap:.4rem;align-items:center;"><input type="checkbox" name="publish_now" value="1"> {{ __('broadcasts.field_publish_now') }}</label>
+                <div class="adm-span-2 adm-check-row">
+                    <label class="adm-check"><input type="checkbox" name="requires_acknowledgement" value="1"> {{ __('broadcasts.field_ack') }}</label>
+                    <label class="adm-check"><input type="checkbox" name="publish_now" value="1"> {{ __('broadcasts.field_publish_now') }}</label>
                 </div>
             </div>
-            <div style="margin-top:1rem;"><button type="submit" class="btn btn-primary"><i data-lucide="send"></i> {{ __('broadcasts.save') }}</button></div>
+            <div class="adm-mt-4"><button type="submit" class="btn btn-primary"><i data-lucide="send"></i> {{ __('broadcasts.save') }}</button></div>
         </form>
     </div>
 </div>
 
 <div class="panel">
-    <div class="panel-header" style="display:flex;justify-content:space-between;align-items:center;">
+    <div class="panel-header adm-flex-between">
         <h3 class="panel-title"><i data-lucide="radio"></i> {{ __('broadcasts.title') }}</h3>
-        <form method="GET"><select name="status" class="form-control" style="width:auto;" data-autosubmit>
+        <form method="GET"><select name="status" class="form-control adm-w-auto" data-autosubmit aria-label="{{ __('broadcasts.col_status') }}">
             <option value="">{{ __('broadcasts.all_statuses') }}</option>
             @foreach(['draft','published','cancelled'] as $st)<option value="{{ $st }}" @selected($status===$st)>@enum($st)</option>@endforeach
         </select></form>
@@ -103,7 +103,7 @@
                         @php $sc = ['published'=>'success','cancelled'=>'muted','expired'=>'muted'][$bc->status] ?? 'warning'; @endphp
                         <span class="badge badge-{{ $sc }}">@enum($bc->status)</span></td>
                     <td data-label="{{ __('broadcasts.col_acks') }}">{{ $bc->requires_acknowledgement ? $bc->acknowledgements_count : '—' }}</td>
-                    <td class="row-actions" style="display:flex;gap:.4rem;">
+                    <td class="row-actions adm-row-actions">
                         <a href="{{ route('portals.admin.broadcasts.show', $bc->uuid) }}" class="btn btn-ghost btn-sm"><i data-lucide="list-checks"></i> {{ __('broadcasts.view_acks') }}</a>
                         @if($bc->status === 'draft')
                         <form method="POST" action="{{ route('portals.admin.broadcasts.publish', $bc->uuid) }}">@csrf

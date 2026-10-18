@@ -1,5 +1,8 @@
 @extends('layouts.portal')
 @section('title', __('public.adm_legal_page_title'))
+@section('breadcrumb_home', __('public.adm_breadcrumb_home'))
+@section('breadcrumb_home_url', route('portals.admin'))
+@section('breadcrumb_section', __('public.adm_legal_page_title'))
 @section('sidebar') @include('portals.admin.control_center._sidebar') @endsection
 
 @section('content')
@@ -91,15 +94,4 @@
 
 
 @endsection
-@section('scripts')
-<script @cspNonce>
-function opOpenModal(id){ document.getElementById(id).classList.add('open'); }
-function opCloseModal(id){ document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-fixed').forEach(function(m){
-    m.addEventListener('click', function(e){ if(e.target===m) m.classList.remove('open'); });
-});
-document.addEventListener('keydown', function(e){
-    if(e.key==='Escape'){ document.querySelectorAll('.modal-fixed').forEach(function(m){ m.classList.remove('open'); }); }
-});
-</script>
-@endsection
+

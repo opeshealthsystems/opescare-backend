@@ -95,9 +95,11 @@ class PharmacyDashboardTruthTest extends TestCase
             ->assertDontSee('Metformin 500mg')
             ->getContent();
 
-        // Three drug lines, one low, one out — read off the tiles in order.
-        preg_match_all('/stat-card__value">(\d+)</', $html, $m);
-        $this->assertSame(['0', '0', '3', '1', '1', '0'], $m[1]);
+        // Four tiles (queue, dispensed today, low stock, patients served):
+        // one low — read off the tiles in order. The out-of-stock line shows
+        // in the stock alerts list asserted above.
+        preg_match_all('/stat-card__value"[^>]*>(\d+)</', $html, $m);
+        $this->assertSame(['0', '0', '1', '0'], $m[1]);
     }
 
     public function test_a_user_with_no_facility_sees_an_empty_desk_not_a_strangers(): void

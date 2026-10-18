@@ -76,6 +76,25 @@ class AdminIdentityReviewController extends Controller
         return view('portals.admin.mpi.index', compact('tab', 'tier', 'candidates', 'footprint', 'counts', 'tierCounts', 'registerSize'));
     }
 
+    /**
+     * One pair on its own page — the same card the desk shows, with the same
+     * actions, so a link in a hand-over note lands on exactly the pair meant.
+     */
+    public function show(MpiCandidate $candidate): View
+    {
+        $candidate->load(['sourcePatient', 'targetPatient', 'reviewer']);
+
+        $footprint = $this->footprint(array_values(array_filter([
+            (string) $candidate->source_patient_id,
+            (string) $candidate->target_patient_id,
+        ])));
+
+        return view('portals.admin.mpi.show', [
+            'c'         => $candidate,
+            'footprint' => $footprint,
+        ]);
+    }
+
     /** Run detection now, on demand. Queues candidates; merges nothing. */
     public function detect(Request $request): RedirectResponse
     {

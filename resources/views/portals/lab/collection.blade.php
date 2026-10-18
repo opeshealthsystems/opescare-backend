@@ -6,52 +6,56 @@
 @section('breadcrumb_section', __('lab_desk.collection_title'))
 
 @php
-    $urgencyBadge = fn (string $u) => 'badge badge-' . match ($u) {
-        'stat'   => 'danger',
-        'urgent' => 'warning',
-        default  => 'neutral',
-    };
+    $urgencyPill = fn (string $u) => match ($u) { 'stat' => 'od-pill--stat', 'urgent' => 'od-pill--urgent', default => 'od-pill--normal' };
 @endphp
 
-@section('content')
+@section('head')
+    @include('portals.lab.partials._head')
+@endsection
 
-<div class="page-header">
+@section('content')
+<div class="od-page odl">
+
+<header class="od-page__head">
     <div>
-        <h1 class="page-title">{{ __('lab_desk.collection_title') }}</h1>
-        <p class="page-subtitle">{{ __('lab_desk.collection_subtitle') }}</p>
+        <h1 class="od-page__title">{{ __('lab_desk.collection_title') }}</h1>
+        <p class="od-page__sub">{{ __('lab_desk.collection_subtitle') }}</p>
     </div>
     @capability('lab_results')
-    <a href="{{ route('portals.lab.index') }}" class="btn btn-secondary">
+    <a href="{{ route('portals.lab.index') }}" class="od-btn od-btn--secondary">
         <i data-lucide="arrow-left"></i> {{ __('lab_desk.back_to_worklist') }}
     </a>
     @endcapability
-</div>
+</header>
 
-@if(session('success'))<div class="alert alert-success mb-6"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
-@if(session('error'))<div class="alert alert-danger mb-6"><i data-lucide="alert-circle"></i><div>{{ session('error') }}</div></div>@endif
+@if(session('success'))<div class="od-flash od-flash--ok" role="status"><i data-lucide="check-circle"></i><span>{{ session('success') }}</span></div>@endif
+@if(session('error'))<div class="od-flash od-flash--err" role="alert"><i data-lucide="alert-circle"></i><span>{{ session('error') }}</span></div>@endif
 @if($errors->any())
-<div class="alert alert-danger mb-6" role="alert"><i data-lucide="alert-circle"></i><div><ul class="alert-list">@foreach($errors->all() as $m)<li>{{ $m }}</li>@endforeach</ul></div></div>
+<div class="od-flash od-flash--err" role="alert"><i data-lucide="alert-circle"></i><ul class="odl-errlist">@foreach($errors->all() as $m)<li>{{ $m }}</li>@endforeach</ul></div>
 @endif
 
-<div class="panel">
+<section class="od-card">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('lab_desk_ui.collection_queue') }} <span class="od-card__count">({{ $orders->total() }})</span></h2>
+    </div>
+    <div class="od-card__body">
     @if($orders->isEmpty())
-        <div class="panel-body">
-            <div class="empty-state">
-                <div class="empty-state-icon"><i data-lucide="test-tube-2"></i></div>
-                <h3>{{ __('lab_desk.empty_collection') }}</h3>
-            </div>
+        <div class="od-empty">
+            <span class="od-empty__icon"><i data-lucide="test-tube-2"></i></span>
+            <p class="od-empty__title">{{ __('lab_desk.empty_collection') }}</p>
         </div>
     @else
-        <div class="table-wrapper">
-            <table class="data-table">
+        <div class="od-table-wrap">
+            <table class="od-table">
                 <thead>
                     <tr>
+                        <th class="od-table__num">#</th>
                         <th>{{ __('lab_desk.col_patient') }}</th>
                         <th>{{ __('lab_desk.col_test') }}</th>
                         <th>{{ __('lab_desk.col_urgency') }}</th>
                         <th>{{ __('lab_desk.col_ordered_at') }}</th>
                         <th>{{ __('lab_desk.specimen_type') }}</th>
-                        <th class="row-actions">{{ __('lab_desk.col_actions') }}</th>
+                        <th class="od-table__actions">{{ __('lab_desk.col_actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -63,38 +67,38 @@
                         $specimen = $order->getAttribute('dictionary_specimen');
                     @endphp
                     <tr>
+                        <td class="od-table__num" data-label="#">{{ $orders->firstItem() + $loop->index }}</td>
                         <td data-label="{{ __('lab_desk.col_patient') }}">
-                            <span class="td-strong">{{ $pName !== '' ? $pName : '—' }}</span>
-                            @if($p?->health_id)<div class="td-muted">{{ $p->health_id }}</div>@endif
+                            <div class="od-person">
+                                @include('portals.lab.partials._avatar', ['name' => $pName])
+                                <div><div class="od-table__name">{{ $pName !== '' ? $pName : '—' }}</div>@if($p?->health_id)<div class="od-table__sub">{{ $p->health_id }}</div>@endif</div>
+                            </div>
                         </td>
                         <td data-label="{{ __('lab_desk.col_test') }}">
-                            <span class="td-strong">{{ $order->test_name }}</span>
-                            @if($order->test_code)<div class="td-muted">{{ $order->test_code }}</div>@endif
+                            <div class="od-table__name">{{ $order->test_name }}</div>
+                            @if($order->test_code)<div class="od-table__sub">{{ $order->test_code }}</div>@endif
                         </td>
-                        <td data-label="{{ __('lab_desk.col_urgency') }}"><span class="{{ $urgencyBadge($u) }}">{{ __('lab_desk.urgency.' . $u) }}</span></td>
-                        <td data-label="{{ __('lab_desk.col_ordered_at') }}" class="td-muted">{{ $order->ordered_at?->translatedFormat('d M Y H:i') ?? '—' }}</td>
+                        <td data-label="{{ __('lab_desk.col_urgency') }}"><span class="od-pill {{ $urgencyPill($u) }} od-pill--dot">{{ __('lab_desk.urgency.' . $u) }}</span></td>
+                        <td data-label="{{ __('lab_desk.col_ordered_at') }}" class="od-muted">{{ $order->ordered_at?->translatedFormat('d M Y H:i') ?? '—' }}</td>
                         <td data-label="{{ __('lab_desk.specimen_type') }}">
-                            <input type="text" form="collect-{{ $order->id }}" name="specimen_type" class="form-control"
+                            <input type="text" form="collect-{{ $order->id }}" name="specimen_type" class="od-input"
                                    value="{{ old('specimen_type', $specimen) }}" maxlength="120"
+                                   aria-label="{{ __('lab_desk.specimen_type') }}"
                                    placeholder="{{ $specimen ? '' : __('lab_desk.specimen_unknown') }}">
                         </td>
-                        <td class="row-actions" data-label="{{ __('lab_desk.col_actions') }}">
+                        <td class="od-table__actions odl-rowactions" data-label="{{ __('lab_desk.col_actions') }}">
                             <form id="collect-{{ $order->id }}" method="POST" action="{{ route('portals.lab.collect', $order->id) }}">
                                 @csrf
-                                <button type="submit" class="btn btn-primary btn-sm">
-                                    <i data-lucide="check"></i> {{ __('lab_desk.mark_collected') }}
-                                </button>
+                                <button type="submit" class="od-btn od-btn--row">{{ __('lab_desk.mark_collected') }}</button>
                             </form>
                             {{-- The collector who sees the unusable tube refuses it here (routes/lab_manager.php). --}}
-                            <details>
-                                <summary class="btn btn-secondary btn-sm"><i data-lucide="ban"></i> {{ __('lab_manager.reject') }}</summary>
-                                <form method="POST" action="{{ route('portals.lab_manager.reject', $order->id) }}" class="form-grid">
+                            <details class="odl-details">
+                                <summary class="od-kebab" aria-label="{{ __('lab_manager.reject') }}" title="{{ __('lab_manager.reject') }}"><i data-lucide="ban"></i></summary>
+                                <form method="POST" action="{{ route('portals.lab_manager.reject', $order->id) }}" class="odl-form">
                                     @csrf
-                                    <div class="form-group">
-                                        <label class="form-label form-label-required" for="reject-reason-{{ $order->id }}">{{ __('lab_manager.reject_reason') }}</label>
-                                        <input type="text" id="reject-reason-{{ $order->id }}" name="reason" class="form-control" required minlength="3" maxlength="1000">
-                                    </div>
-                                    <button type="submit" class="btn btn-danger btn-sm"><i data-lucide="ban"></i> {{ __('lab_manager.submit_reject') }}</button>
+                                    <label class="odl-label" for="reject-reason-{{ $order->id }}">{{ __('lab_manager.reject_reason') }}</label>
+                                    <input type="text" id="reject-reason-{{ $order->id }}" name="reason" class="od-input" required minlength="3" maxlength="1000">
+                                    <button type="submit" class="od-btn od-btn--danger"><i data-lucide="ban"></i> {{ __('lab_manager.submit_reject') }}</button>
                                 </form>
                             </details>
                         </td>
@@ -103,11 +107,13 @@
                 </tbody>
             </table>
         </div>
-        <div class="panel-body"><p class="form-hint">{{ __('lab_desk.specimen_hint') }}</p></div>
+        <p class="od-muted odl-small odl-foot">{{ __('lab_desk.specimen_hint') }}</p>
         @if($orders->hasPages())
-            <div class="panel-body">{{ $orders->links() }}</div>
+            <div class="odl-pager">{{ $orders->links() }}</div>
         @endif
     @endif
-</div>
+    </div>
+</section>
 
+</div>
 @endsection

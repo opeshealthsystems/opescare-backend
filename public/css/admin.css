@@ -1,0 +1,111 @@
+/*
+ * admin.css — the admin console's own stylesheet.
+ *
+ * Loaded by layouts/portal.blade.php on /admin* and /portals/admin* only,
+ * exactly as pharmacy.css is on /pharmacy*; every rule is scoped to
+ * body.section-admin so no other desk changes. It exists so the admin views
+ * stop carrying their layout as inline style= attributes (appointments, the
+ * identity desk, tasks, broadcasts, DHIS2 mappings were the worst of it) and
+ * so the one modal shell every admin dialog shares has one definition.
+ *
+ * Brand: #0F4C81 (var(--p-primary)). No purple anywhere.
+ */
+
+/* ── Generic layout helpers (adm-*) ─────────────────────────────────────── */
+body.section-admin .adm-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+body.section-admin .adm-span-2 { grid-column: 1 / -1; }
+body.section-admin .adm-mt-2 { margin-top: .5rem; }
+body.section-admin .adm-mt-3 { margin-top: .75rem; }
+body.section-admin .adm-mt-4 { margin-top: 1rem; }
+body.section-admin .adm-mb-2 { margin-top: 0; margin-bottom: .5rem; }
+body.section-admin .adm-mb-3 { margin-bottom: .75rem; }
+body.section-admin .adm-mb-4 { margin-bottom: 1rem; }
+body.section-admin .adm-mb-6 { margin-bottom: 1.5rem; }
+body.section-admin .adm-m-0 { margin: 0; }
+body.section-admin .adm-ml-auto { margin-left: auto; }
+body.section-admin .adm-flex { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+body.section-admin .adm-flex-end { display: flex; gap: .5rem; flex-wrap: wrap; align-items: flex-end; }
+body.section-admin .adm-flex-between { display: flex; justify-content: space-between; align-items: center; gap: .75rem; flex-wrap: wrap; }
+body.section-admin .adm-inline-flex { display: flex; gap: .4rem; align-items: center; }
+body.section-admin .adm-check { display: flex; gap: .4rem; align-items: center; }
+body.section-admin .adm-check-row { display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: center; }
+body.section-admin .adm-row-actions { display: flex; gap: .4rem; flex-wrap: wrap; align-items: center; }
+body.section-admin .adm-actions-end { display: flex; gap: .35rem; justify-content: flex-end; }
+body.section-admin .adm-right { text-align: right; }
+body.section-admin .adm-w-auto { width: auto; }
+body.section-admin .adm-w-10 { width: 10rem; }
+body.section-admin .adm-w-12 { width: 12rem; }
+body.section-admin .adm-w-full { width: 100%; }
+body.section-admin .adm-minw-14 { min-width: 14rem; }
+body.section-admin .adm-minw-16 { min-width: 16rem; }
+body.section-admin .adm-maxw-26 { max-width: 26rem; }
+body.section-admin .adm-grow { flex: 1; min-width: 14rem; }
+body.section-admin .adm-grow-sm { flex: 1; min-width: 180px; }
+body.section-admin .adm-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+body.section-admin .adm-pad { padding: .75rem 1rem; }
+body.section-admin .adm-pager { padding: .75rem 1.25rem; }
+body.section-admin .adm-filter-panel { padding: 1rem; margin-bottom: 1rem; }
+body.section-admin .adm-required { color: var(--p-danger); }
+body.section-admin .adm-pre { white-space: pre-line; }
+
+/* Table cell typography that used to be inline */
+body.section-admin .adm-td-sm { font-size: .85rem; }
+body.section-admin .adm-td-xs-muted { font-size: .75rem; color: var(--p-text-muted); }
+body.section-admin .adm-td-mono { font-size: .78rem; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--p-text-muted); }
+body.section-admin .adm-empty-cell { text-align: center; padding: 2rem; color: var(--p-text-muted); }
+
+/* KPI tiles on the dashboard are links now — keep them looking like tiles */
+body.section-admin a.kpi-card,
+body.section-admin a.kpi-card:hover { color: inherit; text-decoration: none; }
+body.section-admin a.kpi-card:hover { border-color: var(--p-primary); box-shadow: var(--p-shadow-md, 0 4px 14px rgba(15,76,129,.12)); }
+body.section-admin a.kpi-card:focus-visible { outline: 2px solid var(--p-primary); outline-offset: 2px; }
+
+body.section-admin .adm-cols-3 { --cols: 3; }
+body.section-admin .adm-cols-4 { --cols: 4; }
+
+/* Detail-page two-column body (support/show, tasks/show, leads/show …) */
+body.section-admin .adm-detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); gap: 1rem; align-items: start; }
+
+/* ── Modal shell: the one dialog every admin page shares (see _modal.blade.php) ── */
+body.section-admin .modal-fixed { padding: 1rem; }
+body.section-admin .modal-fixed__panel--lg { max-width: 520px; }
+body.section-admin .modal-fixed__body { padding: .25rem 0 1rem; }
+
+/* ── Identity desk (was a <style> block in mpi/index) ───────────────────── */
+body.section-admin .dr-tabs { display: flex; gap: .5rem; border-bottom: 1px solid var(--p-border); margin-bottom: var(--p-space-5); }
+body.section-admin .dr-tab { display: inline-flex; align-items: center; gap: .4rem; padding: .6rem 1rem; font-size: .875rem; font-weight: 600; color: var(--p-text-muted); text-decoration: none; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+body.section-admin .dr-tab.active { color: var(--p-primary); border-bottom-color: var(--p-primary); }
+body.section-admin .dr-tab-count { display: inline-flex; align-items: center; justify-content: center; min-width: 1.35rem; padding: 0 .35rem; height: 1.35rem; border-radius: 999px; background: var(--p-surface-2); font-size: .7rem; font-weight: 700; }
+body.section-admin .dr-tab.active .dr-tab-count { background: rgba(15,76,129,.12); color: var(--p-primary); }
+body.section-admin .dr-reasonbar { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: var(--p-space-4); }
+body.section-admin .dr-reason-chip { padding: .3rem .7rem; border: 1px solid var(--p-border); border-radius: 999px; font-size: .75rem; font-weight: 600; color: var(--p-text-2); text-decoration: none; }
+body.section-admin .dr-reason-chip.active { background: var(--p-primary); border-color: var(--p-primary); color: #fff; }
+body.section-admin .dr-card { border: 1px solid var(--p-border); border-radius: var(--p-radius, 8px); margin-bottom: var(--p-space-4); overflow: hidden; }
+body.section-admin .dr-card-head { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; padding: .75rem 1rem; background: var(--p-surface-2); border-bottom: 1px solid var(--p-border); }
+body.section-admin .dr-card-title { font-weight: 700; font-size: .95rem; }
+body.section-admin .dr-card-sub { font-size: .75rem; color: var(--p-text-muted); }
+body.section-admin .dr-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+body.section-admin .dr-col { padding: .85rem 1rem; }
+body.section-admin .dr-col + .dr-col { border-left: 1px solid var(--p-border); }
+body.section-admin .dr-col-head { display: flex; align-items: center; gap: .5rem; font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; font-weight: 700; color: var(--p-text-muted); margin-bottom: .5rem; }
+body.section-admin .dr-field { display: flex; gap: .5rem; font-size: .8rem; padding: .18rem 0; }
+body.section-admin .dr-field dt { flex: 0 0 7rem; color: var(--p-text-muted); }
+body.section-admin .dr-field dd { margin: 0; font-weight: 600; word-break: break-word; }
+body.section-admin .dr-field dd.is-missing { font-weight: 400; color: var(--p-text-muted); font-style: italic; }
+body.section-admin .dr-actions { padding: .7rem 1rem; border-top: 1px solid var(--p-border); background: var(--p-surface-1); }
+body.section-admin .dr-actions .form-label { font-size: .8rem; }
+body.section-admin .dr-actions textarea { font-size: .8rem; }
+body.section-admin .dr-actions-row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; margin-top: .5rem; }
+body.section-admin .dr-raise-row { padding: .75rem 1rem; align-items: flex-end; }
+body.section-admin .dr-score { display: inline-flex; align-items: center; gap: .35rem; font-variant-numeric: tabular-nums; font-weight: 700; }
+body.section-admin .dr-evidence { display: flex; gap: .3rem; flex-wrap: wrap; margin-top: .35rem; }
+body.section-admin .dr-ev { font-size: .7rem; padding: .15rem .5rem; border-radius: 999px; border: 1px solid var(--p-border); }
+body.section-admin .dr-ev--for { background: rgba(22,163,74,.08); border-color: rgba(22,163,74,.35); color: #166534; }
+body.section-admin .dr-ev--against { background: rgba(220,38,38,.08); border-color: rgba(220,38,38,.35); color: #991b1b; }
+body.section-admin .dr-note { font-size: .8rem; color: var(--p-text-muted); margin-bottom: var(--p-space-4); }
+body.section-admin .dr-survivor label { display: flex; align-items: center; gap: .4rem; font-size: .8rem; font-weight: 600; cursor: pointer; }
+@media (max-width: 860px) {
+  body.section-admin .dr-compare { grid-template-columns: 1fr; }
+  body.section-admin .dr-col + .dr-col { border-left: 0; border-top: 1px solid var(--p-border); }
+  body.section-admin .adm-form-grid { grid-template-columns: 1fr; }
+}

@@ -94,7 +94,7 @@
     <a href="{{ route('portals.admin.data_import.index') }}" class="sidebar-link {{ request()->routeIs('portals.admin.data_import.*') ? 'active' : '' }}">
         <i data-lucide="upload-cloud"></i><span>{{ __('staff_data.title_import', [], $l) }}</span>
     </a>
-    <a href="{{ route('portals.admin.terminology.index') }}" class="sidebar-link {{ request()->routeIs('portals.admin.terminology.*') && ! request()->routeIs('portals.admin.terminology.dictionary') ? 'active' : '' }}">
+    <a href="{{ route('portals.admin.terminology.index') }}" class="sidebar-link {{ request()->routeIs('portals.admin.terminology.*') && ! request()->routeIs('portals.admin.terminology.dictionary', 'portals.admin.terminology.gaps', 'portals.admin.terminology.log') ? 'active' : '' }}">
         <i data-lucide="book-marked"></i><span>{{ __('terminology.nav', [], $l) }}</span>
         {{-- Mappings nobody has decided on. Twenty have sat pending since May
              because there was no screen to decide them; the badge makes that
@@ -114,6 +114,11 @@
     <a href="{{ route('portals.admin.terminology.gaps') }}" class="sidebar-link {{ request()->routeIs('portals.admin.terminology.gaps') ? 'active' : '' }}">
         <i data-lucide="scan-search"></i><span>{{ __('terminology.gaps_nav', [], $l) }}</span>
     </a>
+    {{-- Who decided which mapping, and when. A button on the review desk was
+         the only way in; the log is a page of its own and is listed as one. --}}
+    <a href="{{ route('portals.admin.terminology.log') }}" class="sidebar-link sidebar-link--child {{ request()->routeIs('portals.admin.terminology.log') ? 'active' : '' }}">
+        <i data-lucide="scroll-text"></i><span>{{ __('terminology.nav_log', [], $l) }}</span>
+    </a>
     {{-- Platform KPIs (imported, group C): aggregates only, platform tier. --}}
     <a href="{{ route('portals.admin.kpi.index') }}" class="sidebar-link {{ request()->routeIs('portals.admin.kpi.*') ? 'active' : '' }}">
         <i data-lucide="bar-chart-3"></i><span>{{ __('kpi.nav', [], $l) }}</span>
@@ -129,11 +134,14 @@
          code had no route and no screen. The badge counts what is still
          waiting on a human, because an unanswerable statutory request must
          not be invisible. --}}
-    <a href="{{ route('portals.admin.governance.index') }}" class="sidebar-link {{ request()->routeIs('portals.admin.governance.*') ? 'active' : '' }}">
+    <a href="{{ route('portals.admin.governance.index') }}" class="sidebar-link {{ request()->routeIs('portals.admin.governance.*') && ! request()->routeIs('portals.admin.governance.log') ? 'active' : '' }}">
         <i data-lucide="scroll-text"></i><span>{{ __('governance_desk.nav', [], $l) }}</span>
         @php $pendingRights = rescue(fn () => \App\Models\DataExportRequest::where('status', 'pending')->count()
             + \App\Models\CorrectionRequest::where('status', 'pending')->count(), 0, false); @endphp
         @if($pendingRights > 0)<span class="sidebar-badge sidebar-badge--warning">{{ $pendingRights }}</span>@endif
+    </a>
+    <a href="{{ route('portals.admin.governance.log') }}" class="sidebar-link sidebar-link--child {{ request()->routeIs('portals.admin.governance.log') ? 'active' : '' }}">
+        <i data-lucide="scroll-text"></i><span>{{ __('governance_desk.nav_log', [], $l) }}</span>
     </a>
     <a href="{{ route('portals.admin.legal.index') }}" class="sidebar-link {{ request()->routeIs('portals.admin.legal.index') || request()->routeIs('portals.admin.legal.show') || request()->routeIs('portals.admin.legal.store') || request()->routeIs('portals.admin.legal.versions.*') ? 'active' : '' }}">
         <i data-lucide="scale"></i><span>{{ __('public.adm_legal_page_title', [], $l) }}</span>

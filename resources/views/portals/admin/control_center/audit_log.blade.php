@@ -60,7 +60,7 @@
                         <td class="row-actions">
                             @if($log->after || $log->before)
                                 <button type="button" class="icon-btn" aria-label="{{ __('public.aria_view_diff') }}"
-                                    data-call="showDiff" data-args="{{ json_encode([$log->before, $log->after, $log->action]) }}">
+                                    data-call="showDiff" data-args="{{ json_encode([$log->before, $log->after, $log->action]) }}" data-show="diff-modal" data-display="flex">
                                     <i data-lucide="eye"></i>
                                 </button>
                             @endif
@@ -86,7 +86,7 @@
     <div class="modal-fixed__panel">
         <div class="modal-fixed__head">
             <h3 id="diff-title" class="modal-fixed__title"></h3>
-            <button type="button" class="icon-btn" aria-label="{{ __('public.aria_close') }}" data-call="closeDiff">
+            <button type="button" class="icon-btn" aria-label="{{ __('public.aria_close') }}" data-hide="diff-modal">
                 <i data-lucide="x"></i>
             </button>
         </div>
@@ -114,9 +114,7 @@
         document.getElementById('diff-title').textContent = _ag.diffTitlePrefix + action;
         document.getElementById('diff-before').textContent = before ? JSON.stringify(before, null, 2) : _ag.empty;
         document.getElementById('diff-after').textContent  = after  ? JSON.stringify(after,  null, 2) : _ag.empty;
-        document.getElementById('diff-modal').classList.add('open');
     }
-    function closeDiff() { document.getElementById('diff-modal').classList.remove('open'); }
-    document.getElementById('diff-modal').addEventListener('click', function(e) { if (e.target === this) closeDiff(); });
 </script>
+@include('portals.admin._modal')
 @endsection

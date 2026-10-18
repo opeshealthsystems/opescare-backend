@@ -40,15 +40,13 @@ class PublicPageController extends Controller
          * of Cameroon are a fact of geography, and an empty database must
          * not make the page claim "all 0 regions".
          */
-        $stats = Cache::remember('finder.home.stats', 3600, function () {
-            return [
-                'facilities' => CareFacility::where('listing_status', 'active')->count(),
-            ];
+        $facilities = (int) Cache::remember('finder.home.facility_count', 3600, function (): int {
+            return (int) CareFacility::where('listing_status', 'active')->count();
         });
 
         return view('public.landing', [
             'stats' => [
-                'facilities' => $stats['facilities'],
+                'facilities' => $facilities,
                 'regions'    => 10,
             ],
         ]);

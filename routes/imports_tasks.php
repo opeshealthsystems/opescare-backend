@@ -42,6 +42,7 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'throttle:por
 
 Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'platform.admin', 'throttle:portal'])->group(function () {
     Route::get('/admin/tasks', [AdminTaskController::class, 'index'])->name('portals.admin.tasks');
+    Route::get('/admin/tasks/{uuid}', [AdminTaskController::class, 'show'])->name('portals.admin.tasks.show');
     Route::post('/admin/tasks', [AdminTaskController::class, 'store'])->name('portals.admin.tasks.store');
     Route::post('/admin/tasks/{uuid}/reassign', [AdminTaskController::class, 'reassign'])->name('portals.admin.tasks.reassign');
     Route::post('/admin/tasks/{uuid}/complete', [AdminTaskController::class, 'complete'])->name('portals.admin.tasks.complete');

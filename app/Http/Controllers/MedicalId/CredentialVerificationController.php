@@ -35,6 +35,21 @@ class CredentialVerificationController extends Controller
         ]);
     }
 
+    /**
+     * One credential on its own page — any status, not only the pending
+     * queue, so a decision taken last month can still be read back: who
+     * verified or rejected it, when, and with what note.
+     */
+    public function show(string $id): View
+    {
+        $credential = ProviderCredential::with(['provider.role', 'verifier'])->findOrFail($id);
+
+        return view('portals.admin.verifications.show', [
+            'credential' => $credential,
+            'pending'    => $credential->verified_at === null && $credential->status !== 'suspended',
+        ]);
+    }
+
     public function verify(Request $request, string $id): RedirectResponse
     {
         $credential = ProviderCredential::whereNull('verified_at')->findOrFail($id);

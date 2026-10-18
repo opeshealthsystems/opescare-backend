@@ -164,7 +164,7 @@
                 <i data-lucide="check"></i> {{ __('terminology.btn_approve') }}
             </button>
         </form>
-        <form method="POST" action="{{ route('portals.admin.terminology.reject', $mapping->id) }}">
+        <form method="POST" action="{{ route('portals.admin.terminology.reject', $mapping->id) }}" data-confirm="{{ __('admin_desk.confirm_reject_mapping') }}">
             @csrf
             <label class="form-label" for="reject-reason">{{ __('terminology.field_reject_reason') }}</label>
             <textarea id="reject-reason" name="reason" class="form-control" rows="2"

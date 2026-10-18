@@ -21,8 +21,8 @@
 <div class="panel mb-4">
     <div class="panel-header"><h3 class="panel-title"><i data-lucide="building-2"></i> {{ __('dhis2.set_org_unit') }}</h3></div>
     <div class="panel-body">
-        <form method="GET" action="{{ route('portals.admin.dhis2.mappings') }}" style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:flex-end;" class="mb-4">
-            <div style="min-width:16rem;"><label class="form-label" for="q">{{ __('dhis2.search_facility') }}</label>
+        <form method="GET" action="{{ route('portals.admin.dhis2.mappings') }}" class="adm-flex-end mb-4">
+            <div class="adm-minw-16"><label class="form-label" for="q">{{ __('dhis2.search_facility') }}</label>
                 <input type="search" id="q" name="q" class="form-control" value="{{ $q }}" maxlength="120"></div>
             <button type="submit" class="btn btn-secondary"><i data-lucide="search"></i> {{ __('dhis2.search') }}</button>
         </form>
@@ -31,11 +31,11 @@
             <p class="td-muted">{{ __('dhis2.no_facilities') }}</p>
         @endif
         @foreach($candidates as $f)
-            <form method="POST" action="{{ route('portals.admin.dhis2.mappings.org-unit') }}" style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin-bottom:.5rem;">
+            <form method="POST" action="{{ route('portals.admin.dhis2.mappings.org-unit') }}" class="adm-flex adm-mb-2">
                 @csrf
                 <input type="hidden" name="facility_id" value="{{ $f->id }}">
-                <span class="td-strong" style="min-width:14rem;">{{ $f->name }}</span>
-                <input type="text" name="org_unit_id" class="form-control" style="width:12rem;" maxlength="11" value="{{ $mappedIds[$f->id] ?? '' }}" aria-label="{{ __('dhis2.col_org_unit') }}">
+                <span class="td-strong adm-minw-14">{{ $f->name }}</span>
+                <input type="text" name="org_unit_id" class="form-control adm-w-12" maxlength="11" value="{{ $mappedIds[$f->id] ?? '' }}" aria-label="{{ __('dhis2.col_org_unit') }}">
                 <button type="submit" class="btn btn-primary btn-sm"><i data-lucide="save"></i> {{ __('dhis2.save') }}</button>
             </form>
         @endforeach
@@ -55,10 +55,10 @@
                 <tr>
                     <td data-label="{{ __('dhis2.col_facility') }}"><span class="td-strong">{{ $facilityNames[$m->facility_id] ?? '—' }}</span></td>
                     <td colspan="2">
-                        <form method="POST" action="{{ route('portals.admin.dhis2.mappings.org-unit') }}" style="display:flex;gap:.5rem;align-items:center;">
+                        <form method="POST" action="{{ route('portals.admin.dhis2.mappings.org-unit') }}" class="adm-flex">
                             @csrf
                             <input type="hidden" name="facility_id" value="{{ $m->facility_id }}">
-                            <input type="text" name="org_unit_id" class="form-control" style="width:12rem;" maxlength="11" value="{{ $m->org_unit_id }}" aria-label="{{ __('dhis2.col_org_unit') }}">
+                            <input type="text" name="org_unit_id" class="form-control adm-w-12" maxlength="11" value="{{ $m->org_unit_id }}" aria-label="{{ __('dhis2.col_org_unit') }}">
                             <button type="submit" class="btn btn-secondary btn-sm"><i data-lucide="save"></i> {{ __('dhis2.save') }}</button>
                         </form>
                     </td>
@@ -84,11 +84,11 @@
                         @if(! $em && isset($envMap[$code]))<div class="td-muted">{{ $envMap[$code] }} ({{ __('dhis2.from_env') }})</div>@endif
                     </td>
                     <td>
-                        <form method="POST" action="{{ route('portals.admin.dhis2.mappings.data-element') }}" style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
+                        <form method="POST" action="{{ route('portals.admin.dhis2.mappings.data-element') }}" class="adm-flex">
                             @csrf
                             <input type="hidden" name="indicator_code" value="{{ $code }}">
-                            <input type="text" name="data_element_id" class="form-control" style="width:10rem;" maxlength="11" value="{{ $em->data_element_id ?? '' }}" aria-label="{{ __('dhis2.col_data_element') }}">
-                            <input type="text" name="category_option_combo_id" class="form-control" style="width:10rem;" maxlength="11" value="{{ $em->category_option_combo_id ?? '' }}" aria-label="{{ __('dhis2.col_coc') }}">
+                            <input type="text" name="data_element_id" class="form-control adm-w-10" maxlength="11" value="{{ $em->data_element_id ?? '' }}" aria-label="{{ __('dhis2.col_data_element') }}">
+                            <input type="text" name="category_option_combo_id" class="form-control adm-w-10" maxlength="11" value="{{ $em->category_option_combo_id ?? '' }}" aria-label="{{ __('dhis2.col_coc') }}">
                             <button type="submit" class="btn btn-secondary btn-sm"><i data-lucide="save"></i> {{ __('dhis2.save') }}</button>
                         </form>
                     </td>

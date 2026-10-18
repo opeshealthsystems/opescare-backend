@@ -93,7 +93,7 @@ class PharmacyPortalController extends Controller
     // Dashboard
     // ------------------------------------------------------------------
 
-    public function dashboard()
+    public function dashboard(Request $req)
     {
         $facilityId = $this->facilityId();
 
@@ -127,10 +127,47 @@ class PharmacyPortalController extends Controller
             'expired'        => $this->ops()->expiredCount($facilityId ?? '00000000-0000-0000-0000-000000000000'),
         ];
 
-        $pendingRx = $this->counterScripts($facilityId)->with(['patient', 'items'])
-            ->whereIn('status', ['active', 'partially_dispensed'])
+        // Yesterday's figures exist only so the two KPI tiles can show a trend
+        // against something real. Patients served = distinct patients with a
+        // script dispensed that day at this counter; no other source is read.
+        $stats['dispensed_yesterday'] = $this->counterScripts($facilityId)
+            ->where('status', 'dispensed')
+            ->whereDate('dispensed_at', today()->subDay())
+            ->count();
+        $stats['served_today'] = (int) $this->counterScripts($facilityId)
+            ->whereNotNull('dispensed_at')
+            ->whereDate('dispensed_at', today())
+            ->distinct()->count('patient_id');
+        $stats['served_yesterday'] = (int) $this->counterScripts($facilityId)
+            ->whereNotNull('dispensed_at')
+            ->whereDate('dispensed_at', today()->subDay())
+            ->distinct()->count('patient_id');
+        // Queue tab counts: the two statuses the queue holds.
+        $stats['rx_active']  = $this->counterScripts($facilityId)->where('status', 'active')->count();
+        $stats['rx_partial'] = $this->counterScripts($facilityId)->where('status', 'partially_dispensed')->count();
+
+        $queueTab = in_array($req->query('tab'), ['active', 'partially_dispensed'], true) ? $req->query('tab') : null;
+
+        $pendingRx = $this->counterScripts($facilityId)->with(['patient', 'items', 'prescriber:id,name', 'facility:id,name'])
+            ->when($queueTab, fn ($q) => $q->where('status', $queueTab), fn ($q) => $q->whereIn('status', ['active', 'partially_dispensed']))
             ->orderByDesc('created_at')
             ->limit(8)
+            ->get();
+
+        // The detail panel shows the row picked with ?rx=, else the first row.
+        $selectedRx = $pendingRx->firstWhere('id', (string) $req->query('rx')) ?? $pendingRx->first();
+
+        // Common medicines: the five drug names most often handed over at this
+        // counter (dispensed lines only). Empty until something is dispensed.
+        $commonMedicines = PrescriptionItem::query()
+            ->whereIn('prescription_id', $this->counterScripts($facilityId)->select('id'))
+            ->whereNotNull('dispensed_at')
+            ->whereNotNull('drug_name')
+            ->selectRaw('drug_name, COUNT(*) AS times')
+            ->groupBy('drug_name')
+            ->orderByDesc('times')
+            ->orderBy('drug_name')
+            ->limit(5)
             ->get();
 
         $alerts = (clone $published)
@@ -154,7 +191,7 @@ class PharmacyPortalController extends Controller
         // Finder rows link to their ledger page when this pharmacy keeps one.
         $ledgerItems = $facilityId ? app(\App\Services\Pharmacy\PharmacyStockDetailService::class)->itemIdsByMedicine($facilityId) : collect();
 
-        return view('portals.pharmacy.dashboard', compact('stats', 'pendingRx', 'alerts', 'pendingOrders', 'ledgerItems'));
+        return view('portals.pharmacy.dashboard', compact('stats', 'pendingRx', 'alerts', 'pendingOrders', 'ledgerItems', 'selectedRx', 'commonMedicines', 'queueTab'));
     }
 
     // ------------------------------------------------------------------

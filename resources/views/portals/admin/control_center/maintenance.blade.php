@@ -12,7 +12,7 @@
         <p class="page-subtitle">{{ __('public.adm_cc_mnt_subtitle') }}</p>
     </div>
     <div class="page-head__spacer"></div>
-    <button type="button" class="btn btn-primary btn-sm" data-call="openCreateModal">
+    <button type="button" class="btn btn-primary btn-sm" data-show="create-modal" data-display="flex">
         <i data-lucide="plus"></i> {{ __('public.adm_cc_mnt_btn_schedule') }}
     </button>
 </div>
@@ -111,7 +111,7 @@
     <div class="modal-fixed__panel modal-fixed__panel--md">
         <div class="modal-fixed__head">
             <h3 class="modal-fixed__title">{{ __('public.adm_cc_mnt_modal_heading') }}</h3>
-            <button type="button" class="icon-btn" aria-label="{{ __('public.aria_close') }}" data-call="closeCreateModal"><i data-lucide="x"></i></button>
+            <button type="button" class="icon-btn" aria-label="{{ __('public.aria_close') }}" data-hide="create-modal"><i data-lucide="x"></i></button>
         </div>
         <form method="POST" action="{{ route('portals.admin.cc.maintenance.store') }}">
             @csrf
@@ -140,7 +140,7 @@
                 </label>
             </div>
             <div class="modal__footer">
-                <button type="button" class="btn btn-ghost btn-sm" data-call="closeCreateModal">{{ __('public.adm_cc_mnt_modal_btn_cancel') }}</button>
+                <button type="button" class="btn btn-ghost btn-sm" data-hide="create-modal">{{ __('public.adm_cc_mnt_modal_btn_cancel') }}</button>
                 <button type="submit" class="btn btn-primary btn-sm">{{ __('public.adm_cc_mnt_modal_btn_schedule') }}</button>
             </div>
         </form>
@@ -149,9 +149,5 @@
 @endsection
 
 @section('scripts')
-<script @cspNonce>
-    function openCreateModal()  { document.getElementById('create-modal').classList.add('open'); }
-    function closeCreateModal() { document.getElementById('create-modal').classList.remove('open'); }
-    document.getElementById('create-modal').addEventListener('click', function(e) { if (e.target === this) closeCreateModal(); });
-</script>
+@include('portals.admin._modal')
 @endsection

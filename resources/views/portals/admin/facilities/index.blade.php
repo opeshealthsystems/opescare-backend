@@ -90,7 +90,7 @@
                         </form>
                         @endif
                         @if(($f->status ?? '') !== 'suspended')
-                        <form method="POST" action="{{ route('admin.facilities.suspend', $f->id) }}" class="inline-form">@csrf
+                        <form method="POST" action="{{ route('admin.facilities.suspend', $f->id) }}" data-confirm="{{ __('admin_desk.confirm_suspend_facility') }}" class="inline-form">@csrf
                             <button type="submit" class="icon-btn" aria-label="{{ __('public.aria_suspend_facility') }}" title="{{ __('public.aria_suspend') }}"><i data-lucide="pause-circle"></i></button>
                         </form>
                         @endif

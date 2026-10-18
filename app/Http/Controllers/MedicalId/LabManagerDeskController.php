@@ -48,7 +48,10 @@ class LabManagerDeskController extends Controller
             'facility_id' => $facilityId,
         ]);
 
-        return view('portals.lab.dashboard', $this->desk->dashboard($facilityId) + [
+        $dashboard = $this->desk->dashboard($facilityId);
+
+        return view('portals.lab.dashboard', $dashboard + $this->desk->bench($facilityId, $dashboard['turnaround']) + [
+            'facilityName' => $this->desk->facilityName($facilityId),
             'statuses'     => LabDeskWebService::STATUSES,
             'publication'  => $this->desk->publication($facilityId),
             'hasAnyWork'   => $this->desk->hasAnyWork($facilityId),

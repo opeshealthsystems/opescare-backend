@@ -54,7 +54,7 @@
                 $statusBadge = match($lead->status){'new'=>'badge-danger','contacted'=>'badge-warning','qualified'=>'badge-primary','won'=>'badge-success','converted'=>'badge-success','lost'=>'badge-neutral',default=>'badge-neutral'};
                 @endphp
                 <tr>
-                    <td data-label="{{ __('leads.admin.col_organization') }}"><span class="td-strong">{{ $lead->organization_name ?: '—' }}</span></td>
+                    <td data-label="{{ __('leads.admin.col_organization') }}"><a href="{{ route('portals.admin.leads.show', $lead) }}" class="td-strong">{{ $lead->organization_name ?: $lead->name }}</a></td>
                     <td data-label="{{ __('leads.admin.col_type') }}"><span class="badge badge-neutral">{{ $lead->organization_type ? __('leads.org_types.'.$lead->organization_type) : '—' }}</span></td>
                     <td data-label="{{ __('leads.admin.col_contact') }}">
                         <div class="td-strong">{{ $lead->name }}</div>

@@ -32,14 +32,14 @@
      counts they have no business seeing. --}}
 @platformadmin
 {{-- Platform overview stats --}}
-<div class="stat-grid mb-6" style="--cols:4">
+<div class="stat-grid mb-6 adm-cols-4">
   <a href="{{ route('portals.admin.facilities.index') }}" class="stat-card">
     <div class="stat-card__icon"><i data-lucide="hospital"></i></div>
     <div class="stat-card__value">{{ $platformStats['facilities'] ?? '—' }}</div>
     <div class="stat-card__label">{{ __('public.admin_governance.stat_total_facilities', [], app()->getLocale()) }}</div>
   </a>
       </div>
-<div class="stat-grid mb-6" style="--cols:3">
+<div class="stat-grid mb-6 adm-cols-3">
   <a href="{{ route('portals.admin.users.index') }}" class="stat-card">
     <div class="stat-card__icon"><i data-lucide="users"></i></div>
     <div class="stat-card__value">{{ $platformStats['total_users'] ?? '—' }}</div>
@@ -49,43 +49,51 @@
 @endplatformadmin
 
 <!-- KPI Cards -->
+{{-- Each tile links to the desk its number comes from. Those desks are
+     platform tier (RequirePlatformAdmin), so for a facility-tier viewer the
+     tiles point at the events table further down this page instead of at a
+     403 — SidebarLinksAreReachableTest sweeps every link on this page. --}}
+@php
+    $kpiTier = \App\Http\Middleware\RequirePlatformAdmin::isPlatformTier(auth()->user());
+    $kpiHref = fn (string $route) => $kpiTier ? route($route) : "#security";
+@endphp
 <div class="kpi-grid">
-    <div class="kpi-card">
+    <a href="{{ $kpiHref('portals.admin.mpi.index') }}" class="kpi-card">
         <div class="kpi-icon blue"><i data-lucide="id-card"></i></div>
         <div class="kpi-body">
             <div class="kpi-label">{{ __('public.admin_governance.kpi_total_health_ids', [], app()->getLocale()) }}</div>
             <div class="kpi-value">{{ number_format($stats['total_ids'] ?? 0) }}</div>
             <div class="kpi-sub">{{ __('public.admin_governance.kpi_registered_patients', [], app()->getLocale()) }}</div>
         </div>
-    </div>
+    </a>
     {{-- null = a facility-tier viewer with no facility context: no honest
          number to show, so no tile (AdminPortalController@index). --}}
     @if(($stats['active_tokens'] ?? null) !== null)
-    <div class="kpi-card" data-kpi="active_tokens">
+    <a href="{{ $kpiHref('portals.admin.security.index') }}" class="kpi-card" data-kpi="active_tokens">
         <div class="kpi-icon teal"><i data-lucide="qr-code"></i></div>
         <div class="kpi-body">
             <div class="kpi-label">{{ __('public.admin_governance.kpi_active_tokens', [], app()->getLocale()) }}</div>
             <div class="kpi-value" data-kpi-value="active_tokens">{{ number_format($stats['active_tokens']) }}</div>
             <div class="kpi-sub">{{ __('public.admin_governance.kpi_live_tokens', [], app()->getLocale()) }}</div>
         </div>
-    </div>
+    </a>
     @endif
-    <div class="kpi-card">
+    <a href="{{ $kpiHref('portals.admin.security.audit_explorer') }}" class="kpi-card">
         <div class="kpi-icon blue"><i data-lucide="activity"></i></div>
         <div class="kpi-body">
             <div class="kpi-label">{{ __('public.admin_governance.kpi_total_lookups', [], app()->getLocale()) }}</div>
             <div class="kpi-value">{{ number_format($stats['total_access_logs'] ?? 0) }}</div>
             <div class="kpi-sub">{{ __('public.admin_governance.kpi_alltime_events', [], app()->getLocale()) }}</div>
         </div>
-    </div>
-    <div class="kpi-card">
+    </a>
+    <a href="#security" class="kpi-card">
         <div class="kpi-icon danger"><i data-lucide="shield-x"></i></div>
         <div class="kpi-body">
             <div class="kpi-label">{{ __('public.admin_governance.kpi_denied_lookups', [], app()->getLocale()) }}</div>
             <div class="kpi-value">{{ number_format($stats['denied_access'] ?? 0) }}</div>
             <div class="kpi-sub">{{ __('public.admin_governance.kpi_failed_denied', [], app()->getLocale()) }}</div>
         </div>
-    </div>
+    </a>
 </div>
 
 

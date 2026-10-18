@@ -14,14 +14,22 @@
 
 @section('head')
 @include('portals.facility.settings._styles')
+@include('portals.pharmacy.stock_ops._styles')
 @endsection
 
 @section('content')
 
-<div class="page-head">
-    <h2>{{ __('pharmacy_settings.title') }}</h2>
-    <p class="page-subtitle">{{ __('pharmacy_settings.subtitle') }}</p>
-</div>
+<div class="os-page os-settings">
+
+<header class="os-head">
+    <div class="os-head__text">
+        <h1 class="os-head__title">{{ __('pharmacy_settings.title') }}</h1>
+        <p class="os-head__sub">{{ __('pharmacy_settings.subtitle') }}</p>
+    </div>
+</header>
+
+{{-- The shared /facility/settings partials, wrapped (not restyled) so they sit
+     on the desk canvas as flat cards; see od-stock.css .os-settings. --}}
 
 @include('portals.facility.settings._status', [
     'ns'        => 'pharmacy_settings',
@@ -51,4 +59,5 @@
     'action' => route('portals.pharmacy.settings.hours'),
 ])
 
+</div>
 @endsection

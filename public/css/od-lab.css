@@ -1,0 +1,185 @@
+/* ==========================================================================
+   Lab / imaging / diagnostic desk page rules — public/css/od-lab.css
+   Builds on public/css/od.css (the contract). Page-only layout and the few
+   pieces the contract leaves to the page. Scoped to body.od--lab. FLAT:
+   no shadow, no gradient, no hover lift (owner directive 2026-10-18).
+   ========================================================================== */
+
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+body.od--lab .odl-top { display: grid; gap: 20px; grid-template-columns: minmax(0, 1.2fr) repeat(4, minmax(0, 1fr)); align-items: stretch; }
+body.od--lab .odl-top--diag { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); }
+body.od--lab .odl-welcome { min-height: 116px; padding: 20px 24px; }
+body.od--lab .odl-sep { color: var(--od-faint, #9AA9BC); margin: 0 4px; }
+
+body.od--lab .odl-grid {
+  display: grid; gap: 20px; align-items: stretch;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  grid-template-areas: "queue workload" "recent alerts" "recent pub";
+}
+body.od--lab .odl-queue { grid-area: queue; }
+body.od--lab .odl-workload { grid-area: workload; }
+body.od--lab .odl-alerts { grid-area: alerts; }
+body.od--lab .odl-recent { grid-area: recent; }
+body.od--lab .odl-publication { grid-area: pub; }
+
+/* Every card body gets its top padding when the card has no head. */
+body.od--lab .od-card > .od-card__body:first-child,
+body.od--lab .odl-pad-top { padding-top: 20px; }
+
+/* ── Text helpers ───────────────────────────────────────────────────────── */
+body.od--lab .odl-small { font-size: 12px; font-weight: 500; margin: 4px 0 0; }
+body.od--lab .odl-lead { margin: 0 0 12px; font-size: 14px; }
+body.od--lab .odl-time { color: var(--od-muted, #6B7C93); font-variant-numeric: tabular-nums; white-space: nowrap; }
+body.od--lab .odl-big { font-size: 22px; font-weight: 800; }
+body.od--lab .odl-pills { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+body.od--lab .odl-steps { margin: 8px 0 0 20px; padding: 0; line-height: 1.8; color: var(--od-ink, #1F3654); font-size: 14px; }
+body.od--lab .odl-inline { display: flex; align-items: center; gap: 8px; }
+body.od--lab .odl-inline svg { width: 18px; height: 18px; }
+body.od--lab .odl-foot { padding: 12px 0 0; margin: 0; }
+body.od--lab .odl-req { color: var(--od-urgent, #D93025); }
+
+/* ── Flash notes ────────────────────────────────────────────────────────── */
+body.od--lab .od-flash {
+  display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border-radius: 12px;
+  font-size: 14px; font-weight: 500; background: #E8F0FE; color: #1A5FB8; margin: 0 0 4px;
+}
+body.od--lab .od-flash svg { width: 22px; height: 22px; flex: none; stroke-width: 1.75; }
+body.od--lab .od-flash--ok { background: #E6F4EA; color: #1E8E3E; }
+body.od--lab .od-flash--err { background: #FDECEC; color: #D93025; }
+body.od--lab .od-flash--warn { background: #FFF3DC; color: #8A5A12; }
+body.od--lab .od-flash--info { background: #E8F0FE; color: #1A5FB8; }
+body.od--lab .od-card__body .od-flash { margin: 8px 0 12px; }
+body.od--lab .odl-errlist, body.od--lab .od-flash .alert-list { margin: 0; padding-left: 18px; }
+
+/* ── Pill aliases the imaging enum and legacy match() arms resolve to ───── */
+body.od--lab .od-pill--danger { --pill-bg: #FDECEC; --pill-fg: #D93025; }
+body.od--lab .od-pill--success, body.od--lab .od-pill--completed { --pill-bg: #E6F4EA; --pill-fg: #1E8E3E; }
+body.od--lab .od-pill--scheduled, body.od--lab .od-pill--in_progress { --pill-bg: #E8F0FE; --pill-fg: #1A5FB8; }
+body.od--lab .od-pill--cancelled { --pill-bg: #EEF2F7; --pill-fg: #6B7C93; }
+
+/* ── Sample queue ───────────────────────────────────────────────────────── */
+body.od--lab .odl-queue__none { padding: 16px; margin: 0; color: var(--od-muted, #6B7C93); font-size: 14px; text-align: center; }
+body.od--lab .od-tabs button.od-tab { font-family: inherit; }
+
+/* ── Workload ───────────────────────────────────────────────────────────── */
+body.od--lab .odl-workload .od-donut { justify-content: center; padding: 4px 0 8px; }
+body.od--lab .odl-tat { display: flex; align-items: center; gap: 12px; padding-top: 14px; margin-top: 8px; border-top: 1px solid #EEF2F7; }
+body.od--lab .odl-tat__icon {
+  width: 40px; height: 40px; border-radius: 10px; background: #E6F4F1; color: #0F7B6C;
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+}
+body.od--lab .odl-tat__icon svg { width: 22px; height: 22px; stroke-width: 1.75; }
+body.od--lab .odl-tat__label { font-size: 13px; font-weight: 500; color: var(--od-muted, #6B7C93); }
+body.od--lab .odl-tat__value { font-size: 18px; font-weight: 800; color: var(--od-ink-h, #0F2340); }
+
+/* ── Lists as links ─────────────────────────────────────────────────────── */
+body.od--lab .od-list > li > a.od-list__row { display: flex; }
+body.od--lab .od-list > li:last-child > .od-list__row { border-bottom: 0; }
+body.od--lab a.od-list__title { text-decoration: none; }
+body.od--lab a.od-list__title:hover { text-decoration: underline; }
+
+/* ── Publication / finders ──────────────────────────────────────────────── */
+body.od--lab .odl-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+body.od--lab .odl-listing { margin: 0 0 12px; font-size: 14px; }
+body.od--lab .odl-finder {
+  display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px; background: #F5F8FC; min-width: 0;
+}
+
+/* ── Inline disclosure forms (call-back, reject, decline, correct) ─────── */
+body.od--lab .odl-details { display: inline-block; vertical-align: middle; position: relative; text-align: left; }
+body.od--lab .odl-details--block { display: block; }
+body.od--lab .odl-details > summary { list-style: none; }
+body.od--lab .odl-details > summary::-webkit-details-marker { display: none; }
+body.od--lab .odl-details[open] > .odl-form {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; width: 300px;
+  background: #fff; border: 1px solid #E6ECF3; border-radius: 12px; padding: 14px;
+}
+body.od--lab .odl-details--block[open] > .odl-form { position: static; width: auto; border: 0; padding: 12px 0 0; }
+body.od--lab .odl-form { display: flex; flex-direction: column; gap: 8px; }
+body.od--lab .odl-form .od-btn { align-self: flex-start; }
+body.od--lab .odl-label, body.od--lab .odl .form-label { font-size: 13px; font-weight: 600; color: var(--od-ink-h, #0F2340); }
+body.od--lab .odl-rowactions { white-space: nowrap; }
+body.od--lab .odl-rowactions > form { display: inline-block; vertical-align: middle; }
+body.od--lab .odl-callback > * { vertical-align: middle; }
+body.od--lab .odl-signoff { display: flex; flex-direction: column; gap: 14px; }
+
+/* ── Worklist search ────────────────────────────────────────────────────── */
+body.od--lab .odl-search { display: flex; gap: 12px; align-items: center; flex-wrap: nowrap; max-width: 560px; }
+body.od--lab .odl-search .od-input, body.od--lab .odl-search .od-btn { height: 48px; border-radius: 12px; }
+body.od--lab .odl-search__field { position: relative; flex: 1 1 auto; min-width: 0; display: flex; align-items: center; }
+body.od--lab .odl-search__field > svg { position: absolute; left: 14px; width: 20px; height: 20px; color: var(--od-muted, #6B7C93); pointer-events: none; }
+body.od--lab .odl-search__field > .od-input { padding-left: 44px; }
+body.od--lab .odl-search + .odl-small { margin: 8px 0 16px; font-size: 13px; }
+
+/* ── Order facts ────────────────────────────────────────────────────────── */
+body.od--lab .odl-facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px 20px; margin: 0; }
+body.od--lab .odl-facts dt { font-size: 13px; font-weight: 500; color: var(--od-muted, #6B7C93); margin: 0 0 2px; }
+body.od--lab .odl-facts dd { margin: 0; display: flex; flex-direction: column; gap: 2px; font-size: 14px; font-weight: 500; color: var(--od-ink, #1F3654); }
+body.od--lab .odl-facts dd strong { font-weight: 700; color: var(--od-ink-h, #0F2340); }
+body.od--lab .odl-facts dd span { color: var(--od-muted, #6B7C93); }
+body.od--lab .odl-facts__wide { grid-column: 1 / -1; }
+body.od--lab .odl-alertline { color: var(--od-urgent, #D93025); }
+body.od--lab .odl-alertline svg { width: 16px; height: 16px; vertical-align: -3px; }
+
+/* ── Legacy form markup on the imaging pages, drawn in the desk idiom ──── */
+body.od--lab .odl .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px 20px; align-items: start; }
+body.od--lab .odl .form-grid > .form-group.od-row { flex-direction: row; align-items: center; padding-top: 26px; }
+body.od--lab .odl .form-group { display: flex; flex-direction: column; gap: 6px; margin: 0 0 14px; min-width: 0; }
+body.od--lab .odl .form-grid > .form-group { margin: 0; }
+body.od--lab .odl .form-hint { font-size: 12px; font-weight: 500; color: var(--od-muted, #6B7C93); }
+body.od--lab .odl .form-label-required::after { content: " *"; color: var(--od-urgent, #D93025); }
+body.od--lab .odl textarea.od-input { height: auto; min-height: 88px; padding: 12px 14px; line-height: 1.5; }
+body.od--lab .odl .od-empty h3 { margin: 0; font-size: 16px; font-weight: 700; color: var(--od-ink-h, #0F2340); }
+body.od--lab .odl .mt-2 { margin-top: 8px; }
+
+/* ── Pager ──────────────────────────────────────────────────────────────── */
+body.od--lab .odl-pager { padding: 16px 0 0; }
+
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 1439px) {
+  body.od--lab .odl-top { gap: 16px; }
+  body.od--lab .odl-grid { gap: 16px; }
+}
+@media (max-width: 1279px) {
+  body.od--lab .odl-top { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body.od--lab .odl-top > .odl-welcome { grid-column: 1 / -1; }
+  body.od--lab .odl-top--diag { grid-template-columns: minmax(0, 1fr); }
+  body.od--lab .odl-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "queue queue" "workload alerts" "recent recent" "pub pub"; }
+}
+@media (max-width: 767px) {
+  body.od--lab .odl-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "queue" "workload" "alerts" "recent" "pub"; }
+  body.od--lab .odl-details[open] > .odl-form { position: static; width: auto; margin-top: 8px; }
+}
+@media (max-width: 639px) {
+  body.od--lab .odl-top { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  body.od--lab .odl-welcome { padding: 18px; min-height: 0; }
+  body.od--lab .odl-search .od-btn { flex: 1 1 auto; }
+}
+
+
+/* KPI row: welcome ~20%, four tiles; label and sub-line stay on one line. */
+body.od--lab .odl-top .od-kpi { padding: 16px 14px; gap: 10px; }
+body.od--lab .odl-top .od-kpi__icon { width: 44px; height: 44px; }
+body.od--lab .odl-top .od-kpi__icon svg { width: 22px; height: 22px; }
+body.od--lab .odl-top .od-kpi__label { font-size: 14px; }
+body.od--lab .odl-top .od-kpi__value { font-size: 28px; }
+body.od--lab .od-table .od-table__name, body.od--lab .od-table .od-table__sub, body.od--lab .od-table .odl-time { white-space: nowrap; }
+body.od--lab .odl-top .od-kpi__label, body.od--lab .odl-top .od-kpi__sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+body.od--lab .odl-top .od-kpi__body { min-width: 0; flex: 1; }
+body.od--lab .odl-top .od-greeting__name { font-size: 26px; }
+@media (min-width: 1600px) { body.od--lab .odl-top .od-kpi__icon { width: 64px; height: 64px; } body.od--lab .odl-top .od-kpi__icon svg { width: 28px; height: 28px; } }
+
+/* First-run strip: one line, steps behind a disclosure. */
+body.od--lab .odl-firstrun { padding: 12px 20px; }
+body.od--lab .odl-strip > summary { list-style: none; display: flex; align-items: center; gap: 12px; cursor: pointer; }
+body.od--lab .odl-strip > summary::-webkit-details-marker { display: none; }
+body.od--lab .odl-strip__text { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; color: var(--od-ink-h, #0F2340); }
+body.od--lab .odl-strip[open] .odl-steps { margin-top: 10px; }
+@media (min-width: 1700px) {
+  body.od--lab .odl-grid { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "queue workload alerts" "recent recent pub"; }
+}
+
+/* Table cells that must stay on one line. */
+body.od--lab .od-table td.odl-clip { max-width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.od--lab .od-table td.odl-nowrap { white-space: nowrap; }
+body.od--lab .odl-queue .od-table__name, body.od--lab .odl-queue .od-table__sub { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }

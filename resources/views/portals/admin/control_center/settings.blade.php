@@ -40,7 +40,7 @@
                         <td data-label="Description" class="td-muted">{{ $setting['description'] ?? '—' }}</td>
                         <td class="row-actions">
                             <button type="button" class="btn btn-ghost btn-sm"
-                                data-call="openEditModal" data-args="{{ json_encode([$setting['key'], $setting['value']]) }}">
+                                data-call="openEditModal" data-args="{{ json_encode([$setting['key'], $setting['value']]) }}" data-show="edit-modal" data-display="flex">
                                 <i data-lucide="pencil"></i> {{ __('public.adm_cc_set_btn_edit') }}
                             </button>
                         </td>
@@ -64,7 +64,7 @@
     <div class="modal-fixed__panel modal-fixed__panel--sm">
         <div class="modal-fixed__head">
             <h3 class="modal-fixed__title">{{ __('public.adm_cc_set_edit_modal_heading') }}</h3>
-            <button type="button" class="icon-btn" aria-label="{{ __('public.aria_close') }}" data-call="closeEditModal"><i data-lucide="x"></i></button>
+            <button type="button" class="icon-btn" aria-label="{{ __('public.aria_close') }}" data-hide="edit-modal"><i data-lucide="x"></i></button>
         </div>
         <form method="POST" action="{{ route('portals.admin.cc.settings.update') }}">
             @csrf
@@ -77,7 +77,7 @@
                 <input type="text" id="edit-value" name="value" class="form-control" required maxlength="500">
             </div>
             <div class="modal__footer">
-                <button type="button" class="btn btn-ghost btn-sm" data-call="closeEditModal">{{ __('public.adm_cc_set_edit_modal_btn_cancel') }}</button>
+                <button type="button" class="btn btn-ghost btn-sm" data-hide="edit-modal">{{ __('public.adm_cc_set_edit_modal_btn_cancel') }}</button>
                 <button type="submit" class="btn btn-primary btn-sm">{{ __('public.adm_cc_set_edit_modal_btn_save') }}</button>
             </div>
         </form>
@@ -90,9 +90,7 @@
     function openEditModal(key, value) {
         document.getElementById('edit-key').value = key;
         document.getElementById('edit-value').value = value;
-        document.getElementById('edit-modal').classList.add('open');
     }
-    function closeEditModal() { document.getElementById('edit-modal').classList.remove('open'); }
-    document.getElementById('edit-modal').addEventListener('click', function(e) { if (e.target === this) closeEditModal(); });
 </script>
+@include('portals.admin._modal')
 @endsection

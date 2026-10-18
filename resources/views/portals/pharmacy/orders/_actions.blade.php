@@ -25,6 +25,6 @@
 @if($step)
     <form method="POST" action="{{ route('portals.pharmacy.orders.' . $step, $reservation->id) }}" class="inline-form" data-confirm="{{ __('pharmacy_orders.confirm_' . $step) }}">
         @csrf
-        <button type="submit" class="btn btn-primary {{ $compact ? 'btn-sm' : 'fs-tap' }}"><i data-lucide="{{ $icon }}"></i> {{ __('pharmacy_orders.btn_' . $step) }}</button>
+        <button type="submit" class="od-btn {{ $compact ? 'od-btn--row' : 'od-btn--primary od-btn--block' }}">@unless($compact)<i data-lucide="{{ $icon }}"></i> @endunless{{ __('pharmacy_orders.btn_' . $step) }}</button>
     </form>
 @endif

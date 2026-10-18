@@ -1,0 +1,172 @@
+/* ==========================================================================
+   Pharmacy page rules — public/css/od-pharmacy.css
+   Layout-only additions on top of od.css, scoped to body.od--pharmacy.
+   Owner directive 2026-10-18: flat — no shadow, no gradient, no lift.
+   ========================================================================== */
+
+/* Dashboard: queue 1.55fr / detail 1fr, as in the reference */
+body.od--pharmacy .odp-main { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+body.od--pharmacy .odp-bottom { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1.6fr) minmax(0, 1.05fr); align-items: stretch; }
+body.od--pharmacy .odp-main > .od-card,
+body.od--pharmacy .odp-bottom > .od-card { height: 100%; }
+
+body.od--pharmacy .odp-queue__body { padding-left: 0; padding-right: 0; }
+body.od--pharmacy .odp-queue__body > .od-tabs,
+body.od--pharmacy .odp-queue__body > .odp-toolbar { margin-left: 20px; margin-right: 20px; }
+body.od--pharmacy .odp-toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
+body.od--pharmacy .odp-toolbar .od-field { flex: 1; }
+
+body.od--pharmacy .odp-orders-link { margin-left: 0 !important;
+  display: inline-flex; align-items: center; gap: 8px; margin-left: auto;
+  font-size: 14px; font-weight: 600; color: var(--od-primary); text-decoration: none;
+}
+body.od--pharmacy .odp-orders-link svg { width: 22px; height: 22px; stroke-width: 1.75; }
+
+/* Common medicines: five flat tiles with a generic pack glyph */
+body.od--pharmacy .odp-meds { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+body.od--pharmacy .odp-med {
+  display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px;
+  padding: 14px 8px; border: 1px solid #E6ECF3; border-radius: 12px; min-width: 0;
+}
+body.od--pharmacy .odp-med__pack {
+  width: 56px; height: 56px; border-radius: 12px; background: var(--od-normal-bg); color: var(--od-normal);
+  display: inline-flex; align-items: center; justify-content: center; margin-bottom: 4px;
+}
+body.od--pharmacy .odp-med__pack svg { width: 28px; height: 28px; }
+body.od--pharmacy .odp-med__name { font-size: 13px; font-weight: 600; color: var(--od-ink-h); line-height: 1.25; overflow-wrap: anywhere; }
+body.od--pharmacy .odp-med__sub { font-size: 12px; font-weight: 500; color: var(--od-muted); }
+
+/* Secondary pages: page head, toolbar row, two-column detail */
+body.od--pharmacy .odp-head-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+body.od--pharmacy .odp-filters { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 14px; }
+body.od--pharmacy .odp-filters label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600; color: var(--od-muted); }
+body.od--pharmacy .odp-filters .od-input, body.od--pharmacy .odp-filters .od-select { width: auto; min-width: 160px; }
+body.od--pharmacy .odp-check { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: var(--od-ink-h); height: 44px; }
+body.od--pharmacy .odp-pager { padding: 12px 20px 4px; }
+body.od--pharmacy .odp-dl { display: grid; grid-template-columns: minmax(120px, 38%) 1fr; gap: 10px 16px; margin: 0; }
+body.od--pharmacy .odp-dl dt { font-size: 13px; font-weight: 500; color: var(--od-muted); }
+body.od--pharmacy .odp-dl dd { margin: 0; font-size: 14px; font-weight: 500; color: var(--od-ink-h); }
+body.od--pharmacy .odp-notice {
+  display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border-radius: 12px;
+  font-size: 14px; font-weight: 500; background: var(--tint-bg, var(--od-normal-bg)); color: var(--tint-fg, var(--od-normal));
+}
+body.od--pharmacy .odp-notice svg { width: 22px; height: 22px; flex: none; }
+body.od--pharmacy .odp-notice p { margin: 4px 0 0; color: var(--od-ink); }
+body.od--pharmacy .odp-timeline { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+body.od--pharmacy .odp-timeline li { display: flex; gap: 12px; align-items: flex-start; }
+body.od--pharmacy .odp-timeline__dot { width: 12px; height: 12px; border-radius: 50%; background: var(--od-ready); margin-top: 4px; flex: none; }
+body.od--pharmacy .odp-timeline li.is-pending .odp-timeline__dot { background: #fff; border: 2px solid var(--od-border); }
+body.od--pharmacy .odp-timeline li.is-pending .od-list__title { color: var(--od-muted); }
+body.od--pharmacy .odp-form-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+body.od--pharmacy .odp-form-row > label { flex: 1; min-width: 220px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600; color: var(--od-muted); }
+body.od--pharmacy .odp-hint { margin: 0 0 12px; font-size: 13px; font-weight: 500; color: var(--od-muted); }
+body.od--pharmacy .odp-lines { display: flex; flex-direction: column; gap: 2px; }
+body.od--pharmacy .odp-batch { display: block; font-size: 12px; font-weight: 500; color: var(--od-muted); }
+body.od--pharmacy .odp-mono { font-variant-numeric: tabular-nums; letter-spacing: .01em; }
+body.od--pharmacy .odp-rx-block + .odp-rx-block { border-top: 1px solid #E6ECF3; }
+body.od--pharmacy .odp-rx-block { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+
+@media (max-width: 1439px) {
+  body.od--pharmacy .odp-meds { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 1279px) {
+  body.od--pharmacy .odp-main, body.od--pharmacy .odp-bottom { grid-template-columns: minmax(0, 1fr); }
+  body.od--pharmacy .odp-meds { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}
+@media (max-width: 639px) {
+  body.od--pharmacy .odp-meds { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body.od--pharmacy .odp-toolbar { flex-wrap: wrap; }
+  body.od--pharmacy .odp-queue__body > .od-tabs, body.od--pharmacy .odp-queue__body > .odp-toolbar { margin-left: 16px; margin-right: 16px; }
+  body.od--pharmacy .odp-dl { grid-template-columns: 1fr; gap: 2px 0; }
+  body.od--pharmacy .odp-dl dd { margin-bottom: 8px; }
+  body.od--pharmacy .odp-filters .od-input, body.od--pharmacy .odp-filters .od-select { min-width: 0; width: 100%; }
+  body.od--pharmacy .odp-filters > * { flex: 1 1 100%; }
+  /* Tables become stacked cards on phones: each cell labelled */
+  body.od--pharmacy .odp-stack-sm thead { display: none; }
+  body.od--pharmacy .odp-stack-sm, body.od--pharmacy .odp-stack-sm tbody, body.od--pharmacy .odp-stack-sm tr, body.od--pharmacy .odp-stack-sm td { display: block; width: 100%; }
+  body.od--pharmacy .odp-stack-sm tr { padding: 12px 16px; border-bottom: 1px solid #E6ECF3; }
+  body.od--pharmacy .odp-stack-sm tbody td { height: auto; border: 0; padding: 4px 0 !important; }
+  body.od--pharmacy .odp-stack-sm td[data-label]:not([data-label=""])::before {
+    content: attr(data-label); display: block; font-size: 12px; font-weight: 600; color: var(--od-muted);
+  }
+  body.od--pharmacy .odp-stack-sm .od-table__check, body.od--pharmacy .odp-stack-sm .od-table__num { display: none; }
+}
+
+/* Queue table: keep names and refs on one line; Source column only on wide screens */
+body.od--pharmacy .odp-queue .od-table__name { white-space: nowrap; }
+body.od--pharmacy .odp-queue .od-table td { white-space: nowrap; }
+@media (max-width: 1599px) { body.od--pharmacy .odp-wide-only { display: none; } }
+body.od--pharmacy .odp-queue .od-table__person .od-table__name { max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
+body.od--pharmacy .odp-queue .od-table thead th, body.od--pharmacy .odp-queue .od-table tbody td { padding-left: 8px; padding-right: 8px; }
+body.od--pharmacy .odp-quick-card .od-quick { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (min-width: 1600px) { body.od--pharmacy .odp-quick-card .od-quick { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+body.od--pharmacy .odp-quick-card .od-quick__tile { padding: 14px 6px; }
+@media (max-width: 639px) {
+  body.od--pharmacy .odp-quick-card .od-quick { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body.od--pharmacy .odp-queue .od-table td { white-space: normal; }
+  body.od--pharmacy .odp-queue .od-table__person .od-table__name { max-width: none; }
+}
+body.od--pharmacy .odp-detail .od-tabs--inner { flex-wrap: nowrap; gap: 8px; }
+body.od--pharmacy .odp-detail .od-tabs--inner .od-tab { padding: 0 8px; min-width: 0; }
+body.od--pharmacy .odp-detail .od-card__head { flex-wrap: nowrap; }
+body.od--pharmacy .odp-detail .od-chip { flex: none; }
+body.od--pharmacy .odp-detail .od-detail__ref { column-gap: 6px; }
+@media (max-width: 639px) {
+  /* Queue rows on a phone: one compact card per row, no per-cell labels */
+  body.od--pharmacy .odp-queue .odp-stack-sm tr { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+  body.od--pharmacy .odp-queue .odp-stack-sm td { width: auto; }
+  body.od--pharmacy .odp-queue .odp-stack-sm td::before { display: none !important; }
+  body.od--pharmacy .odp-queue .odp-stack-sm td.odp-wide-only { display: none; }
+  body.od--pharmacy .odp-queue .odp-stack-sm td:nth-child(4) { flex: 1 1 100%; order: -1; }
+  body.od--pharmacy .odp-queue .odp-stack-sm td:nth-child(3) { color: var(--od-muted); }
+  body.od--pharmacy .odp-queue .odp-stack-sm .od-table__actions { margin-left: auto; }
+}
+@media (max-width: 639px) {
+  body.od--pharmacy .odp-queue .odp-stack-sm .od-table__actions { flex: 1 1 100%; display: flex !important; gap: 8px; }
+  body.od--pharmacy .odp-queue .odp-stack-sm .od-table__actions .od-btn--row { flex: 1; }
+  body.od--pharmacy .odp-queue .odp-stack-sm tr.is-selected { background: var(--od-select); }
+  body.od--pharmacy .odp-queue .odp-stack-sm tbody tr td { background: transparent !important; }
+}
+@media (max-width: 639px) {
+  body.od--pharmacy .odp-queue .odp-stack-sm tr { width: auto; max-width: 100%; }
+  body.od--pharmacy .odp-queue .odp-stack-sm td { min-width: 0; max-width: 100%; }
+  body.od--pharmacy .odp-queue .odp-stack-sm .od-btn--row { min-width: 0; }
+  body.od--pharmacy .odp-queue .od-table-wrap { overflow-x: hidden; }
+}
+@media (max-width: 639px) {
+  body.od--pharmacy .odp-stack-sm, body.od--pharmacy .odp-stack-sm tbody { min-width: 0 !important; width: 100% !important; }
+}
+body.od--pharmacy .odp-rx-block fieldset { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 4px 18px; min-width: 0; }
+body.od--pharmacy .odp-rx-block fieldset legend { padding: 0; margin-bottom: 6px; }
+body.od--pharmacy .odp-rx-block a.od-card__title { text-decoration: none; }
+
+/* Polish pass 2026-10-18 */
+body.od--pharmacy .odp-detail .od-table td:nth-child(3),
+body.od--pharmacy .odp-detail .od-table td:nth-child(4),
+body.od--pharmacy .odp-detail .od-table th { white-space: nowrap; }
+body.od--pharmacy .odp-detail .od-table td:nth-child(2) { width: 40%; }
+body.od--pharmacy .odp-detail .od-tabs--inner .od-tab { padding: 0 16px; flex: 1 1 auto; }
+body.od--pharmacy .odp-detail .od-tabs--inner { overflow-x: auto; }
+@media (min-width: 1280px) {
+  body.od--pharmacy .odp-quick-card .od-quick { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+  body.od--pharmacy .odp-quick-card .od-quick__tile { min-height: 120px; }
+}
+body.od--pharmacy .odp-bottom { align-items: stretch; }
+body.od--pharmacy .odp-bottom > .od-card { height: auto; }
+body.od--pharmacy .odp-bottom .od-card__body { flex: 1; display: flex; flex-direction: column; }
+body.od--pharmacy .odp-bottom .od-quick { align-content: start; }
+body.od--pharmacy .odp-bottom .od-empty { flex: 1; justify-content: center; }
+body.od--pharmacy .odp-bottom .od-list { flex: 1; }
+body.od--pharmacy .odp-detail .od-table .od-table__name { white-space: nowrap; }
+body.od--pharmacy .odp-nowrap { white-space: nowrap; }
+@media (min-width: 1280px) {
+  body.od--pharmacy .odp-bottom { grid-template-columns: minmax(0, 1.75fr) minmax(0, 1.25fr) minmax(0, 1fr); }
+}
+/* Bottom-row alerts: compact rows (5 max, as in the reference) so the three cards share one height */
+body.od--pharmacy .odp-alerts .od-list__row { padding: 6px 0; }
+body.od--pharmacy .odp-alerts .od-list__row:nth-child(n+6) { display: none; }
+body.od--pharmacy .odp-alerts .od-list__icon { width: 26px; height: 26px; border-radius: 7px; }
+body.od--pharmacy .odp-alerts .od-list__icon svg { width: 16px; height: 16px; }
+body.od--pharmacy .odp-alerts .od-list__sub { display: none; }
+body.od--pharmacy .odp-alerts .od-list__title { font-size: 13px; }
+body.od--pharmacy .odp-alerts .od-pill { height: 22px; padding: 0 10px; }

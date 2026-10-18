@@ -9,7 +9,7 @@
 <div class="page-head">
     <h2>{{ __('security_ops.inc_title') }}</h2>
     <div class="page-head__spacer"></div>
-    <button type="button" class="btn btn-primary btn-sm" data-call="openCreateModal">
+    <button type="button" class="btn btn-primary btn-sm" data-show="create-modal" data-display="flex">
         <i data-lucide="plus-circle"></i> {{ __('security_ops.inc_btn_log') }}
     </button>
 </div>
@@ -78,7 +78,7 @@
                     @endphp
                     <tr>
                         <td data-label="{{ __('security_ops.inc_col_type') }}" class="td-strong">
-                            {{ $inc->incident_type }}
+                            <a href="{{ route('portals.admin.security.incidents.show', $inc->id) }}">{{ $inc->incident_type }}</a>
                             @if($inc->is_demo)
                                 <span class="badge badge-neutral badge-sm">{{ __('security_ops.badge_demo') }}</span>
                             @endif
@@ -90,7 +90,7 @@
                         <td data-label="{{ __('security_ops.inc_col_resolved') }}" class="td-muted">{{ $inc->resolved_at?->translatedFormat('M d, Y') ?? '—' }}</td>
                         <td class="row-actions">
                             <button type="button" class="btn btn-ghost btn-sm"
-                                data-call="openUpdateModal" data-args="{{ json_encode([$inc->id, $inc->status, $inc->summary, $inc->contained_at?->format('Y-m-d') ?? '', $inc->resolved_at?->format('Y-m-d') ?? '']) }}">
+                                data-call="openUpdateModal" data-args="{{ json_encode([$inc->id, $inc->status, $inc->summary, $inc->contained_at?->format('Y-m-d') ?? '', $inc->resolved_at?->format('Y-m-d') ?? '']) }}" data-show="update-modal" data-display="flex">
                                 <i data-lucide="pencil"></i> {{ __('security_ops.inc_btn_update') }}
                             </button>
                         </td>
@@ -111,7 +111,7 @@
     <div class="modal-fixed__panel">
         <div class="modal-fixed__head">
             <h3 class="modal-fixed__title">{{ __('security_ops.inc_modal_create_title') }}</h3>
-            <button type="button" class="icon-btn" aria-label="{{ __('security_ops.btn_close') }}" data-call="closeCreateModal"><i data-lucide="x"></i></button>
+            <button type="button" class="icon-btn" aria-label="{{ __('security_ops.btn_close') }}" data-hide="create-modal"><i data-lucide="x"></i></button>
         </div>
         <form method="POST" action="{{ route('portals.admin.security.incidents.store') }}">
             @csrf
@@ -141,7 +141,7 @@
                           placeholder="{{ __('security_ops.inc_form_summary_placeholder') }}">{{ old('summary') }}</textarea>
             </div>
             <div class="modal__footer">
-                <button type="button" class="btn btn-ghost btn-sm" data-call="closeCreateModal">{{ __('security_ops.btn_cancel') }}</button>
+                <button type="button" class="btn btn-ghost btn-sm" data-hide="create-modal">{{ __('security_ops.btn_cancel') }}</button>
                 <button type="submit" class="btn btn-primary btn-sm">{{ __('security_ops.inc_btn_log') }}</button>
             </div>
         </form>
@@ -153,7 +153,7 @@
     <div class="modal-fixed__panel">
         <div class="modal-fixed__head">
             <h3 class="modal-fixed__title">{{ __('security_ops.inc_modal_update_title') }}</h3>
-            <button type="button" class="icon-btn" aria-label="{{ __('security_ops.btn_close') }}" data-call="closeUpdateModal"><i data-lucide="x"></i></button>
+            <button type="button" class="icon-btn" aria-label="{{ __('security_ops.btn_close') }}" data-hide="update-modal"><i data-lucide="x"></i></button>
         </div>
         <form id="update-form" method="POST" action="">
             @csrf
@@ -180,7 +180,7 @@
                 </div>
             </div>
             <div class="modal__footer">
-                <button type="button" class="btn btn-ghost btn-sm" data-call="closeUpdateModal">{{ __('security_ops.btn_cancel') }}</button>
+                <button type="button" class="btn btn-ghost btn-sm" data-hide="update-modal">{{ __('security_ops.btn_cancel') }}</button>
                 <button type="submit" class="btn btn-primary btn-sm">{{ __('security_ops.inc_btn_save') }}</button>
             </div>
         </form>
@@ -190,22 +190,16 @@
 
 @section('scripts')
 <script @cspNonce>
-function openCreateModal()  { document.getElementById('create-modal').style.display = 'flex'; }
-function closeCreateModal() { document.getElementById('create-modal').style.display = 'none'; }
 function openUpdateModal(id, status, summary, containedAt, resolvedAt) {
     document.getElementById('update-form').action = '{{ url('/admin/security/incidents') }}/' + id;
     document.getElementById('upd-status').value = status;
     document.getElementById('upd-summary').value = summary || '';
     document.getElementById('upd-contained').value = containedAt;
     document.getElementById('upd-resolved').value = resolvedAt;
-    document.getElementById('update-modal').style.display = 'flex';
 }
-function closeUpdateModal() { document.getElementById('update-modal').style.display = 'none'; }
-['create-modal', 'update-modal'].forEach(function (id) {
-    document.getElementById(id).addEventListener('click', function (e) { if (e.target === this) this.style.display = 'none'; });
-});
 @if($errors->any())
-openCreateModal();
+document.getElementById('create-modal').style.display = 'flex';
 @endif
 </script>
+@include('portals.admin._modal')
 @endsection

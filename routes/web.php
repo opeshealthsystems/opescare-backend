@@ -441,6 +441,7 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'platform.adm
 
     // Professional qualification verification queue (platform-admin).
     Route::get('/admin/verifications', [\App\Http\Controllers\MedicalId\CredentialVerificationController::class, 'index'])->name('portals.admin.verifications.index');
+    Route::get('/admin/verifications/{id}', [\App\Http\Controllers\MedicalId\CredentialVerificationController::class, 'show'])->name('portals.admin.verifications.show');
     Route::post('/admin/verifications/{id}/verify', [\App\Http\Controllers\MedicalId\CredentialVerificationController::class, 'verify'])->name('portals.admin.verifications.verify');
     Route::post('/admin/verifications/{id}/reject', [\App\Http\Controllers\MedicalId\CredentialVerificationController::class, 'reject'])->name('portals.admin.verifications.reject');
 
@@ -544,6 +545,7 @@ Route::middleware(['web', 'auth', 'platform.admin'])->group(function () {
     Route::get('/admin/mpi',                                   [\App\Http\Controllers\MedicalId\AdminIdentityReviewController::class, 'index'])->name('portals.admin.mpi.index');
     Route::post('/admin/mpi/detect',                           [\App\Http\Controllers\MedicalId\AdminIdentityReviewController::class, 'detect'])->name('portals.admin.mpi.detect');
     Route::post('/admin/mpi/candidates',                       [\App\Http\Controllers\MedicalId\AdminIdentityReviewController::class, 'raise'])->name('portals.admin.mpi.candidates.raise');
+    Route::get('/admin/mpi/candidates/{candidate}',            [\App\Http\Controllers\MedicalId\AdminIdentityReviewController::class, 'show'])->name('portals.admin.mpi.candidates.show');
     Route::post('/admin/mpi/candidates/{candidate}/merge',     [\App\Http\Controllers\MedicalId\AdminIdentityReviewController::class, 'merge'])->name('portals.admin.mpi.candidates.merge');
     Route::post('/admin/mpi/candidates/{candidate}/reject',    [\App\Http\Controllers\MedicalId\AdminIdentityReviewController::class, 'reject'])->name('portals.admin.mpi.candidates.reject');
     Route::post('/admin/mpi/merges/{merge}/unmerge',           [\App\Http\Controllers\MedicalId\AdminIdentityReviewController::class, 'unmerge'])->name('portals.admin.mpi.merges.unmerge');
@@ -857,6 +859,7 @@ Route::middleware(['web', 'auth', 'platform.admin'])->group(function () {
     Route::post('/admin/security/emergency-access/{id}/review',      [\App\Http\Controllers\MedicalId\SecurityOpsController::class, 'emergencyReview'])->name('portals.admin.security.emergency_access.review');
     Route::get('/admin/security/incidents',                          [\App\Http\Controllers\MedicalId\SecurityOpsController::class, 'incidents'])->name('portals.admin.security.incidents');
     Route::post('/admin/security/incidents',                         [\App\Http\Controllers\MedicalId\SecurityOpsController::class, 'incidentStore'])->name('portals.admin.security.incidents.store');
+    Route::get('/admin/security/incidents/{id}',                     [\App\Http\Controllers\MedicalId\SecurityOpsController::class, 'incidentShow'])->name('portals.admin.security.incidents.show');
     Route::post('/admin/security/incidents/{id}',                    [\App\Http\Controllers\MedicalId\SecurityOpsController::class, 'incidentUpdate'])->name('portals.admin.security.incidents.update');
     Route::get('/admin/security/audit',                              [\App\Http\Controllers\MedicalId\SecurityOpsController::class, 'auditExplorer'])->name('portals.admin.security.audit_explorer');
 });

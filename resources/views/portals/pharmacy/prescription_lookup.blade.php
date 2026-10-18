@@ -4,22 +4,27 @@
 
 @section('title', __('prescriber.counter_title', [], $l))
 
+@section('head')
+    <link rel="stylesheet" href="{{ asset('css/od-pharmacy.css') }}?v={{ @filemtime(public_path('css/od-pharmacy.css')) ?: '1' }}">
+@endsection
+
 @section('content')
-<div class="page-head">
-    <h2>{{ __('prescriber.counter_title', [], $l) }}</h2>
-    <p class="page-subtitle">{{ __('prescriber.counter_sub', [], $l) }}</p>
-    <div class="page-head__spacer"></div>
-    <a href="{{ route('portals.pharmacy.prescriptions') }}" class="btn btn-secondary btn-sm">
-        <i data-lucide="list"></i>
+<div class="od-page__head">
+    <div>
+        <h1 class="od-page__title">{{ __('prescriber.counter_title', [], $l) }}</h1>
+        <p class="od-page__sub">{{ __('prescriber.counter_sub', [], $l) }}</p>
+    </div>
+    <a href="{{ route('portals.pharmacy.prescriptions') }}" class="od-btn od-btn--secondary">
+        <x-od-icon name="rx" />
         <span>{{ __('prescriber.title', [], $l) }}</span>
     </a>
 </div>
 
 @if(session('success'))
-    <div class="alert alert-success mb-6"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>
+    <div class="odp-notice od-tint--green"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>
 @endif
 @if(session('error'))
-    <div class="alert alert-danger mb-6"><i data-lucide="alert-triangle"></i><div>{{ session('error') }}</div></div>
+    <div class="odp-notice od-tint--red"><i data-lucide="alert-triangle"></i><div>{{ session('error') }}</div></div>
 @endif
 
 {{--
@@ -29,36 +34,34 @@
     patient names are never searchable and a reference resolves to one
     prescription or to none, never to a list.
 --}}
-<div class="panel mb-6">
-    <div class="panel-header"><h3 class="panel-title"><i data-lucide="scan-line"></i> {{ __('prescriber.counter_title', [], $l) }}</h3></div>
-    <div class="panel-body">
-        <form method="GET" action="{{ route('portals.pharmacy.prescriptions.lookup') }}" class="ph-lookup">
-            <div class="form-group">
-                <label class="form-label" for="q">{{ __('prescriber.counter_query', [], $l) }}</label>
-                <input type="text" id="q" name="q" class="form-control"
+<section class="od-card">
+    <header class="od-card__head"><h2 class="od-card__title">{{ __('prescriber.counter_query', [], $l) }}</h2></header>
+    <div class="od-card__body">
+        <form method="GET" action="{{ route('portals.pharmacy.prescriptions.lookup') }}" class="odp-toolbar">
+            <label class="od-field" for="q">
+                <x-od-icon name="barcode" />
+                <input type="text" id="q" name="q" class="od-input" aria-label="{{ __('prescriber.counter_query', [], $l) }}"
                        value="{{ $query }}" autocomplete="off" autocapitalize="characters"
                        spellcheck="false" required
                        placeholder="CM-HID-XXXX-XXXX-XXXX  /  RX-XXXX-XXXX">
-                <p class="form-hint">{{ __('prescriber.counter_query_hint', [], $l) }}</p>
-            </div>
-            <div class="form-group ph-lookup__go">
-                <button type="submit" class="btn btn-primary">
-                    <i data-lucide="search"></i>
-                    <span>{{ __('prescriber.counter_lookup', [], $l) }}</span>
-                </button>
-            </div>
+            </label>
+            <button type="submit" class="od-btn od-btn--primary">
+                <i data-lucide="search"></i>
+                <span>{{ __('prescriber.counter_lookup', [], $l) }}</span>
+            </button>
         </form>
+        <p class="odp-hint">{{ __('prescriber.counter_query_hint', [], $l) }}</p>
     </div>
-</div>
+</section>
 
 {{-- Nothing found. The two paths fail differently, so they say different things. --}}
 @if($searched && $results->isEmpty() && $mode === 'reference')
-    <div class="alert alert-danger mb-6">
+    <div class="odp-notice od-tint--red">
         <i data-lucide="file-question"></i>
         <div>{{ __('prescriber.counter_norx', ['reference' => $reference], $l) }}</div>
     </div>
 @elseif($searched && ! $patient)
-    <div class="alert alert-danger mb-6">
+    <div class="odp-notice od-tint--red">
         <i data-lucide="user-x"></i>
         <div>{{ __('prescriber.counter_nopat', [], $l) }}</div>
     </div>
@@ -91,22 +94,21 @@
         };
     @endphp
 
-    <div class="panel">
-        <div class="panel-header">
-            <div class="panel-title">
-                <span class="ph-avatar" aria-hidden="true">{{ $patientName !== '' ? mb_strtoupper(mb_substr((string) ($patient->first_name ?? ''), 0, 1) . mb_substr((string) ($patient->last_name ?? ''), 0, 1)) : '—' }}</span>
-                {{ $patientName !== '' ? $patientName : (__('prescriber.counter_nopatrow', [], $l)) }}
+    <section class="od-card">
+        <header class="od-card__head">
+            <div class="od-table__person">
+                <span class="od-avatar od-tint--blue" aria-hidden="true">{{ $patientName !== '' ? mb_strtoupper(mb_substr((string) ($patient->first_name ?? ''), 0, 1) . mb_substr((string) ($patient->last_name ?? ''), 0, 1)) : '—' }}</span>
+                <div>
+                    <h2 class="od-card__title">{{ $patientName !== '' ? $patientName : (__('prescriber.counter_nopatrow', [], $l)) }} <span class="od-card__count">{{ __('pharmacy_desk.count_paren', ['count' => $results->count()], $l) }}</span></h2>
+                    <span class="od-table__sub">{{ $patient?->health_id ?? '—' }}</span>
+                </div>
             </div>
-            <span class="badge badge-neutral mono">{{ $patient?->health_id ?? '—' }}</span>
-            <span class="badge badge-info">{{ __('pharmacy_desk.count_paren', ['count' => $results->count()], $l) }}</span>
-        </div>
+        </header>
 
         @if($results->isEmpty())
-            <div class="panel-body">
-                <div class="empty-state">
-                    <i data-lucide="file-x"></i>
-                    <p>{{ __('prescriber.counter_none', [], $l) }}</p>
-                </div>
+            <div class="od-empty">
+                <span class="od-empty__icon"><i data-lucide="file-x"></i></span>
+                <p class="od-empty__text">{{ __('prescriber.counter_none', [], $l) }}</p>
             </div>
         @else
             @foreach($results as $rx)
@@ -140,91 +142,76 @@
                     };
 
                     $rxBadge = match ($rxStatus) {
-                        'active'              => 'badge-info',
-                        'dispensed'           => 'badge-success',
-                        'partially_dispensed' => 'badge-warning',
+                        'active'              => 'od-pill--pending',
+                        'dispensed'           => 'od-pill--ready',
+                        'partially_dispensed' => 'od-pill--verifying',
                         'voided',
                         'entered_in_error',
-                        'cancelled'           => 'badge-danger',
-                        'amended'             => 'badge-warning',
-                        default               => 'badge-neutral',
+                        'cancelled'           => 'od-pill--urgent',
+                        'amended'             => 'od-pill--reorder',
+                        default               => 'od-pill--neutral',
                     };
 
                     $prescriberName = trim((string) ($rx->prescriber->name ?? ''));
                 @endphp
 
-                <div class="panel-body ph-result">
-                    <div class="ph-result__head">
-                        <div class="ph-result__body">
-                            <div class="ph-result__title">
-                                <a href="{{ route('portals.pharmacy.prescriptions.show', $rx->id) }}" class="mono">{{ $rx->reference ?: '—' }}</a>
-                                <span class="badge {{ $rxBadge }} badge-sm">{{ $label($rxStatus) }}</span>
-                                <a href="{{ route('portals.pharmacy.prescriptions.show', $rx->id) }}" class="btn {{ $canDispense ? 'btn-ghost' : 'btn-primary' }} btn-sm"><i data-lucide="chevron-right"></i> {{ __('pharmacy_desk.btn_open_rx', [], $l) }}</a>
+                <div class="odp-rx-block">
+                    <div class="od-grid od-grid--split">
+                        <div class="od-stack">
+                            <div class="od-row">
+                                <a href="{{ route('portals.pharmacy.prescriptions.show', $rx->id) }}" class="od-card__title">{{ $rx->reference ?: '—' }}</a>
+                                <span class="od-pill {{ $rxBadge }}">{{ $label($rxStatus) }}</span>
+                                <a href="{{ route('portals.pharmacy.prescriptions.show', $rx->id) }}" class="od-btn od-btn--sm {{ $canDispense ? 'od-btn--secondary' : 'od-btn--primary' }}">{{ __('pharmacy_desk.btn_open_rx', [], $l) }}</a>
                                 {{-- A script can sit at 'active' and still be long lapsed; say so next to the status. --}}
                                 @if($expired && ! $terminal && $rxStatus !== 'expired')
-                                    <span class="badge badge-danger badge-sm">{{ __('prescriber.st_expired', [], $l) }}</span>
+                                    <span class="od-pill od-pill--urgent">{{ __('prescriber.st_expired', [], $l) }}</span>
                                 @endif
                             </div>
 
-                            <table class="kv-table">
-                                <tr>
-                                    <td>{{ __('prescriber.counter_from', [], $l) }}</td>
-                                    <td class="kv-strong">{{ $rx->facility->name ?? '—' }}</td>
-                                </tr>
-                                <tr>
-                                    <td>{{ __('prescriber.col_prescriber', [], $l) }}</td>
-                                    <td class="kv-strong">{{ $prescriberName !== '' ? $prescriberName : '—' }}</td>
-                                </tr>
-                                <tr>
-                                    <td>{{ __('prescriber.issued_at', [], $l) }}</td>
-                                    <td class="kv-strong">{{ $rx->prescribed_at?->translatedFormat('d M Y H:i') ?? '—' }}</td>
-                                </tr>
-                                <tr>
-                                    <td>{{ __('prescriber.expires_at', [], $l) }}</td>
-                                    <td class="kv-strong">
+                            <dl class="odp-dl">
+                                <dt>{{ __('prescriber.counter_from', [], $l) }}</dt><dd>{{ $rx->facility->name ?? '—' }}</dd>
+                                <dt>{{ __('prescriber.col_prescriber', [], $l) }}</dt><dd>{{ $prescriberName !== '' ? $prescriberName : '—' }}</dd>
+                                <dt>{{ __('prescriber.issued_at', [], $l) }}</dt><dd>{{ $rx->prescribed_at?->translatedFormat('d M Y H:i') ?? '—' }}</dd>
+                                <dt>{{ __('prescriber.expires_at', [], $l) }}</dt><dd>
                                         @if($rx->expires_at)
                                             @if($expired)
-                                                <span class="badge badge-danger badge-sm">{{ $rx->expires_at->translatedFormat('d M Y') }}</span>
+                                                <span class="od-pill od-pill--urgent">{{ $rx->expires_at->translatedFormat('d M Y') }}</span>
                                             @else
                                                 {{ $rx->expires_at->translatedFormat('d M Y') }}
                                             @endif
                                         @else
                                             —
                                         @endif
-                                    </td>
-                                </tr>
+                                    </dd>
                                 @if($rx->dispensed_at)
-                                <tr>
-                                    <td>{{ __('prescriber.dispensed_at', [], $l) }}</td>
-                                    <td class="kv-strong">{{ $rx->dispensed_at->translatedFormat('d M Y H:i') }}</td>
-                                </tr>
+                                <dt>{{ __('prescriber.dispensed_at', [], $l) }}</dt><dd>{{ $rx->dispensed_at->translatedFormat('d M Y H:i') }}</dd>
                                 @endif
-                            </table>
+                            </dl>
 
                             @if(filled($rx->notes))
-                                <div class="ph-note">{{ $rx->notes }}</div>
+                                <p class="od-muted">{{ $rx->notes }}</p>
                             @endif
                         </div>
 
                         @if($canDispense)
-                            <form method="POST" action="{{ route('portals.pharmacy.dispense', $rx->id) }}" class="ph-result__form">
+                            <form method="POST" action="{{ route('portals.pharmacy.dispense', $rx->id) }}" class="od-stack">
                                 @csrf
                                 @php $owed = $rx->items->filter(fn ($it) => $it->isOutstanding()); @endphp
                                 @if($owed->count() > 1)
                                     <fieldset>
-                                        <legend class="form-hint">{{ __('pharmacy_ops.dispense_lines_hint') }}</legend>
+                                        <legend class="odp-hint">{{ __('pharmacy_ops.dispense_lines_hint') }}</legend>
                                         @foreach($owed as $it)
-                                            <label class="ph-check">
-                                                <input type="checkbox" name="item_ids[]" value="{{ $it->id }}">
+                                            <label class="odp-check">
+                                                <input type="checkbox" class="od-check" name="item_ids[]" value="{{ $it->id }}">
                                                 <span>{{ $it->drug_name ?: '—' }}</span>
                                             </label>
                                         @endforeach
                                     </fieldset>
                                 @endif
-                                <input type="text" name="dispense_notes" class="form-control"
+                                <input type="text" name="dispense_notes" class="od-input"
                                        placeholder="{{ __('prescriber.counter_notes', [], $l) }}">
-                                <button type="submit" class="btn btn-primary">
-                                    <i data-lucide="check"></i>
+                                <button type="submit" class="od-btn od-btn--primary od-btn--block">
+                                    <x-od-icon name="capsule" />
                                     <span>{{ __('prescriber.counter_dispense', [], $l) }}</span>
                                 </button>
                             </form>
@@ -238,7 +225,7 @@
                         mistake this screen exists to prevent.
                     --}}
                     @if($refusal)
-                        <div class="alert {{ $rxStatus === 'dispensed' ? 'alert-warning' : 'alert-danger' }}">
+                        <div class="odp-notice {{ $rxStatus === 'dispensed' ? 'od-tint--amber' : 'od-tint--red' }}">
                             <i data-lucide="{{ $rxStatus === 'dispensed' ? 'check-circle' : 'shield-alert' }}"></i>
                             <div>
                                 <strong>{{ $rxStatus === 'dispensed'
@@ -246,7 +233,7 @@
                                     : (__('prescriber.counter_blocked_title', [], $l)) }}</strong>
                                 <div>{{ $refusal }}</div>
                                 @if(filled($rx->void_reason))
-                                    <div class="ph-note">
+                                    <div>
                                         {{ __('prescriber.void_reason', [], $l) }}: {{ $rx->void_reason }}
                                     </div>
                                 @endif
@@ -254,8 +241,8 @@
                         </div>
                     @endif
 
-                    <div class="table-wrapper">
-                        <table class="data-table">
+                    <div class="od-table-wrap">
+                        <table class="od-table odp-stack-sm">
                             <thead>
                                 <tr>
                                     <th>{{ __('prescriber.drug_name', [], $l) }}</th>
@@ -271,26 +258,26 @@
                                     @php
                                         $itemStatus = (string) ($item->status ?? '');
                                         $itemBadge  = match ($itemStatus) {
-                                            'dispensed' => 'badge-success',
-                                            'pending'   => 'badge-info',
-                                            default     => 'badge-neutral',
+                                            'dispensed' => 'od-pill--ready',
+                                            'pending'   => 'od-pill--pending',
+                                            default     => 'od-pill--neutral',
                                         };
                                     @endphp
                                     <tr>
-                                        <td data-label="{{ __('prescriber.drug_name', [], $l) }}" class="td-strong">{{ $item->drug_name ?: '—' }}</td>
+                                        <td data-label="{{ __('prescriber.drug_name', [], $l) }}" class="od-strong">{{ $item->drug_name ?: '—' }}</td>
                                         <td data-label="{{ __('prescriber.dose', [], $l) }}">{{ $item->dose ?: '—' }}</td>
                                         <td data-label="{{ __('prescriber.frequency', [], $l) }}">{{ $item->frequency ?: '—' }}</td>
                                         <td data-label="{{ __('prescriber.route', [], $l) }}">{{ $item->route ? \App\Support\Enums::label($item->route, 'route') : '—' }}</td>
                                         <td data-label="{{ __('prescriber.quantity', [], $l) }}">{{ $item->quantity !== null && $item->quantity !== '' ? $item->quantity : '—' }}</td>
                                         <td data-label="{{ __('prescriber.item_status', [], $l) }}">
-                                            <span class="badge {{ $itemBadge }} badge-sm">{{ $label($itemStatus) }}</span>
+                                            <span class="od-pill {{ $itemBadge }}">{{ $label($itemStatus) }}</span>
                                             @if($item->dispensed_at)
-                                                <div class="ph-cell__sub">{{ $item->dispensed_at->translatedFormat('d M Y H:i') }}</div>
+                                                <div class="od-table__sub">{{ $item->dispensed_at->translatedFormat('d M Y H:i') }}</div>
                                             @endif
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="6" class="td-muted empty-cell">—</td></tr>
+                                    <tr><td colspan="6" class="od-muted">—</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -298,6 +285,6 @@
                 </div>
             @endforeach
         @endif
-    </div>
+    </section>
 @endif
 @endsection

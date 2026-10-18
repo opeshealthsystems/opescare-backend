@@ -2,23 +2,40 @@
 <html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="utf-8">
+    @php
+        /*
+         * OPES desk shell (docs/superpowers/specs/2026-10-18-desk-design-system.md):
+         * the pharmacy, lab, imaging and diagnostic desks render with body.od,
+         * public/css/od.css, the .od-brand lockup and the .od-topbar. Every
+         * other portal page keeps the classic chrome untouched.
+         */
+        $odPharmacy = request()->is('pharmacy', 'pharmacy/*');
+        $odLabDesk  = request()->is('facility/lab', 'facility/lab/*', 'facility/imaging', 'facility/imaging/*', 'facility/diagnostic', 'facility/diagnostic/*');
+        $od         = $odPharmacy || $odLabDesk;
+        $odProduct  = $odPharmacy ? 'pharmacy' : 'lab';
+    @endphp
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'OpesCare Portal')</title>
     <meta name="theme-color" content="#0F4C81">
     @include('partials.favicons')
     <link rel="manifest" href="{{ asset('site.webmanifest') }}">
+    @unless($od)
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    @endunless
     @if (file_exists(public_path('assets/finder.css')))
         <link rel="stylesheet" href="{{ asset('assets/finder.css') }}">
     @endif
     <link rel="stylesheet" href="{{ asset('css/portal.css') }}">
     <link rel="stylesheet" href="{{ asset('css/helix-v2.css') }}">
-    @if (request()->is('pharmacy', 'pharmacy/*'))
-        {{-- The pharmacy desk's visual standard (docs/superpowers/specs/…pharmacy-dashboard…): scoped to body.section-pharmacy. --}}
-        <link rel="stylesheet" href="{{ asset('css/pharmacy.css') }}?v={{ @filemtime(public_path('css/pharmacy.css')) ?: '1' }}">
+    @if ($od)
+        {{-- The OPES desk system (self-hosted Inter, tokens, .od-* components), scoped to body.od.
+             It replaces public/css/pharmacy.css on /pharmacy; that file is kept but no longer loaded. --}}
+        <link rel="preload" href="{{ asset('fonts/inter/inter-500.woff2') }}" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="{{ asset('fonts/inter/inter-700.woff2') }}" as="font" type="font/woff2" crossorigin>
+        <link rel="stylesheet" href="{{ asset('css/od.css') }}?v={{ @filemtime(public_path('css/od.css')) ?: '1' }}">
     @endif
     @if (request()->is('admin', 'admin/*', 'portals/admin', 'portals/admin/*'))
         {{-- The admin console's own rules (public/css/admin.css): scoped to body.section-admin, same pattern as pharmacy.css. --}}
@@ -30,7 +47,7 @@
     </style>
     @yield('head')
 </head>
-<body class="portal-body{{ request()->is('pharmacy', 'pharmacy/*') ? ' section-pharmacy' : '' }}{{ request()->is('admin', 'admin/*', 'portals/admin', 'portals/admin/*') ? ' section-admin' : '' }}">
+<body class="portal-body{{ $odPharmacy ? ' section-pharmacy' : '' }}{{ $od ? ' od od--' . $odProduct : '' }}{{ request()->is('admin', 'admin/*', 'portals/admin', 'portals/admin/*') ? ' section-admin' : '' }}">
 
 <div class="portal-wrap">
 
@@ -78,6 +95,9 @@
     <!-- Sidebar -->
     <aside class="portal-sidebar" id="portal-sidebar" role="navigation" aria-label="Portal navigation">
 
+        @if($od)
+            @include('partials.od.brand', ['odProduct' => $odProduct, 'odHome' => $odPharmacy ? route('portals.pharmacy.dashboard') : (request()->is('facility/imaging*') ? route('portals.imaging.index') : (request()->is('facility/diagnostic*') ? route('portals.diagnostic.dashboard') : route('portals.lab.index')))])
+        @else
         <a href="{{ url('/') }}" class="sidebar-brand" aria-label="OpesCare Home">
             <div class="sidebar-brand-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18">
@@ -91,6 +111,7 @@
                 </div>
             </div>
         </a>
+        @endif
 
         <div class="sidebar-nav">
             @hasSection('sidebar_nav')
@@ -152,6 +173,9 @@
     <!-- Main Area -->
     <div class="portal-main" id="portal-main">
 
+        @if($od)
+            @include('partials.od.topbar')
+        @else
         <!-- Topbar -->
         <header class="portal-topbar" role="banner">
             <button class="topbar-menu-btn" id="sidebar-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="portal-sidebar">
@@ -215,6 +239,7 @@
                 </div>
             </div>
         </header>
+        @endif
 
         @yield('patient_banner')
 

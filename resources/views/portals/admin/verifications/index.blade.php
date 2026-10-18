@@ -62,7 +62,7 @@
                     @endphp
                     <tr>
                         <td data-label="{{ __('professional.ver_provider', [], app()->getLocale()) }}">
-                            <div class="td-strong">{{ $credential->provider?->name }}</div>
+                            <a href="{{ route('portals.admin.verifications.show', $credential->id) }}" class="td-strong">{{ $credential->provider?->name }}</a>
                             <div class="td-muted">{{ $credential->provider?->email }}</div>
                             @php
                                 /*
@@ -110,7 +110,7 @@
     <div id="reject-{{ $credential->id }}" class="modal-backdrop mt-6" hidden>
         <div class="modal" role="dialog" aria-modal="true" aria-labelledby="reject-{{ $credential->id }}-title">
             <h3 class="modal__title" id="reject-{{ $credential->id }}-title"><i data-lucide="x-circle"></i> {{ __('professional.ver_reject', [], app()->getLocale()) }}</h3>
-            <form method="POST" action="{{ route('portals.admin.verifications.reject', $credential->id) }}">
+            <form method="POST" action="{{ route('portals.admin.verifications.reject', $credential->id) }}" data-confirm="{{ __('admin_desk.confirm_reject_credential') }}">
                 @csrf
                 <div class="modal__body">
                     <p class="td-strong mb-2">{{ $credential->provider?->name }}</p>

@@ -47,7 +47,7 @@
             @if($mod->enabled)
                 <label class="switch">
                     <input type="checkbox" checked
-                           data-prevent data-call="openDisableModal" data-args="{{ json_encode([$mod->module_key, $mod->module_label]) }}"
+                           data-prevent data-call="openDisableModal" data-args="{{ json_encode([$mod->module_key, $mod->module_label]) }}" data-show="disable-modal" data-display="flex"
                            aria-label="Disable {{ $mod->module_label }}">
                     <span class="switch__track"></span>
                 </label>
@@ -73,7 +73,7 @@
     <div class="modal-fixed__panel modal-fixed__panel--sm">
         <div class="modal-fixed__head">
             <h3 class="modal-fixed__title">{{ __('public.adm_cc_mod_disable_modal_heading') }}</h3>
-            <button type="button" class="icon-btn" aria-label="{{ __('public.aria_close') }}" data-call="closeDisableModal"><i data-lucide="x"></i></button>
+            <button type="button" class="icon-btn" aria-label="{{ __('public.aria_close') }}" data-hide="disable-modal"><i data-lucide="x"></i></button>
         </div>
         <p id="disable-module-name" class="td-muted text-sm mb-4"></p>
         <form id="disable-form" method="POST" action="">
@@ -84,7 +84,7 @@
                 <textarea name="disable_reason" class="form-control" rows="2" maxlength="255" placeholder="{{ __('public.adm_cc_mod_disable_modal_ph_reason') }}"></textarea>
             </div>
             <div class="modal__footer">
-                <button type="button" class="btn btn-ghost btn-sm" data-call="closeDisableModal">{{ __('public.adm_cc_mod_disable_modal_btn_cancel') }}</button>
+                <button type="button" class="btn btn-ghost btn-sm" data-hide="disable-modal">{{ __('public.adm_cc_mod_disable_modal_btn_cancel') }}</button>
                 <button type="submit" class="btn btn-danger btn-sm">{{ __('public.adm_cc_mod_disable_modal_btn_disable') }}</button>
             </div>
         </form>
@@ -105,9 +105,7 @@
     function openDisableModal(id, label) {
         document.getElementById('disable-module-name').textContent = _ag.modulePrefix + label;
         document.getElementById('disable-form').action = moduleToggleUrl.replace('__KEY__', encodeURIComponent(id));
-        document.getElementById('disable-modal').classList.add('open');
     }
-    function closeDisableModal() { document.getElementById('disable-modal').classList.remove('open'); }
-    document.getElementById('disable-modal').addEventListener('click', function(e) { if (e.target === this) closeDisableModal(); });
 </script>
+@include('portals.admin._modal')
 @endsection

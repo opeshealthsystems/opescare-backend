@@ -97,7 +97,7 @@
                                 </form>
                             @endif
                             @if($breach->status !== 'closed')
-                                <form method="POST" action="{{ route('portals.admin.security.breaches.close', $breach->id) }}" class="inline-form">
+                                <form method="POST" action="{{ route('portals.admin.security.breaches.close', $breach->id) }}" data-confirm="{{ __('admin_desk.confirm_close_breach') }}" class="inline-form">
                                     @csrf
                                     <input type="text" name="resolution" required class="form-control" placeholder="{{ __('security_ops.br_ph_resolution') }}" aria-label="{{ __('security_ops.br_ph_resolution') }}">
                                     <button type="submit" class="btn btn-ghost btn-sm">{{ __('security_ops.br_btn_close') }}</button>

@@ -13,19 +13,19 @@
     </div>
 </div>
 
-@if(session('success'))<div class="auth-alert auth-alert-success" style="margin-bottom:1rem;"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
-@if(session('error'))<div class="auth-alert auth-alert-danger" style="margin-bottom:1rem;"><i data-lucide="alert-circle"></i><div>{{ session('error') }}</div></div>@endif
+@if(session('success'))<div class="auth-alert auth-alert-success adm-mb-4"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
+@if(session('error'))<div class="auth-alert auth-alert-danger adm-mb-4"><i data-lucide="alert-circle"></i><div>{{ session('error') }}</div></div>@endif
 
-<div class="kpi-grid" style="margin-bottom:1.5rem;">
+<div class="kpi-grid adm-mb-6">
     <div class="kpi-card"><div class="kpi-icon blue"><i data-lucide="calendar"></i></div><div class="kpi-body"><div class="kpi-label">{{ __('public.adm_appt_kpi_total') }}</div><div class="kpi-value">{{ $stats['total_today'] ?? 0 }}</div></div></div>
     <div class="kpi-card"><div class="kpi-icon teal"><i data-lucide="check-circle"></i></div><div class="kpi-body"><div class="kpi-label">{{ __('public.adm_appt_kpi_confirmed') }}</div><div class="kpi-value text-teal">{{ $stats['confirmed_today'] ?? 0 }}</div></div></div>
     <div class="kpi-card"><div class="kpi-icon danger"><i data-lucide="ban"></i></div><div class="kpi-body"><div class="kpi-label">{{ __('public.adm_appt_kpi_cancelled') }}</div><div class="kpi-value text-danger">{{ $stats['cancelled_today'] ?? 0 }}</div></div></div>
     <div class="kpi-card"><div class="kpi-icon warning"><i data-lucide="user-x"></i></div><div class="kpi-body"><div class="kpi-label">{{ __('public.adm_appt_kpi_noshow') }}</div><div class="kpi-value text-warning">{{ $stats['no_show_today'] ?? 0 }}</div></div></div>
 </div>
 
-<form method="GET" action="{{ route('portals.admin.appointments.index') }}" class="panel" style="padding:1rem;margin-bottom:1rem;">
-    <div style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end;">
-        <div style="flex:1;min-width:180px;"><label class="filter-label">{{ __('public.adm_appt_filter_search_lbl') }}</label>
+<form method="GET" action="{{ route('portals.admin.appointments.index') }}" class="panel adm-filter-panel">
+    <div class="adm-flex-end">
+        <div class="adm-grow-sm"><label class="filter-label">{{ __('public.adm_appt_filter_search_lbl') }}</label>
             <input type="text" name="search" class="form-control form-control-sm" placeholder="{{ __('public.adm_appt_filter_search_ph') }}" value="{{ request('search') }}">
         </div>
         <div><label class="filter-label">{{ __('public.adm_appt_filter_status_lbl') }}</label>
@@ -66,7 +66,7 @@
                     <th>{{ __('public.adm_appt_col_scheduled_at') }}</th>
                     <th>{{ __('public.adm_appt_col_status') }}</th>
                     <th>{{ __('public.adm_appt_col_provider') }}</th>
-                    <th style="text-align:right;"><span class="sr-only">{{ __('public.adm_appt_col_actions') }}</span></th>
+                    <th class="adm-right"><span class="sr-only">{{ __('public.adm_appt_col_actions') }}</span></th>
                 </tr>
             </thead>
             <tbody>
@@ -76,22 +76,22 @@
                 @endphp
                 <tr>
                     <td>
-                        <div style="font-weight:600;">{{ trim(($appointment->patient?->first_name ?? '') . ' ' . ($appointment->patient?->last_name ?? '')) ?: '—' }}</div>
-                        <div style="font-size:.78rem;font-family:monospace;color:var(--p-text-muted);">{{ $appointment->patient?->health_id ?? '' }}</div>
+                        <div class="td-strong">{{ trim(($appointment->patient?->first_name ?? '') . ' ' . ($appointment->patient?->last_name ?? '')) ?: '—' }}</div>
+                        <div class="adm-td-mono">{{ $appointment->patient?->health_id ?? '' }}</div>
                     </td>
-                    <td style="font-size:.85rem;">{{ $appointment->facility?->name ?? '—' }}</td>
-                    <td style="font-size:.85rem;">@enum($appointment->appointment_type, 'appointment_type')</td>
+                    <td class="adm-td-sm">{{ $appointment->facility?->name ?? '—' }}</td>
+                    <td class="adm-td-sm">@enum($appointment->appointment_type, 'appointment_type')</td>
                     <td>
-                        <div style="font-size:.85rem;">{{ $appointment->scheduled_at?->translatedFormat('d M Y') ?? '—' }}</div>
-                        <div style="font-size:.75rem;color:var(--p-text-muted);">{{ $appointment->scheduled_at?->format('H:i') ?? '' }}</div>
+                        <div class="adm-td-sm">{{ $appointment->scheduled_at?->translatedFormat('d M Y') ?? '—' }}</div>
+                        <div class="adm-td-xs-muted">{{ $appointment->scheduled_at?->format('H:i') ?? '' }}</div>
                     </td>
                     <td><span class="badge {{ $sBadge }}">@enum($appointment->status ?? '—')</span></td>
-                    <td style="font-size:.85rem;">{{ $appointment->provider?->name ?? '—' }}</td>
-                    <td style="text-align:right;">
-                        <div style="display:flex;gap:.35rem;justify-content:flex-end;">
+                    <td class="adm-td-sm">{{ $appointment->provider?->name ?? '—' }}</td>
+                    <td class="adm-right">
+                        <div class="adm-actions-end">
                             <a href="{{ route('portals.admin.appointments.show', $appointment) }}" class="btn btn-ghost btn-xs" aria-label="{{ __('public.aria_view_appointment') }}" title="{{ __('admin_extra.title_view', [], app()->getLocale()) }}"><i data-lucide="eye"></i></a>
                             @if(!in_array($appointment->status??'',['cancelled','completed']))
-                            <button data-call="openCancelModal" data-args="{{ json_encode([$appointment->id, route('portals.admin.appointments.cancel', $appointment)]) }}" class="btn btn-warning btn-xs"><i data-lucide="ban"></i></button>
+                            <button type="button" data-call="openCancelModal" data-args="{{ json_encode([$appointment->id, route('portals.admin.appointments.cancel', $appointment)]) }}" data-show="cancel-modal" data-display="flex" class="btn btn-warning btn-xs" aria-label="{{ __('public.adm_appt_modal_cancel_title') }}" title="{{ __('public.adm_appt_modal_cancel_title') }}"><i data-lucide="ban"></i></button>
                             @endif
                             {{-- The route is POST admin/appointments/{id}/delete, so no method
                                  spoofing: @method('DELETE') rewrote the verb to one that route
@@ -104,34 +104,34 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--p-text-muted);">{{ __('public.adm_appt_empty') }}</td></tr>
+                <tr><td colspan="7" class="adm-empty-cell">{{ __('public.adm_appt_empty') }}</td></tr>
                 @endforelse
             </tbody>
         </table>
     </div>
     @if(isset($appointments) && $appointments->hasPages())
-    <div style="padding:.75rem 1.25rem;">{{ $appointments->withQueryString()->links() }}</div>
+    <div class="adm-pager">{{ $appointments->withQueryString()->links() }}</div>
     @endif
 </div>
 
 {{-- Cancel Modal --}}
-<div id="cancel-modal" style="display:none;position:fixed;inset:0;z-index:60;align-items:center;justify-content:center;background:rgba(15,23,42,.7);backdrop-filter:blur(4px);padding:1rem;" role="dialog">
-    <div style="background:var(--p-surface);border:1px solid var(--p-border);border-radius:var(--p-radius-xl);width:100%;max-width:480px;overflow:hidden;box-shadow:var(--p-shadow-lg);">
-        <div style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--p-border);display:flex;justify-content:space-between;align-items:center;">
-            <h3 style="margin:0;font-size:1rem;font-weight:700;">{{ __('public.adm_appt_modal_cancel_title') }}</h3>
-            <button type="button" data-hide="cancel-modal" class="topbar-icon-btn" aria-label="{{ __('public.adm_appt_modal_close_label') }}"><i data-lucide="x"></i></button>
+<div id="cancel-modal" class="modal-fixed" role="dialog" aria-modal="true" aria-labelledby="cancel-modal-title">
+    <div class="modal-fixed__panel modal-fixed__panel--md">
+        <div class="modal-fixed__head">
+            <h3 id="cancel-modal-title" class="modal-fixed__title">{{ __('public.adm_appt_modal_cancel_title') }}</h3>
+            <button type="button" data-hide="cancel-modal" class="icon-btn" aria-label="{{ __('public.adm_appt_modal_close_label') }}"><i data-lucide="x"></i></button>
         </div>
         {{-- Same as Delete above: portals.admin.appointments.cancel is a POST
              route, so @method('PATCH') here turned Confirm Cancel into a 405. --}}
         <form method="POST" id="cancel-form" action="">
             @csrf
-            <div style="padding:1.5rem;">
+            <div class="modal-fixed__body">
                 <div class="form-group">
-                    <label class="form-label">{{ __('public.adm_appt_modal_cancel_reason_lbl') }} <span style="color:var(--p-danger);">*</span></label>
-                    <textarea name="reason" class="form-control" rows="3" placeholder="{{ __('public.adm_appt_modal_cancel_reason_ph') }}" required></textarea>
+                    <label class="form-label" for="cancel-reason">{{ __('public.adm_appt_modal_cancel_reason_lbl') }} <span class="adm-required">*</span></label>
+                    <textarea id="cancel-reason" name="reason" class="form-control" rows="3" placeholder="{{ __('public.adm_appt_modal_cancel_reason_ph') }}" required></textarea>
                 </div>
             </div>
-            <div style="padding:1rem 1.5rem;border-top:1px solid var(--p-border);display:flex;gap:.75rem;justify-content:flex-end;">
+            <div class="modal__footer">
                 <button type="button" data-hide="cancel-modal" class="btn btn-ghost">{{ __('public.adm_appt_modal_close') }}</button>
                 <button type="submit" class="btn btn-danger"><i data-lucide="ban"></i> {{ __('public.adm_appt_modal_confirm_cancel') }}</button>
             </div>
@@ -144,8 +144,7 @@
 function openCancelModal(id, url) {
     document.getElementById('cancel-form').action = url;
     document.getElementById('cancel-form').querySelector('textarea').value = '';
-    document.getElementById('cancel-modal').style.display = 'flex';
 }
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.querySelectorAll('[id$="-modal"]').forEach(m=>m.style.display='none');}});
 </script>
+@include('portals.admin._modal')
 @endsection

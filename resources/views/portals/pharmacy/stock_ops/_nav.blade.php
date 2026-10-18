@@ -1,7 +1,6 @@
-{{-- Filter-pill strip shared by the stock-operations screens, plus the way back
-     to the public-availability page the ledger feeds. Styled by pharmacy.css
-     (.fs-subnav a / a.active) — no page-level <style>. --}}
-<nav class="fs-subnav" role="tablist" aria-label="{{ __('pharmacy_ops.nav_section') }}">
+{{-- Stock-operations sub-nav as contract .od-tabs pills, plus the way back to
+     the public-availability page the ledger feeds. --}}
+<nav class="od-tabs os-subnav" aria-label="{{ __('pharmacy_ops.nav_section') }}">
     @foreach([
         ['portals.pharmacy.stock',                  'megaphone',        'pharmacy_ops.nav_public_stock'],
         ['portals.pharmacy.stock.batches',          'layers',           'pharmacy_ops.nav_batches'],
@@ -11,7 +10,7 @@
         ['portals.pharmacy.stock.suppliers',        'building-2',       'pharmacy_stock_desk.nav_suppliers'],
     ] as [$routeName, $icon, $key])
     @php $on = $routeName === 'portals.pharmacy.stock' ? request()->routeIs('portals.pharmacy.stock') : request()->routeIs($routeName . '*'); @endphp
-    <a href="{{ route($routeName) }}" class="fs-tab{{ $on ? ' active' : '' }}" role="tab" aria-selected="{{ $on ? 'true' : 'false' }}">
+    <a href="{{ route($routeName) }}" class="od-tab{{ $on ? ' is-active' : '' }}" @if($on) aria-current="page" @endif>
         <i data-lucide="{{ $icon }}"></i><span>{{ __($key) }}</span>
     </a>
     @endforeach

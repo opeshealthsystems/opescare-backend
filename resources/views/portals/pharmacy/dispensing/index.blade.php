@@ -5,6 +5,7 @@
         $s = mb_strtoupper(mb_substr(trim((string) $first), 0, 1) . mb_substr(trim((string) $last), 0, 1));
         return $s !== '' ? $s : '—';
     };
+    $tone = fn (string $key): string => ['blue', 'amber', 'teal', 'rose', 'sky', 'green'][crc32($key) % 6];
 @endphp
 @section('title', __('pharmacy_desk.reg_title', [], $l))
 @section('sidebar_user_role', __('public.pharmacy_portal.role_label', [], $l))
@@ -12,97 +13,110 @@
 @section('breadcrumb_home_url', route('portals.pharmacy.dashboard'))
 @section('breadcrumb_section', __('pharmacy_desk.reg_breadcrumb', [], $l))
 
+@section('head')
+    <link rel="stylesheet" href="{{ asset('css/od-pharmacy.css') }}?v={{ @filemtime(public_path('css/od-pharmacy.css')) ?: '1' }}">
+@endsection
+
 @section('content')
 
-<div class="page-head">
-    <h2>{{ __('pharmacy_desk.reg_title', [], $l) }}</h2>
-    <p class="page-subtitle">{{ __('pharmacy_desk.reg_subtitle', [], $l) }}</p>
-    <div class="page-head__spacer"></div>
-    <a href="{{ route('portals.pharmacy.dispensing.export', request()->query()) }}" class="btn btn-secondary btn-sm"><i data-lucide="download"></i> {{ __('pharmacy_desk.btn_export', [], $l) }}</a>
+<div class="od-page__head">
+    <div>
+        <h1 class="od-page__title">{{ __('pharmacy_desk.reg_title', [], $l) }}</h1>
+        <p class="od-page__sub">{{ __('pharmacy_desk.reg_subtitle', [], $l) }}</p>
+    </div>
+    <a href="{{ route('portals.pharmacy.dispensing.export', request()->query()) }}" class="od-btn od-btn--secondary"><i data-lucide="download"></i> {{ __('pharmacy_desk.btn_export', [], $l) }}</a>
 </div>
 
-<div class="panel">
-    <div class="panel-header">
-        <h3 class="panel-title"><i data-lucide="clipboard-check"></i> {{ __('pharmacy_desk.reg_count', ['count' => $entries->total()], $l) }}</h3>
-    </div>
+<section class="od-card odp-queue">
+    <header class="od-card__head">
+        <h2 class="od-card__title">{{ __('pharmacy_desk.reg_count', ['count' => $entries->total()], $l) }}</h2>
+    </header>
 
-    <div class="ph-tools">
-        <form method="GET" class="ph-toolbar">
-            <label class="form-group">
-                <span class="form-label">{{ __('pharmacy_desk.f_from', [], $l) }}</span>
-                <input type="date" name="from" class="form-control" value="{{ $filters['from'] }}">
+    <div class="od-card__body odp-queue__body">
+        <form method="GET" class="odp-filters odp-toolbar">
+            <label>
+                <span>{{ __('pharmacy_desk.f_from', [], $l) }}</span>
+                <input type="date" name="from" class="od-input" value="{{ $filters['from'] }}">
             </label>
-            <label class="form-group">
-                <span class="form-label">{{ __('pharmacy_desk.f_to', [], $l) }}</span>
-                <input type="date" name="to" class="form-control" value="{{ $filters['to'] }}">
+            <label>
+                <span>{{ __('pharmacy_desk.f_to', [], $l) }}</span>
+                <input type="date" name="to" class="od-input" value="{{ $filters['to'] }}">
             </label>
-            <select name="pharmacist" class="filter-select" aria-label="{{ __('pharmacy_desk.f_pharmacist', [], $l) }}" data-autosubmit>
-                <option value="">{{ __('pharmacy_desk.f_any_pharmacist', [], $l) }}</option>
-                @foreach($dispensers as $u)
-                <option value="{{ $u->id }}" {{ $filters['pharmacist'] === (string) $u->id ? 'selected' : '' }}>{{ $u->name }}</option>
-                @endforeach
-            </select>
-            <label class="ph-check"><input type="checkbox" name="controlled" value="1" {{ $filters['controlled'] ? 'checked' : '' }} data-autosubmit> {{ __('pharmacy_desk.f_controlled', [], $l) }}</label>
-            <button type="submit" class="btn btn-secondary btn-sm"><i data-lucide="filter"></i> {{ __('pharmacy_desk.btn_filter', [], $l) }}</button>
+            <label>
+                <span>{{ __('pharmacy_desk.f_pharmacist', [], $l) }}</span>
+                <select name="pharmacist" class="od-select" data-autosubmit>
+                    <option value="">{{ __('pharmacy_desk.f_any_pharmacist', [], $l) }}</option>
+                    @foreach($dispensers as $u)
+                    <option value="{{ $u->id }}" {{ $filters['pharmacist'] === (string) $u->id ? 'selected' : '' }}>{{ $u->name }}</option>
+                    @endforeach
+                </select>
+            </label>
+            <span class="odp-check"><input type="checkbox" class="od-check" id="f-controlled" name="controlled" value="1" {{ $filters['controlled'] ? 'checked' : '' }} data-autosubmit> <label for="f-controlled">{{ __('pharmacy_desk.f_controlled', [], $l) }}</label></span>
+            <button type="submit" class="od-btn od-btn--secondary"><i data-lucide="filter"></i> {{ __('pharmacy_desk.btn_filter', [], $l) }}</button>
             @if(request()->hasAny(['from', 'to', 'pharmacist', 'controlled']))
-                <a href="{{ route('portals.pharmacy.dispensing') }}" class="btn btn-ghost btn-sm">{{ __('pharmacy_desk.btn_clear', [], $l) }}</a>
+                <a href="{{ route('portals.pharmacy.dispensing') }}" class="od-btn od-btn--ghost">{{ __('pharmacy_desk.btn_clear', [], $l) }}</a>
             @endif
         </form>
-    </div>
 
-    <div class="table-wrapper">
-        <table class="data-table">
-            <thead><tr>
-                <th>{{ __('pharmacy_desk.col_date', [], $l) }}</th>
-                <th>{{ __('pharmacy_desk.col_patient', [], $l) }}</th>
-                <th>{{ __('pharmacy_desk.col_items', [], $l) }}</th>
-                <th>{{ __('pharmacy_desk.col_pharmacist', [], $l) }}</th>
-                <th>{{ __('pharmacy_desk.col_controlled', [], $l) }}</th>
-                <th class="row-actions"></th>
-            </tr></thead>
-            <tbody>
-            @forelse($entries as $rx)
-            @php
-                $done = $rx->items->filter(fn ($it) => $it->isDispensed());
-                $controlled = $done->contains(fn ($it) => $service->isControlledItem($it));
-                $dispenser = $rx->dispensed_by ? \App\Models\User::query()->find($rx->dispensed_by, ['id', 'name']) : null;
-                $url = route('portals.pharmacy.prescriptions.show', $rx->id);
-            @endphp
-            <tr>
-                <td data-label="{{ __('pharmacy_desk.col_date', [], $l) }}" class="td-muted">{{ ($rx->dispensed_at ?? $done->max('dispensed_at'))?->translatedFormat('d M Y H:i') ?? '—' }}</td>
-                <td data-label="{{ __('pharmacy_desk.col_patient', [], $l) }}">
-                    <div class="ph-cell">
-                        <span class="ph-avatar ph-avatar--green" aria-hidden="true">{{ $initials($rx->patient?->first_name, $rx->patient?->last_name) }}</span>
-                        <div>
-                            <span class="ph-cell__title">{{ \App\Services\Pharmacy\PharmacyDispensingService::maskName($rx->patient?->first_name, $rx->patient?->last_name) }}</span>
-                            <div class="ph-cell__sub"><a href="{{ $url }}" class="mono">{{ $rx->reference ?: '—' }}</a> @if($rx->patient?->health_id)&middot; <span class="mono">{{ $rx->patient->health_id }}</span>@endif &middot; {{ __('pharmacy_desk.items_count', ['count' => $done->count()], $l) }}</div>
+        @if($entries->isEmpty())
+            <div class="od-empty">
+                <span class="od-empty__icon"><x-od-icon name="capsule" /></span>
+                <div class="od-empty__title">{{ __('pharmacy_desk.reg_empty', [], $l) }}</div>
+                <p class="od-empty__text">{{ __('pharmacy_desk.reg_empty_hint', [], $l) }}</p>
+                <a href="{{ route('portals.pharmacy.prescriptions.lookup') }}" class="od-btn od-btn--primary"><x-od-icon name="barcode" /> {{ __('pharmacy_desk.btn_lookup', [], $l) }}</a>
+            </div>
+        @else
+        <div class="od-table-wrap">
+            <table class="od-table odp-stack-sm">
+                <thead><tr>
+                    <th class="od-table__num">#</th>
+                    <th>{{ __('pharmacy_desk.col_date', [], $l) }}</th>
+                    <th>{{ __('pharmacy_desk.col_patient', [], $l) }}</th>
+                    <th>{{ __('pharmacy_desk.col_items', [], $l) }}</th>
+                    <th>{{ __('pharmacy_desk.col_pharmacist', [], $l) }}</th>
+                    <th>{{ __('pharmacy_desk.col_controlled', [], $l) }}</th>
+                    <th></th>
+                </tr></thead>
+                <tbody>
+                @foreach($entries as $i => $rx)
+                @php
+                    $done = $rx->items->filter(fn ($it) => $it->isDispensed());
+                    $controlled = $done->contains(fn ($it) => $service->isControlledItem($it));
+                    $dispenser = $rx->dispensed_by ? \App\Models\User::query()->find($rx->dispensed_by, ['id', 'name']) : null;
+                    $url = route('portals.pharmacy.prescriptions.show', $rx->id);
+                    $masked = \App\Services\Pharmacy\PharmacyDispensingService::maskName($rx->patient?->first_name, $rx->patient?->last_name);
+                @endphp
+                <tr>
+                    <td class="od-table__num">{{ $entries->firstItem() + $i }}</td>
+                    <td data-label="{{ __('pharmacy_desk.col_date', [], $l) }}" class="od-muted">{{ ($rx->dispensed_at ?? $done->max('dispensed_at'))?->translatedFormat('d M Y H:i') ?? '—' }}</td>
+                    <td data-label="{{ __('pharmacy_desk.col_patient', [], $l) }}">
+                        <div class="od-table__person">
+                            <span class="od-avatar od-tint--{{ $tone((string) $rx->id) }}" aria-hidden="true">{{ $initials($rx->patient?->first_name, $rx->patient?->last_name) }}</span>
+                            <div>
+                                <span class="od-table__name">{{ $masked }}</span>
+                                <span class="od-table__sub"><a href="{{ $url }}">{{ $rx->reference ?: '—' }}</a> @if($rx->patient?->health_id)&middot; {{ $rx->patient->health_id }}@endif &middot; {{ __('pharmacy_desk.items_count', ['count' => $done->count()], $l) }}</span>
+                            </div>
                         </div>
-                    </div>
-                </td>
-                <td data-label="{{ __('pharmacy_desk.col_items', [], $l) }}" class="ph-lines">
-                    @foreach($done->take(2) as $it)<div>{{ $it->drug_name }} {{ $it->dose }}</div>@endforeach
-                    @if($done->count() > 2)<div class="td-muted">{{ __('pharmacy_desk.more_items', ['count' => $done->count() - 2], $l) }}</div>@endif
-                </td>
-                <td data-label="{{ __('pharmacy_desk.col_pharmacist', [], $l) }}">{{ $dispenser?->name ?? '—' }}</td>
-                <td data-label="{{ __('pharmacy_desk.col_controlled', [], $l) }}">
-                    @if($controlled)<span class="badge badge-danger badge-sm">{{ __('pharmacy_desk.badge_controlled', [], $l) }}</span>@else<span class="td-muted">—</span>@endif
-                </td>
-                <td class="row-actions" data-label=""><a href="{{ $url }}" class="btn btn-primary btn-sm"><i data-lucide="chevron-right"></i> {{ __('pharmacy_desk.btn_open_rx', [], $l) }}</a></td>
-            </tr>
-            @empty
-            <tr><td colspan="6" class="empty-cell">
-                <div class="empty-state">
-                    <i data-lucide="clipboard-list" class="empty-state-icon"></i>
-                    <p>{{ __('pharmacy_desk.reg_empty', [], $l) }}</p>
-                    <p class="td-muted">{{ __('pharmacy_desk.reg_empty_hint', [], $l) }}</p>
-                    <a href="{{ route('portals.pharmacy.prescriptions.lookup') }}" class="btn btn-primary btn-sm"><i data-lucide="scan-line"></i> {{ __('pharmacy_desk.btn_lookup', [], $l) }}</a>
-                </div>
-            </td></tr>
-            @endforelse
-            </tbody>
-        </table>
+                    </td>
+                    <td data-label="{{ __('pharmacy_desk.col_items', [], $l) }}">
+                        <div class="odp-lines">
+                        @foreach($done->take(2) as $it)<span>{{ $it->drug_name }} {{ $it->dose }}</span>@endforeach
+                        @if($done->count() > 2)<span class="od-table__sub">{{ __('pharmacy_desk.more_items', ['count' => $done->count() - 2], $l) }}</span>@endif
+                        </div>
+                    </td>
+                    <td data-label="{{ __('pharmacy_desk.col_pharmacist', [], $l) }}">{{ $dispenser?->name ?? '—' }}</td>
+                    <td data-label="{{ __('pharmacy_desk.col_controlled', [], $l) }}">
+                        @if($controlled)<span class="od-pill od-pill--urgent">{{ __('pharmacy_desk.badge_controlled', [], $l) }}</span>@else<span class="od-muted">—</span>@endif
+                    </td>
+                    <td class="od-table__actions" data-label=""><a href="{{ $url }}" class="od-btn od-btn--row">{{ __('pharmacy_desk.btn_open_rx', [], $l) }}</a></td>
+                </tr>
+                @endforeach
+                </tbody>
+            </table>
+        </div>
+        @endif
     </div>
-    <div class="panel-footer">{{ $entries->links() }}</div>
-</div>
+    @if($entries->hasPages())<footer class="od-card__foot">{{ $entries->links() }}</footer>@endif
+</section>
 
 @endsection

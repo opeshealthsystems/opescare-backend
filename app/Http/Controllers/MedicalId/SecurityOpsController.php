@@ -186,6 +186,16 @@ class SecurityOpsController extends Controller
         return view('portals.admin.security_ops.incidents', compact('incidents'));
     }
 
+    /** One incident on its own page: the full summary, who opened it, and the update form. */
+    public function incidentShow(string $id)
+    {
+        $this->assertUuid($id);
+
+        $incident = SecurityIncident::withoutGlobalScope('isolate_demo')->with('creator')->findOrFail($id);
+
+        return view('portals.admin.security_ops.incident_show', compact('incident'));
+    }
+
     public function incidentStore(Request $request)
     {
         $data = $request->validate([
@@ -225,7 +235,9 @@ class SecurityOpsController extends Controller
             $incident = SecurityIncident::withoutGlobalScope('isolate_demo')->findOrFail($id);
             $incident->update(array_filter($data, fn ($v) => $v !== null));
 
-            return redirect()->route('portals.admin.security.incidents')
+            return redirect()->to($request->boolean('stay')
+                    ? route('portals.admin.security.incidents.show', $incident->id)
+                    : route('portals.admin.security.incidents'))
                 ->with('success', __('flash.incident_updated'));
         } catch (Throwable $e) {
             return back()->with('error', $this->failureMessage($e));

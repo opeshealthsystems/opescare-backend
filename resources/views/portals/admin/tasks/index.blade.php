@@ -28,8 +28,8 @@
     <div class="panel-body">
         <form method="POST" action="{{ route('portals.admin.tasks.store') }}">
             @csrf
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-                <div style="grid-column:1/-1;"><label class="form-label" for="title">{{ __('tasks.col_task') }}</label>
+            <div class="adm-form-grid">
+                <div class="adm-span-2"><label class="form-label" for="title">{{ __('tasks.col_task') }}</label>
                     <input type="text" id="title" name="title" class="form-control" maxlength="160" value="{{ old('title') }}" required></div>
                 <div><label class="form-label" for="task_type">{{ __('tasks.col_type') }}</label>
                     <select id="task_type" name="task_type" class="form-control" required>
@@ -46,19 +46,19 @@
                     </select></div>
                 <div><label class="form-label" for="due_at">{{ __('tasks.col_due') }}</label>
                     <input type="datetime-local" id="due_at" name="due_at" class="form-control" value="{{ old('due_at') }}"></div>
-                <div style="grid-column:1/-1;"><label class="form-label" for="description">{{ __('tasks.description') }}</label>
+                <div class="adm-span-2"><label class="form-label" for="description">{{ __('tasks.description') }}</label>
                     <textarea id="description" name="description" class="form-control" rows="2" maxlength="1000">{{ old('description') }}</textarea></div>
             </div>
-            <div style="margin-top:1rem;"><button type="submit" class="btn btn-primary"><i data-lucide="save"></i> {{ __('tasks.create_task') }}</button></div>
+            <div class="adm-mt-4"><button type="submit" class="btn btn-primary"><i data-lucide="save"></i> {{ __('tasks.create_task') }}</button></div>
         </form>
     </div>
 </div>
 
 <div class="panel">
-    <div class="panel-header" style="display:flex;justify-content:space-between;align-items:center;">
+    <div class="panel-header adm-flex-between">
         <h3 class="panel-title"><i data-lucide="clipboard-list"></i> {{ __('tasks.admin_title') }}</h3>
-        <form method="GET" style="display:flex;gap:.4rem;align-items:center;">
-            <select name="status" class="form-control" style="width:auto;" data-autosubmit>
+        <form method="GET" class="adm-inline-flex">
+            <select name="status" class="form-control adm-w-auto" data-autosubmit aria-label="{{ __('tasks.col_status') }}">
                 <option value="">{{ __('tasks.all_statuses') }}</option>
                 @foreach(['open','acknowledged','escalated','completed'] as $st)
                     <option value="{{ $st }}" @selected($status===$st)>@enum($st)</option>
@@ -78,7 +78,7 @@
             <tbody>
                 @foreach($tasks as $task)
                 <tr>
-                    <td data-label="{{ __('tasks.col_task') }}"><span class="td-strong">{{ $task->title }}</span>
+                    <td data-label="{{ __('tasks.col_task') }}"><a href="{{ route('portals.admin.tasks.show', $task->uuid) }}" class="td-strong">{{ $task->title }}</a>
                         <div class="td-muted">{{ __('tasks.type_' . $task->task_type) }}</div></td>
                     <td data-label="{{ __('tasks.assignee') }}"><span class="td-muted">{{ $assignees[$task->assigned_to]->name ?? '—' }}</span></td>
                     <td data-label="{{ __('tasks.col_due') }}"><span class="td-muted">{{ $task->due_at ? \Illuminate\Support\Carbon::parse($task->due_at)->isoFormat('lll') : '—' }}</span></td>
@@ -86,11 +86,11 @@
                         @php $sc = ['escalated'=>'danger','acknowledged'=>'info','completed'=>'success'][$task->status] ?? 'warning'; @endphp
                         <span class="badge badge-{{ $sc }}">@enum($task->status)</span>
                     </td>
-                    <td class="row-actions" style="display:flex;gap:.4rem;flex-wrap:wrap;">
+                    <td class="row-actions adm-row-actions">
                         @if(!in_array($task->status, ['completed','cancelled']))
-                        <form method="POST" action="{{ route('portals.admin.tasks.reassign', $task->uuid) }}" style="display:flex;gap:.3rem;align-items:center;">
+                        <form method="POST" action="{{ route('portals.admin.tasks.reassign', $task->uuid) }}" class="adm-inline-flex">
                             @csrf
-                            <select name="assigned_to" class="form-control" style="width:auto;" required>
+                            <select name="assigned_to" class="form-control adm-w-auto" required aria-label="{{ __('tasks.assign_to') }}">
                                 @foreach($staff as $s)<option value="{{ $s->id }}" @selected($s->id === $task->assigned_to)>{{ $s->name }}</option>@endforeach
                             </select>
                             <button type="submit" class="btn btn-secondary btn-sm"><i data-lucide="user-cog"></i> {{ __('tasks.reassign') }}</button>
@@ -99,7 +99,7 @@
                             <button type="submit" class="btn btn-primary btn-sm"><i data-lucide="check"></i> {{ __('tasks.complete') }}</button></form>
                         <form method="POST" action="{{ route('portals.admin.tasks.escalate', $task->uuid) }}">@csrf
                             <button type="submit" class="btn btn-ghost btn-sm"><i data-lucide="arrow-up-circle"></i> {{ __('tasks.escalate') }}</button></form>
-                        <form method="POST" action="{{ route('portals.admin.tasks.cancel', $task->uuid) }}">@csrf
+                        <form method="POST" action="{{ route('portals.admin.tasks.cancel', $task->uuid) }}" data-confirm="{{ __('admin_desk.confirm_cancel_task') }}">@csrf
                             <button type="submit" class="btn btn-ghost btn-sm"><i data-lucide="x-circle"></i> {{ __('tasks.cancel') }}</button></form>
                         @endif
                     </td>

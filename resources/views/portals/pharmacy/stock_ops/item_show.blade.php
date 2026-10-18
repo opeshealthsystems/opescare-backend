@@ -5,135 +5,184 @@
 @section('breadcrumb_home', __('public.pharmacy_portal.breadcrumb_home'))
 @section('breadcrumb_home_url', route('portals.pharmacy.dashboard'))
 @section('breadcrumb_section', __('pharmacy_ops.nav_batches'))
+@section('head')@include('portals.pharmacy.stock_ops._styles')@endsection
 
 @section('content')
 
 @php
     $med        = $item->medicine;
     $finderRow  = $finder['row'];
-    $stateBadge = match($finder['state']) {
-        'published'     => 'badge-success',
-        'listing_issue' => 'badge-warning',
-        default         => 'badge-neutral',
-    };
-    $stateCard  = match($finder['state']) {
-        'published'     => 'ph-infocard--success',
-        'listing_issue' => 'ph-infocard--warning',
-        default         => 'ph-infocard--neutral',
-    };
-    $usableTone = $usable <= 0 ? 'red' : ($rule && $usable < $rule->reorder_level ? 'amber' : 'green');
-    $usableCard = $usable <= 0 ? 'ph-infocard--danger' : ($rule && $usable < $rule->reorder_level ? 'ph-infocard--warning' : 'ph-infocard--success');
+    $statePill  = match($finder['state']) { 'published' => 'ok', 'listing_issue' => 'reorder', default => 'neutral' };
+    $stateIcon  = match($finder['state']) { 'published' => 'green', 'listing_issue' => 'amber', default => 'grey' };
+    $under      = $rule && $usable < $rule->reorder_level;
+    $usableTone = $usable <= 0 ? 'red' : ($under ? 'amber' : 'green');
     $batchCount = $locations->flatten(1)->count();
+    $adjustable = $locations->flatten(1)->map(fn ($r) => $r['batch']);
 @endphp
 
-<div class="page-head">
-    <h2>{{ $name }}</h2>
-    <p class="page-subtitle">
-        {{ $med?->strength }} {{ $med?->form }}
-        @if($med?->atc_code)
-            · <span class="fs-mono">{{ $med->atc_code }}</span>@if($atcLabel) — {{ $atcLabel }}@endif
-        @endif
-    </p>
-    <div class="page-head__spacer"></div>
-    <a href="{{ route('portals.pharmacy.stock.batches') }}" class="btn btn-ghost btn-sm"><i data-lucide="arrow-left"></i> {{ __('pharmacy_stock_desk.back_to_batches') }}</a>
-</div>
+<div class="os-page">
+
+<header class="os-head">
+    <div class="os-head__text">
+        <h1 class="os-head__title">{{ $name }}</h1>
+        <p class="os-head__sub">
+            {{ $med?->strength }} {{ $med?->form }}
+            @if($med?->atc_code) · {{ $med->atc_code }}@if($atcLabel) — {{ $atcLabel }}@endif @endif
+        </p>
+    </div>
+    <div class="os-head__actions">
+        <a href="{{ route('portals.pharmacy.stock.batches') }}" class="od-btn od-btn--secondary"><i data-lucide="arrow-left"></i> {{ __('pharmacy_stock_desk.back_to_batches') }}</a>
+    </div>
+</header>
 
 @include('portals.pharmacy.stock_ops._nav')
+@include('portals.pharmacy.stock_ops._alerts')
 
-@if(session('success'))<div class="alert alert-success mb-6"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
-@if($errors->any())
-<div class="banner banner--danger">
-    <i data-lucide="alert-octagon"></i>
-    <div><ul class="alert-list">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
-</div>
-@endif
+<div class="os-split">
+<div class="os-stack">
 
-<div class="ph-split">
-<div class="ph-stack">
-
-{{-- ── Batches ──────────────────────────────────────────────────────── --}}
-<div class="panel" id="batches">
-    <div class="panel-header">
-        <h3 class="panel-title"><i data-lucide="layers"></i> {{ __('pharmacy_stock_desk.tab_batches') }} <span class="ph-count-inline">({{ $batchCount }})</span></h3>
-        <a href="{{ route('portals.pharmacy.stock.receipts.create', ['medicine_id' => $item->medicine_id]) }}" class="btn btn-primary btn-sm"><i data-lucide="truck"></i> {{ __('pharmacy_stock_desk.btn_receive') }}</a>
+{{-- ── Batches ─────────────────────────────────────────────────────── --}}
+<section class="od-card os-card" id="batches">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('pharmacy_stock_desk.tab_batches') }} <span class="od-card__count">({{ $batchCount }})</span></h2>
+        <a href="{{ route('portals.pharmacy.stock.receipts.create', ['medicine_id' => $item->medicine_id]) }}" class="od-btn od-btn--primary"><i data-lucide="truck"></i> {{ __('pharmacy_stock_desk.btn_receive') }}</a>
     </div>
-    <div class="table-wrapper">
-        <table class="data-table">
+    <div class="os-table-wrap">
+        <table class="od-table os-table">
             <thead><tr>
+                <th class="os-col-num">{{ __('pharmacy_stock_desk.col_num') }}</th>
                 <th>{{ __('pharmacy_stock_desk.col_location') }}</th>
                 <th>{{ __('pharmacy_ops.col_lot') }}</th>
                 <th>{{ __('pharmacy_ops.col_expiry') }}</th>
                 <th>{{ __('pharmacy_ops.col_packs') }}</th>
                 <th>{{ __('pharmacy_ops.col_status') }}</th>
-                <th>{{ __('pharmacy_ops.col_received') }}</th>
+                <th class="os-col-act">{{ __('public.pharmacy_portal.col_action') }}</th>
             </tr></thead>
             <tbody>
+            @php $n = 0; @endphp
             @forelse($locations as $locationName => $rows)
                 @foreach($rows as $row)
                     @php
-                        $b   = $row['batch'];
-                        $cls = match($row['state']) { 'usable' => 'badge-success', 'expiring' => 'badge-warning', 'expired' => 'badge-danger', default => 'badge-neutral' };
-                        $bt  = match($row['state']) { 'usable' => 'green', 'expiring' => 'amber', 'expired' => 'red', default => 'grey' };
+                        $b    = $row['batch'];
+                        $pill = match($row['state']) { 'usable' => 'ok', 'expiring' => 'reorder', 'expired' => 'expired', default => 'neutral' };
+                        $bt   = match($row['state']) { 'usable' => 'green', 'expiring' => 'amber', 'expired' => 'red', default => 'grey' };
+                        $n++;
                     @endphp
                     <tr id="batch-{{ $b->id }}">
+                        <td class="os-col-num">{{ $n }}</td>
                         <td data-label="{{ __('pharmacy_stock_desk.col_location') }}">
-                            <div class="ph-cell">
-                                @include('portals.pharmacy.stock_ops._avatar', ['icon' => 'map-pin', 'tone' => $bt])
-                                <div class="ph-cell__title">{{ $locationName !== '' ? $locationName : __('pharmacy_stock_desk.location_unknown') }}</div>
+                            <div class="os-cell">
+                                @include('portals.pharmacy.stock_ops._avatar', ['pack' => true, 'tone' => $bt])
+                                <div class="os-cell__text">
+                                    <span class="os-cell__title">{{ $locationName !== '' ? $locationName : __('pharmacy_stock_desk.location_unknown') }}</span>
+                                    <span class="os-cell__sub">{{ __('pharmacy_ops.col_received') }} {{ $b->created_at?->translatedFormat('d M Y') }}</span>
+                                </div>
                             </div>
                         </td>
-                        <td data-label="{{ __('pharmacy_ops.col_lot') }}" class="fs-mono">{{ $b->lot_number ?? '—' }}</td>
+                        <td data-label="{{ __('pharmacy_ops.col_lot') }}" class="os-lot">{{ $b->lot_number ?? '—' }}</td>
                         <td data-label="{{ __('pharmacy_ops.col_expiry') }}">
                             @if(! $b->expiry_date)
-                                <span class="badge badge-neutral">{{ __('pharmacy_ops.expiry_unknown') }}</span>
+                                @include('portals.pharmacy.stock_ops._pill', ['tone' => 'neutral', 'label' => __('pharmacy_ops.expiry_unknown')])
                             @else
                                 {{ $b->expiry_date->translatedFormat('d M Y') }}
                             @endif
                         </td>
-                        <td data-label="{{ __('pharmacy_ops.col_packs') }}" class="td-num">{{ $b->quantity_available }}</td>
+                        <td data-label="{{ __('pharmacy_ops.col_packs') }}" class="os-num">{{ $b->quantity_available }}</td>
                         <td data-label="{{ __('pharmacy_ops.col_status') }}">
-                            <span class="badge {{ $cls }}">
-                                @if($row['state'] === 'expiring')
-                                    {{ __('pharmacy_ops.expiring_badge', ['days' => $row['days_left']]) }}
-                                @else
-                                    {{ __('pharmacy_stock_desk.batch_state.' . $row['state']) }}
-                                @endif
-                            </span>
+                            @include('portals.pharmacy.stock_ops._pill', ['tone' => $pill, 'label' => $row['state'] === 'expiring'
+                                ? __('pharmacy_ops.expiring_badge', ['days' => $row['days_left']])
+                                : __('pharmacy_stock_desk.batch_state.' . $row['state'])])
                         </td>
-                        <td data-label="{{ __('pharmacy_ops.col_received') }}" class="td-muted">{{ $b->created_at?->translatedFormat('d M Y') }}</td>
+                        <td class="os-col-act">
+                            <div class="os-rowact"><a href="#adjust" class="od-btn od-btn--row">{{ __('pharmacy_stock_desk.row_adjust') }}</a></div>
+                        </td>
                     </tr>
                 @endforeach
             @empty
-                <tr><td colspan="6" class="empty-cell">
-                    <div class="empty-state">
-                        <i data-lucide="layers"></i>
-                        <p>{{ __('pharmacy_stock_desk.batches_empty') }}</p>
-                        <a href="{{ route('portals.pharmacy.stock.receipts.create', ['medicine_id' => $item->medicine_id]) }}" class="btn btn-primary btn-sm"><i data-lucide="truck"></i> {{ __('pharmacy_stock_desk.btn_receive') }}</a>
-                    </div>
-                </td></tr>
+                @include('portals.pharmacy.stock_ops._empty', ['cols' => 7, 'icon' => 'layers', 'text' => __('pharmacy_stock_desk.batches_empty'),
+                    'href' => route('portals.pharmacy.stock.receipts.create', ['medicine_id' => $item->medicine_id]), 'btnIcon' => 'truck', 'btn' => __('pharmacy_stock_desk.btn_receive')])
             @endforelse
             </tbody>
         </table>
     </div>
-    <div class="panel-foot">{{ __('pharmacy_ops.usable_hint') }}</div>
-</div>
+    <p class="os-note"><i data-lucide="info"></i> {{ __('pharmacy_ops.usable_hint') }}</p>
+</section>
 
-{{-- ── Adjust (posts to the existing movement route) ─────────────────── --}}
-<details class="panel" id="adjust" @if($errors->any() || old('batch_id')) open @endif>
-    <summary class="panel-header fs-tap">
-        <i data-lucide="arrow-left-right"></i> {{ __('pharmacy_stock_desk.adjust_title') }}
+{{-- ── Movements ───────────────────────────────────────────────────── --}}
+<section class="od-card os-card" id="movements">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('pharmacy_stock_desk.tab_movements') }} <span class="od-card__count">({{ $movements->total() }})</span></h2>
+        <a href="#adjust" class="od-btn od-btn--secondary"><i data-lucide="arrow-left-right"></i> {{ __('pharmacy_stock_desk.btn_adjust') }}</a>
+    </div>
+    <div class="os-table-wrap">
+        <table class="od-table os-table">
+            <thead><tr>
+                <th>{{ __('pharmacy_ops.col_when') }}</th>
+                <th>{{ __('pharmacy_stock_desk.col_kind') }}</th>
+                <th>{{ __('pharmacy_ops.col_lot') }}</th>
+                <th>{{ __('pharmacy_ops.col_change') }}</th>
+                <th>{{ __('pharmacy_ops.col_reason') }}</th>
+                <th class="os-col-act">{{ __('public.pharmacy_portal.col_action') }}</th>
+            </tr></thead>
+            <tbody>
+            @forelse($movements as $m)
+                @php [$code, $note] = \App\Services\Pharmacy\PharmacyStockOpsService::decodeReason($m->reason); $mw = $m->performed_at ?? $m->created_at; @endphp
+                <tr>
+                    <td data-label="{{ __('pharmacy_ops.col_when') }}">
+                        <span class="os-cell__main">{{ $mw?->translatedFormat('d M Y') }}</span>
+                        <span class="os-cell__sub">{{ $mw?->translatedFormat('H:i') }} · {{ $actors[$m->performed_by] ?? '—' }}</span>
+                    </td>
+                    <td data-label="{{ __('pharmacy_stock_desk.col_kind') }}">
+                        <div class="os-cell">
+                            @include('portals.pharmacy.stock_ops._avatar', ['icon' => $m->quantity >= 0 ? 'arrow-down-to-line' : 'arrow-up-from-line', 'tone' => $m->quantity >= 0 ? 'green' : 'red'])
+                            <div class="os-cell__text">
+                                <span class="os-cell__title os-nowrap">
+                                    @if($m->reference_type === \App\Services\Pharmacy\PharmacyStockOpsService::REFERENCE_RECEIPT && $m->reference_id)
+                                        {{ __('pharmacy_stock_desk.kind.receipt') }}
+                                    @elseif($m->reference_type === \App\Services\Pharmacy\PharmacyStockOpsService::REFERENCE_RESERVATION)
+                                        {{ __('pharmacy_stock_desk.kind.reservation') }}
+                                    @else
+                                        {{ __('pharmacy_stock_desk.kind.' . ($m->reference_type === \App\Services\Pharmacy\PharmacyStockOpsService::REFERENCE_ADJUSTMENT ? 'adjustment' : 'other')) }}
+                                    @endif
+                                </span>
+                                <span class="os-cell__sub">{{ __('pharmacy_stock_desk.movement_type.' . $m->movement_type) }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td data-label="{{ __('pharmacy_ops.col_lot') }}" class="os-lot">{{ $m->batch?->lot_number ?? '—' }}</td>
+                    <td data-label="{{ __('pharmacy_ops.col_change') }}" class="{{ $m->quantity >= 0 ? 'os-in' : 'os-out' }}">{{ $m->quantity > 0 ? '+' : '' }}{{ $m->quantity }}</td>
+                    <td data-label="{{ __('pharmacy_ops.col_reason') }}">
+                        @include('portals.pharmacy.stock_ops._pill', ['tone' => 'neutral', 'label' => __('pharmacy_ops.reason.' . $code)])
+                        @if($note)<span class="os-cell__sub">{{ $note }}</span>@endif
+                    </td>
+                    <td class="os-col-act"><div class="os-rowact"><a href="{{ route('portals.pharmacy.stock.adjustments.show', $m->id) }}" class="od-btn od-btn--row">{{ __('pharmacy_stock_desk.btn_open') }}</a></div></td>
+                </tr>
+            @empty
+                @include('portals.pharmacy.stock_ops._empty', ['cols' => 6, 'icon' => 'list', 'text' => __('pharmacy_stock_desk.movements_empty'),
+                    'href' => route('portals.pharmacy.stock.receipts.create', ['medicine_id' => $item->medicine_id]), 'btnIcon' => 'truck', 'btn' => __('pharmacy_stock_desk.btn_receive')])
+            @endforelse
+            </tbody>
+        </table>
+    </div>
+    @if($movements->hasPages())<div class="os-card__foot">{{ $movements->fragment('movements')->links() }}</div>@endif
+</section>
+
+{{-- ── Adjust (posts to the existing movement route) ────────────────── --}}
+<details class="od-card os-card os-fold" id="adjust" @if($errors->any() || old('batch_id')) open @endif>
+    <summary class="od-card__head os-fold__head">
+        <h2 class="od-card__title"><span class="os-fold__icon"><i data-lucide="arrow-left-right"></i></span>{{ __('pharmacy_stock_desk.adjust_title') }}</h2>
+        <i data-lucide="chevron-down" class="os-fold__chev"></i>
     </summary>
-    <div class="panel-body">
-        @php $adjustable = $locations->flatten(1)->map(fn ($r) => $r['batch']); @endphp
+    <div class="os-card__body">
         @if($adjustable->isEmpty())
-            <p class="td-muted">{{ __('pharmacy_stock_desk.batches_empty') }}</p>
+            <p class="os-muted">{{ __('pharmacy_stock_desk.batches_empty') }}</p>
         @else
-        <form method="POST" action="{{ route('portals.pharmacy.stock.adjustments.store') }}">
+        <form method="POST" action="{{ route('portals.pharmacy.stock.adjustments.store') }}" class="os-form">
             @csrf
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label" for="it-batch">{{ __('pharmacy_ops.lbl_batch') }}</label>
-                    <select name="batch_id" id="it-batch" class="form-control" required>
+            <div class="os-grid os-grid--2">
+                <div class="os-field">
+                    <label class="os-label" for="it-batch">{{ __('pharmacy_ops.lbl_batch') }}</label>
+                    <select name="batch_id" id="it-batch" class="os-input" required>
                         <option value="">{{ __('pharmacy_ops.choose_batch') }}</option>
                         @foreach($adjustable as $b)
                         <option value="{{ $b->id }}" {{ old('batch_id') === $b->id ? 'selected' : '' }}>
@@ -147,215 +196,151 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="form-group">
-                    <label class="form-label" for="it-reason">{{ __('pharmacy_ops.lbl_reason') }}</label>
-                    <select name="reason" id="it-reason" class="form-control" required>
+                <div class="os-field">
+                    <label class="os-label" for="it-reason">{{ __('pharmacy_ops.lbl_reason') }}</label>
+                    <select name="reason" id="it-reason" class="os-input" required>
                         @foreach($reasons as $r)
                         <option value="{{ $r }}" {{ old('reason') === $r ? 'selected' : '' }}>{{ __('pharmacy_ops.reason.' . $r) }}</option>
                         @endforeach
                     </select>
                 </div>
             </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label" for="it-qty">{{ __('pharmacy_ops.lbl_quantity') }}</label>
-                    <input type="number" name="quantity" id="it-qty" class="form-control fs-num" min="-1000000" max="1000000" step="1" inputmode="numeric" value="{{ old('quantity') }}" required>
-                    <div class="td-muted">{{ __('pharmacy_ops.lbl_quantity_hint') }}</div>
+            <div class="os-grid os-grid--2">
+                <div class="os-field">
+                    <label class="os-label" for="it-qty">{{ __('pharmacy_ops.lbl_quantity') }}</label>
+                    <input type="number" name="quantity" id="it-qty" class="os-input" min="-1000000" max="1000000" step="1" inputmode="numeric" value="{{ old('quantity') }}" required>
+                    <span class="os-hint">{{ __('pharmacy_ops.lbl_quantity_hint') }}</span>
                 </div>
-                <div class="form-group">
-                    <label class="form-label" for="it-note">{{ __('pharmacy_ops.lbl_note') }}</label>
-                    <input type="text" name="note" id="it-note" class="form-control" maxlength="500" value="{{ old('note') }}">
+                <div class="os-field">
+                    <label class="os-label" for="it-note">{{ __('pharmacy_ops.lbl_note') }}</label>
+                    <input type="text" name="note" id="it-note" class="os-input" maxlength="500" value="{{ old('note') }}">
                 </div>
             </div>
-            <div class="mt-6">
-                <button type="submit" class="btn btn-primary fs-tap" data-confirm="{{ __('pharmacy_stock_desk.confirm_adjust') }}"><i data-lucide="check"></i> {{ __('pharmacy_ops.btn_record') }}</button>
+            <div class="os-form__actions">
+                <button type="submit" class="od-btn od-btn--primary" data-confirm="{{ __('pharmacy_stock_desk.confirm_adjust') }}"><i data-lucide="check"></i> {{ __('pharmacy_ops.btn_record') }}</button>
             </div>
         </form>
         @endif
     </div>
 </details>
 
-{{-- ── Movements ────────────────────────────────────────────────────── --}}
-<div class="panel" id="movements">
-    <div class="panel-header">
-        <h3 class="panel-title"><i data-lucide="list"></i> {{ __('pharmacy_stock_desk.tab_movements') }} <span class="ph-count-inline">({{ $movements->total() }})</span></h3>
-        <a href="#adjust" class="btn btn-secondary btn-sm"><i data-lucide="arrow-left-right"></i> {{ __('pharmacy_stock_desk.btn_adjust') }}</a>
-    </div>
-    <div class="table-wrapper">
-        <table class="data-table">
-            <thead><tr>
-                <th>{{ __('pharmacy_ops.col_when') }}</th>
-                <th>{{ __('pharmacy_stock_desk.col_kind') }}</th>
-                <th>{{ __('pharmacy_ops.col_lot') }}</th>
-                <th>{{ __('pharmacy_ops.col_change') }}</th>
-                <th>{{ __('pharmacy_ops.col_reason') }}</th>
-                <th>{{ __('pharmacy_ops.col_by') }}</th>
-                <th></th>
-            </tr></thead>
-            <tbody>
-            @forelse($movements as $m)
-                @php [$code, $note] = \App\Services\Pharmacy\PharmacyStockOpsService::decodeReason($m->reason); @endphp
-                <tr>
-                    <td data-label="{{ __('pharmacy_ops.col_when') }}" class="td-muted"><a href="{{ route('portals.pharmacy.stock.adjustments.show', $m->id) }}">{{ ($m->performed_at ?? $m->created_at)?->translatedFormat('d M Y H:i') }}</a></td>
-                    <td data-label="{{ __('pharmacy_stock_desk.col_kind') }}">
-                        <div class="ph-cell">
-                            @include('portals.pharmacy.stock_ops._avatar', ['icon' => $m->quantity >= 0 ? 'arrow-down-to-line' : 'arrow-up-from-line', 'tone' => $m->quantity >= 0 ? 'green' : 'red'])
-                            <div>
-                                <div class="ph-cell__title">
-                                    @if($m->reference_type === \App\Services\Pharmacy\PharmacyStockOpsService::REFERENCE_RECEIPT && $m->reference_id)
-                                        <a href="{{ route('portals.pharmacy.stock.receipts.show', $m->reference_id) }}">{{ __('pharmacy_stock_desk.kind.receipt') }}</a>
-                                    @elseif($m->reference_type === \App\Services\Pharmacy\PharmacyStockOpsService::REFERENCE_RESERVATION)
-                                        {{ __('pharmacy_stock_desk.kind.reservation') }}
-                                    @else
-                                        {{ __('pharmacy_stock_desk.kind.' . ($m->reference_type === \App\Services\Pharmacy\PharmacyStockOpsService::REFERENCE_ADJUSTMENT ? 'adjustment' : 'other')) }}
-                                    @endif
-                                </div>
-                                <div class="ph-cell__sub">{{ __('pharmacy_stock_desk.movement_type.' . $m->movement_type) }}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td data-label="{{ __('pharmacy_ops.col_lot') }}" class="fs-mono">{{ $m->batch?->lot_number ?? '—' }}</td>
-                    <td data-label="{{ __('pharmacy_ops.col_change') }}" class="fs-mono {{ $m->quantity >= 0 ? 'fs-delta--in' : 'fs-delta--out' }}">{{ $m->quantity > 0 ? '+' : '' }}{{ $m->quantity }}</td>
-                    <td data-label="{{ __('pharmacy_ops.col_reason') }}"><span class="badge badge-neutral">{{ __('pharmacy_ops.reason.' . $code) }}</span> <span class="td-muted">{{ $note ?? '' }}</span></td>
-                    <td data-label="{{ __('pharmacy_ops.col_by') }}" class="td-muted">{{ $actors[$m->performed_by] ?? '—' }}</td>
-                    <td class="row-actions"><a href="{{ route('portals.pharmacy.stock.adjustments.show', $m->id) }}" class="btn btn-primary btn-sm">{{ __('pharmacy_stock_desk.btn_open') }}</a></td>
-                </tr>
-            @empty
-                <tr><td colspan="7" class="empty-cell">
-                    <div class="empty-state">
-                        <i data-lucide="list"></i>
-                        <p>{{ __('pharmacy_stock_desk.movements_empty') }}</p>
-                        <a href="{{ route('portals.pharmacy.stock.receipts.create', ['medicine_id' => $item->medicine_id]) }}" class="btn btn-primary btn-sm"><i data-lucide="truck"></i> {{ __('pharmacy_stock_desk.btn_receive') }}</a>
-                    </div>
-                </td></tr>
-            @endforelse
-            </tbody>
-        </table>
-    </div>
-    <div class="panel-body">{{ $movements->fragment('movements')->links() }}</div>
-</div>
-
-{{-- ── Reorder rule (posts to the existing rule route) ───────────────── --}}
-<div class="panel" id="reorder">
-    <div class="panel-header">
-        <h3 class="panel-title"><i data-lucide="trending-down"></i> {{ __('pharmacy_stock_desk.tab_reorder') }}</h3>
+{{-- ── Reorder rule (posts to the existing rule route) ──────────────── --}}
+<section class="od-card os-card" id="reorder">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('pharmacy_stock_desk.tab_reorder') }}</h2>
         @if($rule)
-            <span class="badge {{ $usable < $rule->reorder_level ? 'badge-danger' : 'badge-success' }}">{{ __('pharmacy_ops.col_minimum') }}: {{ $rule->reorder_level }}</span>
+            @include('portals.pharmacy.stock_ops._pill', ['tone' => $under ? 'reorder' : 'ok', 'label' => __('pharmacy_ops.col_minimum') . ': ' . $rule->reorder_level])
         @else
-            <span class="badge badge-neutral">{{ __('pharmacy_ops.no_rule') }}</span>
+            @include('portals.pharmacy.stock_ops._pill', ['tone' => 'neutral', 'label' => __('pharmacy_ops.no_rule')])
         @endif
     </div>
-    <div class="panel-body">
-        @if($item->medicine_id)
-        <form method="POST" action="{{ route('portals.pharmacy.stock.reorder.store') }}">
-            @csrf
-            <input type="hidden" name="medicine_id" value="{{ $item->medicine_id }}">
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label" for="it-level">{{ __('pharmacy_ops.lbl_min_level') }}</label>
-                    <input type="number" name="reorder_level" id="it-level" class="form-control fs-num" min="0" max="1000000" inputmode="numeric" value="{{ old('reorder_level', $rule?->reorder_level) }}" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="it-suggest">{{ __('pharmacy_ops.lbl_suggest_qty') }}</label>
-                    <input type="number" name="reorder_quantity" id="it-suggest" class="form-control fs-num" min="0" max="1000000" inputmode="numeric" value="{{ old('reorder_quantity', $rule?->reorder_quantity) }}">
-                </div>
+    @if($item->medicine_id)
+    <form method="POST" action="{{ route('portals.pharmacy.stock.reorder.store') }}" class="os-form">
+        @csrf
+        <input type="hidden" name="medicine_id" value="{{ $item->medicine_id }}">
+        <div class="os-grid os-grid--2">
+            <div class="os-field">
+                <label class="os-label" for="it-level">{{ __('pharmacy_ops.lbl_min_level') }}</label>
+                <input type="number" name="reorder_level" id="it-level" class="os-input" min="0" max="1000000" inputmode="numeric" value="{{ old('reorder_level', $rule?->reorder_level) }}" required>
             </div>
-            <div class="mt-6">
-                <button type="submit" class="btn btn-primary fs-tap"><i data-lucide="check"></i> {{ __('pharmacy_ops.btn_save_rule') }}</button>
+            <div class="os-field">
+                <label class="os-label" for="it-suggest">{{ __('pharmacy_ops.lbl_suggest_qty') }}</label>
+                <input type="number" name="reorder_quantity" id="it-suggest" class="os-input" min="0" max="1000000" inputmode="numeric" value="{{ old('reorder_quantity', $rule?->reorder_quantity) }}">
             </div>
-        </form>
-        <p class="td-muted mt-6">{{ __('pharmacy_ops.no_auto_order') }}</p>
-        @else
-        <p class="td-muted">{{ __('pharmacy_stock_desk.rule_needs_medicine') }}</p>
-        @endif
-    </div>
-</div>
+        </div>
+        <div class="os-form__actions">
+            <button type="submit" class="od-btn od-btn--primary"><i data-lucide="check"></i> {{ __('pharmacy_ops.btn_save_rule') }}</button>
+        </div>
+    </form>
+    <p class="os-note"><i data-lucide="info"></i> {{ __('pharmacy_ops.no_auto_order') }}</p>
+    @else
+    <p class="os-muted">{{ __('pharmacy_stock_desk.rule_needs_medicine') }}</p>
+    @endif
+</section>
 
-{{-- ── Suppliers who delivered it ───────────────────────────────────── --}}
-<div class="panel" id="suppliers">
-    <div class="panel-header">
-        <h3 class="panel-title"><i data-lucide="building-2"></i> {{ __('pharmacy_stock_desk.tab_suppliers') }} <span class="ph-count-inline">({{ $suppliers->count() }})</span></h3>
-        <a href="{{ route('portals.pharmacy.stock.suppliers') }}" class="btn btn-secondary btn-sm">{{ __('pharmacy_stock_desk.nav_suppliers') }}</a>
+{{-- ── Suppliers who delivered it ──────────────────────────────────── --}}
+<section class="od-card os-card" id="suppliers">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('pharmacy_stock_desk.tab_suppliers') }} <span class="od-card__count">({{ $suppliers->count() }})</span></h2>
+        <a href="{{ route('portals.pharmacy.stock.suppliers') }}" class="os-link">{{ __('pharmacy_stock_desk.view_all') }}</a>
     </div>
-    <div class="table-wrapper">
-        <table class="data-table">
+    <div class="os-table-wrap">
+        <table class="od-table os-table">
             <thead><tr>
                 <th>{{ __('pharmacy_ops.col_supplier') }}</th>
                 <th>{{ __('pharmacy_stock_desk.col_last_delivery') }}</th>
                 <th>{{ __('pharmacy_stock_desk.col_deliveries') }}</th>
                 <th>{{ __('pharmacy_ops.col_packs') }}</th>
-                <th></th>
+                <th class="os-col-act">{{ __('public.pharmacy_portal.col_action') }}</th>
             </tr></thead>
             <tbody>
             @forelse($suppliers as $s)
                 <tr>
                     <td data-label="{{ __('pharmacy_ops.col_supplier') }}">
-                        <div class="ph-cell">
-                            @include('portals.pharmacy.stock_ops._avatar', ['name' => $s->supplier->name])
-                            <div class="ph-cell__title"><a href="{{ route('portals.pharmacy.stock.suppliers.show', $s->supplier->id) }}">{{ $s->supplier->name }}</a></div>
+                        <div class="os-cell">
+                            @include('portals.pharmacy.stock_ops._avatar', ['name' => $s->supplier->name, 'tone' => 'blue'])
+                            <div class="os-cell__text"><a href="{{ route('portals.pharmacy.stock.suppliers.show', $s->supplier->id) }}" class="os-cell__title">{{ $s->supplier->name }}</a></div>
                         </div>
                     </td>
                     <td data-label="{{ __('pharmacy_stock_desk.col_last_delivery') }}">{{ $s->last_delivery?->translatedFormat('d M Y') ?? '—' }}</td>
-                    <td data-label="{{ __('pharmacy_stock_desk.col_deliveries') }}" class="td-num">{{ $s->deliveries }}</td>
-                    <td data-label="{{ __('pharmacy_ops.col_packs') }}" class="td-num">{{ $s->packs }}</td>
-                    <td class="row-actions"><a href="{{ route('portals.pharmacy.stock.suppliers.show', $s->supplier->id) }}" class="btn btn-primary btn-sm">{{ __('pharmacy_stock_desk.btn_open') }}</a></td>
+                    <td data-label="{{ __('pharmacy_stock_desk.col_deliveries') }}" class="os-num">{{ $s->deliveries }}</td>
+                    <td data-label="{{ __('pharmacy_ops.col_packs') }}" class="os-num">{{ $s->packs }}</td>
+                    <td class="os-col-act"><div class="os-rowact"><a href="{{ route('portals.pharmacy.stock.suppliers.show', $s->supplier->id) }}" class="od-btn od-btn--row">{{ __('pharmacy_stock_desk.btn_open') }}</a></div></td>
                 </tr>
             @empty
-                <tr><td colspan="5" class="empty-cell">
-                    <div class="empty-state">
-                        <i data-lucide="building-2"></i>
-                        <p>{{ __('pharmacy_stock_desk.suppliers_for_item_empty') }}</p>
-                        <a href="{{ route('portals.pharmacy.stock.suppliers') }}" class="btn btn-secondary btn-sm">{{ __('pharmacy_stock_desk.nav_suppliers') }}</a>
-                    </div>
-                </td></tr>
+                @include('portals.pharmacy.stock_ops._empty', ['cols' => 5, 'icon' => 'building-2', 'text' => __('pharmacy_stock_desk.suppliers_for_item_empty'),
+                    'href' => route('portals.pharmacy.stock.suppliers'), 'btnIcon' => 'building-2', 'btn' => __('pharmacy_stock_desk.nav_suppliers')])
             @endforelse
             </tbody>
         </table>
     </div>
-</div>
+</section>
 
 </div>
 
-{{-- ── Right-hand detail panel: who this medicine is, at a glance ───────── --}}
-<div class="panel ph-detail" id="item-detail">
-    <div class="ph-detail__head">
-        @include('portals.pharmacy.stock_ops._avatar', ['name' => $name, 'tone' => $usableTone])
+{{-- ── Right-hand detail panel (reference: Patient & Prescription Details) ── --}}
+<aside class="od-card os-card os-detail od-detail" id="item-detail" aria-label="{{ __('pharmacy_stock_desk.details_title') }}">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('pharmacy_stock_desk.details_title') }}</h2>
+        @if($finder['state'] === 'published')
+            <span class="os-chip-ok"><i data-lucide="shield-check"></i> {{ __('pharmacy_stock_desk.finder.published') }}</span>
+        @endif
+    </div>
+    <div class="os-detail__who">
+        @include('portals.pharmacy.stock_ops._avatar', ['pack' => true, 'tone' => $usableTone, 'big' => true])
         <div>
-            <div class="ph-detail__name">{{ $name }}</div>
-            <div class="ph-detail__ref">
-                {{ $med?->strength }} {{ $med?->form }}
-                @if($med?->atc_code) · <span class="fs-mono">{{ $med->atc_code }}</span>@endif
+            <div class="os-detail__name">{{ $name }}</div>
+            <div class="os-detail__ref">{{ $med?->strength }} {{ $med?->form }}@if($med?->atc_code) · {{ $med->atc_code }}@endif</div>
+            <div class="os-facts">
+                <span><i data-lucide="package"></i> {{ __('pharmacy_ops.col_usable') }}: <strong>{{ $usable }}</strong></span>
+                <span><i data-lucide="layers"></i> {{ __('pharmacy_ops.sum_lots', ['count' => $batchCount]) }}</span>
+                @if($atcLabel)<span><i data-lucide="tag"></i> {{ $atcLabel }}</span>@endif
             </div>
         </div>
     </div>
-    <div class="ph-chips">
-        <span class="ph-chip"><i data-lucide="package"></i> {{ __('pharmacy_ops.col_usable') }}: <strong>{{ $usable }}</strong></span>
-        <span class="ph-chip"><i data-lucide="layers"></i> {{ __('pharmacy_ops.sum_lots', ['count' => $batchCount]) }}</span>
-        @if($atcLabel)<span class="ph-chip"><i data-lucide="tag"></i> {{ $atcLabel }}</span>@endif
-        @if($rule)<span class="ph-chip"><i data-lucide="trending-down"></i> {{ __('pharmacy_ops.col_minimum') }}: {{ $rule->reorder_level }}</span>@endif
-    </div>
-    {{-- Section links (anchored, no JS) --}}
-    <nav class="ph-tabs" aria-label="{{ __('pharmacy_stock_desk.sections') }}">
-        <a href="#batches" class="ph-pill active"><i data-lucide="layers"></i><span>{{ __('pharmacy_stock_desk.tab_batches') }}</span></a>
-        <a href="#movements" class="ph-pill"><i data-lucide="list"></i><span>{{ __('pharmacy_stock_desk.tab_movements') }}</span></a>
-        <a href="#reorder" class="ph-pill"><i data-lucide="trending-down"></i><span>{{ __('pharmacy_stock_desk.tab_reorder') }}</span></a>
-        <a href="#suppliers" class="ph-pill"><i data-lucide="building-2"></i><span>{{ __('pharmacy_stock_desk.tab_suppliers') }}</span></a>
+
+    <nav class="od-tabs od-tabs--inner" aria-label="{{ __('pharmacy_stock_desk.sections') }}">
+        <a href="#batches" class="od-tab is-active">{{ __('pharmacy_stock_desk.tab_batches') }}</a>
+        <a href="#movements" class="od-tab">{{ __('pharmacy_stock_desk.tab_movements') }}</a>
+        <a href="#reorder" class="od-tab">{{ __('pharmacy_stock_desk.tab_reorder') }}</a>
+        <a href="#suppliers" class="od-tab">{{ __('pharmacy_stock_desk.tab_suppliers') }}</a>
     </nav>
-    <div class="ph-detail__body">
-        <div class="ph-infocard {{ $usableCard }}">
-            <div class="ph-infocard__icon"><i data-lucide="package"></i></div>
+
+    <div class="os-infos">
+        <div class="os-info">
+            <span class="os-info__icon os-info__icon--{{ $usableTone }}">@include('portals.pharmacy.stock_ops._glyph', ['glyph' => 'pack'])</span>
             <div>
-                <div class="ph-infocard__k">{{ __('pharmacy_ops.col_usable') }}</div>
-                <div class="ph-infocard__v fs-mono">{{ $usable }}</div>
-                <div class="ph-infocard__note">{{ __('pharmacy_stock_desk.usable_sub') }}</div>
+                <div class="os-info__k">{{ __('pharmacy_ops.col_usable') }}</div>
+                <div class="os-info__v">{{ $usable }}@if($rule) <span class="os-cell__sub">/ {{ __('pharmacy_ops.col_minimum') }} {{ $rule->reorder_level }}</span>@endif</div>
+                <div class="os-info__note">{{ __('pharmacy_stock_desk.usable_sub') }}</div>
             </div>
         </div>
-        <div class="ph-infocard {{ $stateCard }}">
-            <div class="ph-infocard__icon"><i data-lucide="megaphone"></i></div>
+        <div class="os-info">
+            <span class="os-info__icon os-info__icon--{{ $stateIcon }}"><i data-lucide="megaphone"></i></span>
             <div>
-                <div class="ph-infocard__k">{{ __('pharmacy_stock_desk.finder_status') }}</div>
-                <div class="ph-infocard__v"><span class="badge {{ $stateBadge }}">{{ __('pharmacy_stock_desk.finder.' . $finder['state']) }}</span></div>
-                <div class="ph-infocard__note">
+                <div class="os-info__k">{{ __('pharmacy_stock_desk.finder_status') }}</div>
+                <div class="os-info__v">@include('portals.pharmacy.stock_ops._pill', ['tone' => $statePill, 'label' => __('pharmacy_stock_desk.finder.' . $finder['state'])])</div>
+                <div class="os-info__note">
                     @if($finder['state'] === 'published' && $finderRow)
                         @enum($finderRow->stock_status->value, 'stock_status') · {{ __('pharmacy_ops.sum_packs', ['count' => (int) $finderRow->packs_available]) }}
                         · {{ $finderRow->last_reported_at?->diffForHumans() ?? __('pharmacy_stock_desk.never_reported') }}
@@ -365,24 +350,24 @@
                 </div>
             </div>
         </div>
-        <div class="ph-infocard">
-            <div class="ph-infocard__icon"><i data-lucide="coins"></i></div>
+        <div class="os-info">
+            <span class="os-info__icon"><i data-lucide="coins"></i></span>
             <div>
-                <div class="ph-infocard__k">{{ __('pharmacy_stock_desk.price') }}</div>
-                <div class="ph-infocard__v fs-mono">
-                    @if($item->selling_price_xaf !== null) {{ number_format($item->selling_price_xaf, 0, ',', ' ') }} FCFA @else — @endif
-                </div>
-                <div class="ph-infocard__note"><a href="{{ route('portals.pharmacy.prices.history', $item->id) }}">{{ __('pharmacy_stock_desk.price_history') }}</a></div>
+                <div class="os-info__k">{{ __('pharmacy_stock_desk.price') }}</div>
+                <div class="os-info__v">@if($item->selling_price_xaf !== null){{ number_format($item->selling_price_xaf, 0, ',', ' ') }} FCFA @else — @endif</div>
+                <div class="os-info__note"><a href="{{ route('portals.pharmacy.prices.history', $item->id) }}">{{ __('pharmacy_stock_desk.price_history') }}</a></div>
             </div>
         </div>
     </div>
-    <div class="fs-act">
-        <a href="{{ route('portals.pharmacy.stock.receipts.create', ['medicine_id' => $item->medicine_id]) }}" class="btn btn-primary fs-tap"><i data-lucide="truck"></i> {{ __('pharmacy_stock_desk.btn_receive') }}</a>
-        <a href="#adjust" class="btn btn-secondary fs-tap"><i data-lucide="arrow-left-right"></i> {{ __('pharmacy_stock_desk.btn_adjust') }}</a>
-        <a href="#reorder" class="btn btn-secondary fs-tap"><i data-lucide="trending-down"></i> {{ __('pharmacy_stock_desk.btn_reorder_rule') }}</a>
+
+    <div class="os-actions">
+        <a href="{{ route('portals.pharmacy.stock.receipts.create', ['medicine_id' => $item->medicine_id]) }}" class="od-btn od-btn--primary"><i data-lucide="truck"></i> {{ __('pharmacy_stock_desk.btn_receive') }}</a>
+        <a href="#adjust" class="od-btn od-btn--secondary"><i data-lucide="arrow-left-right"></i> {{ __('pharmacy_stock_desk.row_adjust') }}</a>
+        <a href="#reorder" class="od-btn od-btn--secondary"><i data-lucide="trending-down"></i> {{ __('pharmacy_stock_desk.btn_reorder_rule') }}</a>
     </div>
-</div>
+</aside>
 
 </div>
 
+</div>
 @endsection

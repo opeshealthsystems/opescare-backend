@@ -116,6 +116,82 @@ class LabManagerDeskService
         ];
     }
 
+    /** The laboratory's name for the welcome card, via the bench's own lookup. */
+    public function facilityName(string $facilityId): ?string
+    {
+        return $this->desk->facility($facilityId)?->name;
+    }
+
+    /**
+     * The bench view the landing page draws from (2026-10-18 desk redesign):
+     * the open sample queue (up to 24 rows, so each urgency tab can show its first six), the latest released results, and how many open
+     * samples have already waited longer than this laboratory's OWN median
+     * turnaround. There is no per-test TAT target in the system, so the
+     * yardstick is the lab's measured median; with no median there is no
+     * figure (null), never a guessed one.
+     *
+     * @return array{
+     *     queue: EloquentCollection<int, LabOrder>,
+     *     queue_counts: array{all: int, routine: int, urgent: int, stat: int},
+     *     recent: EloquentCollection<int, LabOrder>,
+     *     past_tat: int|null,
+     * }
+     */
+    public function bench(string $facilityId, ?array $turnaround = null): array
+    {
+        $open = fn (): Builder => LabOrder::query()
+            ->where('lab_orders.facility_id', $facilityId)
+            ->whereIn(DB::raw('lower(lab_orders.status)'), LabOrder::OPEN_STATUSES);
+
+        $urgency = "case when lower(coalesce(lab_orders.urgency, '')) in ('stat','immediate','emergency') then 'stat' "
+            . "when lower(coalesce(lab_orders.urgency, '')) in ('urgent','priority') then 'urgent' else 'routine' end";
+
+        $byUrgency = $open()
+            ->selectRaw("{$urgency} as band, count(*) as n")
+            ->groupByRaw($urgency)
+            ->pluck('n', 'band');
+
+        $counts = [
+            'routine' => (int) ($byUrgency['routine'] ?? 0),
+            'urgent'  => (int) ($byUrgency['urgent'] ?? 0),
+            'stat'    => (int) ($byUrgency['stat'] ?? 0),
+        ];
+        $counts = ['all' => array_sum($counts)] + $counts;
+
+        $queue = $open()
+            ->with('patient')
+            ->orderByRaw("case when lower(coalesce(lab_orders.urgency, '')) in ('stat','immediate','emergency') then 0 "
+                . "when lower(coalesce(lab_orders.urgency, '')) in ('urgent','priority') then 1 else 2 end")
+            ->orderBy('lab_orders.ordered_at')
+            ->limit(24)
+            ->get();
+
+        $recent = LabOrder::query()
+            ->where('facility_id', $facilityId)
+            ->whereIn(DB::raw('lower(status)'), LabOrder::RELEASED_STATUSES)
+            ->whereNotNull('resulted_at')
+            ->with('patient')
+            ->withCount('results')
+            ->orderByDesc('resulted_at')
+            ->limit(5)
+            ->get();
+
+        $turnaround ??= $this->turnaround($facilityId);
+        $median = $turnaround['median_minutes'];
+
+        $pastTat = $median === null ? null : $open()
+            ->whereNotNull('lab_orders.collected_at')
+            ->where('lab_orders.collected_at', '<', now()->subMinutes(max(1, $median)))
+            ->count();
+
+        return [
+            'queue'        => $queue,
+            'queue_counts' => $counts,
+            'recent'       => $recent,
+            'past_tat'     => $pastTat,
+        ];
+    }
+
     /**
      * Critical values raised on THIS facility's orders that no clinician has
      * acknowledged. `critical_value_alerts` carries no facility column: the

@@ -191,7 +191,7 @@
                             </td>
                             <td class="row-actions">
                                 @if($claim->claim_status === \App\Enums\FacilityClaimStatus::Approved)
-                                    <form method="POST" action="{{ route('admin.care-map.review.claims.revoke', $claim->id) }}">
+                                    <form method="POST" action="{{ route('admin.care-map.review.claims.revoke', $claim->id) }}" data-confirm="{{ __('admin_desk.confirm_revoke_claim') }}">
                                         @csrf
                                         <button type="submit" class="btn btn-ghost btn-sm">
                                             <i data-lucide="undo-2"></i> {{ __('caremap_claim.btn_revoke') }}
@@ -447,7 +447,7 @@
                                     </button>
                                 </form>
                                 @if($review->matched_facility_id)
-                                    <form method="POST" action="{{ route('admin.care-map.review.imports.merge', $review->id) }}">
+                                    <form method="POST" action="{{ route('admin.care-map.review.imports.merge', $review->id) }}" data-confirm="{{ __('admin_desk.confirm_merge_import') }}">
                                         @csrf
                                         <button type="submit" class="btn btn-secondary btn-sm">
                                             <i data-lucide="merge"></i> {{ __('caremap_claim.btn_merge') }}

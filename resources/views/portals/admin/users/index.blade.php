@@ -140,7 +140,7 @@
                         </form>
                         @endif
                         @if($user->status!=='suspended')
-                        <form method="POST" action="{{ route('admin.users.suspend',$user->id) }}" class="inline-form">@csrf
+                        <form method="POST" action="{{ route('admin.users.suspend',$user->id) }}" data-confirm="{{ __('admin_desk.confirm_suspend_user') }}" class="inline-form">@csrf
                             <button type="submit" class="icon-btn" aria-label="{{ __('public.aria_suspend_user') }}" title="{{ __('public.aria_suspend') }}"><i data-lucide="ban"></i></button>
                         </form>
                         @endif

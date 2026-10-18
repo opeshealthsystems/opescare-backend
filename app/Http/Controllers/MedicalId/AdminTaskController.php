@@ -83,6 +83,30 @@ class AdminTaskController extends Controller
         ]);
     }
 
+    /**
+     * One task on its own page: the full description (the list truncates
+     * nothing but shows only the title), who holds it, every timestamp, and
+     * the same four transitions the list row offers.
+     */
+    public function show(string $uuid): View
+    {
+        $task = $this->scopedTask($uuid);
+
+        $assignee = $task->assigned_to ? User::find($task->assigned_to) : null;
+
+        $staffIds = $this->facilityStaffIds();
+        $staff = ($staffIds !== null
+            ? User::whereIn('id', $staffIds)
+            : User::whereDoesntHave('role', fn ($q) => $q->where('name', 'patient')))
+            ->orderBy('name')->limit(200)->get(['id', 'name']);
+
+        return view('portals.admin.tasks.show', [
+            'task'     => $task,
+            'assignee' => $assignee,
+            'staff'    => $staff,
+        ]);
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([

@@ -1,5 +1,8 @@
 @extends('layouts.portal')
 @section('title', __('public.adm_dev_prod_title'))
+@section('breadcrumb_home', __('public.adm_breadcrumb_home'))
+@section('breadcrumb_home_url', route('portals.admin'))
+@section('breadcrumb_section', __('public.adm_dev_prod_title'))
 @include('portals.admin.control_center._sidebar')
 
 @section('content')
