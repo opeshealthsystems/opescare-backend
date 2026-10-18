@@ -39,7 +39,7 @@ class RadiologyReportController extends Controller {
         }
 
         $validated = $request->validate([
-            'patient_id'          => ['required','uuid','exists:patients,id'],
+            'patient_id'          => ['required','uuid'], // existence is answered by the consent gate below, as FHIR does
             'imaging_order_id'    => ['sometimes','nullable','uuid'],
             'ordered_by'          => ['required','uuid','exists:users,id'],
             'reported_by'         => ['required','uuid','exists:users,id'],
@@ -51,6 +51,39 @@ class RadiologyReportController extends Controller {
             'impression'          => ['required','string'],
             'recommendation'      => ['sometimes','nullable','string'],
         ]);
+        // The ordering clinician must actually be posted at the calling
+        // client's facility — a client cannot attribute an order to anyone.
+        $orderedBy = \App\Models\User::find($validated['ordered_by']);
+        $postings  = $orderedBy ? app(\App\Services\Portal\FacilityMembershipService::class)->facilityIdsFor($orderedBy) : [];
+        if (! is_array($postings) || ! in_array($facilityId, $postings, true)) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'ordered_by' => __('api.radiology_ordered_by_not_facility_staff'),
+            ]);
+        }
+
+        // Same gate as FHIR ingest writes: no active consent grant from this
+        // patient to the client's facility, no write — and the same
+        // OperationOutcome refusal FHIR returns (a 404 for both "no such
+        // patient" and "no consent", so existence stays private).
+        $patient = \App\Models\Patient::withoutGlobalScopes()->find($validated['patient_id']);
+        try {
+            if (! $patient) {
+                throw \App\Exceptions\FhirIngestRefusal::make(
+                    \App\Support\Fhir\FhirOutcome::unknownPatient(),
+                    'patient_unresolvable',
+                    'patient uuid did not resolve'
+                );
+            }
+            app(\App\Services\Fhir\FhirIngestGuard::class)->requireConsent($patient, $facilityId);
+        } catch (\App\Exceptions\FhirIngestRefusal $refusal) {
+            \Illuminate\Support\Facades\Log::warning('radiology_report_refused', [
+                'client_id'    => $request->attributes->get('integration_client_id'),
+                'facility_id'  => $facilityId,
+                'refusal_code' => $refusal->refusalCode,
+            ]);
+            return $refusal->response;
+        }
+
         $validated['facility_id'] = $facilityId;
         $report = $this->service->createDraft($validated);
         return response()->json(['data' => RadiologyReportResource::make($report)], Response::HTTP_CREATED);

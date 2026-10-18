@@ -263,14 +263,10 @@ Route::prefix('mobile')->group(function () {
 | OpesCare Demo API Routes
 |--------------------------------------------------------------------------
 */
-Route::prefix('demo')->group(function () {
-    Route::post('/reset', function () {
-        if (!config('demo.enabled')) {
-            abort(403, 'Demo mode disabled');
-        }
-        \Illuminate\Support\Facades\Artisan::call('opescare:demo:reset');
-        return response()->json(['message' => 'Demo reset successfully']);
-    });
+// Locked down: a signed-in platform admin OR the X-Demo-Reset-Token secret
+// (config demo.reset_token; empty = token path disabled). DemoResetController.
+Route::prefix('demo')->middleware('throttle:5,1')->group(function () {
+    Route::post('/reset', \App\Http\Controllers\Api\DemoResetController::class);
 });
 
 /*
@@ -321,7 +317,10 @@ Route::prefix('v1/care-map')->group(function () {
 Route::prefix('v1/inventory')->middleware(\App\Http\Middleware\VerifyIntegrationClient::class)->group(function () {
     Route::get('/blood',                         [\App\Http\Controllers\Api\V1\BloodInventoryController::class, 'index']);
     Route::get('/blood/summary',                 [\App\Http\Controllers\Api\V1\BloodInventoryController::class, 'summary']);
-    Route::post('/blood',                        [\App\Http\Controllers\Api\V1\BloodInventoryController::class, 'upsert']);
-    Route::post('/blood/{item}/adjust',          [\App\Http\Controllers\Api\V1\BloodInventoryController::class, 'adjust']);
-    Route::patch('/blood/{item}/flags',          [\App\Http\Controllers\Api\V1\BloodInventoryController::class, 'setFlags']);
+    // Writes need the client to hold inventory:blood:write (integration.scope).
+    Route::middleware('integration.scope:inventory:blood:write')->group(function () {
+        Route::post('/blood',                    [\App\Http\Controllers\Api\V1\BloodInventoryController::class, 'upsert']);
+        Route::post('/blood/{item}/adjust',      [\App\Http\Controllers\Api\V1\BloodInventoryController::class, 'adjust']);
+        Route::patch('/blood/{item}/flags',      [\App\Http\Controllers\Api\V1\BloodInventoryController::class, 'setFlags']);
+    });
 });

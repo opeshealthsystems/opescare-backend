@@ -103,6 +103,7 @@ return [
     'job_queued'                    => 'Tâche mise en file d\'attente pour traitement.',
     // Context / resolution
     'facility_unresolved'           => 'L\'établissement n\'a pas pu être déterminé.',
+    'radiology_ordered_by_not_facility_staff' => 'Le clinicien prescripteur ne fait pas partie du personnel de cet établissement.',
     'facility_unresolved_auth'      => 'facility_id n\'a pas pu être déterminé à partir du contexte d\'authentification.',
     'facility_unresolved_id'        => 'facility_id n\'a pas pu être déterminé.',
     'facility_unresolved_bearer'    => 'facility_id n\'a pas pu être déterminé à partir du jeton bearer.',

@@ -43,7 +43,16 @@ class VerifyController extends Controller
         // production host the scope already partitions, so the clause was
         // redundant there. resolveHealthId() follows a merge, so a card issued
         // before one still verifies.
-        $patient = Patient::resolveHealthId((string) $request->health_id);
+        $submitted = trim((string) $request->health_id);
+        $patient   = Patient::resolveHealthId($submitted);
+
+        // Who is asking. Only signed-in staff with a resolved facility posting
+        // see full demographics; everyone else gets the masked card.
+        $staffFacilityId = $this->staffFacilityId($request);
+
+        // EVERY lookup is recorded — found or not, anonymous or signed in —
+        // so the Health ID audit trail shows who tried which identifier.
+        $this->auditLookup($request, $submitted, $patient, $staffFacilityId);
 
         if (!$patient) {
             return view('verify.health_id', [
@@ -53,16 +62,98 @@ class VerifyController extends Controller
             ]);
         }
 
+        $full = $staffFacilityId !== null;
+
         return view('verify.health_id', [
-            'result' => [
-                'health_id'     => $patient->health_id,
-                'first_name'    => $patient->first_name,
-                'last_name'     => $patient->last_name,
-                'date_of_birth' => $patient->date_of_birth?->format('Y-m-d'),
-                'sex'           => $patient->sex,
+            // The view reads an OBJECT ($result->name …).
+            'result' => (object) [
+                'health_id'  => $patient->health_id,
+                'name'       => $full
+                    ? trim($patient->first_name . ' ' . $patient->last_name)
+                    : self::maskedName($patient->first_name, $patient->last_name),
+                'dob'        => $full ? $patient->date_of_birth?->format('Y-m-d') : null,
+                'birth_year' => $patient->date_of_birth?->format('Y'),
+                'sex'        => $patient->sex,
+                'masked'     => ! $full,
             ],
             'error' => null,
         ]);
+    }
+
+    /**
+     * "Amara D." — first name plus last initial. Never the full surname to an
+     * anonymous caller.
+     */
+    public static function maskedName(?string $first, ?string $last): string
+    {
+        $first = trim((string) $first);
+        $last  = trim((string) $last);
+        $initial = $last !== '' ? mb_strtoupper(mb_substr($last, 0, 1)) . '.' : '';
+
+        return trim($first . ' ' . $initial) ?: '—';
+    }
+
+    /**
+     * The facility a signed-in caller is acting at, when they genuinely hold a
+     * posting there; null for anonymous callers, patients, and platform-tier
+     * accounts (who are not facility staff). Facility identity comes from the
+     * session context only, never from the request body.
+     */
+    private function staffFacilityId(Request $request): ?string
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return null;
+        }
+
+        // A patient or guardian account is never "facility staff", even if a
+        // primary_facility_id happens to be set on it.
+        $roleName = $user->role?->name;
+        if (!$roleName || in_array($roleName, ['patient', 'guardian', 'caregiver'], true)) {
+            return null;
+        }
+
+        try {
+            $allowed = app(\App\Services\Portal\FacilityMembershipService::class)->facilityIdsFor($user);
+        } catch (\Throwable) {
+            return null;
+        }
+
+        if (!is_array($allowed) || $allowed === []) {
+            return null;
+        }
+
+        $active = $request->hasSession() ? $request->session()->get('active_facility_id') : null;
+        if (is_string($active) && in_array($active, $allowed, true)) {
+            return $active;
+        }
+
+        return count($allowed) === 1 ? $allowed[0] : null;
+    }
+
+    /**
+     * One medical_id_access_events row per lookup, through the shared
+     * HealthIdAuditLogger. Never fatal to the page.
+     */
+    private function auditLookup(Request $request, string $submitted, ?Patient $patient, ?string $facilityId): void
+    {
+        $user = Auth::user();
+
+        try {
+            app(\App\Services\Identity\HealthIdAuditLogger::class)->record(
+                request:    $request,
+                eventType:  \App\Enums\AuditEventType::VerifyHealthId,
+                result:     $patient ? 'success' : 'not_found',
+                healthId:   mb_substr($submitted, 0, 64),
+                patientId:  $patient?->id,
+                actorId:    $user ? (string) $user->id : null,
+                actorType:  $user ? ($facilityId ? 'staff' : 'user') : 'public',
+                facilityId: $facilityId,
+                purpose:    (string) $request->input('purpose'),
+            );
+        } catch (\Throwable $e) {
+            Log::warning('Health ID lookup audit failed', ['error' => $e->getMessage()]);
+        }
     }
 
     /**

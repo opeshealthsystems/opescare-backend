@@ -46,6 +46,9 @@ class GenerateOpenApi extends Command
                 }
 
                 $key = $method . ' ' . $path;
+                if (in_array($key, (array) config('openapi.internal', []), true)) {
+                    continue; // operator-only, never advertised
+                }
                 $paths[$path][strtolower($method)] = $overrides[$key]
                     ?? $this->buildOperation($route, $method, $uri, $path);
                 $ops++;

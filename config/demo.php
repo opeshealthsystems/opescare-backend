@@ -7,6 +7,11 @@ return [
     'external_services_simulated' => env('OPESCARE_DEMO_EXTERNAL_SERVICES_SIMULATED', false),
     'allowed_ips' => env('DEMO_ALLOWED_IPS', ''),
 
+    // Shared secret for POST /api/demo/reset (X-Demo-Reset-Token header).
+    // Empty = the token path is disabled: only a signed-in platform admin can
+    // reset, and every other caller gets a 404.
+    'reset_token' => env('DEMO_RESET_TOKEN', ''),
+
     'session' => [
         'public_lifetime_minutes' => 30,
         'internal_lifetime_minutes' => 120, // 2 hours

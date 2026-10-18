@@ -116,6 +116,7 @@ return [
     'job_queued'                    => 'Job queued for processing.',
     // Context / resolution
     'facility_unresolved'           => 'Facility could not be resolved.',
+    'radiology_ordered_by_not_facility_staff' => 'The ordering clinician is not a staff member of this facility.',
     'facility_unresolved_auth'      => 'facility_id could not be resolved from authentication context.',
     'facility_unresolved_id'        => 'facility_id could not be resolved.',
     'facility_unresolved_bearer'    => 'facility_id could not be resolved from bearer token.',

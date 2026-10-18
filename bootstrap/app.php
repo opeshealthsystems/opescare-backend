@@ -98,6 +98,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'bridge.agent'     => \App\Http\Middleware\VerifyBridgeAgent::class,
             'portal.access'    => \App\Http\Middleware\EnsurePortalAccess::class,
             'platform.admin'   => \App\Http\Middleware\RequirePlatformAdmin::class,
+            'integration.scope' => \App\Http\Middleware\RequireIntegrationClientScope::class,
             'facility.context' => \App\Http\Middleware\RequireFacilityContext::class,
             // Applied to NO route in the Finder (M2). It is the Connect-envelope
             // consent gate (X-Consent-Grant-Id header, JSON refusal) for the B2B

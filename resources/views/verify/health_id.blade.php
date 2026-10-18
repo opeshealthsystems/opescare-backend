@@ -354,18 +354,30 @@
                         <div class="result-label">{{ __('verify.result_health_id', [], app()->getLocale()) }}</div>
                         <div class="result-value result-id">{{ $result->health_id ?? '—' }}</div>
                     </div>
+                    @if(!empty($result->masked))
+                    <div>
+                        <div class="result-label">{{ __('verify.result_birth_year', [], app()->getLocale()) }}</div>
+                        <div class="result-value">{{ $result->birth_year ?? '—' }}</div>
+                    </div>
+                    @else
                     <div>
                         <div class="result-label">{{ __('verify.result_dob', [], app()->getLocale()) }}</div>
                         <div class="result-value">{{ isset($result->dob) ? \Carbon\Carbon::parse($result->dob)->translatedFormat('d M Y') : '—' }}</div>
                     </div>
+                    @endif
                     <div>
-                        <div class="result-label">{{ __('verify.result_blood_type', [], app()->getLocale()) }}</div>
-                        <div class="result-value">{{ $result->blood_type ?? '—' }}</div>
+                        <div class="result-label">{{ __('verify.result_sex', [], app()->getLocale()) }}</div>
+                        <div class="result-value">{{ match (strtolower((string) ($result->sex ?? ''))) {
+                            'male', 'm'   => __('verify.sex_male'),
+                            'female', 'f' => __('verify.sex_female'),
+                            ''            => '—',
+                            default       => __('verify.sex_other'),
+                        } }}</div>
                     </div>
                 </div>
                 <div class="audit-note">
                     <i data-lucide="shield-check" class="ic-sm ic-fixed ic-teal"></i>
-                    {{ __('verify.audit_note', [], app()->getLocale()) }}
+                    {{ !empty($result->masked) ? __('verify.masked_note', [], app()->getLocale()) : __('verify.audit_note', [], app()->getLocale()) }}
                 </div>
             </div>
             @endif

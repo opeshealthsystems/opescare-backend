@@ -58,6 +58,10 @@ class OpenApiContractTest extends TestCase
                 if (in_array($m, ['HEAD', 'OPTIONS'], true)) {
                     continue;
                 }
+                // Operator-only routes are deliberately left out of the public spec.
+                if (in_array(strtoupper($m) . ' /' . $uri, (array) config('openapi.internal', []), true)) {
+                    continue;
+                }
                 $out[strtoupper($m) . ' ' . $this->normalize('/' . $uri)] = true;
             }
         }

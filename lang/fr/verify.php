@@ -65,6 +65,8 @@ return [
     'sex_male'             => 'Masculin',
     'sex_female'           => 'Féminin',
     'sex_other'            => 'Autre',
+    'result_birth_year'    => 'Année de naissance',
+    'masked_note'          => 'Seules des informations limitées sont affichées car vous n’êtes pas connecté en tant que personnel d’un établissement. Connectez-vous dans votre établissement pour voir la fiche complète. Cette recherche a été consignée.',
     'qr_revoked_title'     => 'Code retiré',
     'qr_revoked_body'      => 'Le patient a retiré ce code. Demandez-lui d\'en présenter un nouveau.',
     'meta_verified_at'     => 'Vérifié le',

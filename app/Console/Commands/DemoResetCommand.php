@@ -37,7 +37,9 @@ class DemoResetCommand extends Command
         Log::channel('single')->info('demo_reset_requested', ['requested_by' => 'cli', 'started_at' => now()]);
 
         // 1. Revoke demo sessions
-        $sessionsRevokedCount = DB::table('sessions')->whereNotNull('user_id')->delete(); // Simulating clearing sessions
+        // ONLY demo accounts' sessions. This used to delete every session with
+        // a user_id, which logged every real user off the host too.
+        $sessionsRevokedCount = self::revokeDemoSessions();
 
         // 2. Clear demo queues & hooks (mocked for demo)
         $this->info('Clearing demo queues and simulated webhooks...');
@@ -60,5 +62,16 @@ class DemoResetCommand extends Command
         ]);
 
         return 0;
+    }
+
+    /**
+     * Delete the sessions held by is_demo users, and nothing else. Runs before
+     * the demo users are deleted, because it reads them.
+     */
+    public static function revokeDemoSessions(): int
+    {
+        return DB::table('sessions')
+            ->whereIn('user_id', DB::table('users')->where('is_demo', true)->select('id'))
+            ->delete();
     }
 }

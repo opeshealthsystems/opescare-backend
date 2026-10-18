@@ -71,6 +71,7 @@ class IntegrationClient extends Model
             'document:verify'        => 'Document Verification',
             'facility:sync'          => 'Facility Data Sync',
             'inventory:read'         => 'Read Inventory (Pharmacy/Blood)',
+            'inventory:blood:write'  => 'Write Blood Bank Inventory',
             'appointment:sync'       => 'Appointment Sync',
             'insurance:eligibility'  => 'Insurance Eligibility Check',
             'webhook:manage'         => 'Manage Webhook Subscriptions',

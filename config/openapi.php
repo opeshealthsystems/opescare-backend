@@ -35,6 +35,13 @@ $dataResponse = fn (string $ref, string $status = '200', string $desc = 'Success
 
 return [
 
+    // Operator-only routes that are real but must NOT be advertised in the
+    // public spec / Postman collection. Keyed "METHOD /full/path". The
+    // generator skips them and OpenApiContractTest excludes them from "no gaps".
+    'internal' => [
+        'POST /api/demo/reset',
+    ],
+
     'schemas' => [
         'ClinicalNote' => ['type' => 'object', 'properties' => [
             'id' => $uuid, 'visit_id' => $uuid, 'provider_id' => $uuid,

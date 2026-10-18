@@ -65,6 +65,8 @@ return [
     'sex_male'             => 'Male',
     'sex_female'           => 'Female',
     'sex_other'            => 'Other',
+    'result_birth_year'    => 'Year of Birth',
+    'masked_note'          => 'Limited details are shown because you are not signed in as facility staff. Sign in at your facility to see the full record. This lookup has been logged.',
     'qr_revoked_title'     => 'Code Withdrawn',
     'qr_revoked_body'      => 'The patient withdrew this code. Ask them to present a new one.',
     'meta_verified_at'     => 'Verified at',
