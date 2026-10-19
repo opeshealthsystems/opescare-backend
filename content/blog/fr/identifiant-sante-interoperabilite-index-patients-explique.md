@@ -179,6 +179,6 @@ Une structure présente dans l'annuaire n'est pas forcément connectée. Les str
 
 L'interopérabilité n'est pas une fonction isolée. C'est un empilement : un Health ID détenu par le patient, un consentement vérifié à chaque lecture, un format d'échange normalisé, un index qui refuse de deviner, et des services publics qui disent la vérité sur ce qui est disponible.
 
-OpesCare est un réseau privé d'identifiants santé centré sur le patient — d'une approche inédite au Cameroun — qui fonctionne aux côtés des systèmes déjà en place dans les structures.
+OpesCare est un réseau privé d'identifiants santé centré sur le patient — premier identifiant santé du Cameroun et une première en son genre — qui fonctionne aux côtés des systèmes déjà en place dans les structures.
 
 **[Obtenez votre Health ID](https://opescare.com/signup/patient)** ou, si vous êtes développeur ou structure de santé, [consultez la documentation](https://opescare.com/docs) et [connectez votre système](https://opescare.com/signup/organization).

@@ -224,6 +224,6 @@ Being clear about limits is part of being credible:
 
 Cameroon now has a health sector strategy, a digital health plan with interoperability at its core, a national information system for aggregate data, and a personal data protection law. The missing piece for patients is practical: one identity that follows them, a record they control, and a fast answer to "where can I get this medicine, or this blood, today?"
 
-OpesCare offers a first-of-its-kind, patient-owned Health ID network in Cameroon aimed at exactly that, working alongside the systems facilities already use.
+OpesCare offers Cameroon's first Health ID: a first-of-its-kind, patient-owned Health ID network aimed at exactly that, working alongside the systems facilities already use.
 
 **Get your free Health ID at [opescare.com](https://opescare.com/signup/patient)**, or, if you run a facility, [apply to join the network](https://opescare.com/signup/organization).

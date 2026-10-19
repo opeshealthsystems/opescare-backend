@@ -302,25 +302,13 @@ health_id = data['health_id']</pre>
     <div>Blood and medicine availability shown via the API is indicative only and does not guarantee supply. Always confirm directly with the facility before making clinical decisions.</div>
 </div>
 
-<h2 id="webhooks-sub">Webhook Subscription Endpoints</h2>
+<h2 id="webhooks-sub">Webhook Subscriptions</h2>
 
-<div class="endpoint-pill">
-    <span class="method-badge method-post">POST</span>
-    <span class="endpoint-path">/connect/webhooks/subscriptions</span>
-</div>
-<p>Subscribe your endpoint to receive push events. See <a href="{{ route('docs.webhooks') }}">Webhooks</a> for the full guide including signature verification.</p>
-
-<div class="endpoint-pill">
-    <span class="method-badge method-get">GET</span>
-    <span class="endpoint-path">/connect/webhooks/subscriptions</span>
-</div>
-<p>List your active webhook subscriptions.</p>
-
-<div class="endpoint-pill">
-    <span class="method-badge method-delete">DELETE</span>
-    <span class="endpoint-path">/connect/webhooks/subscriptions/{id}</span>
-</div>
-<p>Unsubscribe an endpoint. Returns <code>204 No Content</code>.</p>
+<p>Webhook subscriptions are managed in the developer portal at
+<a href="{{ $docsBase }}/developer/webhooks">{{ $docsBase }}/developer/webhooks</a>, not through API endpoints:
+create a subscription (HTTPS callback URL + events), pause or resume it, see every delivery and replay failed ones.
+Supported events: <code>lab_result.released</code>, <code>prescription.issued</code>, <code>consent.granted</code>.
+See <a href="{{ route('docs.webhooks') }}">Webhooks</a> for signature verification and the retry policy.</p>
 
 <h2 id="reconciliation">Reconciliation</h2>
 

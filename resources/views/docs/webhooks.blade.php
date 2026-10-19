@@ -21,100 +21,30 @@
 <h2 id="subscribe">Subscribe to Events</h2>
 
 <p>
-    Create a subscription by providing your <code>callback_url</code> and the list of events you
-    want to receive. The response includes a <code>webhook_secret</code> — store it immediately,
-    it is shown only once.
+    Webhook subscriptions are created in the developer portal, not through the API. Sign in at
+    <a href="{{ $docsBase }}/developer/webhooks">{{ $docsBase }}/developer/webhooks</a>, choose the
+    integration client, enter an <strong>HTTPS</strong> callback URL that is reachable from the public
+    internet (private and local addresses are refused), and tick the events you want.
 </p>
-
-<div class="docs-code-block">
-    <div class="docs-code-tabs">
-        <button class="docs-code-tab" data-lang="curl">cURL</button>
-        <button class="docs-code-tab" data-lang="php">PHP</button>
-        <button class="docs-code-tab" data-lang="js">JavaScript</button>
-        <button class="docs-code-tab" data-lang="python">Python</button>
-    </div>
-    <div class="docs-code-pane" data-lang="curl">
-<pre>curl -X POST {{ $docsBase }}/api/v1/connect/webhooks/subscriptions \
-  -H "Authorization: Bearer {access_token}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "callback_url": "https://your-system.example.com/opescare/webhook",
-    "subscribed_events": ["lab_result.released", "prescription.issued", "consent.granted"],
-    "description": "My CDSS event listener"
-  }'</pre>
-    </div>
-    <div class="docs-code-pane" data-lang="php">
-<pre>$subscription = Http::withToken($accessToken)
-    ->post('{{ $docsBase }}/api/v1/connect/webhooks/subscriptions', [
-        'callback_url'      =&gt; 'https://your-system.example.com/opescare/webhook',
-        'subscribed_events' =&gt; ['lab_result.released', 'prescription.issued', 'consent.granted'],
-        'description'       =&gt; 'My CDSS event listener',
-    ])->json();
-
-// Save immediately — shown only once
-$webhookSecret = $subscription['webhook_secret']; // "whsec_xxxxxxxxxxxxxxxx"</pre>
-    </div>
-    <div class="docs-code-pane" data-lang="js">
-<pre>const res = await fetch('{{ $docsBase }}/api/v1/connect/webhooks/subscriptions', {
-  method: 'POST',
-  headers: {
-    Authorization: `Bearer ${accessToken}`,
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    callback_url:      'https://your-system.example.com/opescare/webhook',
-    subscribed_events: ['lab_result.released', 'prescription.issued', 'consent.granted'],
-    description:       'My CDSS event listener',
-  }),
-});
-const subscription = await res.json();
-
-// Save immediately — shown only once
-const webhookSecret = subscription.webhook_secret; // "whsec_xxxxxxxxxxxxxxxx"</pre>
-    </div>
-    <div class="docs-code-pane" data-lang="python">
-<pre>subscription = requests.post(
-    '{{ $docsBase }}/api/v1/connect/webhooks/subscriptions',
-    headers={'Authorization': f'Bearer {access_token}'},
-    json={
-        'callback_url':      'https://your-system.example.com/opescare/webhook',
-        'subscribed_events': ['lab_result.released', 'prescription.issued', 'consent.granted'],
-        'description':       'My CDSS event listener',
-    }
-).json()
-
-# Save immediately — shown only once
-webhook_secret = subscription['webhook_secret']  # "whsec_xxxxxxxxxxxxxxxx"</pre>
-    </div>
-</div>
+<ol>
+    <li>Open <a href="{{ $docsBase }}/developer/webhooks">Developer portal &rarr; Webhooks</a>.</li>
+    <li>Select the integration client the events belong to (events are scoped to that client's facility).</li>
+    <li>Enter your callback URL, e.g. <code>https://your-system.example.com/opescare/webhook</code>.</li>
+    <li>Choose one or more events from the list below and save.</li>
+    <li>Copy the signing secret (<code>whsec_&hellip;</code>) shown after saving. <strong>It is displayed only once</strong>; it signs every delivery (see <a href="#verification">Signature Verification</a>).</li>
+</ol>
+<p>You can pause or resume a subscription from the same page.</p>
 
 <h2 id="events-list">Event Types</h2>
+
+<p>These are the events OpesCare delivers today. Each delivery is a JSON <code>POST</code> to your callback URL.</p>
 
 <table class="docs-table">
     <thead><tr><th>Event</th><th>Triggered When</th></tr></thead>
     <tbody>
-        <tr><td><code>patient.created</code></td><td>New patient registered</td></tr>
-        <tr><td><code>patient.updated</code></td><td>Patient demographics updated</td></tr>
-        <tr><td><code>health_id.created</code></td><td>New Health ID issued</td></tr>
-        <tr><td><code>health_id.verified</code></td><td>Health ID verified by a facility</td></tr>
-        <tr><td><code>consent.requested</code></td><td>Consent request sent to patient</td></tr>
-        <tr><td><code>consent.granted</code></td><td>Patient grants consent — proceed with data access</td></tr>
-        <tr><td><code>consent.denied</code></td><td>Patient denies a consent request</td></tr>
-        <tr><td><code>consent.revoked</code></td><td>Patient revokes a previously granted consent — stop data access immediately</td></tr>
-        <tr><td><code>encounter.created</code></td><td>New encounter/visit recorded</td></tr>
-        <tr><td><code>encounter.closed</code></td><td>Encounter finalised</td></tr>
-        <tr><td><code>lab_order.created</code></td><td>Lab test ordered</td></tr>
-        <tr><td><code>lab_result.released</code></td><td>Lab result published — <strong>trigger CDSS analysis</strong></td></tr>
-        <tr><td><code>lab_result.amended</code></td><td>Lab result corrected — re-run CDSS analysis</td></tr>
-        <tr><td><code>prescription.issued</code></td><td>New prescription written — trigger drug interaction check</td></tr>
-        <tr><td><code>prescription.cancelled</code></td><td>Prescription cancelled</td></tr>
-        <tr><td><code>prescription.dispensed</code></td><td>Prescription dispensed by pharmacy</td></tr>
-        <tr><td><code>appointment.created</code></td><td>Appointment scheduled</td></tr>
-        <tr><td><code>appointment.checked_in</code></td><td>Patient checked in</td></tr>
-        <tr><td><code>appointment.cancelled</code></td><td>Appointment cancelled</td></tr>
-        <tr><td><code>document.issued</code></td><td>New clinical document issued</td></tr>
-        <tr><td><code>document.verified</code></td><td>Document QR verified</td></tr>
-        <tr><td><code>bridge_agent.sync_failed</code></td><td>Bridge Agent sync failure — check agent health</td></tr>
+        <tr><td><code>lab_result.released</code></td><td>A laboratory result is released for a patient of your facility</td></tr>
+        <tr><td><code>prescription.issued</code></td><td>A prescription is issued at your facility</td></tr>
+        <tr><td><code>consent.granted</code></td><td>A patient approves a consent request from your facility</td></tr>
     </tbody>
 </table>
 
@@ -394,37 +324,36 @@ public class WebhookVerifier {
     </tbody>
 </table>
 
-<p>After the final attempt the delivery is marked <code>exhausted</code>. Use the replay endpoint or developer portal to manually resend. View delivery logs under <strong>Apps → Webhook Deliveries</strong>.</p>
+<p>After the final attempt the delivery is marked <code>exhausted</code>. Use the <strong>Replay</strong> button in the developer portal to resend it. View delivery logs under <strong>Apps → Webhook Deliveries</strong>.</p>
 
 <h2 id="replay">Replay a Failed Event</h2>
 
-<div class="docs-code-block">
-    <div class="docs-code-tabs"><button class="docs-code-tab active" data-lang="curl">cURL</button></div>
-    <div class="docs-code-pane active" data-lang="curl">
-<pre>curl -X POST {{ $docsBase }}/api/v1/connect/webhooks/events/evt_01HX9K2ABCD/replay \
-  -H "Authorization: Bearer {access_token}"</pre>
-    </div>
-</div>
+<p>
+    Every delivery is listed under <a href="{{ $docsBase }}/developer/webhooks">Developer portal &rarr; Webhooks</a>
+    and per app under <strong>Apps &rarr; Webhook deliveries</strong>, with its status
+    (<code>pending</code>, <code>delivered</code>, <code>failed</code>, <code>exhausted</code>), response code and attempts.
+    A delivery that failed or exhausted its retries can be resent with the <strong>Replay</strong> button; the replay
+    is signed with the subscription's current secret.
+</p>
 
 <h2 id="testing">Testing Your Endpoint</h2>
 
-<p>During development, use a tunnel tool like <a href="https://ngrok.com" rel="noopener noreferrer" target="_blank">ngrok</a> or <a href="https://expose.dev" rel="noopener noreferrer" target="_blank">expose</a> to receive webhooks on your development machine:</p>
+<p>Your callback URL must be public HTTPS. During development, expose your local server with a tunnel tool such as
+<a href="https://ngrok.com" rel="noopener noreferrer" target="_blank">ngrok</a> or
+<a href="https://expose.dev" rel="noopener noreferrer" target="_blank">expose</a>, then register the tunnel URL in the portal:</p>
 
 <div class="docs-code-block">
     <div class="docs-code-tabs"><button class="docs-code-tab active" data-lang="curl">Shell</button></div>
     <div class="docs-code-pane active" data-lang="curl">
-<pre># Start a tunnel to your local server on port 8000
+<pre># 1. Start a tunnel to your local server on port 8000
 ngrok http 8000
 
-# Then subscribe using the ngrok URL:
-curl -X POST {{ $docsBase }}/api/v1/connect/webhooks/subscriptions \
-  -H "Authorization: Bearer {access_token}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "callback_url": "https://abc123.ngrok.io/opescare/webhook",
-    "subscribed_events": ["lab_result.released", "prescription.issued"],
-    "description": "Local dev test"
-  }'</pre>
+# 2. Register the HTTPS tunnel URL as the callback in
+#    {{ $docsBase }}/developer/webhooks
+#    e.g. https://abc123.ngrok.io/opescare/webhook
+
+# 3. Check that your endpoint answers 2xx quickly
+curl -i -X POST https://abc123.ngrok.io/opescare/webhook   -H "Content-Type: application/json" -d '{"ping": true}'</pre>
     </div>
 </div>
 

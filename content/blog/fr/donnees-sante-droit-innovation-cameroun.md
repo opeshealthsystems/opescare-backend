@@ -224,6 +224,6 @@ Tout le service fonctionne en **français et en anglais**, les prix sont en **FC
 
 Le Cameroun dispose désormais d'une stratégie sectorielle, d'un plan de santé numérique centré sur l'interopérabilité, d'un système national d'information pour les données agrégées et d'une loi sur la protection des données personnelles. Ce qui manque au patient est concret : une identité qui le suit, un dossier qu'il contrôle, et une réponse rapide à la question « où trouver ce médicament, ou ce sang, aujourd'hui ? ».
 
-OpesCare propose un réseau d'identifiants santé détenus par le patient, inédit dans sa forme au Cameroun, pensé précisément pour cela, en complément des systèmes que les structures utilisent déjà.
+OpesCare propose un réseau d'identifiants santé détenus par le patient, le premier identifiant santé du Cameroun, une première en son genre, pensé précisément pour cela, en complément des systèmes que les structures utilisent déjà.
 
 **Obtenez gratuitement votre Health ID sur [opescare.com](https://opescare.com/signup/patient)** ou, si vous dirigez une structure de santé, [demandez à rejoindre le réseau](https://opescare.com/signup/organization).

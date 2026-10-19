@@ -185,6 +185,6 @@ To avoid any confusion: OpesCare does **not** do insurance claims or pre-authori
 
 ## Conclusion
 
-Each OpesCare module answers a concrete question: who is this patient, who may see their record, where is the medicine, where is the blood, and how does information get from one facility to the next. Together they form a first-of-its-kind, patient-owned Health ID network in Cameroon.
+Each OpesCare module answers a concrete question: who is this patient, who may see their record, where is the medicine, where is the blood, and how does information get from one facility to the next. Together they form Cameroon's first Health ID: a first-of-its-kind, patient-owned Health ID network.
 
 **Patients:** [get your free Health ID](https://opescare.com/signup/patient). **Facilities:** [apply to join](https://opescare.com/signup/organization). **Developers:** [read the docs](https://opescare.com/docs). Questions? Visit [opescare.com/help](https://opescare.com/help).

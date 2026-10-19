@@ -179,6 +179,6 @@ A facility in the directory is not necessarily a connected facility. Facilities 
 
 Interoperability is not a single feature. It is a stack: a Health ID the patient owns, consent checked on every read, a standard format for exchange, an index that refuses to guess, and public services that tell the truth about what is available.
 
-OpesCare is a private, patient-centred Health ID network — first of its kind in its approach in Cameroon — that works alongside the systems facilities already run.
+OpesCare is a private, patient-centred Health ID network — Cameroon's first Health ID and a first of its kind — that works alongside the systems facilities already run.
 
 **[Get your Health ID](https://opescare.com/signup/patient)**, or, if you are a developer or facility, [read the docs](https://opescare.com/docs) and [connect your system](https://opescare.com/signup/organization).

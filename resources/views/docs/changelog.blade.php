@@ -28,7 +28,7 @@
     <li><code>GET /connect/patient/{id}/records</code> — medical records with type filter</li>
     <li><code>GET /connect/inventory/pharmacy/{id}</code> — pharmacy stock levels</li>
     <li><code>GET /connect/inventory/blood/{id}</code> — blood bank inventory</li>
-    <li><code>GET/POST/DELETE /connect/webhooks/subscriptions</code> — subscription management</li>
+    <li>Webhook subscription management (corrected 19 October 2026: subscriptions are managed in the developer portal at <code>/developer/webhooks</code>; the events delivered today are <code>lab_result.released</code>, <code>prescription.issued</code> and <code>consent.granted</code>)</li>
     <li><code>GET /connect/reconciliation</code> — payment reconciliation by date</li>
 </ul>
 
