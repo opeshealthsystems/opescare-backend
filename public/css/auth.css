@@ -1,3 +1,4 @@
+@import url("icons-plain.css");
 :root {
     /* OpesCare Onboarding Color Tokens */
     --auth-primary: #0F4C81;
@@ -1494,7 +1495,6 @@ body.auth-body {
     width: 72px;
     height: 72px;
     object-fit: contain;
-    filter: drop-shadow(0 6px 14px color-mix(in srgb, var(--f-brand) 20%, transparent));
 }
 
 .f-auth-seal__caption {

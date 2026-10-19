@@ -1,3 +1,4 @@
+@import url("icons-plain.css");
 /* OPES desk system — professional & developer pages. Section 1 mirrors od-patient.css (legacy vocabulary -> flat OPES card); utilities .ods-* replaced inline style= attributes. */
 /* ── 1. Legacy vocabulary → OPES ─────────────────────────────────────────── */
 body.od { --odx-hair: #E6ECF3; --odx-ink-h: #0F2340; --odx-ink: #1F3654; --odx-muted: #5B6B82; --odx-border: #DCE4EE; --odx-rule: #EEF2F7; --odx-primary: #0F4C81; }

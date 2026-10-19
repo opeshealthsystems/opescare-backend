@@ -1,0 +1,113 @@
+/*
+ * icons-plain.css — OPES Health Systems
+ *
+ * Owner rule (2026-10-19): no "glowing" icons anywhere. An icon is a plain
+ * Lucide glyph in its own colour: no tinted circle or rounded-square chip
+ * behind it, no box-shadow / drop-shadow / text-shadow halo, no gradient blob.
+ * The glyph grows to fill the space the chip used:
+ *   nav / sidebar 20px · list rows / cards 24px · KPI tiles 28px · empty states 40px
+ *
+ * Imported at the top of every base stylesheet (od.css, od-legacy.css,
+ * helix-v2.css, od-public.css, auth.css, docs.css, login-page.css,
+ * landing-v2.css, landing.css, public.css, finder.css, portal.css, pharmacy.css)
+ * and written with !important so it beats page-local <style> blocks.
+ *
+ * NOT touched on purpose: buttons (.od-btn--icon, .icon-btn, .btn-icon,
+ * .topbar-icon-btn, .os-icon-btn), input adornments, photos / avatars /
+ * initials, the Health ID card + verifier security artwork, text status pills,
+ * Leaflet map markers. See docs/ICON_AUDIT_WEB.md.
+ */
+
+/* ---- 1. Strip the chip --------------------------------------------------- */
+:is(
+  .od-empty__icon, .empty-state-icon, .entity-head__icon, .reg-success-icon,
+  .err-icon, .verify-icon, .auth-status-icon, .upload-icon, .hrm-confirm-icon,
+  .od-kpi__icon, .kpi-icon, .stat-card__icon, .fs-kpi__icon, .ph-summary__icon,
+  .fs-cov__icon, .strip-icon, .step-icon, .step-icon-wrapper, .card-ic,
+  .od-list__icon, .od-list__icon--solid, .od-person__icon, .pf-qa__icon,
+  .demo-card-icon, .docs-icon, .docs-icon-lg, .os-info__icon, .os-fold__icon,
+  .os-report__icon, .oda-ga-check__icon, .f-auth-choice__icon, .fc-card-icon,
+  .fh-card-icon, .hrm-icon, .auth-step-icon, .sf-card__icon, .odl-tat__icon,
+  .od-facility__icon, .dp-limitations-icon, .dp-dev-icon, .di-dev-icon,
+  .clm-facility-icon, .quick-action-icon, .card-icon, .feature-item-icon,
+  .module-icon, .onboarding-card-icon, .bullet-icon, .selector-icon,
+  .lp-service-icon, .lp-pillar-icon, .lp-chain-icon, .ph-infocard__icon,
+  .facility-card__icon, .od-avatar.odc-ico-avatar
+):not(svg) {
+  background: none !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  padding: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+}
+:is(
+  .od-empty__icon, .empty-state-icon, .entity-head__icon, .od-kpi__icon,
+  .kpi-icon, .stat-card__icon, .fs-kpi__icon, .od-list__icon, .od-person__icon,
+  .pf-qa__icon, .quick-action-icon, .card-icon, .step-icon, .strip-icon,
+  .ph-infocard__icon, .ph-summary__icon, .fs-cov__icon, .lp-service-icon,
+  .lp-pillar-icon, .demo-card-icon, .docs-icon, .facility-card__icon
+)::before,
+:is(
+  .od-empty__icon, .empty-state-icon, .entity-head__icon, .od-kpi__icon,
+  .kpi-icon, .stat-card__icon, .fs-kpi__icon, .od-list__icon, .od-person__icon,
+  .pf-qa__icon, .quick-action-icon, .card-icon, .step-icon, .strip-icon,
+  .ph-infocard__icon, .ph-summary__icon, .fs-cov__icon, .lp-service-icon,
+  .lp-pillar-icon, .demo-card-icon, .docs-icon, .facility-card__icon
+)::after { content: none !important; }
+
+/* The solid list chip painted the glyph white on a coloured square; give the
+   glyph the chip's colour back now the square is gone. */
+.od-list__icon--solid { color: var(--tint-fg, #0F4C81) !important; }
+
+/* Any glyph anywhere: never a halo. */
+svg.lucide, [data-lucide], i[data-lucide] svg { filter: none !important; text-shadow: none !important; }
+
+/* ---- 2. Size the glyph to the space the chip used ------------------------ */
+/* Empty states — 40px */
+:is(.od-empty__icon, .empty-state-icon, .entity-head__icon, .reg-success-icon,
+    .err-icon, .verify-icon, .auth-status-icon, .upload-icon, .hrm-confirm-icon)
+  :is(svg, i[data-lucide], [data-lucide]) {
+  width: 40px !important; height: 40px !important; stroke-width: 1.5;
+}
+/* KPI tiles — 28px */
+:is(.od-kpi__icon, .kpi-icon, .stat-card__icon, .fs-kpi__icon, .ph-summary__icon,
+    .fs-cov__icon, .strip-icon, .step-icon, .card-ic)
+  :is(svg, i[data-lucide], [data-lucide]) {
+  width: 28px !important; height: 28px !important; stroke-width: 1.75;
+}
+/* Sidebar / nav — 20px */
+.nav-icon:is(svg, i), .nav-icon :is(svg, i[data-lucide]) { width: 20px !important; height: 20px !important; }
+/* List rows / cards — 24px */
+:is(.od-list__icon, .od-person__icon, .pf-qa__icon, .demo-card-icon, .docs-icon,
+    .os-info__icon, .os-fold__icon, .os-report__icon, .oda-ga-check__icon,
+    .f-auth-choice__icon, .fc-card-icon, .fh-card-icon, .hrm-icon, .auth-step-icon,
+    .sf-card__icon, .odl-tat__icon, .od-facility__icon, .dp-limitations-icon,
+    .dp-dev-icon, .di-dev-icon, .clm-facility-icon, .quick-action-icon, .card-icon,
+    .feature-item-icon, .module-icon, .onboarding-card-icon, .selector-icon,
+    .lp-service-icon, .lp-pillar-icon, .lp-chain-icon, .ph-infocard__icon,
+    .facility-card__icon, .od-avatar.odc-ico-avatar)
+  :is(svg, i[data-lucide], [data-lucide]) {
+  width: 24px !important; height: 24px !important; stroke-width: 1.75;
+}
+
+/* Keep the wrapper laying out like the chip did (centred in its slot). */
+:is(.od-empty__icon, .empty-state-icon, .entity-head__icon) {
+  display: flex !important; justify-content: center; align-items: center;
+}
+
+/* Some views put the chip class straight on the glyph (<i data-lucide
+   class="empty-state-icon"> becomes an <svg>). Keep its size, drop the chip. */
+svg:is(.empty-state-icon, .docs-icon, .hrm-icon, .dp-limitations-icon, .od-kpi__icon,
+       .od-empty__icon, .od-list__icon, .kpi-icon, .card-icon) {
+  background: none !important; box-shadow: none !important; border: 0 !important;
+  border-radius: 0 !important; padding: 0 !important; filter: none !important;
+}
+svg.empty-state-icon { width: 40px !important; height: 40px !important; }

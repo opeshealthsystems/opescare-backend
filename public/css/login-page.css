@@ -1,3 +1,4 @@
+@import url("icons-plain.css");
 /* ==========================================================================
    OpesCare sign-in page (resources/views/auth/login.blade.php)
    Redesigned 2026-10-18 to docs/design/login-2026-10-18.
@@ -58,7 +59,7 @@ body.f-login .f-auth__main { padding: 0; }
 }
 .lg-caps { display: none; }
 .lg-mark { display: inline-flex; border-radius: 50%; }
-.lg-mark img { width: 84px; height: 84px; display: block; filter: drop-shadow(0 6px 18px rgba(15, 76, 129, .25)); }
+.lg-mark img { width: 84px; height: 84px; display: block; }
 .lg-wordmark {
   margin: 6px 0 0; font-size: 2.5rem; line-height: 1; font-weight: 900; letter-spacing: -.035em;
   color: var(--lg-brand);

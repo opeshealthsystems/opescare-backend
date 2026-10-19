@@ -1,3 +1,4 @@
+@import url("icons-plain.css");
 /*
  * OPES desk system — patient & guardian pages (docs/superpowers/specs/2026-10-18-desk-design-system.md).
  * Loaded by resources/views/portals/{patient,guardian}/** via @section('head'), on top of od.css.
@@ -368,7 +369,8 @@ body.od .hc__edge { position: absolute; right: -99px; top: 50%; width: 220px; ma
 .ods-9f0e4db { display:flex !important; align-items:center !important; gap:12px !important; }
 .ods-a132887 { color:var(--f-ink-soft) !important; margin:0 0 20px !important; }
 .ods-a27b458 { min-height:48px !important; }
-.ods-a425013 { width:48px !important; height:48px !important; border-radius:12px !important; display:flex !important; align-items:center !important; justify-content:center !important; background:var(--f-wash) !important; color:var(--f-brand) !important; margin:0 auto 12px !important; }
+.ods-a425013 { display:flex !important; align-items:center !important; justify-content:center !important; color:var(--f-brand) !important; margin:0 auto 12px !important; }
+.ods-a425013 svg { width:40px !important; height:40px !important; }
 .ods-a58b070 { margin-bottom:4px !important; }
 .ods-a7409f7 { margin-bottom:10px !important; }
 .ods-a74d077 { font-weight:750 !important; text-transform:uppercase !important; letter-spacing:.05em !important; color:var(--f-muted) !important; margin:0 0 6px !important; }
