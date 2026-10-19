@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Mobile;
 use App\Http\Controllers\Controller;
 use App\Models\AppointmentSlot;
 use App\Models\CareFacility;
+use App\Support\Media\CatalogImageUrls;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -203,6 +204,7 @@ class MobileFacilityController extends Controller
             'city', 'region', 'address', 'latitude', 'longitude',
             'phone_primary', 'phone_secondary', 'email', 'website',
             'integration_status', 'listing_status',
+            'logo_path', 'last_profile_update_at',
         ])->paginate(self::PER_PAGE);
 
         /** @var array<int, CareFacility> $rows */
@@ -217,6 +219,9 @@ class MobileFacilityController extends Controller
         return response()->json([
             'data' => array_map(function (CareFacility $f) use ($providers, $openSlots) {
                 $payload = $f->toArray();
+                // The storage path is private; the app gets a signed link.
+                unset($payload['logo_path'], $payload['last_profile_update_at']);
+                $payload['logo_url']        = CatalogImageUrls::facilityLogo($f);
                 $payload['connected']       = $f->facility_id !== null;
                 $payload['provider_count']  = (int) ($providers[$f->facility_id] ?? 0);
                 $payload['open_slot_count'] = (int) ($openSlots[$f->facility_id] ?? 0);
@@ -254,6 +259,7 @@ class MobileFacilityController extends Controller
                 'id'                 => $facility->id,
                 'facility_name'      => $facility->facility_name,
                 'facility_type'      => $facility->facility_type,
+                'logo_url'           => CatalogImageUrls::facilityLogo($facility),
                 'ownership_type'     => $facility->ownership_type,
                 'city'               => $facility->city,
                 'region'             => $facility->region,

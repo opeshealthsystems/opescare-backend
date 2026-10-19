@@ -119,6 +119,12 @@ Route::prefix('mobile')->group(function () {
         ->middleware('signed')
         ->name('mobile.patient.photo');
 
+    // A catalogue medicine's picture, for an <Image> that cannot carry a
+    // bearer: signed by CatalogImageUrls::medicineImage(), hour-bucketed expiry.
+    Route::get('/medicines/{medicine}/image', [\App\Http\Controllers\Api\Mobile\MobileMedicineImageController::class, 'show'])
+        ->middleware('signed')
+        ->name('mobile.medicine.image');
+
     Route::middleware('auth.mobile')->group(function () {
 
         // Patient profile
@@ -252,6 +258,7 @@ Route::prefix('mobile')->group(function () {
         Route::get('/pharmacy/medicines',                   [\App\Http\Controllers\Api\Mobile\MobilePharmacyController::class, 'searchMedicines']);
         Route::get('/pharmacy/medicines/{id}',              [\App\Http\Controllers\Api\Mobile\MobilePharmacyController::class, 'showMedicine']);
         Route::get('/pharmacy/nearby',                      [\App\Http\Controllers\Api\Mobile\MobilePharmacyController::class, 'nearbyPharmacies']);
+        Route::get('/pharmacy/pharmacies/{id}/stock',       [\App\Http\Controllers\Api\Mobile\MobilePharmacyController::class, 'pharmacyStock']);
         Route::get('/pharmacy/reservations',                [\App\Http\Controllers\Api\Mobile\MobilePharmacyController::class, 'listReservations']);
         Route::post('/pharmacy/reservations',               [\App\Http\Controllers\Api\Mobile\MobilePharmacyController::class, 'reserve']);
         Route::post('/pharmacy/reservations/{id}/cancel',   [\App\Http\Controllers\Api\Mobile\MobilePharmacyController::class, 'cancelReservation']);

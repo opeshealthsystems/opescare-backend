@@ -135,17 +135,8 @@ class FacilityPhotoService
     /** A short-lived signed link to the listing's photo, or null when there is none. */
     public static function urlFor(?CareFacility $listing): ?string
     {
-        if (! $listing || ! $listing->logo_path) {
-            return null;
-        }
-
-        return URL::temporarySignedRoute(
-            'facility.photo',
-            now()->addMinutes(self::URL_TTL_MINUTES),
-            // The version segment changes with every upload so a browser that
-            // cached the old picture under the old link fetches the new one.
-            ['listing' => $listing->id, 'v' => optional($listing->last_profile_update_at)->timestamp ?? 0],
-        );
+        // Absolute, hour-bucketed, versioned — see CatalogImageUrls.
+        return \App\Support\Media\CatalogImageUrls::facilityLogo($listing);
     }
 
     /**

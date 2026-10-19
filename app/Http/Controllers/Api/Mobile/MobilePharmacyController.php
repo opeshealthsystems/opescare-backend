@@ -11,6 +11,7 @@ use App\Models\MedicineReservation;
 use App\Models\Prescription;
 use App\Modules\Pharmacy\Services\MedicineFinderService;
 use App\Modules\Pharmacy\Services\MedicineReservationService;
+use App\Support\Media\CatalogImageUrls;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -332,6 +333,7 @@ class MobilePharmacyController extends Controller
         return [
             'id'                    => $medicine->id,
             'name'                  => $medicine->name,
+            'image_url'             => CatalogImageUrls::medicineImage($medicine),
             'generic_name'          => $medicine->generic_name,
             'brand_name'            => $medicine->brand_name,
             'strength'              => $medicine->strength,
@@ -369,6 +371,7 @@ class MobilePharmacyController extends Controller
         return [
             'id'          => $facility->id,
             'name'        => $facility->facility_name,
+            'logo_url'    => CatalogImageUrls::facilityLogo($facility),
             'city'        => $facility->city,
             'region'      => $facility->region,
             'address'     => $facility->address,
@@ -427,6 +430,7 @@ class MobilePharmacyController extends Controller
             'medicine'     => $reservation->medicine === null ? null : [
                 'id'           => $reservation->medicine->id,
                 'name'         => $reservation->medicine->name,
+                'image_url'    => CatalogImageUrls::medicineImage($reservation->medicine),
                 'generic_name' => $reservation->medicine->generic_name,
                 'strength'     => $reservation->medicine->strength,
                 'form'         => $reservation->medicine->form,
@@ -434,6 +438,7 @@ class MobilePharmacyController extends Controller
             'pharmacy'     => $reservation->careFacility === null ? null : [
                 'id'      => $reservation->careFacility->id,
                 'name'    => $reservation->careFacility->facility_name,
+                'logo_url' => CatalogImageUrls::facilityLogo($reservation->careFacility),
                 'city'    => $reservation->careFacility->city,
                 'address' => $reservation->careFacility->address,
                 'phone'   => $reservation->careFacility->phone_primary,

@@ -36,7 +36,9 @@ class FacilityPhotoController extends Controller
             'X-Content-Type-Options' => 'nosniff',
         ]);
         $response->setPrivate();
-        $response->setMaxAge(300);
+        // The link is versioned and hour-bucketed (CatalogImageUrls), so a
+        // client may keep its copy for the life of the link.
+        $response->setMaxAge(3600);
 
         return $response;
     }

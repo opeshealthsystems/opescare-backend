@@ -8,6 +8,7 @@ use App\Models\AppointmentSlot;
 use App\Models\CareFacility;
 use App\Models\Facility;
 use App\Modules\Notifications\Services\NotificationService;
+use App\Support\Media\CatalogImageUrls;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -61,9 +62,11 @@ class MobileAppointmentController extends Controller
         };
 
         $appointments = $query->paginate($limit);
+        // One query for every logo on the page (logos live on the directory listing).
+        $logos = CatalogImageUrls::facilityLogosByTenantIds($appointments->getCollection()->pluck('facility_id')->all());
 
         return response()->json([
-            'data'       => $appointments->map(fn ($a) => $this->formatAppointment($a)),
+            'data'       => $appointments->map(fn ($a) => $this->formatAppointment($a, $logos)),
             'pagination' => [
                 'total'        => $appointments->total(),
                 'per_page'     => $appointments->perPage(),
@@ -287,13 +290,17 @@ class MobileAppointmentController extends Controller
         return (clone $listings)->where('listing_status', 'active')->exists();
     }
 
-    private function formatAppointment(Appointment $a): array
+    /** @param  array<string,string>|null  $logos  tenant facility id => logo link; null looks it up */
+    private function formatAppointment(Appointment $a, ?array $logos = null): array
     {
+        $logos ??= CatalogImageUrls::facilityLogosByTenantIds([$a->facility_id]);
+
         return [
             'id'               => $a->id,
             'appointment_type' => $a->appointment_type,
             'status'           => $a->status,
             'facility_name'    => $a->facility?->name,
+            'facility_logo_url' => $logos[$a->facility_id] ?? null,
             'provider_name'    => $a->provider?->name,
             'scheduled_at'     => $a->scheduled_at?->toIso8601String(),
             'checked_in_at'    => $a->checked_in_at?->toIso8601String(),
