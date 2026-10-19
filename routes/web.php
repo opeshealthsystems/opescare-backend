@@ -172,6 +172,7 @@ Route::post('/login/opescard/resolve', [\App\Http\Controllers\Auth\OpescardContr
     ->middleware(['guest', 'throttle:10,1'])->name('login.opescard.resolve');
 Route::get('/mfa/challenge', [PublicPageController::class, 'showMfaChallenge'])->name('mfa.challenge');
 Route::post('/mfa/challenge', [PublicPageController::class, 'submitMfaChallenge'])->middleware('throttle:auth-code')->name('mfa.challenge.submit');
+Route::post('/mfa/setup', [PublicPageController::class, 'submitMfaSetup'])->middleware('throttle:auth-code')->name('mfa.setup.submit');
 
 // ── Patient mobile app (Expo web build) ─────────────────────────────────────
 // The app is exported as a single-page bundle into public/app; only paths that

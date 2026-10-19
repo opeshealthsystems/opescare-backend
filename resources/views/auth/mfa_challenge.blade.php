@@ -25,6 +25,32 @@
                 </div>
             @endif
 
+            @if(($setupRequired ?? false) && ! empty($setupQr))
+            <ol class="f-mfa-steps">
+                <li>{{ __('finder_auth.mfa.setup_step_app') }}</li>
+                <li>{{ __('finder_auth.mfa.setup_step_scan') }}</li>
+            </ol>
+            <div class="f-mfa-qr">
+                <img src="{{ $setupQr }}" width="200" height="200" alt="{{ __('finder_auth.mfa.setup_qr_alt') }}">
+            </div>
+            <p class="f-auth-sub">{{ __('finder_auth.mfa.setup_manual') }}</p>
+            <p class="f-mfa-key"><code>{{ $setupKey }}</code></p>
+            <form action="{{ route('mfa.setup.submit') }}" method="POST" novalidate>
+                @csrf
+                <div class="f-field">
+                    <label for="code" class="f-label">{{ __('finder_auth.mfa.setup_step_confirm') }}</label>
+                    <input type="text" id="code" name="code" class="f-input f-mfa-code{{ $errors->has('code') ? ' f-input--invalid' : '' }}" inputmode="numeric" autocomplete="one-time-code" placeholder="000000" required autofocus>
+                    @error('code')
+                        <span class="f-error f-auth-error">@include('partials.finder.icon', ['name' => 'alert-circle', 'size' => 15]){{ $message }}</span>
+                    @enderror
+                </div>
+                <button type="submit" class="f-btn f-btn--primary f-btn--block">
+                    @include('partials.finder.icon', ['name' => 'check', 'size' => 18])
+                    {{ __('finder_auth.mfa.setup_submit') }}
+                </button>
+            </form>
+            @endif
+
             @if(! ($setupRequired ?? false))
             <form action="{{ route('mfa.challenge.submit') }}" method="POST" novalidate>
                 @csrf

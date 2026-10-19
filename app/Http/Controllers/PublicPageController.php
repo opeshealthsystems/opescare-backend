@@ -420,9 +420,79 @@ class PublicPageController extends Controller
             return redirect()->route('login');
         }
 
-        return view('auth.mfa_challenge', [
-            'setupRequired' => (bool) $request->session()->get('mfa.setup_required', false),
-        ]);
+        $setupRequired = (bool) $request->session()->get('mfa.setup_required', false);
+        $data = ['setupRequired' => $setupRequired];
+
+        // First sign-in of an account whose role requires MFA: the password is
+        // already proven (mfa.user_id is only set after it), so the user
+        // enrols here — scan the QR, confirm one code — instead of being sent
+        // to "contact an administrator", which deadlocks the first admin.
+        if ($setupRequired) {
+            $user = User::find($request->session()->get('mfa.user_id'));
+            if (! $user) {
+                return redirect()->route('login');
+            }
+            $twoFactor = app(\App\Modules\Auth\Services\TwoFactorService::class);
+            $secret = (string) $request->session()->get('mfa.pending_secret', '');
+            if ($secret === '') {
+                $secret = $twoFactor->generateSecret();
+                $request->session()->put('mfa.pending_secret', $secret);
+            }
+            $uri = $twoFactor->provisioningUri($secret, $user->email, 'OpesCare');
+            $data['setupQr'] = (new \chillerlan\QRCode\QRCode(new \chillerlan\QRCode\QROptions([
+                'outputInterface' => \chillerlan\QRCode\Output\QRMarkupSVG::class,
+                'outputBase64'    => true,
+                'addQuietzone'    => true,
+                'quietzoneSize'   => 2,
+                'scale'           => 5,
+            ])))->render($uri);
+            $data['setupKey'] = trim(chunk_split($secret, 4, ' '));
+        }
+
+        return view('auth.mfa_challenge', $data);
+    }
+
+    /** Confirm first-time MFA enrolment with one code, then sign in. */
+    public function submitMfaSetup(Request $request, TwoFactorService $twoFactor)
+    {
+        $validated = $request->validate(['code' => 'required|string|max:20']);
+
+        $user = User::find($request->session()->get('mfa.user_id'));
+        $secret = (string) $request->session()->get('mfa.pending_secret', '');
+        if (! $user || $secret === '') {
+            $request->session()->forget(['mfa.user_id', 'mfa.remember', 'mfa.setup_required', 'mfa.pending_secret']);
+
+            return redirect()->route('login')->with('error', __('flash.secure_session_expired'));
+        }
+        if ($user->hasTwoFactorEnabled()) {
+            // Already enrolled (e.g. another tab): use the normal challenge.
+            $request->session()->put('mfa.setup_required', false);
+            $request->session()->forget('mfa.pending_secret');
+
+            return redirect()->route('mfa.challenge');
+        }
+        if (! $twoFactor->verify($secret, $validated['code'])) {
+            return back()->withErrors(['code' => __('flash.auth_code_invalid')]);
+        }
+
+        $recovery = $twoFactor->generateRecoveryCodes();
+        $user->two_factor_secret = $secret;
+        $user->two_factor_recovery_codes = $recovery;
+        $user->two_factor_confirmed_at = now();
+        $user->save();
+
+        Log::info('auth.mfa_enrolled', ['user_id' => $user->id, 'ip' => $request->ip()]);
+
+        Auth::login($user, (bool) $request->session()->get('mfa.remember', false));
+        $request->session()->regenerate();
+        $request->session()->put('mfa.verified', true);
+        $request->session()->forget(['mfa.user_id', 'mfa.remember', 'mfa.setup_required', 'mfa.pending_secret']);
+
+        // Recovery codes are shown exactly once, on this response only.
+        return response()->view('auth.mfa_recovery', [
+            'codes'      => $recovery,
+            'continueTo' => app(DashboardProfileService::class)->landingUrlForUser($user),
+        ])->header('Cache-Control', 'no-store');
     }
 
     public function submitMfaChallenge(Request $request, TwoFactorService $twoFactor)
