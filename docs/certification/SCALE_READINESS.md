@@ -286,3 +286,64 @@ measurement pass above.
    < 500 ms (medicine), error rate < 1 %. Run against a staging copy, never
    prod without the owner's go-ahead; expect 429s from the per-IP throttle
    (counted as `throttled`, not failures) unless run from several sources.
+
+## 1M facilities / 10M patients — attempted 2026-10-19, aborted
+
+**Not measured.** The load was stopped partway because the local PostgreSQL
+backend was killed by Windows and the server went into crash recovery. No
+timings from this attempt exist; the 20k/100k table above is still the latest
+measurement.
+
+**What happened.** Database `opescare_finder_scale_1m` (fresh, `migrate --force`,
+all app indexes) was loaded in 1M-patient slices with `INSERT … SELECT
+generate_series`, one statement per table per slice, `synchronous_commit=off`
+and autovacuum disabled on the big tables in that database only.
+`ScaleSeeder` now also accepts database names containing `_scale`.
+
+| Step | Time |
+|---|---|
+| 1,000,000 care_facilities (2 × 500k) | 65 s + 59 s |
+| 100,000 tenant facilities, 25,000 staff users | 3 s |
+| Patient slice 1 (1M patients, 200k aliases, 1M consents, 1M appointments, 1M visits, 1M encounters, 2M access logs, 100k queue tickets) | 10.5 min |
+| Patient slice 2 | 14 min |
+| Patient slice 3 | 34 min (access logs alone 20.5 min) |
+| Patient slice 4, consents + appointments only | 9 min + 50 min |
+
+Each slice was slower than the last. Inserts with random UUID keys land on
+random pages of every btree index. Once the indexes outgrew memory, every
+insert waited on disk reads (`IO / DataFileRead`). This host has 7.7 GB RAM
+and PostgreSQL runs with the default `shared_buffers=128MB`. To finish, the
+54 non-unique secondary indexes on the eight patient tables were dropped
+(their definitions were saved) so they could be rebuilt after the load. During
+the next step, `encounters` slice 4 at 11:15, the backend was terminated with
+`0xC000012D` (STATUS_COMMIT_LIMIT): Windows had run out of commit memory, with
+about 4 GB of 30.7 GB free afterwards, shared with other desktop processes.
+The server restarted itself into crash recovery (a full-data-directory fsync
+across every database on the instance). Per the safety rules, nothing was
+restarted and loading stopped.
+
+State at abort: about 4M patients, 1M facilities, about 8 GB of data. The
+secondary indexes were not rebuilt, so this database is not valid for plan
+measurement in any case.
+
+**What this tells us (without timings).**
+- This laptop cannot build a 10M-patient dataset with production indexes in
+  any reasonable time. A national-scale rehearsal needs a dedicated host or a
+  cloud VM: at least 32 GB RAM, `shared_buffers` of about 8 GB, NVMe, and
+  nothing else on the instance.
+- The slowdown is caused by random UUID primary and foreign keys spread
+  across many btree indexes. Read plans are not the problem. Production will
+  see the same write amplification as tables grow. That argues for
+  time-ordered IDs (UUIDv7) on append-heavy tables (`access_logs`,
+  `notifications`, `encounters`) and for monthly partitioning of
+  `access_logs` (already item 7 above). Not changed here; that is a schema
+  decision.
+- `appointments` carries 13 indexes and `consent_grants` 7. Several of them
+  (`is_demo`, `demo_seed_key`, `demo_reset_group`, nullable FK indexes) cost
+  writes at volume for little read value. Worth an audit before national
+  rollout.
+
+**To retry on a suitable host:** use the batched loader approach (slice per 1M
+patients). Drop the secondary indexes before the bulk load and rebuild them
+with `maintenance_work_mem` ≥ 1 GB afterwards, then `VACUUM ANALYZE`. Run the
+same `EXPLAIN (ANALYZE, BUFFERS)` set as the 20k/100k table.

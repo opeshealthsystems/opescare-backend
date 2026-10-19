@@ -82,6 +82,9 @@
     <a href="{{ route('portals.pharmacy.stock.receipts') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.stock.receipts*') ? 'active' : '' }}">
         <i data-lucide="truck"></i><span>{{ __('pharmacy_ops.nav_receipts', [], $l) }}</span>
     </a>
+    <a href="{{ route('portals.pharmacy.stock.import') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.stock.import*') ? 'active' : '' }}">
+        <i data-lucide="file-spreadsheet"></i><span>{{ __('pharmacy_stock_import.nav', [], $l) }}</span>
+    </a>
 </div>
 @endcapability
 

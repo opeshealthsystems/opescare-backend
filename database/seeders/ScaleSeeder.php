@@ -11,7 +11,7 @@ use RuntimeException;
  *
  *   DB_DATABASE=opescare_finder_test_a5 php artisan db:seed --class=ScaleSeeder --force
  *
- * Refuses to run unless the connected database name contains "_test" - it
+ * Refuses to run unless the connected database name contains "_test" or "_scale" - it
  * must never touch dev (opescare_finder) or prod. Rows are generated in SQL
  * with generate_series rather than one Eloquent factory call per row: 500k
  * factory saves take hours, set-based inserts take seconds, and the only
@@ -27,8 +27,8 @@ class ScaleSeeder extends Seeder
     public function run(): void
     {
         $db = (string) DB::connection()->getDatabaseName();
-        if (! str_contains($db, '_test')) {
-            throw new RuntimeException("ScaleSeeder refuses to run on '{$db}': test databases only.");
+        if (! str_contains($db, '_test') && ! str_contains($db, '_scale')) {
+            throw new RuntimeException("ScaleSeeder refuses to run on '{$db}': test or scale databases only.");
         }
         if (DB::getDriverName() !== 'pgsql') {
             throw new RuntimeException('ScaleSeeder targets PostgreSQL.');

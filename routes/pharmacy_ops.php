@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\MedicalId\PharmacyStockImportController;
 use App\Http\Controllers\MedicalId\PharmacyStockItemController;
 use App\Http\Controllers\MedicalId\PharmacyStockOpsController;
 use App\Http\Controllers\MedicalId\PharmacySupplierController;
@@ -81,6 +82,30 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'capability:pharmacy_stock', '
         ->name('portals.pharmacy.stock.suppliers.store');
     Route::get('/pharmacy/stock/receipts/{id}', [PharmacyStockOpsController::class, 'showReceipt'])
         ->name('portals.pharmacy.stock.receipts.show');
+
+    // ── Import from a spreadsheet (upload → columns → preview → commit) ──
+    // Commits through PharmacyStockOpsService, so imported lines are ordinary
+    // verified receipts / count corrections published with source 'portal'.
+    Route::get('/pharmacy/stock/import', [PharmacyStockImportController::class, 'index'])
+        ->name('portals.pharmacy.stock.import');
+    Route::get('/pharmacy/stock/import/template.{format}', [PharmacyStockImportController::class, 'template'])
+        ->whereIn('format', ['csv', 'xlsx'])
+        ->name('portals.pharmacy.stock.import.template');
+    Route::post('/pharmacy/stock/import', [PharmacyStockImportController::class, 'store'])
+        ->middleware('throttle:20,1')
+        ->name('portals.pharmacy.stock.import.store');
+    Route::get('/pharmacy/stock/import/{id}/mapping', [PharmacyStockImportController::class, 'mapping'])
+        ->whereUuid('id')->name('portals.pharmacy.stock.import.mapping');
+    Route::post('/pharmacy/stock/import/{id}/mapping', [PharmacyStockImportController::class, 'storeMapping'])
+        ->whereUuid('id')->name('portals.pharmacy.stock.import.mapping.store');
+    Route::get('/pharmacy/stock/import/{id}', [PharmacyStockImportController::class, 'preview'])
+        ->whereUuid('id')->name('portals.pharmacy.stock.import.preview');
+    Route::post('/pharmacy/stock/import/{id}/commit', [PharmacyStockImportController::class, 'commit'])
+        ->whereUuid('id')->name('portals.pharmacy.stock.import.commit');
+    Route::post('/pharmacy/stock/import/{id}/cancel', [PharmacyStockImportController::class, 'cancel'])
+        ->whereUuid('id')->name('portals.pharmacy.stock.import.cancel');
+    Route::get('/pharmacy/stock/import/{id}/errors.csv', [PharmacyStockImportController::class, 'errors'])
+        ->whereUuid('id')->name('portals.pharmacy.stock.import.errors');
 
     // ── Detail pages (read-only; every write posts to the routes above) ──
     Route::get('/pharmacy/stock/items/{item}', [PharmacyStockItemController::class, 'show'])

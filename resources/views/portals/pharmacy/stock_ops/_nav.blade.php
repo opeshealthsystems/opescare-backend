@@ -7,6 +7,7 @@
         ['portals.pharmacy.stock.adjustments',      'arrow-left-right', 'pharmacy_ops.nav_adjustments'],
         ['portals.pharmacy.stock.reorder',          'trending-down',    'pharmacy_ops.nav_reorder'],
         ['portals.pharmacy.stock.receipts',         'truck',            'pharmacy_ops.nav_receipts'],
+        ['portals.pharmacy.stock.import',           'file-spreadsheet', 'pharmacy_stock_import.nav'],
         ['portals.pharmacy.stock.suppliers',        'building-2',       'pharmacy_stock_desk.nav_suppliers'],
     ] as [$routeName, $icon, $key])
     @php $on = $routeName === 'portals.pharmacy.stock' ? request()->routeIs('portals.pharmacy.stock') : request()->routeIs($routeName . '*'); @endphp
