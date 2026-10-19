@@ -174,3 +174,5 @@ Sur OpesCare, votre dossier s'ouvre pour ceux qui vous soignent et reste fermé 
 **[Obtenez votre Health ID gratuit](https://opescare.com/signup/patient)** et décidez qui voit votre dossier. Une question ? Rendez-vous sur [opescare.com/help](https://opescare.com/help).
 
 À lire aussi : [le Health ID, la couche d'interopérabilité et le MPI expliqués](/blog/identifiant-sante-interoperabilite-index-patients-explique).
+
+Pourquoi le consentement est au cœur d'OpesCare : [Le dossier est le produit](/blog/le-dossier-est-le-produit), par Jude Nshome.

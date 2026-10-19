@@ -182,3 +182,5 @@ Interoperability is not a single feature. It is a stack: a Health ID the patient
 OpesCare is a private, patient-centred Health ID network — Cameroon's first Health ID and a first of its kind — that works alongside the systems facilities already run.
 
 **[Get your Health ID](https://opescare.com/signup/patient)**, or, if you are a developer or facility, [read the docs](https://opescare.com/docs) and [connect your system](https://opescare.com/signup/organization).
+
+For the thinking behind it, read Jude Nshome's essay [The Record Is the Product](/blog/the-record-is-the-product).

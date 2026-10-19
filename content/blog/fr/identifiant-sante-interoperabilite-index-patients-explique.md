@@ -182,3 +182,5 @@ L'interopérabilité n'est pas une fonction isolée. C'est un empilement : un He
 OpesCare est un réseau privé d'identifiants santé centré sur le patient — premier identifiant santé du Cameroun et une première en son genre — qui fonctionne aux côtés des systèmes déjà en place dans les structures.
 
 **[Obtenez votre Health ID](https://opescare.com/signup/patient)** ou, si vous êtes développeur ou structure de santé, [consultez la documentation](https://opescare.com/docs) et [connectez votre système](https://opescare.com/signup/organization).
+
+Pour comprendre la vision qui sous-tend tout cela, lisez l'essai de Jude Nshome [Le dossier est le produit](/blog/le-dossier-est-le-produit).

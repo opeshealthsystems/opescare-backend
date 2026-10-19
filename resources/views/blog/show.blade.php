@@ -13,6 +13,11 @@
     $blXDefault = $blAlternates['en'] ?? $url;
     $blBlogUrl = \App\Http\Controllers\BlogController::localised(route('blog.index'), $post['locale']);
 
+    // A named person writes as a Person; the house byline stays an Organization.
+    $blAuthor = in_array($post['author'], ['OPES Health Systems', 'OpesCare'], true)
+        ? ['@type' => 'Organization', 'name' => $post['author'], 'url' => $blBase]
+        : array_filter(['@type' => 'Person', 'name' => $post['author'], 'description' => $post['author_bio'] ?? '' ?: null]);
+
     $blGraph = [
         [
             '@type'            => 'BlogPosting',
@@ -22,7 +27,7 @@
             'image'            => ['@type' => 'ImageObject', 'url' => $blImg, 'width' => 1200, 'height' => 630],
             'datePublished'    => $post['date'],
             'dateModified'     => $post['updated'],
-            'author'           => ['@type' => 'Organization', 'name' => $post['author'], 'url' => $blBase],
+            'author'           => $blAuthor,
             'publisher'        => [
                 '@type' => 'Organization',
                 '@id'   => $blBase . '/#organization',
@@ -102,8 +107,17 @@
     <link rel="stylesheet" href="{{ asset('css/blog.css') }}?v={{ @filemtime(public_path('css/blog.css')) ?: '1' }}">
 @endpush
 
+@if(!empty($post['has_diagrams']))
+@push('head')
+    <link rel="stylesheet" href="{{ asset('css/blog-diagrams.css') }}?v={{ @filemtime(public_path('css/blog-diagrams.css')) ?: '1' }}">
+@endpush
+@endif
+
 @push('scripts')
     <script @cspNonce src="{{ asset('js/blog.js') }}?v={{ @filemtime(public_path('js/blog.js')) ?: '1' }}" defer></script>
+    @if(!empty($post['has_diagrams']))
+    <script @cspNonce src="{{ asset('js/blog-diagrams.js') }}?v={{ @filemtime(public_path('js/blog-diagrams.js')) ?: '1' }}" defer></script>
+    @endif
 @endpush
 
 @section('content')
@@ -143,6 +157,9 @@
                     <a class="bl-langswitch" href="{{ \App\Http\Controllers\BlogController::postUrl($blT) }}" hreflang="{{ $blL }}" lang="{{ $blL }}">@include('partials.finder.icon', ['name' => 'languages', 'size' => 16]){{ __('blog.read_in', ['language' => __('blog.lang_' . $blL)]) }}</a>
                 @endif
             @endforeach
+            @if(!empty($post['downloadable']))
+                <a class="bl-download" href="{{ route('blog.download', $post['slug']) }}" download data-blog-download>@include('partials.finder.icon', ['name' => 'download', 'size' => 16]){{ __('blog.download_pdf') }}</a>
+            @endif
         </div>
     </header>
 
@@ -192,9 +209,27 @@
     @endif
 
     {{-- Rendered from Markdown with raw HTML escaped (see MarkdownRenderer). --}}
+    {{-- Diagram markers come only from MarkdownRenderer and resolve to whitelisted partials. --}}
     <div class="bl-prose">
-        {!! $post['html'] !!}
+        @foreach(\App\Support\Blog\BlogDiagrams::segments($post['html']) as $blSeg)
+            @if(isset($blSeg['diagram']))
+                {!! \App\Support\Blog\BlogDiagrams::render($blSeg['diagram']) !!}
+            @else
+                {!! $blSeg['html'] !!}
+            @endif
+        @endforeach
     </div>
+
+    @if(($post['author_bio'] ?? '') !== '')
+    <aside class="bl-box bl-author" aria-labelledby="bl-author">
+        <h2 id="bl-author">@include('partials.finder.icon', ['name' => 'user', 'size' => 18]){{ __('blog.about_author') }}</h2>
+        <p class="bl-author__name">{{ $post['author'] }}</p>
+        <p class="f-muted" style="margin:0">{{ $post['author_bio'] }}</p>
+        @if(!empty($post['downloadable']))
+            <p style="margin:.75rem 0 0"><a class="f-btn f-btn--ghost" href="{{ route('blog.download', $post['slug']) }}" download>@include('partials.finder.icon', ['name' => 'download', 'size' => 18]){{ __('blog.download_pdf_long') }}</a></p>
+        @endif
+    </aside>
+    @endif
 
     @if($post['faq'] !== [])
     <section class="bl-faq" aria-labelledby="bl-faq">

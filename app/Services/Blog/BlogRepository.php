@@ -14,7 +14,11 @@ use Throwable;
  *   title, slug, description, date, updated, author, category, tags[],
  *   translation_of, hero_alt, reading_minutes, key_takeaways[],
  *   faq[{q,a}], sources[{title,publisher,url,accessed}]
- * Optional: draft: true (never published).
+ * Optional: draft: true (never published); featured: true (takes the
+ * featured slot on /blog — the newest featured post wins, else the newest
+ * post); downloadable: true (offers /blog/{slug}/download.pdf); author_bio
+ * (an "About the author" box). A body line {{diagram:NAME}} embeds a
+ * whitelisted diagram (App\Support\Blog\BlogDiagrams).
  *
  * A file that fails to parse or lacks title/slug/date is skipped and logged,
  * never half-rendered. Parsed posts are cached as PLAIN ARRAYS (see the
@@ -37,6 +41,18 @@ class BlogRepository
 
         // A post dated in the future is scheduled, not published.
         return array_values(array_filter($this->load()[$locale] ?? [], fn ($p) => $p['date'] <= $today));
+    }
+
+    /** The post for the featured slot: newest with featured: true, else newest. */
+    public function featured(array $posts): ?array
+    {
+        foreach ($posts as $post) {
+            if (! empty($post['featured'])) {
+                return $post;
+            }
+        }
+
+        return $posts[0] ?? null;
     }
 
     public function find(string $locale, string $slug): ?array
@@ -173,7 +189,7 @@ class BlogRepository
             $fp .= $file . '|' . @filesize($file) . '|' . @filemtime($file) . ';';
         }
 
-        return 'blog.posts.v1.' . md5((string) config('blog.path') . $fp);
+        return 'blog.posts.v2.' . md5((string) config('blog.path') . $fp);
     }
 
     private function load(): array
@@ -280,6 +296,10 @@ class BlogRepository
             'date'            => $date,
             'updated'         => max($updated, $date),
             'author'          => trim((string) ($meta['author'] ?? '')) ?: 'OPES Health Systems',
+            'author_bio'      => trim((string) ($meta['author_bio'] ?? '')),
+            'featured'        => ($meta['featured'] ?? false) === true,
+            'downloadable'    => ($meta['downloadable'] ?? false) === true,
+            'has_diagrams'    => \App\Support\Blog\BlogDiagrams::has($rendered['html']),
             'category'        => $category,
             'category_slug'   => $category === '' ? '' : Str::slug($category),
             'tags'            => $list($meta['tags'] ?? []),

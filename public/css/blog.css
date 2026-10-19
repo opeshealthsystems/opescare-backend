@@ -110,3 +110,8 @@
   /* The sidebar carries search, topics and RSS on desktop. */
   .bl-layout .bl-hero .bl-tools, .bl-layout .bl-hero nav .bl-cats { display: none; }
 }
+
+/* Download PDF (posts with downloadable: true) and the About-the-author box. */
+.bl-download { display: inline-flex; align-items: center; gap: .4rem; font-size: .9rem; font-weight: 600; padding: .3rem .75rem; border: 1px solid #0F4C81; border-radius: 999px; color: #0F4C81; text-decoration: none; }
+.bl-download:hover, .bl-download:focus-visible { background: #0F4C81; color: #fff; }
+.bl-author__name { margin: 0 0 .35rem; font-weight: 700; color: #0F172A; }

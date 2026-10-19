@@ -174,3 +174,5 @@ On OpesCare, your record opens for the people caring for you and stays closed fo
 **[Get your free Health ID](https://opescare.com/signup/patient)** and take control of who sees your record. Questions? Visit [opescare.com/help](https://opescare.com/help).
 
 Related reading: [the Health ID, interoperability layer and MPI explained](/blog/health-id-interoperability-mpi-explained).
+
+Why consent sits at the centre of OpesCare: [The Record Is the Product](/blog/the-record-is-the-product), by Jude Nshome.

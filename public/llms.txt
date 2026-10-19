@@ -31,6 +31,7 @@ Stock and blood availability are reported by facilities and timestamped; OpesCar
 ## Blog
 
 - [OpesCare blog](https://opescare.com/blog): guides on finding medicines, blood and care in Cameroon
+- [The Record Is the Product](https://opescare.com/blog/the-record-is-the-product): flagship essay by founder Jude Nshome on OpesCare's patient-owned Health ID, consent, family access and offline design (PDF: https://opescare.com/blog/the-record-is-the-product/download.pdf; French: https://opescare.com/blog/le-dossier-est-le-produit)
 
 ## Optional
 

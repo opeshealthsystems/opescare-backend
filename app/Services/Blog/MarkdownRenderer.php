@@ -58,6 +58,16 @@ class MarkdownRenderer
             return '<h' . $m[1] . ' id="' . e($id) . '">' . $m[2] . '</h' . $m[1] . '>';
         }, $html);
 
+        // A paragraph that is exactly {{diagram:NAME}} embeds a whitelisted
+        // diagram (App\Support\Blog\BlogDiagrams). It becomes an inert marker
+        // resolved to a fixed Blade partial at render time; any other name is
+        // dropped. Raw HTML is escaped above, so a post cannot forge a marker.
+        $html = preg_replace_callback('/<p>\{\{\s*diagram:([^}<>\s]*)\s*\}\}<\/p>\n?/', function (array $m) {
+            $name = strtolower($m[1]);
+
+            return \App\Support\Blog\BlogDiagrams::exists($name) ? '<!--opescare-diagram:' . $name . "-->\n" : '';
+        }, $html);
+
         $html = preg_replace('/<img (?![^>]*loading=)/', '<img loading="lazy" decoding="async" ', $html);
         $html = preg_replace('/<table>/', '<div class="bl-table"><table>', $html);
         $html = str_replace('</table>', '</table></div>', $html);

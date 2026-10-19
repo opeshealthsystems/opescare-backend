@@ -64,8 +64,12 @@ class BlogController extends Controller
 
         $filtering = $query !== '' || $category !== null;
         $page = max(1, (int) $request->query('page', 1));
-        $featured = (! $filtering && $page === 1 && $all !== []) ? $all[0] : null;
-        $rest = $featured ? array_slice($all, 1) : $all;
+        // The featured post leads page 1 and is left out of the paginated grid.
+        $featured = ! $filtering ? $this->posts->featured($all) : null;
+        $rest = $featured ? array_values(array_filter($all, fn ($p) => $p['slug'] !== $featured['slug'])) : $all;
+        if ($page > 1) {
+            $featured = null;
+        }
 
         $perPage = (int) config('blog.per_page', 9);
         $paginator = new LengthAwarePaginator(
@@ -159,6 +163,83 @@ class BlogController extends Controller
                 fn ($p) => $p['slug'] !== $post['slug']
             )),
         ]);
+    }
+
+    /**
+     * The post as a typeset PDF (front matter downloadable: true).
+     *
+     * A blog post is public content, so the PDF is cacheable: it is rendered
+     * on the first request for a given version of the post and kept under
+     * storage/app/blog-pdf, keyed by a fingerprint of the post, the PDF view
+     * and the diagram labels. Editing any of those produces a new file; old
+     * ones are removed when the new one is written. Nothing here touches
+     * patient data.
+     */
+    public function download(string $slug)
+    {
+        $post = $this->posts->findAnywhere($slug, App::getLocale());
+        if ($post === null || empty($post['downloadable'])) {
+            abort(404);
+        }
+
+        App::setLocale($post['locale']);
+        \Carbon\Carbon::setLocale($post['locale']);
+
+        $fingerprint = md5(json_encode([
+            $post['slug'], $post['locale'], $post['updated'], md5($post['html']), $post['title'], $post['description'],
+            $post['faq'], $post['sources'], $post['key_takeaways'], $post['author'], $post['author_bio'] ?? '',
+            @filemtime(resource_path('views/pdf/blog-article.blade.php')),
+            @filemtime(resource_path('views/blog/diagrams/board.blade.php')),
+            @filemtime(lang_path($post['locale'] . '/blog_diagrams.php')),
+            @filemtime(lang_path($post['locale'] . '/blog.php')),
+            @filemtime(app_path('Support/Blog/DiagramPdf.php')),
+        ]));
+        $dir = storage_path('app/blog-pdf');
+        $file = $dir . DIRECTORY_SEPARATOR . $post['slug'] . '-' . $fingerprint . '.pdf';
+
+        if (! is_file($file)) {
+            if (! is_dir($dir)) {
+                @mkdir($dir, 0775, true);
+            }
+            $bytes = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.blog-article', [
+                'post' => $post,
+                'url'  => self::postUrl($post),
+            ])
+                ->setPaper('a4')
+                // `true` merges with the package defaults (keeps the chroot at base_path()).
+                ->setOptions([
+                    'defaultFont'             => 'DejaVu Sans',
+                    'isHtml5ParserEnabled'    => true,
+                    'isFontSubsettingEnabled' => true,
+                    'isRemoteEnabled'         => false,
+                    'dpi'                     => 96,
+                ], true)
+                ->output();
+
+            foreach (glob($dir . DIRECTORY_SEPARATOR . $post['slug'] . '-*.pdf') ?: [] as $old) {
+                @unlink($old);
+            }
+            file_put_contents($file, $bytes);
+        }
+
+        $name = self::pdfFilename($post);
+
+        return response()->file($file, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $name . '"',
+            'Cache-Control'       => 'public, max-age=86400',
+            'ETag'                => '"' . $fingerprint . '"',
+            'X-Robots-Tag'        => 'noindex',
+        ]);
+    }
+
+    /** "OpesCare-The-Record-Is-the-Product-Jude-Nshome.pdf" — ASCII, title words joined by hyphens. */
+    public static function pdfFilename(array $post): string
+    {
+        $title = trim(preg_split('/[:—–|]/u', $post['title'])[0]);
+        $clean = fn (string $s) => trim(preg_replace('/[^A-Za-z0-9]+/', '-', \Illuminate\Support\Str::ascii($s)), '-');
+
+        return implode('-', array_filter(['OpesCare', $clean($title), $clean($post['author'])])) . '.pdf';
     }
 
     /** RSS 2.0 feed of the current locale's posts. */

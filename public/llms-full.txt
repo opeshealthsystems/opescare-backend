@@ -65,6 +65,11 @@ Partner systems can send data to OpesCare using HL7 FHIR R4 (DiagnosticReport, I
 - Health professionals: https://opescare.com/signup/professional
 - Developers and partner systems: https://opescare.com/developers
 
+## Blog
+
+- OpesCare blog: https://opescare.com/blog (English) and https://opescare.com/blog?lang=fr (French)
+- Flagship essay — "The Record Is the Product" by Jude Nshome, founder of OpesCare: https://opescare.com/blog/the-record-is-the-product (French: https://opescare.com/blog/le-dossier-est-le-produit; PDF: https://opescare.com/blog/the-record-is-the-product/download.pdf). It explains the patient-owned Health ID, consent as a protocol (requests, ledger, revocation, access log, correction requests, audited break-glass), family act-as delegation, one app serving patient and four clinic roles, offline access with an encrypted outbox, and the current limits (mobile-money payments wait on merchant accounts; care is never gated on payment).
+
 ## Contact
 
 - Support: support@opescare.com

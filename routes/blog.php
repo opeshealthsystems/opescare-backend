@@ -17,6 +17,10 @@ Route::get('/blog',[BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/feed.xml', [BlogController::class, 'feed'])->name('blog.feed');
 Route::get('/blog/category/{category}', [BlogController::class, 'category'])
     ->where('category', '[a-z0-9-]+')->name('blog.category');
+// A typeset PDF of a post whose front matter says downloadable: true. Public
+// content, not patient data: rendered once per post version, cached on disk.
+Route::get('/blog/{slug}/download.pdf', [BlogController::class, 'download'])
+    ->where('slug', '[a-z0-9-]+')->middleware('throttle:30,1')->name('blog.download');
 Route::get('/blog/{slug}', [BlogController::class, 'show'])
     ->where('slug', '[a-z0-9-]+')->name('blog.show');
 Route::post('/blog/{slug}/comments', [BlogCommentController::class, 'store'])
