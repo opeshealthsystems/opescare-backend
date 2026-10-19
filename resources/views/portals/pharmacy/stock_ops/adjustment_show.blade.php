@@ -87,7 +87,7 @@
         </dd>
         @if($m->unit_cost !== null)
         <dt>{{ __('pharmacy_ops.col_line_cost') }}</dt>
-        <dd class="os-num">{{ number_format((int) $m->unit_cost, 0, ',', ' ') }} FCFA</dd>
+        <dd class="os-num">{{ \App\Services\Billing\Xaf::format((int) $m->unit_cost) }}</dd>
         @endif
     </dl>
 </section>

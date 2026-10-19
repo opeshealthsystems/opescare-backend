@@ -71,6 +71,8 @@ return [
     'public_health_admin_role'      => 'Public Health Admin',
     'public_health_officer_role'    => 'Public Health Officer',
     'queue_manager_role'            => 'Queue Manager',
+    'refund_approver_role'          => 'Refund Approver',
+    'wallet_ops_role'               => 'Wallet Operations',
     'receptionist_role'             => 'Receptionist',
     'records_officer_role'          => 'Records Officer',
     'resident_doctor_role'          => 'Resident Doctor',

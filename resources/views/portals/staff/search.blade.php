@@ -112,14 +112,29 @@
                             <td data-label="{{ __('public.staff_portal.col_title', [], $l) }}">
                                 <span class="odc-filecell">
                                     <span class="od-list__icon od-tint--{{ $typeTint[$type] ?? 'blue' }}"><i data-lucide="{{ $typeIcon[$type] ?? 'circle' }}"></i></span>
-                                    <span class="od-table__name">{{ $item['title'] }}</span>
+                                    @php
+                                        // Only link a row whose show route exists; anything
+                                        // else stays plain text rather than a dead link.
+                                        $__route = $item['route'] ?? null;
+                                        $__href = ($__route && \Illuminate\Support\Facades\Route::has($__route[0])) ? route($__route[0], $__route[1] ?? []) : null;
+                                    @endphp
+                                    @if($__href)
+                                        <a href="{{ $__href }}" class="od-table__name">{{ $item['title'] }}</a>
+                                    @else
+                                        <span class="od-table__name">{{ $item['title'] }}</span>
+                                    @endif
                                 </span>
                             </td>
                             <td data-label="{{ __('public.staff_portal.col_details', [], $l) }}" class="od-muted">{{ $item['subtitle'] ?? '—' }}</td>
                             <td data-label="{{ __('public.staff_portal.col_metadata', [], $l) }}">
-                                @foreach($item['metadata'] ?? [] as $mk => $mv)
-                                    @if($mv !== null && $mv !== '')
-                                        <span class="od-table__sub">{{ $mk }}: <span class="odc-mono">{{ is_array($mv) ? json_encode($mv) : $mv }}</span></span>
+                                @php
+                                    // Known, human-meaningful fields only. Internal ids and
+                                    // nested structures are not shown.
+                                    $__meta = $item['metadata'] ?? [];
+                                @endphp
+                                @foreach(['status' => 'public.staff_portal.meta_status', 'document_number' => 'public.staff_portal.meta_document_number', 'verification_code' => 'public.staff_portal.meta_verification_code'] as $mk => $mlabel)
+                                    @if(isset($__meta[$mk]) && is_scalar($__meta[$mk]) && $__meta[$mk] !== '')
+                                        <span class="od-table__sub">{{ __($mlabel, [], $l) }}: <span class="odc-mono">{{ $__meta[$mk] }}</span></span>
                                     @endif
                                 @endforeach
                             </td>

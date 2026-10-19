@@ -21,12 +21,20 @@
 @capability('imaging', 'messaging')
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('imaging_desk.title', [], $l) }}</div>
-    @capability('imaging')
-    <a href="{{ route('portals.imaging.index') }}" class="sidebar-link {{ request()->routeIs('portals.imaging.index') && ! request()->has('tab') ? 'active' : '' }}">
-        <i data-lucide="layout-dashboard"></i><span>{{ __('imaging_desk.nav', [], $l) }}</span>
+    {{-- The centre landing (routes/diagnostic.php): lab + imaging on one page,
+         only where the facility IS a centre (same guard as lab_manager). --}}
+    @php $__diagFid = app(\App\Services\Portal\PortalContextService::class)->facilityId(); @endphp
+    @if(\App\Services\DiagnosticCentre\DiagnosticCentreDashboardService::appliesTo($__diagFid))
+    @capability('lab_results', 'imaging')
+    <a href="{{ route('portals.diagnostic.dashboard') }}" class="sidebar-link {{ request()->routeIs('portals.diagnostic.dashboard') ? 'active' : '' }}">
+        <i data-lucide="layout-grid"></i><span>{{ __('diagnostic_desk.nav', [], $l) }}</span>
     </a>
-    <a href="{{ route('portals.imaging.index', ['tab' => 'pending']) }}" class="sidebar-link {{ request()->routeIs('portals.imaging.index', 'portals.imaging.show') && request()->has('tab') ? 'active' : '' }}">
-        <i data-lucide="list-checks"></i><span>{{ __('imaging_desk.nav_worklist', [], $l) }}</span>
+    @endcapability
+    @endif
+    @capability('imaging')
+    {{-- One entry for the desk: the worklist is its default view. --}}
+    <a href="{{ route('portals.imaging.index') }}" class="sidebar-link {{ request()->routeIs('portals.imaging.index', 'portals.imaging.show') ? 'active' : '' }}">
+        <i data-lucide="scan-search"></i><span>{{ __('imaging_desk.nav', [], $l) }}</span>
     </a>
     <a href="{{ route('portals.imaging.create') }}" class="sidebar-link {{ request()->routeIs('portals.imaging.create') ? 'active' : '' }}">
         <i data-lucide="plus-circle"></i><span>{{ __('imaging_desk.nav_new', [], $l) }}</span>

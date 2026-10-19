@@ -90,6 +90,11 @@ class RolesSeeder extends Seeder
         ['receptionist',         'front_desk_operations',   'receptionist',         'Receptionist / Front Desk'],
         ['front_desk',           'front_desk_operations',   'receptionist',         'Front Desk Officer'],
         ['records_officer',      'front_desk_operations',   'records_officer',      'Records Officer'],
+        // 2026-10-19: both were capability-map roles (config/staff_capabilities.php
+        // $frontDesk) and StaffAccountsSeeder users, but had no roles row, so
+        // their accounts carried role_id = null. Same desk as the receptionist.
+        ['appointment_coordinator','front_desk_operations', 'receptionist',         'Appointment Coordinator'],
+        ['queue_manager',        'front_desk_operations',   'receptionist',         'Queue Manager'],
 
         // Laboratory
         ['labtech',              'laboratory',              'labtech',              'Lab Technician'],
@@ -113,6 +118,11 @@ class RolesSeeder extends Seeder
         ['cashier',              'billing_finance',         'receptionist',         'Cashier'],
         ['billing_officer',      'billing_finance',         'receptionist',         'Billing Officer'],
         ['finance_manager',      'billing_finance',         'receptionist',         'Finance Manager'],
+        // 2026-10-19: named in $billing and refund_approve but never seeded.
+        // The receptionist profile carries the billing block (invoices,
+        // sessions, refunds) both roles need.
+        ['refund_approver',      'billing_finance',         'receptionist',         'Refund Approver'],
+        ['wallet_ops',           'billing_finance',         'receptionist',         'Wallet Operations'],
 
         // Insurance
         ['insurance_reviewer',   'insurance',               'insurance_reviewer',   'Insurance Reviewer'],

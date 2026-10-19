@@ -83,7 +83,7 @@
                     <td class="os-num">{{ $r['quantity'] ?? '—' }}</td>
                     <td>{{ $r['batch'] }}</td>
                     <td>{{ $r['expiry'] ?? '—' }}</td>
-                    <td class="os-num">{{ $r['unit_price'] !== null ? number_format($r['unit_price'], 0, ',', ' ') . ' FCFA' : '—' }}</td>
+                    <td class="os-num">{{ $r['unit_price'] !== null ? \App\Services\Billing\Xaf::format(\App\Services\Billing\Xaf::int($r['unit_price'])) : '—' }}</td>
                     <td>
                         @include('portals.pharmacy.stock_ops._pill', ['tone' => $r['status'] === 'ok' ? 'ok' : ($r['status'] === 'review' ? 'low' : 'expired'), 'label' => __('pharmacy_stock_import.status_' . $r['status'])])
                         @foreach($r['errors'] as [$key, $params])

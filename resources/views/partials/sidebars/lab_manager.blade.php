@@ -38,7 +38,7 @@
     {{-- The bench: worklist, result entry, release, validation. Same gate as routes/lab.php. --}}
     @capability('lab_results')
     <a href="{{ route('portals.lab_manager.dashboard') }}" class="sidebar-link {{ request()->routeIs('portals.lab_manager.dashboard') ? 'active' : '' }}">
-        <i data-lucide="layout-dashboard"></i><span>{{ __('lab_manager.nav_dashboard', [], $l) }}</span>
+        <i data-lucide="gauge"></i><span>{{ __('lab_manager.nav_dashboard', [], $l) }}</span>
     </a>
     <a href="{{ route('portals.lab_manager.requests') }}" class="sidebar-link {{ request()->routeIs('portals.lab_manager.requests') ? 'active' : '' }}">
         <i data-lucide="inbox"></i><span>{{ __('lab_manager.nav_requests', [], $l) }}</span>
@@ -56,8 +56,13 @@
     @endcapability
     {{-- The imaging half of a diagnostic centre (routes/imaging_desk.php). --}}
     @capability('imaging')
-    <a href="{{ route('portals.imaging.index') }}" class="sidebar-link {{ request()->routeIs('portals.imaging.*') ? 'active' : '' }}">
+    <a href="{{ route('portals.imaging.index') }}" class="sidebar-link {{ request()->routeIs('portals.imaging.*') && ! request()->routeIs('portals.imaging.reports.*') ? 'active' : '' }}">
         <i data-lucide="scan"></i><span>{{ __('imaging_desk.title', [], $l) }}</span>
+    </a>
+    @endcapability
+    @capability('imaging_report')
+    <a href="{{ route('portals.imaging.reports.index') }}" class="sidebar-link {{ request()->routeIs('portals.imaging.reports.index') ? 'active' : '' }}">
+        <i data-lucide="file-text"></i><span>{{ __('imaging_desk.nav_reports', [], $l) }}</span>
     </a>
     @endcapability
     {{-- Blood Bank is NOT behind @feature('inventory_ops'). It is carved out of
@@ -103,7 +108,7 @@
          route does, so a role without it sees no dead link. --}}
     @capability('service_catalogue')
     <a href="{{ route('portals.facility.catalogue') }}" class="sidebar-link {{ request()->routeIs('portals.facility.catalogue*') ? 'active' : '' }}">
-        <i data-lucide="clipboard-list"></i><span>{{ __('catalogue.nav', [], $l) }}</span>
+        <i data-lucide="book-open"></i><span>{{ __('catalogue.nav', [], $l) }}</span>
     </a>
     @endcapability
 </div>

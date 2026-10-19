@@ -37,16 +37,16 @@
 {{-- ── Filters. Exact Health ID only: no name search on this desk. ──────── --}}
 <div class="od-card">
     <div class="od-card__body">
-        <form method="GET" action="{{ $isReports ? route('portals.imaging.reports.index') : route('portals.imaging.index') }}" class="form-grid">
+        <form method="GET" action="{{ $isReports ? route('portals.imaging.reports.index') : route('portals.imaging.index') }}" class="odl-fgrid">
             @unless($isReports)<input type="hidden" name="tab" value="{{ $tab }}">@endunless
-            <div class="form-group">
-                <label class="form-label" for="img-health-id">{{ __('imaging_desk.health_id') }}</label>
+            <div class="odl-field">
+                <label class="odl-label" for="img-health-id">{{ __('imaging_desk.health_id') }}</label>
                 <input type="text" id="img-health-id" name="health_id" class="od-input"
                        value="{{ $filters['health_id'] ?? '' }}" autocomplete="off" maxlength="64">
-                <div class="form-hint">{{ __('imaging_desk.health_id_hint') }}</div>
+                <div class="odl-hint">{{ __('imaging_desk.health_id_hint') }}</div>
             </div>
-            <div class="form-group">
-                <label class="form-label" for="img-modality">{{ __('imaging_desk.filter_modality') }}</label>
+            <div class="odl-field">
+                <label class="odl-label" for="img-modality">{{ __('imaging_desk.filter_modality') }}</label>
                 <select id="img-modality" name="modality" class="od-input">
                     <option value="">{{ __('imaging_desk.any') }}</option>
                     @foreach($modalities as $m)
@@ -54,8 +54,8 @@
                     @endforeach
                 </select>
             </div>
-            <div class="form-group">
-                <label class="form-label" for="img-urgency">{{ __('imaging_desk.filter_urgency') }}</label>
+            <div class="odl-field">
+                <label class="odl-label" for="img-urgency">{{ __('imaging_desk.filter_urgency') }}</label>
                 <select id="img-urgency" name="urgency" class="od-input">
                     <option value="">{{ __('imaging_desk.any') }}</option>
                     @foreach($urgencies as $u)
@@ -63,11 +63,11 @@
                     @endforeach
                 </select>
             </div>
-            <div class="form-group">
-                <label class="form-label" for="img-date">{{ __('imaging_desk.filter_date') }}</label>
+            <div class="odl-field">
+                <label class="odl-label" for="img-date">{{ __('imaging_desk.filter_date') }}</label>
                 <input type="date" id="img-date" name="date" class="od-input" value="{{ $filters['date'] ?? '' }}">
             </div>
-            <div class="form-group od-row">
+            <div class="odl-field od-row">
                 <button type="submit" class="od-btn od-btn--primary"><i data-lucide="filter"></i> <span>{{ __('imaging_desk.apply_filters') }}</span></button>
                 @if($queryBase)
                     <a href="{{ $isReports ? route('portals.imaging.reports.index') : route('portals.imaging.index', ['tab' => $tab]) }}" class="od-btn od-btn--secondary">{{ __('imaging_desk.clear') }}</a>

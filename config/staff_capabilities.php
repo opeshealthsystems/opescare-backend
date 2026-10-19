@@ -108,7 +108,9 @@ return [
         // for the centre; the doctor for intake only — a referral is written
         // by the clinician who wants the image. Deliberately NOT the front
         // desk and NOT students/interns.
-        'imaging' => [...$imaging, 'lab_manager', 'labtech', 'facility_admin', 'doctor'],
+        // 2026-10-19 (owner's decision): the whole doctor family and the medical
+        // supervisor may refer for imaging and read the desk, not 'doctor' alone.
+        'imaging' => [...$imaging, 'lab_manager', 'labtech', 'facility_admin', ...$doctors, ...$supervisors],
 
         // Write, finalise, amend and distribute a radiology report. The
         // radiologist signs it; the lab manager answers for the centre's

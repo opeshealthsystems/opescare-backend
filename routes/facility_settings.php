@@ -51,9 +51,13 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'capability:service_catalogue'
     Route::post('/facility/settings/photo', [FacilitySettingsController::class, 'updatePhoto'])
         ->name('portals.facility.settings.photo');
     // Public services (care_facility_services) — what the Finder profile
-    // lists. Before this, a facility admin could only publish services
-    // through /portals/listing, which needs an approved claim and has no
-    // sidebar link: a health centre could not say "vaccination / ANC".
+    // lists. 2026-10-19 (owner's decision): the service CATALOGUE
+    // (/facility/catalogue, portals.facility.catalogue) is the canonical
+    // editor for a facility's services. These two writes stay only because
+    // existing callers and tests post to them; there is no menu link to them,
+    // and a GET on the path is redirected to the catalogue with a note.
+    Route::get('/facility/settings/services', static fn () => redirect()->route('portals.facility.catalogue')->with('success', __('facility_settings.services_moved_to_catalogue')))
+        ->name('portals.facility.settings.services');
     Route::post('/facility/settings/services', [FacilitySettingsController::class, 'storeService'])
         ->name('portals.facility.settings.services.store');
     Route::delete('/facility/settings/services/{service}', [FacilitySettingsController::class, 'destroyService'])

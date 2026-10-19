@@ -98,7 +98,7 @@ body.od--lab .odl-details[open] > .odl-form {
 body.od--lab .odl-details--block[open] > .odl-form { position: static; width: auto; border: 0; padding: 12px 0 0; }
 body.od--lab .odl-form { display: flex; flex-direction: column; gap: 8px; }
 body.od--lab .odl-form .od-btn { align-self: flex-start; }
-body.od--lab .odl-label, body.od--lab .odl .form-label { font-size: 13px; font-weight: 600; color: var(--od-ink-h, #0F2340); }
+body.od--lab .odl-label { font-size: 13px; font-weight: 600; color: var(--od-ink-h, #0F2340); }
 body.od--lab .odl-rowactions { white-space: nowrap; }
 body.od--lab .odl-rowactions > form { display: inline-block; vertical-align: middle; }
 body.od--lab .odl-callback > * { vertical-align: middle; }
@@ -122,16 +122,16 @@ body.od--lab .odl-facts__wide { grid-column: 1 / -1; }
 body.od--lab .odl-alertline { color: var(--od-urgent, #B3261E); }
 body.od--lab .odl-alertline svg { width: 16px; height: 16px; vertical-align: -3px; }
 
-/* ── Legacy form markup on the imaging pages, drawn in the desk idiom ──── */
-body.od--lab .odl .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px 20px; align-items: start; }
-body.od--lab .odl .form-grid > .form-group.od-row { flex-direction: row; align-items: center; padding-top: 26px; }
-body.od--lab .odl .form-group { display: flex; flex-direction: column; gap: 6px; margin: 0 0 14px; min-width: 0; }
-body.od--lab .odl .form-grid > .form-group { margin: 0; }
-body.od--lab .odl .form-hint { font-size: 12px; font-weight: 500; color: var(--od-muted, #5B6B82); }
-body.od--lab .odl .form-label-required::after { content: " *"; color: var(--od-urgent, #B3261E); }
+/* ── Desk form markup (imaging pages) ─────────────────────────────────── */
+body.od--lab .odl-fgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px 20px; align-items: start; }
+body.od--lab .odl-fgrid > .odl-field.od-row { flex-direction: row; align-items: center; padding-top: 26px; }
+body.od--lab .odl-field { display: flex; flex-direction: column; gap: 6px; margin: 0 0 14px; min-width: 0; }
+body.od--lab .odl-fgrid > .odl-field { margin: 0; }
+body.od--lab .odl-hint { font-size: 12px; font-weight: 500; color: var(--od-muted, #5B6B82); }
+body.od--lab .odl-label--req::after { content: " *"; color: var(--od-urgent, #B3261E); }
 body.od--lab .odl textarea.od-input { height: auto; min-height: 88px; padding: 12px 14px; line-height: 1.5; }
 body.od--lab .odl .od-empty h3 { margin: 0; font-size: 16px; font-weight: 700; color: var(--od-ink-h, #0F2340); }
-body.od--lab .odl .mt-2 { margin-top: 8px; }
+body.od--lab .odl-mt { margin-top: 8px; }
 
 /* ── Pager ──────────────────────────────────────────────────────────────── */
 body.od--lab .odl-pager { padding: 16px 0 0; }

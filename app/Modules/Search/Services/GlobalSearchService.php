@@ -67,6 +67,9 @@ class GlobalSearchService
                 'type' => 'facility',
                 'title' => $facility->facility_name,
                 'subtitle' => $facility->facility_type,
+                // The public directory profile is the one page every viewer
+                // may open for a register row (public.care-map.profile).
+                'route' => ['public.care-map.profile', ['id' => $facility->id]],
                 'metadata' => ['id' => $facility->id, 'status' => $facility->listing_status],
             ]);
 

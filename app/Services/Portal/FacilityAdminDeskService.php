@@ -524,6 +524,15 @@ class FacilityAdminDeskService
             ->paginate($perPage);
     }
 
+    /** One of this facility's invoices with its lines, or null (never another facility's). */
+    public function invoice(string $facilityId, string $id): ?Invoice
+    {
+        return Invoice::query()
+            ->where('facility_id', $facilityId)
+            ->with('items')
+            ->find($id);
+    }
+
     /** @return array<string, \App\Models\Patient> keyed by patient id, demo scope lifted for ids already ours */
     public function patientsFor(iterable $invoices): array
     {

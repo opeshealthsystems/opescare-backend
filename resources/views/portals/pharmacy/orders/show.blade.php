@@ -28,7 +28,7 @@
         'collected'  => $reservation->isDelivery() ? null : $reservation->collected_at,
         'cancelled'  => $reservation->cancelled_at,
     ];
-    $money = fn ($v) => $v !== null ? number_format((float) $v, 0, ',', ' ') . ' FCFA' : null;
+    $money = fn ($v) => $v !== null ? \App\Services\Billing\Xaf::format(\App\Services\Billing\Xaf::int($v)) : null;
 @endphp
 
 @section('head')

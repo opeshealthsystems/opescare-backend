@@ -192,7 +192,14 @@ class StaffAccountsSeeder extends Seeder
                 ->orWhere('email', $email)
                 ->exists();
 
-            if (!$exists) {
+            if ($exists) {
+                // A user seeded before their role existed kept role_id = null;
+                // give it the real role now, never overwriting a set one.
+                if ($roleId = $roleMap[$roleName] ?? null) {
+                    DB::table('users')->where('id', $userId)->whereNull('role_id')
+                        ->update(['role_id' => $roleId, 'updated_at' => now()]);
+                }
+            } else {
                 $roleId = $roleMap[$roleName] ?? null;
 
                 DB::table('users')->insert([

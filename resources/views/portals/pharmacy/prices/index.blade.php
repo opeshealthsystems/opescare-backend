@@ -88,7 +88,7 @@
                             <div class="os-money">
                                 <input type="number" name="price_xaf" class="os-input os-input--num" step="1" min="0" max="{{ $maxPrice }}" inputmode="numeric" required
                                        value="{{ old('price_xaf', $item->selling_price_xaf) }}" aria-label="{{ __('pharmacy_prices.col_price') }}">
-                                <span class="os-money__unit">FCFA</span>
+                                <span class="os-money__unit">{{ \App\Services\Payments\Domain\Money::symbolFor('XAF') }}</span>
                             </div>
                             <input type="text" name="reason" class="os-input os-input--reason" maxlength="120" placeholder="{{ __('pharmacy_prices.lbl_reason') }}" aria-label="{{ __('pharmacy_prices.lbl_reason') }}">
                         </form>
@@ -104,7 +104,7 @@
                         @elseif($shown === null)
                             @include('portals.pharmacy.stock_ops._pill', ['tone' => 'reorder', 'label' => __('pharmacy_prices.published_no_price')])
                         @else
-                            <span class="os-cell__main os-num">{{ number_format($shown, 0, ',', ' ') }} {{ $row->currency ?: 'XAF' }}</span>
+                            <span class="os-cell__main os-num">{{ \App\Services\Billing\Xaf::format(\App\Services\Billing\Xaf::int($shown)) }}</span>
                             @include('portals.pharmacy.stock_ops._pill', ['tone' => $differs ? 'reorder' : 'ok', 'label' => $differs ? __('pharmacy_prices.differs') : __('pharmacy_prices.in_sync')])
                         @endif
                     </td>

@@ -51,6 +51,8 @@ return [
     'public_health_admin_role'      => 'Admin santé publique',
     'public_health_officer_role'    => 'Agent de santé publique',
     'queue_manager_role'            => "Gestionnaire de file d'attente",
+    'refund_approver_role'          => 'Approbateur de remboursements',
+    'wallet_ops_role'               => 'Opérations portefeuille',
     'receptionist_role'             => 'Réceptionniste',
     'records_officer_role'          => 'Agent des dossiers',
     'resident_doctor_role'          => 'Médecin résident',

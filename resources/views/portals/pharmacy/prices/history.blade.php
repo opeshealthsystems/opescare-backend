@@ -24,7 +24,7 @@
 <div class="os-kpis os-kpis--2">
     @include('portals.pharmacy.stock_ops._kpi', ['tone' => 'blue', 'icon' => 'coins',
         'label' => __('pharmacy_prices.col_price'),
-        'value' => $item->selling_price_xaf !== null ? number_format($item->selling_price_xaf, 0, ',', ' ') . ' FCFA' : '—',
+        'value' => $item->selling_price_xaf !== null ? \App\Services\Billing\Xaf::format((int) $item->selling_price_xaf) : '—',
         'sub' => $name])
     @include('portals.pharmacy.stock_ops._kpi', ['tone' => 'teal', 'icon' => 'history',
         'label' => __('pharmacy_prices.sum_changes'), 'value' => $changes->total()])
@@ -59,11 +59,11 @@
                         @if($c->old_price_xaf === null)
                             @include('portals.pharmacy.stock_ops._pill', ['tone' => 'neutral', 'label' => __('pharmacy_prices.no_price_yet')])
                         @else
-                            {{ number_format($c->old_price_xaf, 0, ',', ' ') }} FCFA
+                            {{ \App\Services\Billing\Xaf::format((int) $c->old_price_xaf) }}
                         @endif
                     </td>
                     <td data-label="{{ __('pharmacy_prices.col_new') }}" class="os-num">
-                        {{ number_format($c->new_price_xaf, 0, ',', ' ') }} FCFA
+                        {{ \App\Services\Billing\Xaf::format((int) $c->new_price_xaf) }}
                         @if($delta !== null && $delta !== 0)
                             <span class="os-cell__sub {{ $delta > 0 ? 'os-out' : 'os-in' }}">{{ $delta > 0 ? '+' : '' }}{{ number_format($delta, 0, ',', ' ') }}</span>
                         @endif

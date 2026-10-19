@@ -13,7 +13,7 @@
 </div>
 
 <div class="sidebar-nav-section">
-    <div class="sidebar-nav-label">{{ __('public.portal.nav_administration', [], $l) }}</div>
+    <div class="sidebar-nav-label">{{ __('public.portal.nav_facility', [], $l) }}</div>
     {{-- The route is gated by capability:facility_team. Unguarded, this link
          was right only while branch_admin happened to hold that capability;
          point another role at this partial and it becomes a 403 in the nav. --}}
@@ -23,24 +23,27 @@
     </a>
     {{-- Read-only invoices and the free-text department grouping: both live
          under the overview and share its capability (routes/facility_admin.php). --}}
-    <a href="{{ route('portals.facility.admin.invoices') }}" class="sidebar-link sidebar-link--sub {{ request()->routeIs('portals.facility.admin.invoices') ? 'active' : '' }}">
+    <a href="{{ route('portals.facility.admin.invoices') }}" class="sidebar-link sidebar-link--sub {{ request()->routeIs('portals.facility.admin.invoices*') ? 'active' : '' }}">
         <i data-lucide="receipt-text"></i><span>{{ __('facility_admin.nav_invoices', [], $l) }}</span>
     </a>
+    @php
+        // Same guard as facility_admin: wards only where patients are
+        // admitted (or wards already exist); a diagnostic or imaging centre
+        // admits nobody and has no departments to group, so both hide there.
+        $__fid = app(\App\Services\Portal\PortalContextService::class)->facilityId();
+        $__type = \App\Services\DiagnosticCentre\DiagnosticCentreDashboardService::facilityType($__fid);
+        $__isCentre = \App\Services\DiagnosticCentre\DiagnosticCentreDashboardService::appliesToType($__type);
+        $__showWards = ! $__isCentre && (in_array($__type, ['hospital', 'maternity', 'health_center'], true)
+            || ($__fid && \Illuminate\Support\Facades\DB::table('wards')->where('facility_id', $__fid)->exists()));
+    @endphp
+    @unless($__isCentre)
     <a href="{{ route('portals.facility.admin.departments') }}" class="sidebar-link sidebar-link--sub {{ request()->routeIs('portals.facility.admin.departments') ? 'active' : '' }}">
         <i data-lucide="layout-grid"></i><span>{{ __('facility_admin.nav_departments', [], $l) }}</span>
     </a>
+    @endunless
     <a href="{{ route('portals.facility.admin.reports') }}" class="sidebar-link sidebar-link--sub {{ request()->routeIs('portals.facility.admin.reports*') ? 'active' : '' }}">
         <i data-lucide="bar-chart-3"></i><span>{{ __('facility_admin.nav_reports', [], $l) }}</span>
     </a>
-    @php
-        // Wards and beds only mean something where patients are admitted. A
-        // clinic, lab, dental or eye practice has none; the link was noise.
-        // A facility that has recorded wards keeps the link whatever its type.
-        $__fid = app(\App\Services\Portal\PortalContextService::class)->facilityId();
-        $__type = $__fid ? \App\Models\Facility::withoutGlobalScopes()->whereKey($__fid)->value('type') : null;
-        $__showWards = in_array($__type, ['hospital', 'maternity', 'health_center'], true)
-            || ($__fid && \Illuminate\Support\Facades\DB::table('wards')->where('facility_id', $__fid)->exists());
-    @endphp
     @if($__showWards)
     <a href="{{ route('portals.facility.admin.wards') }}" class="sidebar-link sidebar-link--sub {{ request()->routeIs('portals.facility.admin.wards*') ? 'active' : '' }}">
         <i data-lucide="bed"></i><span>{{ __('facility_admin.nav_wards', [], $l) }}</span>
@@ -54,13 +57,12 @@
     @endcapability
     @capability('facility_team')
     <a href="{{ route('portals.facility.team') }}" class="sidebar-link {{ request()->routeIs('portals.facility.team*') ? 'active' : '' }}">
-        <i data-lucide="users"></i>
-        <span>{{ __('team.page_title', [], $l) }}</span>
+        <i data-lucide="users"></i><span>{{ __('public.portal.nav_team', [], $l) }}</span>
     </a>
     @endcapability
     @capability('service_catalogue')
     <a href="{{ route('portals.facility.catalogue') }}" class="sidebar-link {{ request()->routeIs('portals.facility.catalogue*') ? 'active' : '' }}">
-        <i data-lucide="clipboard-list"></i><span>{{ __('catalogue.nav', [], $l) }}</span>
+        <i data-lucide="book-open"></i><span>{{ __('catalogue.nav', [], $l) }}</span>
     </a>
     @endcapability
     @capability('queue')
@@ -68,6 +70,17 @@
         <i data-lucide="list-ordered"></i><span>{{ __('queue_desk.nav', [], $l) }}</span>
     </a>
     @endcapability
+</div>
+
+{{-- Tasks + Help (routes/imports_tasks.php). No capability gates these
+     routes: every operational role has an inbox and may raise a ticket. --}}
+<div class="sidebar-nav-section">
+    <a href="{{ route('portals.staff.tasks') }}" class="sidebar-link {{ request()->routeIs('portals.staff.tasks*') ? 'active' : '' }}">
+        <i data-lucide="check-square"></i><span>{{ __('tasks.nav', [], $l) }}</span>
+    </a>
+    <a href="{{ route('portals.staff.support') }}" class="sidebar-link {{ request()->routeIs('portals.staff.support*') ? 'active' : '' }}">
+        <i data-lucide="life-buoy"></i><span>{{ __('support.nav', [], $l) }}</span>
+    </a>
 </div>
 
 {{-- Self-gating: renders nothing unless this user holds more than one active posting. --}}

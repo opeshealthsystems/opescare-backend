@@ -80,7 +80,7 @@
          route does, so a role without it sees no dead link. --}}
     @capability('service_catalogue')
     <a href="{{ route('portals.facility.catalogue') }}" class="sidebar-link {{ request()->routeIs('portals.facility.catalogue*') ? 'active' : '' }}">
-        <i data-lucide="clipboard-list"></i><span>{{ __('catalogue.nav', [], $l) }}</span>
+        <i data-lucide="book-open"></i><span>{{ __('catalogue.nav', [], $l) }}</span>
     </a>
     @endcapability
 </div>

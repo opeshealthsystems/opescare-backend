@@ -47,9 +47,9 @@
 <div class="od-card">
     <div class="od-card__head"><h2 class="od-card__title">{{ __('imaging_desk.order_title') }}</h2></div>
     <div class="od-card__body">
-        <div class="form-grid">
-            <div class="form-group">
-                <div class="form-label">{{ __('imaging_desk.patient') }}</div>
+        <div class="odl-fgrid">
+            <div class="odl-field">
+                <div class="odl-label">{{ __('imaging_desk.patient') }}</div>
                 <div class="od-strong">{{ $pName !== '' ? $pName : '—' }}</div>
                 <div class="od-muted">
                     {{ $p?->health_id ?? '—' }}
@@ -57,44 +57,44 @@
                     @if($p?->sex) &middot; @enum($p->sex) @endif
                 </div>
             </div>
-            <div class="form-group">
-                <div class="form-label">{{ __('imaging_desk.accession') }}</div>
+            <div class="odl-field">
+                <div class="odl-label">{{ __('imaging_desk.accession') }}</div>
                 <div class="od-strong">{{ $order->accession_number ?: '—' }}</div>
             </div>
-            <div class="form-group">
-                <div class="form-label">{{ __('imaging_desk.ordered_by') }}</div>
+            <div class="odl-field">
+                <div class="odl-label">{{ __('imaging_desk.ordered_by') }}</div>
                 <div>{{ $order->orderedBy?->name ?? __('imaging_desk.unknown') }}</div>
                 <div class="od-muted">{{ $order->ordered_at?->translatedFormat('d M Y H:i') ?? '—' }}</div>
             </div>
             @if($order->referring_physician)
-            <div class="form-group">
-                <div class="form-label">{{ __('imaging_desk.referring_physician') }}</div>
+            <div class="odl-field">
+                <div class="odl-label">{{ __('imaging_desk.referring_physician') }}</div>
                 <div>{{ $order->referring_physician }}</div>
             </div>
             @endif
-            <div class="form-group">
-                <div class="form-label">{{ __('imaging_desk.scheduled_at') }}</div>
+            <div class="odl-field">
+                <div class="odl-label">{{ __('imaging_desk.scheduled_at') }}</div>
                 <div>{{ $order->scheduled_at?->translatedFormat('d M Y H:i') ?? __('imaging_desk.not_yet') }}</div>
             </div>
-            <div class="form-group">
-                <div class="form-label">{{ __('imaging_desk.completed_at') }}</div>
+            <div class="odl-field">
+                <div class="odl-label">{{ __('imaging_desk.completed_at') }}</div>
                 <div>{{ $order->completed_at?->translatedFormat('d M Y H:i') ?? __('imaging_desk.not_yet') }}</div>
             </div>
             @if($order->clinical_indication)
-            <div class="form-group">
-                <div class="form-label">{{ __('imaging_desk.clinical_indication') }}</div>
+            <div class="odl-field">
+                <div class="odl-label">{{ __('imaging_desk.clinical_indication') }}</div>
                 <div>{{ $order->clinical_indication }}</div>
             </div>
             @endif
             @if($order->notes)
-            <div class="form-group">
-                <div class="form-label">{{ __('imaging_desk.notes') }}</div>
+            <div class="odl-field">
+                <div class="odl-label">{{ __('imaging_desk.notes') }}</div>
                 <div class="od-muted">{!! nl2br(e($order->notes)) !!}</div>
             </div>
             @endif
             @if($order->cancel_reason)
-            <div class="form-group">
-                <div class="form-label">{{ __('imaging_desk.cancel_reason') }}</div>
+            <div class="odl-field">
+                <div class="odl-label">{{ __('imaging_desk.cancel_reason') }}</div>
                 <div>{{ $order->cancel_reason }}</div>
             </div>
             @endif
@@ -108,12 +108,14 @@
     <div class="od-table-wrap">
         <table class="od-table">
             <tbody>
-            @foreach($timeline as $row)
+            @forelse($timeline as $row)
                 <tr>
                     <td class="od-strong">{{ __('imaging_desk.timeline.' . $row['key']) }}</td>
                     <td class="od-muted">{{ $row['at']->translatedFormat('d M Y H:i') }}</td>
                 </tr>
-            @endforeach
+            @empty
+                <tr><td colspan="2" class="od-muted">{{ __('imaging_desk.timeline_empty') }}</td></tr>
+            @endforelse
             </tbody>
         </table>
     </div>
@@ -126,37 +128,37 @@
         @if($status->isTerminal())
             <p class="od-muted">{{ __('imaging_desk.no_actions') }}</p>
         @else
-            <div class="form-grid">
+            <div class="odl-fgrid">
                 @if($canSchedule)
-                <form method="POST" action="{{ route('portals.imaging.schedule', $order->id) }}" class="form-group" data-confirm="{{ __('imaging_desk.schedule_confirm') }}">
+                <form method="POST" action="{{ route('portals.imaging.schedule', $order->id) }}" class="odl-field" data-confirm="{{ __('imaging_desk.schedule_confirm') }}">
                     @csrf
-                    <label class="form-label form-label-required" for="img-schedule-at">{{ __('imaging_desk.scheduled_slot') }}</label>
+                    <label class="odl-label odl-label--req" for="img-schedule-at">{{ __('imaging_desk.scheduled_slot') }}</label>
                     <input type="datetime-local" id="img-schedule-at" name="scheduled_at" class="od-input" required value="{{ old('scheduled_at') }}">
-                    <button type="submit" class="od-btn od-btn--primary mt-2"><i data-lucide="calendar-clock"></i> <span>{{ __('imaging_desk.schedule') }}</span></button>
+                    <button type="submit" class="od-btn od-btn--primary odl-mt"><i data-lucide="calendar-clock"></i> <span>{{ __('imaging_desk.schedule') }}</span></button>
                 </form>
                 @endif
 
                 @if($canStart)
-                <form method="POST" action="{{ route('portals.imaging.start', $order->id) }}" class="form-group" data-confirm="{{ __('imaging_desk.start_confirm') }}">
+                <form method="POST" action="{{ route('portals.imaging.start', $order->id) }}" class="odl-field" data-confirm="{{ __('imaging_desk.start_confirm') }}">
                     @csrf
                     <button type="submit" class="od-btn od-btn--primary"><i data-lucide="play"></i> <span>{{ __('imaging_desk.start') }}</span></button>
                 </form>
                 @endif
 
                 @if($canComplete)
-                <form method="POST" action="{{ route('portals.imaging.complete', $order->id) }}" class="form-group" data-confirm="{{ __('imaging_desk.complete_confirm') }}">
+                <form method="POST" action="{{ route('portals.imaging.complete', $order->id) }}" class="odl-field" data-confirm="{{ __('imaging_desk.complete_confirm') }}">
                     @csrf
                     <button type="submit" class="od-btn od-btn--primary"><i data-lucide="check-circle"></i> <span>{{ __('imaging_desk.complete') }}</span></button>
                 </form>
                 @endif
 
                 @if($canCancel)
-                <form method="POST" action="{{ route('portals.imaging.cancel', $order->id) }}" class="form-group" data-confirm="{{ __('imaging_desk.cancel_confirm') }}">
+                <form method="POST" action="{{ route('portals.imaging.cancel', $order->id) }}" class="odl-field" data-confirm="{{ __('imaging_desk.cancel_confirm') }}">
                     @csrf
-                    <label class="form-label form-label-required" for="img-cancel-reason">{{ __('imaging_desk.reason') }}</label>
+                    <label class="odl-label odl-label--req" for="img-cancel-reason">{{ __('imaging_desk.reason') }}</label>
                     <input type="text" id="img-cancel-reason" name="reason" class="od-input" required maxlength="500" value="{{ old('reason') }}">
-                    <div class="form-hint">{{ __('imaging_desk.reason_hint') }}</div>
-                    <button type="submit" class="od-btn od-btn--danger mt-2"><i data-lucide="x-circle"></i> <span>{{ __('imaging_desk.cancel_order') }}</span></button>
+                    <div class="odl-hint">{{ __('imaging_desk.reason_hint') }}</div>
+                    <button type="submit" class="od-btn od-btn--danger odl-mt"><i data-lucide="x-circle"></i> <span>{{ __('imaging_desk.cancel_order') }}</span></button>
                 </form>
                 @endif
             </div>

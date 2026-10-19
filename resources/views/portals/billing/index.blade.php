@@ -8,13 +8,7 @@
 
 @php
     use App\Services\Billing\Xaf;
-    $statusPill = fn (string $s): string => match ($s) {
-        'paid'      => 'ready',
-        'part_paid' => 'verifying',
-        'issued'    => 'pending',
-        'void'      => 'low',
-        default     => 'neutral',
-    };
+    $statusPill = fn (?string $s): string => \App\Services\Billing\BillingDeskService::invoiceStatusPill($s);
     $tone = fn (string $key): string => ['blue', 'amber', 'teal', 'rose', 'sky', 'green'][crc32($key) % 6];
     $initials = function ($first, $last): string {
         $s = mb_strtoupper(mb_substr(trim((string) $first), 0, 1) . mb_substr(trim((string) $last), 0, 1));

@@ -4,6 +4,11 @@ namespace App\Support;
 
 class Enums
 {
+    /** Call-site group names that live under a different key in lang/{locale}/enums.php. */
+    private const GROUP_ALIASES = [
+        'route' => 'medication_route',
+    ];
+
     /**
      * Translate a raw DB enum/status value into a localised, human-readable label.
      *
@@ -21,11 +26,24 @@ class Enums
         }
 
         $value = (string) $value;
-        $key   = 'enums.' . $group . '.' . str_replace('-', '_', $value);
-        $label = __($key);
+        $slug  = str_replace('-', '_', $value);
 
-        if (is_string($label) && $label !== $key) {
-            return $label;
+        // Try the named group first, then its known alias, then the shared
+        // `status` group (most raw values are statuses), so French gets
+        // French whenever any key exists. The title-case wash is last resort.
+        $groups = array_unique(array_filter([
+            $group,
+            self::GROUP_ALIASES[$group] ?? null,
+            'status',
+        ]));
+
+        foreach ($groups as $g) {
+            $key   = 'enums.' . $g . '.' . $slug;
+            $label = __($key);
+
+            if (is_string($label) && $label !== $key) {
+                return $label;
+            }
         }
 
         return ucfirst(str_replace(['_', '-'], ' ', $value));

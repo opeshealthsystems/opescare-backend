@@ -61,6 +61,12 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'facility.con
     // facility and offers no action. Nothing here gates care on payment.
     Route::get('/facility/team/overview/invoices', [FacilityAdminDeskController::class, 'invoices'])
         ->name('portals.facility.admin.invoices');
+    // One invoice, read only: lines, totals and the payment/refund history.
+    // Scoped to the session facility (another facility's id is a 404). No
+    // issue/pay/void/refund action exists on this page or under this path.
+    Route::get('/facility/team/overview/invoices/{id}', [FacilityAdminDeskController::class, 'invoice'])
+        ->whereUuid('id')
+        ->name('portals.facility.admin.invoices.show');
 
     // Departments as they exist today: `staff_profiles.department` is free
     // text, so this is a grouping of this facility's active staff by that

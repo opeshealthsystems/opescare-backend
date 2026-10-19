@@ -539,6 +539,9 @@ Route::middleware(['web', 'auth', 'throttle:portal'])->group(function () {
     Route::get('/portals/listing',                       [\App\Http\Controllers\CareMap\FacilityListingController::class, 'edit'])->name('portals.listing.edit');
     Route::post('/portals/listing',                      [\App\Http\Controllers\CareMap\FacilityListingController::class, 'update'])->name('portals.listing.update');
     Route::post('/portals/listing/hours',                [\App\Http\Controllers\CareMap\FacilityListingController::class, 'updateHours'])->name('portals.listing.hours.update');
+    // The catalogue is the canonical services editor (2026-10-19); a GET here
+    // goes there. The writes below stay for existing callers and tests.
+    Route::get('/portals/listing/services', static fn () => redirect()->route('portals.facility.catalogue')->with('success', __('facility_settings.services_moved_to_catalogue')))->name('portals.listing.services');
     Route::post('/portals/listing/services',             [\App\Http\Controllers\CareMap\FacilityListingController::class, 'storeService'])->name('portals.listing.services.store');
     Route::delete('/portals/listing/services/{service}', [\App\Http\Controllers\CareMap\FacilityListingController::class, 'destroyService'])->name('portals.listing.services.destroy');
 });

@@ -42,11 +42,11 @@
                 </div>
             @endif
             <form method="GET" action="{{ route('portals.imaging.create') }}">
-                <div class="form-group mb-4">
-                    <label class="form-label form-label-required" for="img-health-id">{{ __('imaging_desk.health_id') }}</label>
+                <div class="odl-field">
+                    <label class="odl-label odl-label--req" for="img-health-id">{{ __('imaging_desk.health_id') }}</label>
                     <input type="text" id="img-health-id" name="health_id" class="od-input"
                            value="{{ request('health_id') }}" required autocomplete="off" autofocus maxlength="64">
-                    <div class="form-hint">{{ __('imaging_desk.health_id_hint') }}</div>
+                    <div class="odl-hint">{{ __('imaging_desk.health_id_hint') }}</div>
                 </div>
                 <div class="od-row">
                     <button type="submit" class="od-btn od-btn--primary"><i data-lucide="search"></i> <span>{{ __('imaging_desk.lookup') }}</span></button>
@@ -87,46 +87,46 @@
                 <h2 class="od-card__title">{{ __('imaging_desk.request_details') }}</h2>
             </div>
             <div class="od-card__body">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label form-label-required" for="img-modality">{{ __('imaging_desk.modality_label') }}</label>
+                <div class="odl-fgrid">
+                    <div class="odl-field">
+                        <label class="odl-label odl-label--req" for="img-modality">{{ __('imaging_desk.modality_label') }}</label>
                         <select id="img-modality" name="modality" class="od-input" required>
                             @foreach($modalities as $m)
                                 <option value="{{ $m }}" @selected(old('modality') === $m)>{{ __('imaging_desk.modality.' . $m) }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label" for="img-body-part">{{ __('imaging_desk.body_part') }}</label>
+                    <div class="odl-field">
+                        <label class="odl-label" for="img-body-part">{{ __('imaging_desk.body_part') }}</label>
                         <input type="text" id="img-body-part" name="body_part" class="od-input" maxlength="100" value="{{ old('body_part') }}">
-                        <div class="form-hint">{{ __('imaging_desk.body_part_hint') }}</div>
+                        <div class="odl-hint">{{ __('imaging_desk.body_part_hint') }}</div>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label form-label-required" for="img-urgency">{{ __('imaging_desk.urgency_label') }}</label>
+                    <div class="odl-field">
+                        <label class="odl-label odl-label--req" for="img-urgency">{{ __('imaging_desk.urgency_label') }}</label>
                         <select id="img-urgency" name="urgency" class="od-input" required>
                             @foreach($urgencies as $u)
                                 <option value="{{ $u }}" @selected(old('urgency', 'routine') === $u)>{{ __('imaging_desk.urgency.' . $u) }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label" for="img-referrer">{{ __('imaging_desk.referring_physician') }}</label>
+                    <div class="odl-field">
+                        <label class="odl-label" for="img-referrer">{{ __('imaging_desk.referring_physician') }}</label>
                         <input type="text" id="img-referrer" name="referring_physician" class="od-input" maxlength="255" value="{{ old('referring_physician') }}">
-                        <div class="form-hint">{{ __('imaging_desk.referring_hint') }}</div>
+                        <div class="odl-hint">{{ __('imaging_desk.referring_hint') }}</div>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label" for="img-slot">{{ __('imaging_desk.scheduled_slot') }}</label>
+                    <div class="odl-field">
+                        <label class="odl-label" for="img-slot">{{ __('imaging_desk.scheduled_slot') }}</label>
                         <input type="datetime-local" id="img-slot" name="scheduled_at" class="od-input" value="{{ old('scheduled_at') }}">
-                        <div class="form-hint">{{ __('imaging_desk.scheduled_hint') }}</div>
+                        <div class="odl-hint">{{ __('imaging_desk.scheduled_hint') }}</div>
                     </div>
                 </div>
-                <div class="form-group mb-4">
-                    <label class="form-label form-label-required" for="img-indication">{{ __('imaging_desk.clinical_indication') }}</label>
+                <div class="odl-field">
+                    <label class="odl-label odl-label--req" for="img-indication">{{ __('imaging_desk.clinical_indication') }}</label>
                     <textarea id="img-indication" name="clinical_indication" class="od-input" rows="3" required maxlength="2000">{{ old('clinical_indication') }}</textarea>
-                    <div class="form-hint">{{ __('imaging_desk.indication_hint') }}</div>
+                    <div class="odl-hint">{{ __('imaging_desk.indication_hint') }}</div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label" for="img-notes">{{ __('imaging_desk.notes') }}</label>
+                <div class="odl-field">
+                    <label class="odl-label" for="img-notes">{{ __('imaging_desk.notes') }}</label>
                     <textarea id="img-notes" name="notes" class="od-input" rows="2" maxlength="2000">{{ old('notes') }}</textarea>
                 </div>
             </div>

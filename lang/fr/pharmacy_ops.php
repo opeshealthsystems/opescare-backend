@@ -153,7 +153,7 @@ return [
     'lbl_email'         => 'E-mail',
     'btn_add_supplier'  => 'Ajouter le fournisseur',
     'flash_supplier_added' => 'Fournisseur :name ajouté.',
-    'xaf'               => 'XAF',
+    'xaf'               => 'FCFA',
 
     // In-app notification raised to the pharmacy when a patient reserves.
     'notify_medicine_fallback'  => 'Médicament',

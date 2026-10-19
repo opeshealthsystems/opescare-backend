@@ -14,13 +14,7 @@
 
     /* Same status colours as the billing desk (portals/billing/index) so a
        status reads the same on both pages. */
-    $statusPill = fn (string $s) => 'od-pill od-pill--' . match ($s) {
-        'paid'      => 'ready',
-        'part_paid' => 'normal',
-        'issued'    => 'pending',
-        'void'      => 'urgent',
-        default     => 'neutral',
-    };
+    $statusPill = fn (?string $s) => 'od-pill od-pill--' . \App\Services\Billing\BillingDeskService::invoiceStatusPill($s);
     $initials = function ($first, $last): string {
         $s = mb_strtoupper(mb_substr(trim((string) $first), 0, 1) . mb_substr(trim((string) $last), 0, 1));
         return $s !== '' ? $s : '—';
@@ -76,7 +70,7 @@
                     @endphp
                     <tr data-invoice="{{ $invoice->invoice_number }}">
                         <td class="od-table__num">{{ $rowNo }}</td>
-                        <td data-label="{{ __('facility_admin.col_invoice_number') }}"><span class="od-table__name">{{ $invoice->invoice_number }}</span></td>
+                        <td data-label="{{ __('facility_admin.col_invoice_number') }}"><a href="{{ route('portals.facility.admin.invoices.show', $invoice->id) }}" class="od-table__name">{{ $invoice->invoice_number }}</a></td>
                         <td data-label="{{ __('facility_admin.col_invoice_patient') }}">
                             <div class="od-table__person">
                                 <span class="od-avatar od-tint--{{ $tone($pName !== '' ? $pName : (string) $invoice->id) }}" aria-hidden="true">{{ $initials($p->first_name ?? '', $p->last_name ?? '') }}</span>

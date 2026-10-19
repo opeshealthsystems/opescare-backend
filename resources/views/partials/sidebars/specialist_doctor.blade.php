@@ -18,7 +18,7 @@
         <i data-lucide="search"></i><span>{{ __('public.staff_portal.page_heading_search', [], $l) }}</span>
     </a>
 </div>
-@capability('clinical_chart', 'queue', 'triage', 'front_desk', 'schedule', 'prescribe', 'blood_inventory', 'messaging')
+@capability('clinical_chart', 'queue', 'triage', 'front_desk', 'schedule', 'prescribe', 'imaging', 'blood_inventory', 'messaging')
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_clinical', [], $l) }}</div>
     {{-- The patient chart: the read-only record behind `clinical_chart`,
@@ -54,7 +54,7 @@
         <span>{{ __('public.portal.nav_appointments', [], $l) }}</span>
     </a>
     <a href="{{ route('portals.staff.appointments.waitlist') }}" class="sidebar-link {{ request()->routeIs('portals.staff.appointments.waitlist') ? 'active' : '' }}">
-        <i data-lucide="list-ordered"></i><span>{{ __('waitlist.staff_title', [], $l) }}</span>
+        <i data-lucide="hourglass"></i><span>{{ __('waitlist.staff_title', [], $l) }}</span>
     </a>
     @endcapability
     @capability('prescribe')
@@ -65,6 +65,12 @@
     <a href="{{ route('portals.certificates.index') }}" class="sidebar-link {{ request()->routeIs('portals.certificates.*') ? 'active' : '' }}">
         <i data-lucide="file-badge"></i>
         <span>{{ __('doc_ex_cert.nav', [], $l) }}</span>
+    </a>
+    @endcapability
+    {{-- Imaging referral and the desk (routes/imaging_desk.php, capability:imaging). --}}
+    @capability('imaging')
+    <a href="{{ route('portals.imaging.index') }}" class="sidebar-link {{ request()->routeIs('portals.imaging.*') ? 'active' : '' }}">
+        <i data-lucide="scan"></i><span>{{ __('imaging_desk.title', [], $l) }}</span>
     </a>
     @endcapability
     @capability('blood_inventory')

@@ -25,10 +25,9 @@
     </div>
 </header>
 
-@if(session('error'))
-    <div class="odc-note odc-note--err" role="alert">
-        <i data-lucide="triangle-alert"></i><div>{{ session('error') }}</div>
-    </div>
+{{-- success/error flashes are rendered by layouts/portal. --}}
+@if($errors->any())
+    <div class="odc-note odc-note--error" role="alert"><i data-lucide="alert-circle"></i><div class="odc-note__text">@foreach($errors->all() as $__e)<div>{{ $__e }}</div>@endforeach</div></div>
 @endif
 
 <form method="POST" action="{{ route('portals.staff.appointments.store') }}" class="odc-form">

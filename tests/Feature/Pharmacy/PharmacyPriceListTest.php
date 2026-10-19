@@ -272,8 +272,8 @@ class PharmacyPriceListTest extends TestCase
         $this->actingAsStaff($pharmacist)->get('/pharmacy/prices/' . $item->id . '/history')
             ->assertOk()
             ->assertSee('Amoxicillin 500mg Capsule')
-            ->assertSee('2 500 FCFA')
-            ->assertSee('2 750 FCFA')
+            ->assertSee(\App\Services\Billing\Xaf::format(2500))
+            ->assertSee(\App\Services\Billing\Xaf::format(2750))
             ->assertSee('New tariff')
             ->assertSee(__('pharmacy_prices.no_price_yet'))
             ->assertSee($pharmacist->name);

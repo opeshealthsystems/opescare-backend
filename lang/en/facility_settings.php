@@ -108,4 +108,5 @@ return [
     'flash_saved'       => ":count field(s) updated.",
     'flash_no_changes'  => "Nothing changed.",
     'flash_hours_saved' => "Opening hours saved for :count day(s).",
+    'services_moved_to_catalogue' => 'Services are now managed in the service catalogue.',
 ];

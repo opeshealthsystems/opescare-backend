@@ -11,7 +11,8 @@
 <div class="sidebar-spacer"></div>
 
 <div class="sidebar-nav-section">
-    <a href="{{ route('portals.staff') }}" class="sidebar-link {{ request()->routeIs('portals.staff') ? 'active' : '' }}">
+    {{-- The bench is a technician's landing page (routes/lab.php). --}}
+    <a href="{{ route('portals.lab.index') }}" class="sidebar-link {{ request()->routeIs('portals.lab.index', 'portals.lab.show') ? 'active' : '' }}">
         <i data-lucide="layout-dashboard"></i><span>{{ __('public.portal.nav_dashboard', [], $l) }}</span>
     </a>
     {{-- Global search (facilities, documents, medicines, lab tests, partners,
@@ -22,23 +23,28 @@
     </a>
 </div>
 
-@capability('lab_results', 'sample_collection', 'blood_inventory', 'messaging')
+@capability('lab_results', 'sample_collection', 'imaging', 'blood_inventory', 'messaging')
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_lab', [], $l) }}</div>
     {{-- The bench: worklist, result entry, release. Same gate as routes/lab.php. --}}
     @capability('lab_results')
     <a href="{{ route('portals.lab_manager.dashboard') }}" class="sidebar-link {{ request()->routeIs('portals.lab_manager.dashboard') ? 'active' : '' }}">
-        <i data-lucide="layout-dashboard"></i><span>{{ __('lab_manager.nav_dashboard', [], $l) }}</span>
+        <i data-lucide="gauge"></i><span>{{ __('lab_manager.nav_dashboard', [], $l) }}</span>
     </a>
     <a href="{{ route('portals.lab_manager.requests') }}" class="sidebar-link {{ request()->routeIs('portals.lab_manager.requests') ? 'active' : '' }}">
         <i data-lucide="inbox"></i><span>{{ __('lab_manager.nav_requests', [], $l) }}</span>
     </a>
     @endcapability
-    @capability('lab_results')
-    <a href="{{ route('portals.lab.index') }}" class="sidebar-link {{ request()->routeIs('portals.lab.index', 'portals.lab.show') ? 'active' : '' }}">
-        <i data-lucide="flask-conical"></i><span>{{ __('lab_desk.nav', [], $l) }}</span>
+    {{-- The centre landing (routes/diagnostic.php): lab + imaging on one page,
+         only where the facility IS a centre (same guard as lab_manager). --}}
+    @php $__diagFid = app(\App\Services\Portal\PortalContextService::class)->facilityId(); @endphp
+    @if(\App\Services\DiagnosticCentre\DiagnosticCentreDashboardService::appliesTo($__diagFid))
+    @capability('lab_results', 'imaging')
+    <a href="{{ route('portals.diagnostic.dashboard') }}" class="sidebar-link {{ request()->routeIs('portals.diagnostic.dashboard') ? 'active' : '' }}">
+        <i data-lucide="layout-grid"></i><span>{{ __('diagnostic_desk.nav', [], $l) }}</span>
     </a>
     @endcapability
+    @endif
     @capability('lab_results', 'sample_collection')
     <a href="{{ route('portals.lab.collection') }}" class="sidebar-link {{ request()->routeIs('portals.lab.collection') ? 'active' : '' }}">
         <i data-lucide="test-tube-2"></i><span>{{ __('lab_desk.nav_collection', [], $l) }}</span>

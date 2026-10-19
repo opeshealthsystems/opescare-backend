@@ -104,7 +104,7 @@ class PharmacyOrdersDeskTest extends TestCase
             ->assertOk()
             ->assertSee('OC-RX-MINE0001')
             ->assertSee('Ngono Ateba')
-            ->assertSee('3 000 FCFA')
+            ->assertSee(\App\Services\Billing\Xaf::format(3000))
             ->assertSee($mine->patient->health_id)
             ->assertDontSee('OC-RX-THEIRS01');
     }

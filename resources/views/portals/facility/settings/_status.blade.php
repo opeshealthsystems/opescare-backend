@@ -72,7 +72,7 @@
     @if($notListed)
     <div class="odc-note odc-note--warn">
         <i data-lucide="eye-off"></i>
-        <div class="odc-note__text">{{ __($ns . '.warn_not_listed', ['status' => $listing->listing_status]) }}</div>
+        <div class="odc-note__text">{{ __($ns . '.warn_not_listed', ['status' => \App\Support\Enums::label($listing->listing_status)]) }}</div>
     </div>
     @endif
     <div class="odc-note odc-note--info"><i data-lucide="info"></i><div class="odc-note__text">{{ __($ns . '.review_note') }}</div></div>

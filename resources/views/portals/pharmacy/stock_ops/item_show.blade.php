@@ -351,7 +351,7 @@
             <span class="os-info__icon"><i data-lucide="coins"></i></span>
             <div>
                 <div class="os-info__k">{{ __('pharmacy_stock_desk.price') }}</div>
-                <div class="os-info__v">@if($item->selling_price_xaf !== null){{ number_format($item->selling_price_xaf, 0, ',', ' ') }} FCFA @else — @endif</div>
+                <div class="os-info__v">@if($item->selling_price_xaf !== null){{ \App\Services\Billing\Xaf::format((int) $item->selling_price_xaf) }} @else — @endif</div>
                 <div class="os-info__note"><a href="{{ route('portals.pharmacy.prices.history', $item->id) }}">{{ __('pharmacy_stock_desk.price_history') }}</a></div>
             </div>
         </div>

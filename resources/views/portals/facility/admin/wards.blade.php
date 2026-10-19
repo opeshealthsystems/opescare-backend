@@ -38,11 +38,9 @@
     <div class="odc-note__text">{{ __('facility_admin.wards_scope_note') }}</div>
 </div>
 
-@if(session('success'))
-    <div class="odc-note" role="status"><i data-lucide="check-circle-2"></i><div class="odc-note__text">{{ session('success') }}</div></div>
-@endif
-@if(session('error'))
-    <div class="odc-note odc-note--error" role="alert"><i data-lucide="alert-circle"></i><div class="odc-note__text">{{ session('error') }}</div></div>
+{{-- success/error flashes are rendered by layouts/portal. --}}
+@if($errors->any())
+    <div class="odc-note odc-note--error" role="alert"><i data-lucide="alert-circle"></i><div class="odc-note__text">@foreach($errors->all() as $__e)<div>{{ $__e }}</div>@endforeach</div></div>
 @endif
 
 {{-- ── Board ────────────────────────────────────────────────────────── --}}

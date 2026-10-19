@@ -47,6 +47,22 @@ use Illuminate\Support\Str;
  */
 final class BillingDeskService
 {
+    /**
+     * The od-pill modifier for an invoice status. One mapping for every page
+     * that lists invoices (billing desk, facility admin invoices), so a
+     * status reads the same colour everywhere.
+     */
+    public static function invoiceStatusPill(?string $status): string
+    {
+        return match ((string) $status) {
+            'paid'      => 'ready',
+            'part_paid' => 'verifying',
+            'issued'    => 'pending',
+            'void'      => 'low',
+            default     => 'neutral',
+        };
+    }
+
     public const STATUS_DRAFT     = 'draft';
     public const STATUS_ISSUED    = 'issued';
     public const STATUS_PART_PAID = 'part_paid';

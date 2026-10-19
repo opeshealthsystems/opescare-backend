@@ -119,6 +119,7 @@ return [
     'not_yet'         => 'Pas encore',
     'unknown'         => 'Inconnu',
     'timeline_title'  => 'Chronologie',
+    'timeline_empty' => 'Aucun événement enregistré pour le moment.',
     'timeline'        => [
         'ordered'   => 'Demandé',
         'scheduled' => 'Programmé',

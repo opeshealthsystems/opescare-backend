@@ -55,7 +55,7 @@
                     <td data-label="{{ __('pharmacy_ops.col_line_expiry') }}">
                         @if($line->expiry_date) {{ $line->expiry_date->translatedFormat('d M Y') }} @else @include('portals.pharmacy.stock_ops._pill', ['tone' => 'neutral', 'label' => __('pharmacy_ops.expiry_unknown')]) @endif
                     </td>
-                    <td data-label="{{ __('pharmacy_ops.col_line_cost') }}" class="os-num">{{ $line->unit_cost !== null ? number_format((int) $line->unit_cost, 0, ',', ' ') . ' ' . __('pharmacy_ops.xaf') : '—' }}</td>
+                    <td data-label="{{ __('pharmacy_ops.col_line_cost') }}" class="os-num">{{ $line->unit_cost !== null ? \App\Services\Billing\Xaf::format((int) $line->unit_cost) : '—' }}</td>
                     <td data-label="{{ __('pharmacy_ops.col_batch_created') }}">
                         @if($batch) @include('portals.pharmacy.stock_ops._pill', ['tone' => 'ok', 'label' => __('pharmacy_ops.batch_status.' . $batch->status)]) @else — @endif
                     </td>

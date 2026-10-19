@@ -221,7 +221,7 @@
                         <td>{{ $charge->method?->label() ?? '—' }}</td>
                         <td>{{ $charge->payer_msisdn_masked ?? '—' }}</td>
                         <td class="odc-money">{{ Xaf::format((int) $charge->amount_minor) }}</td>
-                        <td><span class="od-pill od-pill--neutral">{{ $charge->status?->value ?? '—' }}</span></td>
+                        <td><span class="od-pill od-pill--neutral">{{ $charge->status?->label() ?? '—' }}</span></td>
                         <td>{{ $charge->created_at?->translatedFormat('d M Y H:i') }}</td>
                     </tr>
                 @endforeach

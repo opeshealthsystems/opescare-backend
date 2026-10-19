@@ -11,6 +11,7 @@ use App\Services\Portal\PortalContextService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
 /**
@@ -67,7 +68,7 @@ class PharmacyOrdersController extends Controller
             'tab'          => $tab,
             'tabs'         => array_keys(self::TABS),
             'counts'       => $counts,
-            'reservations' => $this->rowsFor($facilityId, self::TABS[$tab]),
+            'reservations' => $this->paginate($this->rowsFor($facilityId, self::TABS[$tab]), $request),
             // No linked directory listing = patients cannot find this pharmacy,
             // so an empty desk is not "no orders yet" — the view says why.
             'hasListing'   => $this->desk->listingIds($facilityId) !== [],
@@ -134,6 +135,23 @@ class PharmacyOrdersController extends Controller
         }
 
         return $rows->sortByDesc('created_at')->values();
+    }
+
+    /**
+     * The desk service returns one merged, sorted collection per tab (several
+     * statuses), so the page is cut here rather than in SQL.
+     */
+    private function paginate(Collection $rows, Request $request, int $perPage = 25): LengthAwarePaginator
+    {
+        $page = max(1, (int) $request->query('page', 1));
+
+        return (new LengthAwarePaginator(
+            $rows->forPage($page, $perPage)->values(),
+            $rows->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'pageName' => 'page'],
+        ))->withQueryString();
     }
 
     private function find(string $id): MedicineReservation

@@ -107,6 +107,48 @@ class FacilityAdminReadOnlyPagesTest extends TestCase
         }
     }
 
+    public function test_an_invoice_opens_read_only_from_the_list_and_another_facilitys_is_a_404(): void
+    {
+        [$admin, $facility] = $this->staff('facility_admin');
+        [, $other]          = $this->staff('facility_admin');
+
+        $patient = Patient::factory()->create(['facility_id' => $facility->id, 'first_name' => 'Amina', 'last_name' => 'Ngo']);
+        $mine    = Invoice::factory()->create(['facility_id' => $facility->id, 'patient_id' => $patient->id, 'invoice_number' => 'INV-HERE-2', 'status' => 'paid']);
+        $theirs  = Invoice::factory()->create(['facility_id' => $other->id, 'invoice_number' => 'INV-THERE-2', 'status' => 'issued']);
+
+        // The list row links to it.
+        $this->asStaff($admin, $facility)
+            ->get(route('portals.facility.admin.invoices'))
+            ->assertSee(route('portals.facility.admin.invoices.show', $mine->id));
+
+        $html = $this->asStaff($admin, $facility)
+            ->get(route('portals.facility.admin.invoices.show', $mine->id))
+            ->assertOk()
+            ->assertSee('INV-HERE-2')
+            ->assertSee('Amina Ngo')
+            ->getContent();
+
+        // Read-only: no form and no billing-desk write link in the content.
+        $main = substr($html, strpos($html, '<main'));
+        $this->assertStringNotContainsString('<form', $main);
+        $this->assertStringNotContainsString('/facility/billing', $main);
+
+        // Another facility's invoice does not exist from here.
+        $this->asStaff($admin, $facility)
+            ->get(route('portals.facility.admin.invoices.show', $theirs->id))
+            ->assertNotFound();
+    }
+
+    public function test_the_invoice_view_is_refused_to_a_cashier_and_a_doctor(): void
+    {
+        foreach (['cashier', 'doctor'] as $roleName) {
+            [$user, $facility] = $this->staff($roleName);
+            $invoice  = Invoice::factory()->create(['facility_id' => $facility->id, 'status' => 'issued']);
+            $response = $this->asStaff($user, $facility)->get(route('portals.facility.admin.invoices.show', $invoice->id));
+            $this->assertContains($response->getStatusCode(), [302, 403], "{$roleName} must not open the administrator's invoice view");
+        }
+    }
+
     // ── Departments ──────────────────────────────────────────────────────
 
     public function test_departments_groups_active_staff_by_the_free_text_string_with_an_unassigned_bucket(): void

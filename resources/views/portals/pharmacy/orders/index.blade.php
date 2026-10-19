@@ -87,7 +87,7 @@
                         $showUrl = route('portals.pharmacy.orders.show', $r->id);
                     @endphp
                     <tr>
-                        <td class="od-table__num">{{ $i + 1 }}</td>
+                        <td class="od-table__num">{{ $reservations->firstItem() + $i }}</td>
                         <td data-label="{{ __('pharmacy_orders.col_patient') }}">
                             <div class="od-table__person">
                                 <span class="od-avatar od-tint--{{ $tone($name !== '' ? $name : (string) $r->id) }}" aria-hidden="true">{{ $initials($patient?->first_name, $patient?->last_name) }}</span>
@@ -108,7 +108,7 @@
                         <td data-label="{{ __('pharmacy_orders.col_qty') }}" class="odp-mono">{{ $r->quantity }}</td>
                         <td data-label="{{ __('pharmacy_orders.col_pack') }}">{{ $r->pack_size ?? '—' }}</td>
                         <td data-label="{{ __('pharmacy_orders.col_total') }}" class="odp-mono">
-                            @if($r->total_price !== null){{ number_format((float) $r->total_price, 0, ',', ' ') }} FCFA @else <span class="od-muted">{{ __('pharmacy_orders.no_price') }}</span> @endif
+                            @if($r->total_price !== null){{ \App\Services\Billing\Xaf::format(\App\Services\Billing\Xaf::int($r->total_price)) }} @else <span class="od-muted">{{ __('pharmacy_orders.no_price') }}</span> @endif
                         </td>
                         <td data-label="{{ __('pharmacy_orders.col_status') }}">
                             <span class="od-pill od-pill--{{ $deskPill($desk) }}">@enum($desk, 'reservation_status')</span>
@@ -133,6 +133,7 @@
                 </tbody>
             </table>
         </div>
+        @if($reservations->hasPages())<footer class="od-card__foot">{{ $reservations->links() }}</footer>@endif
         @endif
     </div>
 </section>

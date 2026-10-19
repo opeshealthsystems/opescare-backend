@@ -25,11 +25,9 @@
     <a href="{{ route('portals.pharmacy.controlled') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.controlled*') ? 'active' : '' }}">
         <i data-lucide="shield-alert"></i><span>{{ __('public.portal.nav_controlled', [], $l) }}</span>
     </a>
-    @capability('pharmacy_stock')
     <a href="{{ route('portals.pharmacy.prices.index') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.prices.*') ? 'active' : '' }}">
         <i data-lucide="tags"></i><span>{{ __('pharmacy_prices.nav_prices', [], $l) }}</span>
     </a>
-    @endcapability
 </div>
 
 {{-- The ledger behind the public listing: lots & expiry, the append-only
@@ -47,10 +45,10 @@
         <i data-lucide="trending-down"></i><span>{{ __('pharmacy_ops.nav_reorder', [], $l) }}</span>
     </a>
     <a href="{{ route('portals.pharmacy.stock.suppliers') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.stock.suppliers*') ? 'active' : '' }}">
-        <i data-lucide="building-2"></i><span>{{ __('pharmacy_stock_desk.nav_suppliers', [], ) }}</span>
+        <i data-lucide="building-2"></i><span>{{ __('pharmacy_stock_desk.nav_suppliers', [], $l) }}</span>
     </a>
     <a href="{{ route('portals.pharmacy.reports') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.reports*') ? 'active' : '' }}">
-        <i data-lucide="bar-chart-3"></i><span>{{ __('pharmacy_reports.nav_reports', [], ) }}</span>
+        <i data-lucide="bar-chart-3"></i><span>{{ __('pharmacy_reports.nav_reports', [], $l) }}</span>
     </a>
     <a href="{{ route('portals.pharmacy.stock.receipts') }}" class="sidebar-link {{ request()->routeIs('portals.pharmacy.stock.receipts*') ? 'active' : '' }}">
         <i data-lucide="truck"></i><span>{{ __('pharmacy_ops.nav_receipts', [], $l) }}</span>
@@ -61,6 +59,17 @@
 </div>
 @endcapability
 
+
+{{-- Tasks + Help (routes/imports_tasks.php). No capability gates these
+     routes: every operational role has an inbox and may raise a ticket. --}}
+<div class="sidebar-nav-section">
+    <a href="{{ route('portals.staff.tasks') }}" class="sidebar-link {{ request()->routeIs('portals.staff.tasks*') ? 'active' : '' }}">
+        <i data-lucide="check-square"></i><span>{{ __('tasks.nav', [], $l) }}</span>
+    </a>
+    <a href="{{ route('portals.staff.support') }}" class="sidebar-link {{ request()->routeIs('portals.staff.support*') ? 'active' : '' }}">
+        <i data-lucide="life-buoy"></i><span>{{ __('support.nav', [], $l) }}</span>
+    </a>
+</div>
 
 {{-- Facility switching for clinicians posted at more than one facility.
      Self-gating: renders nothing unless this user holds more than one active

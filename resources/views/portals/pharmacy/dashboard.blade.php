@@ -52,7 +52,6 @@
 @section('content')
 <h1 class="od-sr">{{ __('public.pharmacy_portal.page_heading', [], $l) }}</h1>
 
-@if(session('success'))<div class="alert alert-success mb-6"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
 
 {{-- KPI row: four tiles, one colour each. Every figure comes from the controller. --}}
 <div class="od-kpis">
@@ -142,7 +141,6 @@
         <div class="od-table-wrap">
             <table class="od-table odp-stack-sm">
                 <thead><tr>
-                    <th class="od-table__check"><input type="checkbox" aria-label="{{ __('pharmacy_desk.od_select_all', [], $l) }}" data-od-checkall></th>
                     <th class="od-table__num">#</th>
                     <th>{{ __('pharmacy_desk.od_col_time', [], $l) }}</th>
                     <th>{{ __('public.portal.col_patient', [], $l) }}</th>
@@ -159,7 +157,6 @@
                     $isSel  = $sel && $sel->id === $rx->id;
                 @endphp
                 <tr class="{{ $isSel ? 'is-selected' : '' }}">
-                    <td class="od-table__check"><input type="checkbox" aria-label="{{ __('pharmacy_desk.od_select_row', ['name' => $rxName !== '' ? $rxName : ($rx->reference ?? '')], $l) }}"></td>
                     <td class="od-table__num">{{ $i + 1 }}</td>
                     <td data-label="{{ __('pharmacy_desk.od_col_time', [], $l) }}">{{ ($rx->prescribed_at ?? $rx->created_at)?->format('H:i') }}</td>
                     <td data-label="{{ __('public.portal.col_patient', [], $l) }}">
@@ -392,12 +389,6 @@
         e.preventDefault();
         window.location.href = tile.getAttribute('href');
     });
-    var all = document.querySelector('[data-od-checkall]');
-    if (all) {
-        all.addEventListener('change', function () {
-            all.closest('table').querySelectorAll('tbody input[type="checkbox"]').forEach(function (b) { b.checked = all.checked; });
-        });
-    }
 })();
 </script>
 

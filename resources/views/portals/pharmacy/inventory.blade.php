@@ -171,7 +171,7 @@
                     <td data-label="{{ __('public.pharmacy_portal.stock_col_price', [], $l) }}">
                         <div class="os-money">
                             <input type="number" name="unit_price" form="{{ $fid }}" class="os-input os-input--num" min="0" step="1" inputmode="numeric" value="{{ $stock->unit_price !== null ? (int) round($stock->unit_price) : '' }}" aria-label="{{ __('public.pharmacy_portal.stock_col_price', [], $l) }}">
-                            <span class="os-money__unit">{{ $stock->currency ?: 'XAF' }}</span>
+                            <span class="os-money__unit">{{ \App\Services\Payments\Domain\Money::symbolFor('XAF') }}</span>
                         </div>
                     </td>
                     <td data-label="{{ __('public.pharmacy_portal.stock_col_reserve', [], $l) }}">

@@ -119,6 +119,7 @@ return [
     'not_yet'         => 'Not yet',
     'unknown'         => 'Unknown',
     'timeline_title'  => 'Timeline',
+    'timeline_empty' => 'No events recorded yet.',
     'timeline'        => [
         'ordered'   => 'Requested',
         'scheduled' => 'Scheduled',

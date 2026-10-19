@@ -83,6 +83,21 @@ class FacilityAdminDeskController extends Controller
         ]);
     }
 
+    public function invoice(string $id): View
+    {
+        $facilityId = $this->facilityId();
+        $invoice    = $this->desk->invoice($facilityId, $id);
+
+        abort_if($invoice === null, 404);
+
+        return view('portals.facility.admin.invoice_show', [
+            'invoice'  => $invoice,
+            'patient'  => $this->desk->patientsFor([$invoice])[$invoice->patient_id] ?? null,
+            'payments' => \App\Models\Payment::where('invoice_id', $invoice->id)->orderBy('created_at')->get(),
+            'refunds'  => \App\Models\Refund::where('invoice_id', $invoice->id)->orderBy('created_at')->get(),
+        ]);
+    }
+
     // ── Departments (H-5, read only) ─────────────────────────────────────
 
     public function departments(): View
