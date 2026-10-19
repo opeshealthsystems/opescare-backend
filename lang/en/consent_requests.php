@@ -123,6 +123,9 @@ return [
         'orders' => [
             'read' => 'Laboratory and imaging orders',
         ],
+        'results' => [
+            'read' => 'Laboratory results',
+        ],
     ],
 
 ];

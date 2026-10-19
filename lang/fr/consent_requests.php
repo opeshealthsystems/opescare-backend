@@ -83,6 +83,9 @@ return [
         'orders' => [
             'read' => "Examens de laboratoire et d'imagerie",
         ],
+        'results' => [
+            'read' => 'Résultats de laboratoire',
+        ],
     ],
 
 ];

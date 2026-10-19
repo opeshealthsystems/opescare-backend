@@ -78,11 +78,38 @@ final class PatientVocabulary
      *
      * @return array{code: string, label: string, recognised: bool}
      */
+    /**
+     * Legacy short codes still written by older request paths and seeded data
+     * (`conditions`, `vitals`, `lab_results`…). They name the same things as the
+     * canonical scopes, so the patient sees the plain-language name instead of a
+     * raw code and a "not in our vocabulary" warning.
+     */
+    private const SCOPE_ALIASES = [
+        'summary'     => 'patient.summary',
+        'allergies'   => 'allergies.read',
+        'conditions'  => 'problems.read',
+        'problems'    => 'problems.read',
+        'encounters'  => 'encounters.read',
+        'visits'      => 'encounters.read',
+        'vitals'      => 'vitals.read',
+        'medications' => 'medications.read',
+        'diagnoses'   => 'diagnoses.read',
+        'orders'      => 'orders.read',
+        'lab_results' => 'results.read',
+        'labs'        => 'results.read',
+    ];
+
+    /** Label-only scopes: named for the patient, not requestable on their own. */
+    private const LABEL_ONLY_SCOPES = ['results.read'];
+
     public static function scope(string $code, string $locale): array
     {
-        $key = 'consent_requests.scope.' . $code;
+        $canonical = self::SCOPE_ALIASES[$code] ?? $code;
+        $key = 'consent_requests.scope.' . $canonical;
+        $known = in_array($canonical, MobileConsentRequestController::SCOPES, true)
+            || in_array($canonical, self::LABEL_ONLY_SCOPES, true);
 
-        if (! in_array($code, MobileConsentRequestController::SCOPES, true) || ! Lang::has($key, $locale)) {
+        if (! $known || ! Lang::has($key, $locale)) {
             return ['code' => $code, 'label' => $code, 'recognised' => false];
         }
 
