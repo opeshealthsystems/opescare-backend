@@ -20,7 +20,7 @@ class PrescriptionController extends Controller
         }
 
         $validated = $request->validate([
-            'patient_id'                   => 'required|uuid',
+            'patient_id'                   => 'required|uuid|exists:patients,id',
             'prescriber_id'                => 'required|uuid',
             'visit_id'                     => 'nullable|uuid',
             'items'                        => 'required|array|min:1',
@@ -36,6 +36,10 @@ class PrescriptionController extends Controller
             'notes'                        => 'nullable|string',
             'expires_at'                   => 'nullable|date',
         ]);
+
+        // The prescriber must be posted at the calling client's facility: a
+        // partner cannot sign a script in the name of any clinician.
+        \App\Support\FacilityPosting::assert($validated['prescriber_id'], (string) $facilityId, 'prescriber_id');
 
         // One write path with the staff portal — PrescriptionService normalises
         // the `dosage`/`duration` aliases this endpoint has always accepted and
@@ -75,8 +79,18 @@ class PrescriptionController extends Controller
         $prescriptions = Prescription::where('facility_id', $facilityId)
             ->with(['patient', 'prescriber'])
             ->orderByDesc('created_at')
-            ->get();
+            ->paginate(max(1, min((int) $request->query('per_page', 50), 100)));
 
-        return response()->json(['data' => $prescriptions]);
+        // Paginated with a hard cap: an unbounded get() hydrated every script a
+        // facility ever wrote, patient and prescriber included.
+        return response()->json([
+            'data' => $prescriptions->items(),
+            'meta' => [
+                'current_page' => $prescriptions->currentPage(),
+                'per_page'     => $prescriptions->perPage(),
+                'total'        => $prescriptions->total(),
+                'last_page'    => $prescriptions->lastPage(),
+            ],
+        ]);
     }
 }

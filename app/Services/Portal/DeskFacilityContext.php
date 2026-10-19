@@ -46,18 +46,23 @@ class DeskFacilityContext
     public function resolve(): ?string
     {
         $active = session('active_facility_id');
-
-        if (is_string($active) && $active !== '') {
-            return $active;
-        }
-
-        $user = Auth::user();
+        $user   = Auth::user();
 
         if (! $user) {
             return null;
         }
 
         $allowed = $this->memberships->facilityIdsFor($user);
+
+        // The session value is honoured only while the posting is still live:
+        // a member removed from this facility loses its desks on the next
+        // request, not when the session cookie expires.
+        if (is_string($active) && $active !== '') {
+            if ($allowed === null || in_array($active, array_map('strval', $allowed), true)) {
+                return $active;
+            }
+            session()->forget('active_facility_id');
+        }
 
         // Platform tier: unrestricted, exactly as RequireFacilityContext leaves it.
         if ($allowed === null) {

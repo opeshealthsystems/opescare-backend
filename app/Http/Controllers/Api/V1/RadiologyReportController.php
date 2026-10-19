@@ -53,13 +53,8 @@ class RadiologyReportController extends Controller {
         ]);
         // The ordering clinician must actually be posted at the calling
         // client's facility — a client cannot attribute an order to anyone.
-        $orderedBy = \App\Models\User::find($validated['ordered_by']);
-        $postings  = $orderedBy ? app(\App\Services\Portal\FacilityMembershipService::class)->facilityIdsFor($orderedBy) : [];
-        if (! is_array($postings) || ! in_array($facilityId, $postings, true)) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
-                'ordered_by' => __('api.radiology_ordered_by_not_facility_staff'),
-            ]);
-        }
+        \App\Support\FacilityPosting::assert($validated['ordered_by'], (string) $facilityId, 'ordered_by');
+        \App\Support\FacilityPosting::assert($validated['reported_by'], (string) $facilityId, 'reported_by');
 
         // Same gate as FHIR ingest writes: no active consent grant from this
         // patient to the client's facility, no write — and the same
@@ -101,6 +96,9 @@ class RadiologyReportController extends Controller {
         $validated = $request->validate([
             'radiologist_id' => ['required','uuid','exists:users,id'],
         ]);
+        // finalize issues a signed official document in this person's name, so
+        // they must be posted at the calling client's facility.
+        \App\Support\FacilityPosting::assert($validated['radiologist_id'], (string) $facilityId, 'radiologist_id');
         $report = $this->service->finalize($id, $validated['radiologist_id']);
 
         if ($facilityId) {
@@ -142,6 +140,10 @@ class RadiologyReportController extends Controller {
             'user_ids'   => ['required','array','min:1'],
             'user_ids.*' => ['required','uuid','exists:users,id'],
         ]);
+        $facilityId = (string) $request->attributes->get('facility_id');
+        foreach ($validated['user_ids'] as $i => $uid) {
+            \App\Support\FacilityPosting::assert($uid, $facilityId, "user_ids.$i");
+        }
         $report = $this->service->distribute($id, $validated['user_ids']);
         return response()->json(['data' => RadiologyReportResource::make($report)]);
     }

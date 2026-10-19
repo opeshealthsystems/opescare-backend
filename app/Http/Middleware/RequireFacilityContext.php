@@ -77,9 +77,15 @@ class RequireFacilityContext
             return $next($request);
         }
 
-        // Already resolved for this session — including by an explicit switch.
-        if (session('active_facility_id')) {
-            return $next($request);
+        // A suspended account is refused at login only; an open session used to
+        // keep working after FacilityAdminDeskService::deactivate() suspended
+        // it. End that session here, on its next request.
+        if (in_array((string) $user->status, ['suspended', 'inactive', 'disabled', 'deactivated'], true)) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('login');
         }
 
         // The user's REAL postings: active facility_role_assignments, active
@@ -87,6 +93,23 @@ class RequireFacilityContext
         // and the mobile switch endpoint use, so the three cannot disagree
         // about which facilities a person may act at.
         $allowed = $this->memberships->facilityIdsFor($user);
+
+        // Already resolved for this session — including by an explicit switch.
+        // Re-checked against the live postings on every request: a member
+        // removed from this facility (posting ended) must lose it immediately,
+        // not when their session cookie happens to expire.
+        if ($active = session('active_facility_id')) {
+            if ($allowed === null || in_array((string) $active, array_map('strval', $allowed), true)) {
+                return $next($request);
+            }
+
+            Log::warning('facility_context_revoked', [
+                'user_id'     => $user->id,
+                'facility_id' => $active,
+                'path'        => $request->path(),
+            ]);
+            session()->forget('active_facility_id');
+        }
 
         // null = platform tier (a wider list than the four names above — it also
         // covers privacy, security, compliance, support and partner functions).

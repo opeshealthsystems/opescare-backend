@@ -778,7 +778,9 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'platform.adm
 });
 
 // --- Integration Certifications (partner integrations for the stock ingest) ---
-Route::middleware(['web', 'auth', 'portal.access'])->group(function () {
+// Platform-tier only: badges certify partners for the whole country. Without
+// platform.admin any facility admin could issue or revoke them.
+Route::middleware(['web', 'auth', 'portal.access', 'platform.admin', 'mfa.verified'])->group(function () {
     Route::get('/admin/certifications',                                   [\App\Http\Controllers\MedicalId\IntegrationCertificationController::class, 'index'])->name('portals.admin.certifications.index');
     Route::get('/admin/certifications/create',                            [\App\Http\Controllers\MedicalId\IntegrationCertificationController::class, 'create'])->name('portals.admin.certifications.create');
     Route::post('/admin/certifications',                                  [\App\Http\Controllers\MedicalId\IntegrationCertificationController::class, 'store'])->name('portals.admin.certifications.store');

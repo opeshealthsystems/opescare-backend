@@ -101,7 +101,7 @@ class InventoryPortalController extends Controller
 
         $this->bloodService->upsertUnit(
             $this->bloodFacilityId(),
-            $request->except(['_token']),
+            $request->only(['blood_group', 'component', 'available_units', 'is_expired', 'is_quarantined', 'is_unsafe']),
             self::BLOOD_SOURCE,
         );
 

@@ -532,17 +532,31 @@ class AppServiceProvider extends ServiceProvider
         // - Unauthenticated: 60 req/min by IP
         // - Authenticated users: 600 req/min by user ID
         // - Integration partners (X-Integration-Client-Id header): 1200 req/min by user ID
+        //
+        // Applied to the whole `api` group by throttleApi() in bootstrap/app.php
+        // (it used to be defined and attached to nothing, so every /api/* route
+        // without its own throttle - search, directory, chart reads - was
+        // unlimited). The group throttle runs BEFORE auth.mobile/auth.provider
+        // stamp their attributes, so a bearer caller is keyed on a hash of its
+        // token: Cameroonian mobile traffic sits behind carrier-grade NAT, and
+        // keying an authenticated app on IP would throttle a whole operator's
+        // subscribers together. An invalid token buys nothing: it is rejected
+        // by the auth middleware one step later. Anonymous callers are keyed
+        // by IP with a NAT-tolerant ceiling.
         RateLimiter::for('api', function (Request $request) {
             $user = $request->user();
+            $isPartner = $request->header('X-Integration-Client-Id');
 
-            if (! $user) {
-                return Limit::perMinute(60)->by($request->ip());
+            if ($user) {
+                return Limit::perMinute($isPartner ? 1200 : 600)->by('api|u|' . $user->id);
             }
 
-            $isPartner = $request->header('X-Integration-Client-Id');
-            $rate      = $isPartner ? 1200 : 600;
+            $bearer = $request->bearerToken();
+            if ($bearer !== null && $bearer !== '') {
+                return Limit::perMinute($isPartner ? 1200 : 600)->by('api|t|' . hash('sha256', $bearer));
+            }
 
-            return Limit::perMinute($rate)->by($user->id);
+            return Limit::perMinute(300)->by('api|ip|' . $request->ip());
         });
 
         // Family: notify guardians when patient events occur

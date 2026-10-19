@@ -25,7 +25,13 @@ use App\Http\Middleware\VerifyIntegrationClient;
 Route::middleware([VerifyIntegrationClient::class])->prefix('v1')->group(function () {
 
     // ── Prescriptions ─────────────────────────────────────────────────────
-    Route::get('prescriptions',                    [\App\Http\Controllers\Api\V1\PrescriptionController::class, 'index']);
-    Route::post('prescriptions',                   [\App\Http\Controllers\Api\V1\PrescriptionController::class, 'store']);
-    Route::get('prescriptions/{prescription}',     [\App\Http\Controllers\Api\V1\PrescriptionController::class, 'show']);
+    // Scoped like v1/inventory: reading a facility's scripts discloses patient
+    // PHI (patient:read); writing one needs prescription:push. Before these
+    // gates any facility-bound client (e.g. a stock-sync partner) could do both.
+    Route::get('prescriptions',                    [\App\Http\Controllers\Api\V1\PrescriptionController::class, 'index'])
+        ->middleware('integration.scope:patient:read');
+    Route::post('prescriptions',                   [\App\Http\Controllers\Api\V1\PrescriptionController::class, 'store'])
+        ->middleware('integration.scope:prescription:push');
+    Route::get('prescriptions/{prescription}',     [\App\Http\Controllers\Api\V1\PrescriptionController::class, 'show'])
+        ->middleware('integration.scope:patient:read');
 });

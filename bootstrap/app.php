@@ -39,6 +39,10 @@ return Application::configure(basePath: dirname(__DIR__))
             // ?lang= / session behaviour is unchanged.
             \App\Http\Middleware\SetLocale::class,
         ]);
+        // Baseline per-caller ceiling on every /api/* route (limiter 'api' in
+        // AppServiceProvider). Route-level throttles (auth 5/min, export
+        // 10/min, ...) still apply on top of it.
+        $middleware->throttleApi();
         $middleware->api(append: [
             \App\Http\Middleware\DemoSessionMiddleware::class,
             \App\Http\Middleware\DemoDataScope::class,

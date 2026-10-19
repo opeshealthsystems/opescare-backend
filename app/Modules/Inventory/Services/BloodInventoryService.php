@@ -55,6 +55,17 @@ class BloodInventoryService
         // this table — strip it if a caller passed the whole request through.
         unset($data['source_system']);
 
+        // Only the stock fields are writable from a caller. The portal passes
+        // the request through, and `facility_id` is fillable on the model, so
+        // without this allow-list a body field `facility_id` on the UPDATE path
+        // re-homed the row into another facility's shelf (the create path was
+        // safe only because array_merge put the trusted id last). The facility
+        // is always the trusted $facilityId argument.
+        $data = array_intersect_key($data, array_flip([
+            'blood_group', 'component', 'available_units',
+            'is_expired', 'is_quarantined', 'is_unsafe',
+        ]));
+
         // Upsert by facility + blood_group + component
         $existing = BloodInventory::where('facility_id', $facilityId)
             ->where('blood_group', $data['blood_group'])
