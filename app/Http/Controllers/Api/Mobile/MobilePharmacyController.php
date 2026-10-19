@@ -182,6 +182,70 @@ class MobilePharmacyController extends Controller
     }
 
     /**
+     * GET /api/mobile/pharmacy/pharmacies/{id}/stock
+     * Query: ?q=<medicine name>
+     *
+     * The medicines one directory pharmacy has reported, for its detail page.
+     * Every row goes through reportedByRealSource() — the same provenance
+     * allow-list as the finder — so seeded/demo stock is never published and
+     * an empty list is a correct answer. Out-of-stock lines are omitted.
+     */
+    public function pharmacyStock(Request $request, string $id): JsonResponse
+    {
+        $validated = $request->validate(['q' => 'nullable|string|max:100']);
+
+        $facility = CareFacility::query()
+            ->where('listing_status', 'active')
+            ->where('facility_type', 'pharmacy')
+            ->find($id);
+
+        if (! $facility) {
+            return response()->json([
+                'message'    => 'Pharmacy not found.',
+                'error_code' => 'PHARMACY_NOT_FOUND',
+            ], 404);
+        }
+
+        $term = trim((string) ($validated['q'] ?? ''));
+
+        $rows = MedicinePharmacyStock::query()
+            ->reportedByRealSource()
+            ->available()
+            ->where('care_facility_id', $facility->id)
+            ->whereHas('medicine', function ($q) use ($term) {
+                $q->active();
+                if ($term !== '') {
+                    $like = '%' . addcslashes($term, '%_\\\\') . '%';
+                    $q->where(fn ($w) => $w->where('name', 'ILIKE', $like)->orWhere('generic_name', 'ILIKE', $like));
+                }
+            })
+            ->with('medicine')
+            ->orderByDesc('last_reported_at')
+            ->limit(200)
+            ->get()
+            ->sortBy(fn (MedicinePharmacyStock $s) => mb_strtolower($s->medicine->name))
+            ->values();
+
+        return response()->json([
+            'data' => $rows->map(fn (MedicinePharmacyStock $s) => [
+                'medicine_id'      => $s->medicine_id,
+                'name'             => $s->medicine->name,
+                'generic_name'     => $s->medicine->generic_name,
+                'strength'         => $s->medicine->strength,
+                'form'             => $s->medicine->form,
+                'prescription_required' => (bool) $s->medicine->prescription_required,
+                'status'           => $s->stock_status->value,
+                'status_label'     => $s->stock_status->label(),
+                'pack_size'        => $s->pack_size,
+                'unit_price'       => $s->unit_price,
+                'currency'         => $s->currency,
+                'last_reported_at' => $s->last_reported_at?->toIso8601String(),
+            ])->all(),
+            'meta' => ['total' => $rows->count(), 'care_facility_id' => $facility->id],
+        ]);
+    }
+
+    /**
      * GET /api/mobile/pharmacy/reservations
      * Query: ?scope=open|all
      */
