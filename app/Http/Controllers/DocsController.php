@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\Diagrams\Palette;
+use App\Support\Diagrams\Proof;
+use App\Support\Diagrams\Specs;
 use App\Support\Docs\DocsDiagrams;
+use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 
 /**
@@ -31,6 +35,51 @@ class DocsController extends Controller
         abort_unless(in_array($flow, DocsDiagrams::FLOWS, true), 404);
 
         return $this->page('docs.flow', ['flow' => $flow]);
+    }
+
+    /**
+     * Every flow and architecture diagram as machine-readable JSON: the same
+     * spec the SVG, the step list and the PDF are drawn from, each card's
+     * evidence with whether it resolves in this running app, the graph and
+     * layout proofs, and the palette with its contrast and ΔE2000 numbers.
+     */
+    public function flowsJson(): JsonResponse
+    {
+        $diagrams = [];
+        foreach (Specs::ids() as $id) {
+            $spec = Specs::get($id);
+            $checks = Proof::all($id);
+            $diagrams[$id] = [
+                'title'   => __($spec['title']),
+                'summary' => __($spec['summary']),
+                'nodes'   => array_map(fn ($id, $n) => [
+                    'id' => $id, 'kind' => $n[0], 'icon' => $n[1], 'cell' => $n[2],
+                    'label' => __($n[3]), 'sublabel' => __($n[4]),
+                    'evidence' => array_map(fn ($r) => ['ref' => $r, 'resolves' => Proof::resolves($r)], $n[5]),
+                ], array_keys($spec['nodes']), $spec['nodes']),
+                'edges' => array_map(fn ($e) => [
+                    'from' => $e[0], 'to' => $e[1], 'kind' => $e[2],
+                    'label' => isset($e[3]) ? __($e[3]) : null,
+                    'loop' => (bool) ($e[4]['loop'] ?? false),
+                ], $spec['edges']),
+                'steps' => array_map(fn ($s) => ['path' => $s[0], 'title' => __($s[1]), 'text' => __($s[2])], $spec['steps']),
+                'proof' => [
+                    'passed' => count(array_filter($checks, fn ($v) => $v === [])),
+                    'total'  => count($checks),
+                    'checks' => array_map(fn ($v) => ['ok' => $v === [], 'violations' => $v], $checks),
+                ],
+                'page' => in_array($id, DocsDiagrams::FLOWS, true) ? route('docs.flows', $id) : ($id === 'overview' ? route('docs.architecture') : null),
+            ];
+        }
+
+        return response()->json([
+            'schema'   => 'opescare.flows/1',
+            'locale'   => app()->getLocale(),
+            'source'   => 'App\Support\Diagrams\Specs',
+            'palette'  => Palette::report(),
+            'diagrams' => $diagrams,
+        ], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+            ->header('Cache-Control', 'public, max-age=300');
     }
 
     private function page(string $view, array $data = []): View

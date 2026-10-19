@@ -73,7 +73,7 @@ return [
     ],
 
     'flow' => [
-        'h_sequence'   => 'Séquence',
+        'h_sequence'   => 'Le flux',
         'hint'         => 'Faites défiler les étapes sous le diagramme, ou survolez-en une, pour la mettre en évidence.',
         'h_guarantees' => 'Ce que cela garantit',
         'h_code'       => 'Où cela se trouve dans le code',
@@ -252,9 +252,9 @@ return [
             'd1' => 'Chaque abonnement actif à ce type d’événement reçoit une livraison en file.',
             'm2' => 'Signer : HMAC-SHA256(t.payload)',
             'd2' => 'L’horodatage et le corps JSON sont signés avec le secret de votre abonnement.',
-            'm3' => 'Contrôle d’adresse publique',
+            'm3' => 'Adresse publique ?',
             'd3' => 'Les callbacks vers des adresses privées ou locales sont refusés ; les redirections ne sont pas suivies.',
-            'm4' => 'POST JSON + en-têtes de signature',
+            'm4' => 'POST JSON signé',
             'd4' => 'En-têtes : X-OpesCare-Signature (t=..., v1=...), X-OpesCare-Timestamp, X-OpesCare-Event-Id.',
             'm5' => 'Vérifier, dédoublonner',
             'd5' => 'Recalculez le HMAC, rejetez les horodatages anciens et ignorez un Event-Id déjà traité.',

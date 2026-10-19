@@ -38,7 +38,7 @@
 
 <h2 id="architecture">{{ __('docs_ui.arch.title') }}</h2>
 <p>{{ __('docs_ui.arch.lead', ['host' => parse_url($docsBase, PHP_URL_HOST)]) }} <a href="{{ route('docs.architecture') }}">{{ __('docs_ui.nav.platform_overview') }}</a></p>
-@include('docs.diagrams.overview')
+@include('docs.diagrams.flow', ['diagram' => 'overview'])
 
 <h2 id="sandbox-credentials">Sandbox Credentials</h2>
 

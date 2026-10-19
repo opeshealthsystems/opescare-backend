@@ -1,32 +1,46 @@
 /*
- * Blog diagrams: scroll-synced step highlight, path-draw on enter, and flowing
- * dashes only while a diagram is on screen. Loaded only on posts that embed a
- * diagram. Everything here is enhancement: without JS (or with reduced motion)
- * the diagrams and their step lists are complete and static.
+ * Flow diagrams (blog and /docs): the step being read lights up its cards and
+ * arrows in the diagram above it. Hover, keyboard focus and scrolling the step
+ * list all drive it. Motion (path draw, travelling pulse) is CSS and only runs
+ * while the diagram is on screen and the reader allows motion. Without JS the
+ * diagram and its numbered steps are complete and static.
+ *
+ * Cards and arrows carry data-steps=" 1 3 " (every step that walks them).
  */
 (function () {
   'use strict';
-  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var hasIO = 'IntersectionObserver' in window;
 
   document.querySelectorAll('[data-dg-steps]').forEach(function (list) {
     var fig = document.querySelector('[data-dg="' + list.getAttribute('data-dg-steps') + '"]');
     if (!fig) return;
-    var parts = fig.querySelectorAll('svg [data-step]');
+    var parts = fig.querySelectorAll('svg [data-steps]');
     var steps = list.querySelectorAll('.dg-step');
+    var current = null;
+
     function show(n) {
-      parts.forEach(function (m) { m.classList.toggle('is-active', m.getAttribute('data-step') === n); });
+      if (n === current) return;
+      current = n;
+      var token = ' ' + n + ' ';
+      parts.forEach(function (p) {
+        p.classList.toggle('is-active', !!n && (p.getAttribute('data-steps') || '').indexOf(token) !== -1);
+      });
       steps.forEach(function (s) { s.classList.toggle('is-active', s.getAttribute('data-step') === n); });
       fig.classList.toggle('has-active', !!n);
     }
+
     steps.forEach(function (s) {
       s.setAttribute('tabindex', '0');
       s.addEventListener('mouseenter', function () { show(s.getAttribute('data-step')); });
       s.addEventListener('focusin', function () { show(s.getAttribute('data-step')); });
     });
-    parts.forEach(function (m) {
-      m.addEventListener('mouseenter', function () { show(m.getAttribute('data-step')); });
+    parts.forEach(function (p) {
+      p.addEventListener('mouseenter', function () {
+        var first = (p.getAttribute('data-steps') || '').trim().split(' ')[0];
+        if (first) show(first);
+      });
     });
+
     if (hasIO) {
       // The step crossing the middle band of the viewport is the one being read.
       var io = new IntersectionObserver(function (entries) {
@@ -36,26 +50,11 @@
     }
   });
 
-  if (reduceMotion || !hasIO) return;
+  if (!hasIO) return;
 
-  // Board diagrams draw themselves once, the first time they come into view.
-  var boards = document.querySelectorAll('.dg-board');
-  var draw = new IntersectionObserver(function (entries, obs) {
-    entries.forEach(function (en) {
-      if (!en.isIntersecting) return;
-      en.target.classList.add('is-drawn');
-      obs.unobserve(en.target);
-    });
-  }, { threshold: 0.2 });
-  boards.forEach(function (b) {
-    // Arm only diagrams still below the fold, so nothing already visible blinks.
-    if (b.getBoundingClientRect().top > window.innerHeight) b.classList.add('is-armed');
-    draw.observe(b);
-  });
-
-  // Flowing dashes run only while the diagram is on screen.
+  // Animation runs only while a diagram is on screen.
   var vis = new IntersectionObserver(function (entries) {
     entries.forEach(function (en) { en.target.classList.toggle('is-visible', en.isIntersecting); });
   });
-  document.querySelectorAll('.bl-prose .dg').forEach(function (d) { vis.observe(d); });
+  document.querySelectorAll('.dg').forEach(function (d) { vis.observe(d); });
 })();

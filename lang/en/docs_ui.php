@@ -73,7 +73,7 @@ return [
     ],
 
     'flow' => [
-        'h_sequence'   => 'Sequence',
+        'h_sequence'   => 'The flow',
         'hint'         => 'Scroll through the steps below the diagram, or hover a step, to highlight it in the diagram.',
         'h_guarantees' => 'What this guarantees',
         'h_code'       => 'Where it lives in the code',

@@ -13,7 +13,7 @@
 </div>
 
 <h2 id="overview">{{ __('docs_ui.arch.h_overview') }}</h2>
-@include('docs.diagrams.overview')
+@include('docs.diagrams.flow', ['diagram' => 'overview'])
 
 <h2 id="layers">{{ __('docs_ui.arch.h_layers') }}</h2>
 <div class="dx-layers">
@@ -26,6 +26,7 @@
 </div>
 
 <h2 id="flows">{{ __('docs_ui.arch.h_flows') }}</h2>
+<p><a href="{{ route('docs.flows.json') }}" class="dx-json-link"><i data-lucide="braces" class="dx-ico-sm"></i> {{ __('flows.json_link') }}</a> <code>/docs/flows.json</code></p>
 <div class="dx-flow-cards">
     @foreach (\App\Support\Docs\DocsDiagrams::FLOWS as $f)
         <a class="dx-flow-card" href="{{ route('docs.flows', $f) }}">

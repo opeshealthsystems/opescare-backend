@@ -20,7 +20,7 @@
 
 <h2 id="sequence">{{ __('docs_ui.flow.h_sequence') }}</h2>
 <p class="dx-hint">{{ __('docs_ui.flow.hint') }}</p>
-@include('docs.diagrams.sequence', ['flow' => $flow])
+@include('docs.diagrams.flow', ['diagram' => $flow])
 
 <h2 id="guarantees">{{ __('docs_ui.flow.h_guarantees') }}</h2>
 <ul>
@@ -31,7 +31,7 @@
 
 <h2 id="in-the-code">{{ __('docs_ui.flow.h_code') }}</h2>
 <ul class="dx-code-refs">
-    @foreach (\App\Support\Docs\DocsDiagrams::CODE[$flow] as $ref)
+    @foreach (\App\Support\Docs\DocsDiagrams::code($flow) as $ref)
         <li><code>{{ $ref }}</code></li>
     @endforeach
 </ul>

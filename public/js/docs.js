@@ -8,7 +8,6 @@
   'use strict';
 
   var body = document.body;
-  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function store(key, value) {
     try {
@@ -134,40 +133,7 @@
     }
   }
 
-  /* ---- Diagrams: highlight the step being read -------------------- */
-  document.querySelectorAll('[data-dg-steps]').forEach(function (list) {
-    var fig = document.querySelector('[data-dg="' + list.getAttribute('data-dg-steps') + '"]');
-    if (!fig) return;
-    var msgs = fig.querySelectorAll('.dg-msg');
-    var steps = list.querySelectorAll('.dg-step');
-    function show(n) {
-      msgs.forEach(function (m) { m.classList.toggle('is-active', m.getAttribute('data-step') === n); });
-      steps.forEach(function (s) { s.classList.toggle('is-active', s.getAttribute('data-step') === n); });
-      fig.classList.toggle('has-active', !!n);
-    }
-    steps.forEach(function (s) {
-      s.setAttribute('tabindex', '0');
-      s.addEventListener('mouseenter', function () { show(s.getAttribute('data-step')); });
-      s.addEventListener('focusin', function () { show(s.getAttribute('data-step')); });
-    });
-    msgs.forEach(function (m) {
-      m.addEventListener('mouseenter', function () { show(m.getAttribute('data-step')); });
-    });
-    if ('IntersectionObserver' in window) {
-      var io = new IntersectionObserver(function (entries) {
-        entries.forEach(function (en) { if (en.isIntersecting) show(en.target.getAttribute('data-step')); });
-      }, { rootMargin: '-45% 0px -45% 0px' });
-      steps.forEach(function (s) { io.observe(s); });
-    }
-  });
-
-  /* Run the flowing-dash animation only while a diagram is on screen. */
-  if (!reduceMotion && 'IntersectionObserver' in window) {
-    var vis = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) { en.target.classList.toggle('is-visible', en.isIntersecting); });
-    });
-    document.querySelectorAll('.dg').forEach(function (d) { vis.observe(d); });
-  }
+  /* Diagrams: public/js/blog-diagrams.js (shared with the blog). */
 
   if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
 })();

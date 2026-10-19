@@ -32,6 +32,7 @@ Stock and blood availability are reported by facilities and timestamped; OpesCar
 
 - [OpesCare blog](https://opescare.com/blog): guides on finding medicines, blood and care in Cameroon
 - [The Record Is the Product](https://opescare.com/blog/the-record-is-the-product): flagship essay by founder Jude Nshome on OpesCare's patient-owned Health ID, consent, family access and offline design (PDF: https://opescare.com/blog/the-record-is-the-product/download.pdf; French: https://opescare.com/blog/le-dossier-est-le-produit)
+- [The Platform Behind the App](https://opescare.com/blog/the-platform-behind-the-app): companion essay by Jude Nshome on OpesCare's web platform: the Master Patient Index, FHIR R4 inbound ingest, and the pharmacy, laboratory, imaging, blood-bank and front-desk workflows on one shared record (PDF: https://opescare.com/blog/the-platform-behind-the-app/download.pdf; French: https://opescare.com/blog/la-plateforme-derriere-l-application)
 
 ## Optional
 

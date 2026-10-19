@@ -182,3 +182,5 @@ Cameroon is where it is being proven, but the pattern is not specific to Cameroo
 ---
 
 *OpesCare is built by OPES Health Systems for care in Cameroon. It is available in English and French, for patients and for staff, on Android and the web today, with iOS on the roadmap. Read more about [how consent works for patients](/blog/patient-consent-who-sees-your-record), [the Health ID, FHIR and the Master Patient Index](/blog/health-id-interoperability-mpi-explained), or the [developer documentation](/docs/architecture).*
+
+*Companion essay: [The Platform Behind the App](/blog/the-platform-behind-the-app) — how the pharmacy, laboratory, blood bank and front desk work on the same record.*

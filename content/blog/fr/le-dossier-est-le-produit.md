@@ -182,3 +182,5 @@ Le Cameroun est le terrain de la preuve, mais le modèle ne lui est pas propre. 
 ---
 
 *OpesCare est développé par OPES Health Systems pour les soins au Cameroun. Il est disponible en français et en anglais, pour les patients comme pour le personnel, sur Android et sur le web dès aujourd'hui, iOS étant prévu. Pour aller plus loin : [le consentement expliqué aux patients](/blog/consentement-patient-qui-voit-votre-dossier), [le Health ID, FHIR et l'index maître des patients](/blog/identifiant-sante-interoperabilite-index-patients-explique), ou la [documentation développeurs](/docs/architecture?lang=fr).*
+
+*Article compagnon : [La plateforme derrière l'application](/blog/la-plateforme-derriere-l-application) — comment la pharmacie, le laboratoire, la banque de sang et l'accueil travaillent sur le même dossier.*

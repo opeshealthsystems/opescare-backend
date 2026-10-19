@@ -216,102 +216,7 @@ body.dx {
 .dx-footer-links a:hover { color: var(--dx-blue); }
 .dx-copyright { margin-left: auto; color: var(--dx-muted); font-size: .8rem; }
 
-/* ============================================================
-   Diagrams (inline SVG)
-   ============================================================ */
-.dg { margin: 1.25rem 0 1rem; border: 1px solid var(--dx-line); border-radius: 16px; background: linear-gradient(180deg, #FBFDFF, #F5F9FD); overflow: hidden; }
-.dg-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-.dg-scroll:focus-visible { outline: 2px solid var(--dx-blue); outline-offset: -2px; }
-.dg-svg { display: block; width: 100%; min-width: 760px; height: auto; font-family: 'Inter', sans-serif; }
-.dg-legend { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; padding: .6rem 1rem .8rem; border-top: 1px solid var(--dx-line); font-size: .78rem; color: var(--dx-muted); background: #fff; }
-.dg-key { display: inline-flex; align-items: center; gap: .45rem; }
-.dg-key::before { content: ''; width: 26px; height: 0; border-top: 2px solid var(--dx-blue); }
-.dg-key-res::before { border-top-style: dashed; border-top-color: var(--dx-muted); }
-.dg-key-fail::before { border-top-style: dashed; border-top-color: var(--dx-red); }
-
-/* text */
-.dg-svg text { paint-order: stroke; stroke: #F7FAFD; stroke-width: 4px; stroke-linejoin: round; }
-.dg-label { font-size: 12.5px; font-weight: 600; fill: var(--dx-text); }
-.dg-lane-title { font-size: 13.5px; font-weight: 800; fill: #fff; stroke: none !important; }
-.dg-lane-sub { font-size: 11px; font-weight: 500; fill: #D6E4F2; stroke: none !important; }
-.dg-num { font-size: 11.5px; font-weight: 800; fill: var(--dx-blue); stroke: none !important; }
-.dg-group-label { font-size: 10.5px; font-weight: 800; letter-spacing: .12em; fill: var(--dx-muted); }
-.dg-box-title { font-size: 13px; font-weight: 700; fill: var(--dx-ink); stroke: none !important; }
-.dg-box-sub { font-size: 10.5px; font-weight: 500; fill: var(--dx-muted); stroke: none !important; }
-
-/* lanes */
-.dg-lane-box { fill: var(--dx-blue); }
-.dg-lifeline { stroke: #C9D7E6; stroke-width: 1.5; stroke-dasharray: 4 5; }
-
-/* lines */
-.dg-line { fill: none; stroke: var(--dx-blue); stroke-width: 1.75; }
-.dg-head { fill: var(--dx-blue); }
-.dg-head-fail { fill: var(--dx-red); }
-.dg-res .dg-line { stroke: #64748B; stroke-dasharray: 6 5; }
-.dg-fail .dg-line { stroke: var(--dx-red); stroke-dasharray: 6 5; }
-.dg-fail .dg-label { fill: var(--dx-red); }
-.dg-num-bg { fill: #fff; stroke: var(--dx-blue-100); stroke-width: 1.5; }
-.dg-fail .dg-num-bg { stroke: #F5C2BC; }
-.dg-fail .dg-num { fill: var(--dx-red); }
-
-/* moving pulse along each arrow (decorative; hidden without motion) */
-.dg-pulse { fill: none; stroke: var(--dx-sky); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 10 400; stroke-dashoffset: 0; opacity: 0; }
-.dg-fail .dg-pulse { stroke: #F0857A; }
-
-@media (prefers-reduced-motion: no-preference) {
-  .dg.is-visible .dg-pulse { opacity: .85; animation: dg-travel 2.8s linear infinite; }
-  .dg.is-visible .dg-msg:nth-of-type(2n) .dg-pulse { animation-delay: -1.1s; }
-  .dg.is-visible .dg-msg:nth-of-type(3n) .dg-pulse { animation-delay: -2s; }
-  .dg-msg, .dg-msg .dg-line, .dg-msg .dg-label, .dg-step { transition: opacity .25s ease, stroke-width .25s ease, background-color .25s ease, border-color .25s ease; }
-}
-@keyframes dg-travel { from { stroke-dashoffset: 410; } to { stroke-dashoffset: 0; } }
-
-/* step highlight (scroll / hover) */
-.dg.has-active .dg-msg { opacity: .5; }
-.dg.has-active .dg-msg.is-active { opacity: 1; }
-.dg-msg.is-active .dg-line { stroke-width: 2.75; }
-.dg-msg.is-active .dg-num-bg { fill: var(--dx-blue); stroke: var(--dx-blue); }
-.dg-msg.is-active .dg-num { fill: #fff; }
-.dg-fail.is-active .dg-num-bg { fill: var(--dx-red); stroke: var(--dx-red); }
-.dg-msg.is-active .dg-label { font-weight: 800; }
-
-/* overview boxes */
-.dg-group rect { fill: #fff; stroke: #D6E1EC; stroke-width: 1.25; stroke-dasharray: 5 5; }
-.dg-group-host rect { fill: #F2F7FC; stroke: var(--dx-blue-100); stroke-dasharray: none; }
-.dg-box rect { fill: #fff; stroke: #CBD5E1; stroke-width: 1.25; }
-.dg-tone-client rect { fill: #fff; stroke: #94A3B8; }
-.dg-tone-edge rect { fill: var(--dx-blue); stroke: var(--dx-blue); }
-.dg-tone-edge .dg-box-title { fill: #fff; }
-.dg-tone-edge .dg-box-sub { fill: #D6E4F2; }
-.dg-tone-gate rect { fill: var(--dx-green-50); stroke: #7CC4A0; }
-.dg-tone-gate .dg-box-title { fill: #0B5E3C; }
-.dg-tone-svc rect { fill: #fff; stroke: var(--dx-sky); }
-.dg-tone-data rect { fill: var(--dx-ink); stroke: var(--dx-ink); }
-.dg-tone-data .dg-box-title { fill: #fff; }
-.dg-tone-data .dg-box-sub { fill: #94A3B8; }
-.dg-overview .dg-line { stroke: #7C9CBC; stroke-width: 1.5; }
-.dg-overview .dg-head { fill: #7C9CBC; }
-.dg-overview .dg-pulse { stroke-dasharray: 8 220; }
-
-/* step list under a sequence diagram */
-.dg-steps { list-style: none; counter-reset: dgs; padding: 0 !important; margin: 0 0 2rem !important; display: grid; gap: .5rem; }
-.dg-step {
-  counter-increment: dgs; position: relative; padding: .7rem .9rem .7rem 3rem !important;
-  border: 1px solid var(--dx-line); border-radius: 12px; background: #fff; margin: 0 !important; cursor: default;
-}
-.dg-step::before {
-  content: counter(dgs); position: absolute; left: .85rem; top: .7rem;
-  width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center;
-  font-size: .75rem; font-weight: 800; color: var(--dx-blue); background: var(--dx-blue-50); border: 1px solid var(--dx-blue-100);
-}
-.dg-step strong { display: block; color: var(--dx-ink); font-size: .9rem; }
-.dg-step span { display: block; color: var(--dx-muted); font-size: .85rem; line-height: 1.5; }
-.dg-step-fail strong { color: var(--dx-red); }
-.dg-step-fail::before { color: var(--dx-red); background: var(--dx-red-50); border-color: #F5C2BC; }
-.dg-step.is-active, .dg-step:focus-visible { border-color: var(--dx-blue); background: var(--dx-blue-50); outline: none; }
-.dg-step.is-active::before { background: var(--dx-blue); color: #fff; border-color: var(--dx-blue); }
-.dg-step-fail.is-active { border-color: var(--dx-red); background: var(--dx-red-50); }
-.dg-step-fail.is-active::before { background: var(--dx-red); color: #fff; }
+/* Diagrams: public/css/blog-diagrams.css (shared with the blog). */
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1180px) {
@@ -336,7 +241,6 @@ body.dx {
   .dx-hero { flex-direction: column; gap: .75rem; }
   .dx-hero-seal { width: 56px; height: 56px; }
   .dx-copyright { margin-left: 0; }
-  .dg-svg { min-width: 720px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .dx-nav, .dx-flow-card { transition: none; }

@@ -18,6 +18,7 @@
     {{-- Content styles (tables, callouts, code tabs) + the OpesCare docs shell and diagrams --}}
     <link rel="stylesheet" href="{{ asset('css/docs.css') }}?v={{ @filemtime(public_path('css/docs.css')) ?: '1' }}">
     <link rel="stylesheet" href="{{ asset('css/docs-v2.css') }}?v={{ @filemtime(public_path('css/docs-v2.css')) ?: '1' }}">
+    <link rel="stylesheet" href="{{ asset('css/blog-diagrams.css') }}?v={{ @filemtime(public_path('css/blog-diagrams.css')) ?: '1' }}">
 
     @yield('head')
     {{-- Canonical, hreflang, Open Graph and schema.org --}}
@@ -142,6 +143,7 @@
 </footer>
 
 <script src="{{ asset('js/docs.js') }}?v={{ @filemtime(public_path('js/docs.js')) ?: '1' }}" @cspNonce defer></script>
+<script src="{{ asset('js/blog-diagrams.js') }}?v={{ @filemtime(public_path('js/blog-diagrams.js')) ?: '1' }}" @cspNonce defer></script>
 @yield('scripts')
 </body>
 </html>

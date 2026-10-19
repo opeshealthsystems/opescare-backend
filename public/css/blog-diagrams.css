@@ -1,129 +1,90 @@
 /*
- * Diagrams embedded in blog posts ({{diagram:NAME}}, App\Support\Blog\BlogDiagrams).
- * Shares the docs' .dg vocabulary so the reused docs diagrams and the blog's own
- * "board" diagrams look like one family. Motion is decorative and only runs with
- * prefers-reduced-motion: no-preference; the static diagram is complete without it.
+ * Flow diagrams: the one stylesheet for every diagram on the blog and in /docs
+ * (resources/views/docs/diagrams/flow.blade.php, spec App\Support\Diagrams\Specs).
+ *
+ * Colours, dashes, borders and fonts live on the SVG as presentation attributes
+ * (App\Support\Diagrams\Palette), so the PDF prints the same picture. This file
+ * only adds the frame, the scroll container, step highlighting and motion.
+ * Motion runs only with prefers-reduced-motion: no-preference, and only on the
+ * step being read: the static diagram and its step list are complete without it.
  */
-.dg, .dg-steps {
-  --dx-blue: #0F4C81; --dx-blue-50: #EEF4FA; --dx-blue-100: #D6E4F2; --dx-sky: #5EA3DC;
-  --dx-ink: #0F172A; --dx-text: #1E293B; --dx-muted: #64748B; --dx-line: #E2E8F0;
-  --dx-green-50: #E8F5EE; --dx-red: #B42318; --dx-red-50: #FDECEA;
+.dg, .dg-steps, .dg-verify {
+  --dg-blue: #0F4C81; --dg-blue-50: #EEF4FA; --dg-blue-100: #D6E4F2;
+  --dg-ink: #0F172A; --dg-text: #1E293B; --dg-muted: #475569; --dg-line: #E2E8F0;
+  --dg-red: #B91C1C; --dg-red-50: #FEF2F2; --dg-teal: #0E7490; --dg-green: #15803D;
 }
-.bl-prose .dg { margin: 1.75rem 0 .75rem; border: 1px solid var(--dx-line); border-radius: 16px; background: linear-gradient(180deg, #FBFDFF, #F5F9FD); overflow: hidden; }
-.dg-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-.dg-scroll:focus-visible { outline: 2px solid var(--dx-blue); outline-offset: -2px; }
-.dg-svg { display: block; width: 100%; min-width: 720px; height: auto; font-family: 'Inter', system-ui, sans-serif; }
-.dg-legend { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; padding: .6rem 1rem .8rem; border-top: 1px solid var(--dx-line); font-size: .78rem; color: var(--dx-muted); background: #fff; }
-.dg-key { display: inline-flex; align-items: center; gap: .45rem; }
-.dg-key::before { content: ""; width: 26px; height: 0; border-top: 2px solid var(--dx-blue); }
-.dg-key-res::before { border-top-style: dashed; border-top-color: var(--dx-muted); }
-.dg-key-fail::before { border-top-style: dashed; border-top-color: var(--dx-red); }
 
-/* text */
-.dg-svg text { paint-order: stroke; stroke: #F7FAFD; stroke-width: 4px; stroke-linejoin: round; }
-.dg-label { font-size: 12.5px; font-weight: 600; fill: var(--dx-text); }
-.dg-lane-title { font-size: 13.5px; font-weight: 800; fill: #fff; stroke: none !important; }
-.dg-lane-sub { font-size: 11px; font-weight: 500; fill: #D6E4F2; stroke: none !important; }
-.dg-num { font-size: 11.5px; font-weight: 800; fill: var(--dx-blue); stroke: none !important; }
-.dg-group-label { font-size: 10.5px; font-weight: 800; letter-spacing: .12em; fill: var(--dx-muted); }
-.dg-box-title { font-size: 13px; font-weight: 700; stroke: none !important; }
-.dg-box-sub { font-size: 10.5px; font-weight: 500; stroke: none !important; }
-.dg-overview .dg-box-title { fill: var(--dx-ink); }
-.dg-overview .dg-box-sub { fill: var(--dx-muted); }
+/* frame + scroll container (legible at 360px by scrolling, not by shrinking) */
+.dg { margin: 1.5rem 0 .75rem; border: 1px solid var(--dg-line); border-radius: 14px; background: #FFFFFF; overflow: hidden; }
+.dg-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+.dg-scroll:focus-visible { outline: 2px solid var(--dg-blue); outline-offset: -2px; }
+.dg-svg { display: block; width: 100%; min-width: 640px; height: auto; font-family: 'Inter', system-ui, sans-serif; }
 
-/* sequence diagrams (reused from /docs) */
-.dg-lane-box { fill: var(--dx-blue); }
-.dg-lifeline { stroke: #C9D7E6; stroke-width: 1.5; stroke-dasharray: 4 5; }
-.dg-line { fill: none; stroke: var(--dx-blue); stroke-width: 1.75; }
-.dg-head { fill: var(--dx-blue); }
-.dg-head-fail { fill: var(--dx-red); }
-.dg-res .dg-line { stroke: #64748B; stroke-dasharray: 6 5; }
-.dg-fail .dg-line { stroke: var(--dx-red); stroke-dasharray: 6 5; }
-.dg-fail .dg-label { fill: var(--dx-red); }
-.dg-num-bg { fill: #fff; stroke: var(--dx-blue-100); stroke-width: 1.5; }
-.dg-fail .dg-num-bg { stroke: #F5C2BC; }
-.dg-fail .dg-num { fill: var(--dx-red); }
+/* step highlight: the active step's cards and arrows stay, the rest recede */
+.dg.has-active .dg-node, .dg.has-active .dg-edge, .dg.has-active .dg-elabel { opacity: .28; }
+.dg.has-active .dg-node.is-active, .dg.has-active .dg-edge.is-active, .dg.has-active .dg-elabel.is-active { opacity: 1; }
+.dg-edge.is-active .dg-line { stroke-width: 2.75; }
+.dg-node.is-active .dg-card { stroke-width: 2.5; }
 
-/* overview (architecture) boxes */
-.dg-overview .dg-group rect { fill: #fff; stroke: #D6E1EC; stroke-width: 1.25; stroke-dasharray: 5 5; }
-.dg-overview .dg-group-host rect { fill: #F2F7FC; stroke: var(--dx-blue-100); stroke-dasharray: none; }
-.dg-overview .dg-box rect { fill: #fff; stroke: #CBD5E1; stroke-width: 1.25; }
-.dg-overview .dg-tone-client rect { stroke: #94A3B8; }
-.dg-overview .dg-tone-edge rect { fill: var(--dx-blue); stroke: var(--dx-blue); }
-.dg-overview .dg-tone-edge .dg-box-title { fill: #fff; }
-.dg-overview .dg-tone-edge .dg-box-sub { fill: #D6E4F2; }
-.dg-overview .dg-tone-gate rect { fill: var(--dx-green-50); stroke: #7CC4A0; }
-.dg-overview .dg-tone-gate .dg-box-title { fill: #0B5E3C; }
-.dg-overview .dg-tone-svc rect { stroke: var(--dx-sky); }
-.dg-overview .dg-tone-data rect { fill: var(--dx-ink); stroke: var(--dx-ink); }
-.dg-overview .dg-tone-data .dg-box-title { fill: #fff; }
-.dg-overview .dg-tone-data .dg-box-sub { fill: #94A3B8; }
-.dg-overview .dg-line { stroke: #7C9CBC; stroke-width: 1.5; }
-.dg-overview .dg-head { fill: #7C9CBC; }
-
-/* The blog's board diagrams carry their colours as SVG attributes too, so the
-   PDF (dompdf, which ignores this file) renders the same picture. */
-
-/* moving pulse along an arrow (decorative; hidden without motion) */
-.dg-pulse { fill: none; stroke: var(--dx-sky); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 10 400; stroke-dashoffset: 0; opacity: 0; }
-.dg-fail .dg-pulse { stroke: #F0857A; }
-.dg-overview .dg-pulse { stroke-dasharray: 8 220; }
-.dg-board .dg-pulse { stroke-dasharray: 8 120; }
-
-/* step highlight (scroll / hover / focus) */
-.dg.has-active .dg-msg, .dg.has-active .dg-node, .dg.has-active .dg-edge { opacity: .4; }
-.dg.has-active .dg-msg.is-active, .dg.has-active .dg-node.is-active, .dg.has-active .dg-edge.is-active { opacity: 1; }
-.dg-msg.is-active .dg-line, .dg-edge.is-active .dg-line { stroke-width: 2.75; }
-.dg-msg.is-active .dg-num-bg { fill: var(--dx-blue); stroke: var(--dx-blue); }
-.dg-msg.is-active .dg-num { fill: #fff; }
-.dg-fail.is-active .dg-num-bg { fill: var(--dx-red); stroke: var(--dx-red); }
-.dg-msg.is-active .dg-label { font-weight: 800; }
-.dg-node.is-active rect { stroke-width: 2.5; }
+/* motion pulse: a short dash travelling along the active arrows */
+.dg-pulse { fill: none; stroke: none; stroke-width: 3.5; stroke-linecap: round; opacity: 0; }
 
 @media (prefers-reduced-motion: no-preference) {
-  .dg-msg, .dg-node, .dg-edge, .dg-step { transition: opacity .3s ease, background-color .25s ease, border-color .25s ease; }
-  .dg-node rect, .dg-edge .dg-line { transition: stroke-width .25s ease; }
+  .dg-node, .dg-edge, .dg-elabel, .dg-step { transition: opacity .3s ease, background-color .25s ease, border-color .25s ease; }
+  .dg-card, .dg-line { transition: stroke-width .25s ease; }
 
-  /* path-draw on enter: a board's solid arrows draw themselves once (pathLength=1) */
-  .dg-board.is-armed .dg-req .dg-line { stroke-dasharray: 1; stroke-dashoffset: 1; }
-  .dg-board.is-armed .dg-node { opacity: 0; transform: translateY(6px); }
-  .dg-board.is-armed.is-drawn .dg-req .dg-line { stroke-dashoffset: 0; transition: stroke-dashoffset .9s ease-out .25s; }
-  .dg-board.is-armed.is-drawn .dg-node { opacity: 1; transform: none; transition: opacity .5s ease, transform .5s ease; }
-  .dg-board.is-armed.is-drawn.has-active .dg-node:not(.is-active) { opacity: .4; }
-
-  /* flowing dashes: only on the step being read, only while on screen */
-  .dg.is-visible .dg-msg.is-active .dg-pulse { opacity: .85; animation: dg-travel 2.6s linear infinite; }
-  .dg.is-visible .dg-edge.is-active .dg-pulse { opacity: .9; animation: dg-travel-short 1.6s linear infinite; }
-  .dg-overview.is-visible .dg-pulse { opacity: .85; animation: dg-travel 2.8s linear infinite; }
+  /* path draw: the active step's arrows draw themselves (pathLength=1) */
+  .dg.is-visible .dg-e-request.is-active .dg-line { stroke-dasharray: 1; stroke-dashoffset: 1; animation: dg-draw .7s ease-out forwards; }
+  .dg.is-visible .dg-edge.is-active .dg-pulse { stroke: #38BDF8; stroke-dasharray: 10 400; opacity: .9; animation: dg-travel 1.8s linear .7s infinite; }
+  .dg.is-visible .dg-e-refusal.is-active .dg-pulse { stroke: #F87171; }
+  .dg.is-visible .dg-node.is-active .dg-card { animation: dg-pulse-card 1.8s ease-in-out infinite; }
 }
+@keyframes dg-draw { to { stroke-dashoffset: 0; } }
 @keyframes dg-travel { from { stroke-dashoffset: 410; } to { stroke-dashoffset: 0; } }
-@keyframes dg-travel-short { from { stroke-dashoffset: 128; } to { stroke-dashoffset: 0; } }
+@keyframes dg-pulse-card { 0%, 100% { stroke-width: 2.5; } 50% { stroke-width: 4; } }
 
-/* the step list under each diagram is its text alternative and its scroll driver */
-.dg-steps { list-style: none; counter-reset: dgs; padding: 0 !important; margin: 0 0 2rem !important; display: grid; gap: .5rem; }
+/* the numbered step list: the diagram's text alternative and its scroll driver */
+.dg-steps { list-style: none; counter-reset: dgs; padding: 0 !important; margin: 0 0 1rem !important; display: grid; gap: .5rem; }
 .dg-step {
   counter-increment: dgs; position: relative; padding: .7rem .9rem .7rem 3rem !important;
-  border: 1px solid var(--dx-line); border-radius: 12px; background: #fff; margin: 0 !important; cursor: default;
+  border: 1px solid var(--dg-line); border-radius: 12px; background: #fff; margin: 0 !important; cursor: default;
 }
 .dg-step::before {
   content: counter(dgs); position: absolute; left: .85rem; top: .7rem;
   width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center;
-  font-size: .75rem; font-weight: 800; color: var(--dx-blue); background: var(--dx-blue-50); border: 1px solid var(--dx-blue-100);
+  font-size: .75rem; font-weight: 800; color: var(--dg-blue); background: var(--dg-blue-50); border: 1px solid var(--dg-blue-100);
 }
-.dg-step strong { display: block; color: var(--dx-ink); font-size: .92rem; }
-.dg-step span { display: block; color: var(--dx-muted); font-size: .87rem; line-height: 1.5; }
-.dg-step-fail strong { color: var(--dx-red); }
-.dg-step-fail::before { color: var(--dx-red); background: var(--dx-red-50); border-color: #F5C2BC; }
-.dg-step.is-active, .dg-step:focus-visible { border-color: var(--dx-blue); background: var(--dx-blue-50); outline: none; }
-.dg-step.is-active::before { background: var(--dx-blue); color: #fff; border-color: var(--dx-blue); }
-.dg-step-fail.is-active { border-color: var(--dx-red); background: var(--dx-red-50); }
-.dg-step-fail.is-active::before { background: var(--dx-red); color: #fff; }
+.dg-step strong { display: block; color: var(--dg-ink); font-size: .92rem; }
+.dg-step span { display: block; color: var(--dg-muted); font-size: .87rem; line-height: 1.5; }
+.dg-step-refusal strong { color: var(--dg-red); }
+.dg-step-refusal::before { color: var(--dg-red); background: var(--dg-red-50); border-color: #FECACA; }
+.dg-step.is-active, .dg-step:focus-visible { border-color: var(--dg-blue); background: var(--dg-blue-50); outline: none; }
+.dg-step.is-active::before { background: var(--dg-blue); color: #fff; border-color: var(--dg-blue); }
+.dg-step-refusal.is-active { border-color: var(--dg-red); background: var(--dg-red-50); }
+.dg-step-refusal.is-active::before { background: var(--dg-red); color: #fff; }
+
+/* "How this diagram is verified" */
+.dg-verify { margin: 0 0 2rem; border: 1px solid var(--dg-line); border-radius: 12px; background: #F8FAFC; font-size: .87rem; color: var(--dg-text); }
+.dg-verify summary { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; padding: .7rem .9rem; cursor: pointer; font-weight: 700; color: var(--dg-ink); }
+.dg-verify summary .f-icon { color: var(--dg-green); }
+.dg-verify-count { margin-left: auto; font-weight: 600; color: var(--dg-green); font-size: .8rem; }
+.dg-verify > p, .dg-verify-checks, .dg-verify-table { margin: 0 .9rem .75rem !important; }
+.dg-verify-checks { list-style: none; padding: 0 !important; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: .3rem .9rem; }
+.dg-verify-checks li { display: flex; gap: .4rem; align-items: flex-start; margin: 0 !important; line-height: 1.4; }
+.dg-verify-checks .is-ok .f-icon { color: var(--dg-green); flex: none; margin-top: 2px; }
+.dg-verify-checks .is-bad .f-icon { color: var(--dg-red); flex: none; margin-top: 2px; }
+.dg-verify-table { overflow-x: auto; }
+.dg-verify table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+.dg-verify th, .dg-verify td { text-align: left; vertical-align: top; padding: .35rem .5rem; border-top: 1px solid var(--dg-line); }
+.dg-verify td:first-child { white-space: nowrap; font-weight: 600; }
+.dg-verify code { display: inline-block; margin: 0 .25rem .2rem 0; font-size: .75rem; word-break: break-all; }
+.dg-verify a { display: inline-flex; align-items: center; gap: .35rem; font-weight: 600; color: var(--dg-blue); }
 
 @media (max-width: 640px) {
-  .bl-prose .dg { border-radius: 12px; }
+  .dg { border-radius: 12px; margin-left: 0; margin-right: 0; }
   .dg-steps { gap: .4rem; }
 }
 @media print {
   .dg-pulse { display: none; }
-  .dg-board .dg-node { opacity: 1 !important; transform: none !important; }
+  .dg .dg-node, .dg .dg-edge, .dg .dg-elabel { opacity: 1 !important; }
 }

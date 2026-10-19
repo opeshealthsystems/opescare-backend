@@ -35,6 +35,7 @@ Route::prefix('docs')->name('docs.')->group(function () {
     Route::get('/playground',    [DocsController::class, 'playground'])->name('playground');
     Route::get('/changelog',     [DocsController::class, 'changelog'])->name('changelog');
     Route::get('/architecture',  [DocsController::class, 'architecture'])->name('architecture');
+    Route::get('/flows.json',    [DocsController::class, 'flowsJson'])->name('flows.json');
     Route::get('/flows/{flow}',  [DocsController::class, 'flow'])
         ->whereIn('flow', \App\Support\Docs\DocsDiagrams::FLOWS)->name('flows');
 });

@@ -16,7 +16,7 @@
 
 <h2 id="delivery-flow">{{ __('docs_ui.dg.webhooks.title') }}</h2>
 <p>{{ __('docs_ui.dg.webhooks.lead') }} <a href="{{ route('docs.flows', 'webhooks') }}">{{ __('docs_ui.flow.h_sequence') }}</a></p>
-@include('docs.diagrams.sequence', ['flow' => 'webhooks'])
+@include('docs.diagrams.flow', ['diagram' => 'webhooks'])
 
 <h2 id="subscribe">Subscribe to Events</h2>
 
