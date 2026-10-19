@@ -1,9 +1,6 @@
 @extends('layouts.portal')
 @section('title', __('pharmacy_stock_desk.suppliers_title'))
 @section('sidebar_user_role', __('public.pharmacy_portal.role_label'))
-@section('breadcrumb_home', __('public.pharmacy_portal.breadcrumb_home'))
-@section('breadcrumb_home_url', route('portals.pharmacy.dashboard'))
-@section('breadcrumb_section', __('pharmacy_stock_desk.nav_suppliers'))
 @section('head')@include('portals.pharmacy.stock_ops._styles')@endsection
 
 @section('content')

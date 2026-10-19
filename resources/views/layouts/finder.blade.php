@@ -19,8 +19,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    {{-- A page with its own SEO head (e.g. facility profile) yields 'seo_head'
+         and owns <title>, description, canonical and hreflang itself. --}}
+    @hasSection('seo_head')
+    @yield('seo_head')
+    @else
     @hasSection('title')<title>@yield('title') — OpesCare</title>@else<title>{{ __('finder_shell.meta.default_title') }}</title>@endif
     <meta name="description" content="@yield('description', __('finder_shell.meta.default_description'))">
+    @endif
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     {{-- Favicons + theme-color #0F4C81 --}}
@@ -30,7 +36,9 @@
     <link rel="stylesheet" href="{{ asset('assets/finder.css') }}?v={{ @filemtime(public_path('assets/finder.css')) ?: '1' }}">
 
     {{-- Canonical, hreflang, OG/Twitter cards, geo.region + site JSON-LD (SEO layer) --}}
+    @sectionMissing('seo_head')
     @include('partials.finder.schema.site')
+    @endif
 
     {{-- Landing-page language for the public + auth shells (Inter, #EEF3F9, one accent, flat cards). Loads last. --}}
     <link rel="stylesheet" href="{{ asset('css/od-public.css') }}?v={{ @filemtime(public_path('css/od-public.css')) ?: '1' }}">
@@ -56,19 +64,16 @@
                 <a href="{{ route('public.network.lab-test-finder') }}">{{ __('lab_manager.finder.title') }}</a>
                 <a href="{{ route('public.network.imaging-finder') }}">{{ __('imaging_finder.title') }}</a>
                 <a href="{{ route('public.network.blood-finder') }}">{{ __('finder_shell.nav.find_blood') }}</a>
-                {{-- Booking has no dedicated public route yet; the directory is
-                     today's booking entry point (facility profile → book).
-                     Repoint when a public booking route ships. --}}
-                <a href="{{ route('public.care-map') }}">{{ __('finder_shell.nav.book_appointment') }}</a>
+                <a href="{{ route('portals.patient.appointments.book') }}">{{ __('finder_shell.nav.book_appointment') }}</a>
                 <a href="{{ route('public.care-map') }}">{{ __('finder_shell.nav.directory') }}</a>
                 <a href="{{ route('public.solutions.pharmacies') }}">{{ __('finder_shell.nav.for_pharmacies') }}</a>
             </nav>
 
             <div class="f-header__actions">
-                <div class="f-lang" aria-label="{{ __('finder_shell.a11y.language') }}">
-                    <a href="{{ route('lang.switch', 'en') }}" @class(['is-active' => app()->getLocale() === 'en']) lang="en" hreflang="en">EN</a>
-                    <a href="{{ route('lang.switch', 'fr') }}" @class(['is-active' => app()->getLocale() === 'fr']) lang="fr" hreflang="fr">FR</a>
-                </div>
+                <nav class="f-lang" aria-label="{{ __('finder_shell.a11y.language') }}">
+                    <a href="{{ route('lang.switch', 'en') }}" @class(['is-active' => app()->getLocale() === 'en']) @if(app()->getLocale() === 'en') aria-current="true" @endif lang="en" hreflang="en">EN</a>
+                    <a href="{{ route('lang.switch', 'fr') }}" @class(['is-active' => app()->getLocale() === 'fr']) @if(app()->getLocale() === 'fr') aria-current="true" @endif lang="fr" hreflang="fr">FR</a>
+                </nav>
 
                 <a href="{{ route('login') }}" class="f-btn f-btn--ghost f-nav__login">{{ __('finder_shell.nav.login') }}</a>
 
@@ -100,7 +105,7 @@
             <span class="f-nav-panel__label">@include('partials.finder.icon', ['name' => 'droplet', 'size' => 22]){{ __('finder_shell.nav.find_blood') }}</span>
             <span class="f-nav-panel__go">@include('partials.finder.icon', ['name' => 'chevron-right', 'size' => 20])</span>
         </a>
-        <a href="{{ route('public.care-map') }}">
+        <a href="{{ route('portals.patient.appointments.book') }}">
             <span class="f-nav-panel__label">@include('partials.finder.icon', ['name' => 'calendar', 'size' => 22]){{ __('finder_shell.nav.book_appointment') }}</span>
             <span class="f-nav-panel__go">@include('partials.finder.icon', ['name' => 'chevron-right', 'size' => 20])</span>
         </a>
@@ -141,7 +146,7 @@
                         <li><a class="f-footer__link" href="{{ route('public.network.lab-test-finder') }}">{{ __('lab_manager.finder.title') }}</a></li>
                         <li><a class="f-footer__link" href="{{ route('public.network.imaging-finder') }}">{{ __('imaging_finder.title') }}</a></li>
                         <li><a class="f-footer__link" href="{{ route('public.network.blood-finder') }}">{{ __('finder_shell.nav.find_blood') }}</a></li>
-                        <li><a class="f-footer__link" href="{{ route('public.care-map') }}">{{ __('finder_shell.nav.book_appointment') }}</a></li>
+                        <li><a class="f-footer__link" href="{{ route('portals.patient.appointments.book') }}">{{ __('finder_shell.nav.book_appointment') }}</a></li>
                         <li><a class="f-footer__link" href="{{ route('public.care-map') }}">{{ __('finder_shell.nav.directory') }}</a></li>
                         <li><a class="f-footer__link" href="{{ route('public.care-map.emergency') }}">{{ __('finder_shell.footer.emergency') }}</a></li>
                     </ul>
@@ -205,6 +210,11 @@
     })();
     </script>
 
+    <div id="f-loading-status" class="f-loading-status" role="status" aria-live="polite"
+         data-text="{{ __('finder_shell.a11y.searching') }}"></div>
+
+    <script src="{{ asset('js/od-tables.js') }}?v={{ @filemtime(public_path('js/od-tables.js')) ?: '1' }}" defer></script>
+    <script src="{{ asset('js/finder-loading.js') }}?v={{ @filemtime(public_path('js/finder-loading.js')) ?: '1' }}" defer></script>
     <script src="{{ asset('js/op-actions.js') }}?v={{ @filemtime(public_path('js/op-actions.js')) ?: '1' }}" defer></script>
     @stack('scripts')
 </body>

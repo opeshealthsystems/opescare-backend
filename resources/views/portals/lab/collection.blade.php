@@ -1,9 +1,6 @@
 @extends('layouts.portal')
 
 @section('title', __('lab_desk.collection_title'))
-@section('breadcrumb_home', __('lab_desk.title'))
-@section('breadcrumb_home_url', route('portals.lab.collection'))
-@section('breadcrumb_section', __('lab_desk.collection_title'))
 
 @php
     $urgencyPill = fn (string $u) => match ($u) { 'stat' => 'od-pill--stat', 'urgent' => 'od-pill--urgent', default => 'od-pill--normal' };

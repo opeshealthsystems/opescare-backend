@@ -18,6 +18,7 @@ return [
 
     // Full-page HTTP error screens (resources/views/errors/_page.blade.php).
     'actions' => [
+        'my_dashboard'    => 'Back to my dashboard',
         'home'            => 'Back to Home',
         'sign_in'         => 'Sign In',
         'help_centre'     => 'Help Centre',
@@ -35,4 +36,5 @@ return [
         '500' => ['title' => 'Server error',        'body' => 'Something went wrong on our end. Our team has been notified and is working to fix this as quickly as possible.', 'note' => 'Your data is safe. If this is urgent, please contact support directly.', 'footer_prefix' => 'Check our', 'footer_suffix' => 'for live updates.'],
         '503' => ['title' => 'Service unavailable', 'body' => 'OpesCare is briefly unavailable, usually for scheduled maintenance. Please try again in a few minutes.'],
     ],
+    'reason_label' => 'Reason:',
 ];

@@ -44,6 +44,18 @@ class BloodAvailabilitySearchService
             ->reportedByRealSource()
             ->with('facility');
 
+        // Index-friendly prefilter: only facilities inside the radius's
+        // bounding box are fetched; the exact distance check below still runs.
+        if ($lat !== null && $lon !== null) {
+            $box = \App\Support\Geo\BoundingBox::around((float) $lat, (float) $lon, (float) $radius);
+            // Facilities with no coordinates were always listed (distance null);
+            // keep that.
+            $query->whereHas('facility', fn ($q) => $q->where(fn ($w) => $w
+                ->where(fn ($in) => $box->apply($in))
+                ->orWhereNull('latitude')
+                ->orWhereNull('longitude')));
+        }
+
         $matches = $query->get();
         $facilities = [];
 

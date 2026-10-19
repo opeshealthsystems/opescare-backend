@@ -1,9 +1,6 @@
 @extends('layouts.portal')
 
 @section('title', __('queue_desk.ticket_title', ['number' => $number]))
-@section('breadcrumb_home', __('queue_desk.title'))
-@section('breadcrumb_home_url', route('portals.queue.index'))
-@section('breadcrumb_section', __('queue_desk.ticket_title', ['number' => $number]))
 
 @use('App\Services\Queue\PatientQueueService', 'Q')
 

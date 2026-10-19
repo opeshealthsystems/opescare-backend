@@ -1,9 +1,6 @@
 @extends('layouts.portal')
 
 @section('title', __('billing_desk.invoice') . ' ' . $invoice->invoice_number)
-@section('breadcrumb_home', __('billing_desk.title'))
-@section('breadcrumb_home_url', route('portals.billing.index'))
-@section('breadcrumb_section', $invoice->invoice_number)
 
 @section('head')
 <link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">

@@ -1,8 +1,5 @@
 @extends('layouts.portal')
 @section('title', $title)
-@section('breadcrumb_home', __('facility_settings.breadcrumb_home'))
-@section('breadcrumb_home_url', $homeUrl)
-@section('breadcrumb_section', $title)
 
 {{--
     "My facility" — the shared settings page for every non-pharmacy facility

@@ -182,6 +182,10 @@ class MobileDoctorLabOrderController extends Controller
         $query = DB::table('lab_test_availability')
             ->whereNotIn(DB::raw('lower(availability_status)'), ['unavailable', 'discontinued', 'withdrawn']);
 
+        // Provenance allow-list: only rows a real source published. Seeded,
+        // fixture or unclaimed (NULL) rows never reach a patient or prescriber.
+        \App\Support\AvailabilityProvenance::constrain($query, 'lab_test_availability.source_system', \App\Models\LabTestAvailability::LIVE_SOURCE_SYSTEMS);
+
         if (mb_strlen($term) >= 2) {
             $like = '%' . str_replace(['%', '_'], ['\%', '\_'], $term) . '%';
             $query->where(function ($sub) use ($like) {
@@ -324,7 +328,7 @@ class MobileDoctorLabOrderController extends Controller
             ]);
 
             if (class_exists(PatientPush::class)) {
-                PatientPush::send($patient, 'lab_result', $title, $body, [
+                PatientPush::queue($patient, 'lab_result', $title, $body, [
                     'lab_order_id' => (string) $order->id,
                     'action_url'   => $actionUrl,
                     'urgency'      => $order->urgency,

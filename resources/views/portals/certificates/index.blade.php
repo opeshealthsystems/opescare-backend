@@ -1,8 +1,5 @@
 @extends('layouts.portal')
 @section('title', __('doc_ex_cert.desk_title'))
-@section('breadcrumb_home', __('doc_ex_cert.desk_title'))
-@section('breadcrumb_home_url', route('portals.certificates.index'))
-@section('breadcrumb_section', __('doc_ex_cert.nav'))
 
 @section('head')
 <link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">

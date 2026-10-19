@@ -18,6 +18,7 @@ return [
 
     // Pages d'erreur HTTP plein écran (resources/views/errors/_page.blade.php).
     'actions' => [
+        'my_dashboard'    => 'Retour à mon tableau de bord',
         'home'            => 'Retour à l\'accueil',
         'sign_in'         => 'Se connecter',
         'help_centre'     => 'Centre d\'aide',
@@ -35,4 +36,5 @@ return [
         '500' => ['title' => 'Erreur du serveur',    'body' => 'Un problème est survenu de notre côté. Notre équipe a été prévenue et travaille à le corriger au plus vite.', 'note' => 'Vos données sont en sécurité. Si c\'est urgent, contactez directement le support.', 'footer_prefix' => 'Consultez notre', 'footer_suffix' => 'pour les mises à jour en direct.'],
         '503' => ['title' => 'Service indisponible', 'body' => 'OpesCare est momentanément indisponible, généralement pour une maintenance planifiée. Veuillez réessayer dans quelques minutes.'],
     ],
+    'reason_label' => 'Motif :',
 ];

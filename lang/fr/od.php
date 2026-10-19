@@ -27,4 +27,9 @@ return [
     'search_patient'      => 'Trouver un médicament en stock près de chez vous…',
     'search_pro'          => 'Trouver un médicament en stock à proximité…',
     'search_go'           => 'Rechercher',
+    'portal_title' => 'Portail OpesCare',
+    'portal_navigation' => 'Navigation du portail',
+    'skip_to_content' => 'Aller au contenu principal',
+    'breadcrumb' => 'Fil d’Ariane',
+    'role_slug_example' => 'ex. infirmier_principal',
 ];

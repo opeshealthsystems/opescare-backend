@@ -47,3 +47,7 @@ yarn-error.log
 # JWT signing keys are per environment (php artisan opescare:jwt-keys); never commit them.
 /storage/keys/*.pem
 /storage/framework/cache/htmlpurifier/*
+
+# Local test-run dumps (leaked DB hosts and password hashes once; never track)
+/storage/full_test_run.txt
+/storage/*.txt

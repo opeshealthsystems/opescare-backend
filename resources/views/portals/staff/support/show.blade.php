@@ -2,9 +2,6 @@
 
 @section('title', $ticket->subject . ' — OpesCare')
 
-@section('breadcrumb_home', __('support.title'))
-@section('breadcrumb_home_url', route('portals.staff.support'))
-@section('breadcrumb_section', __('support.ticket'))
 
 @section('head')
 <link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">

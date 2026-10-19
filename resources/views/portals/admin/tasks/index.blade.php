@@ -2,9 +2,6 @@
 
 @section('title', __('tasks.admin_title') . ' — OpesCare')
 
-@section('breadcrumb_home', __('public.portal.nav_administration', [], app()->getLocale()))
-@section('breadcrumb_home_url', route('portals.admin'))
-@section('breadcrumb_section', __('tasks.admin_title'))
 @section('head')<link rel="stylesheet" href="{{ asset('css/od-admin.css') }}?v={{ @filemtime(public_path('css/od-admin.css')) ?: '1' }}">@endsection
 
 @php $l = app()->getLocale(); @endphp

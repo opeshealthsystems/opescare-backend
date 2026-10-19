@@ -79,6 +79,7 @@ class DoctorLabCatalogueTest extends TestCase
                 'loinc_code'          => $loinc,
                 'specimen_type'       => $specimen,
                 'availability_status' => $status,
+                'source_system'       => 'portal',
                 'created_at'          => now(),
                 'updated_at'          => now(),
             ]);
@@ -95,6 +96,42 @@ class DoctorLabCatalogueTest extends TestCase
         $this->assertSame(['FBC', 'K'], $codes, 'one entry per code; withdrawn tests are not offered');
         $this->assertSame('Full Blood Count', collect($res->json('data'))->firstWhere('code', 'FBC')['name']);
         $this->assertSame('Whole blood', collect($res->json('data'))->firstWhere('code', 'FBC')['specimen']);
+    }
+
+    public function test_rows_no_real_source_published_are_never_offered(): void
+    {
+        // A seeded row and an unclaimed (NULL) row: neither is on the
+        // LabTestAvailability::LIVE_SOURCE_SYSTEMS allow-list.
+        foreach (['seed' => 'Seeded Malaria RDT', null => 'Unclaimed HbA1c'] as $source => $name) {
+            DB::table('lab_test_availability')->insert([
+                'id'                  => (string) Str::uuid(),
+                'facility_id'         => CareFacility::first()->id,
+                'test_name'           => $name,
+                'local_test_code'     => strtoupper(Str::random(5)),
+                'specimen_type'       => 'Blood',
+                'availability_status' => 'available',
+                'source_system'       => $source === '' ? null : $source,
+                'created_at'          => now(),
+                'updated_at'          => now(),
+            ]);
+        }
+
+        $names = collect($this->catalogue('doctor')->assertOk()->json('data'))->pluck('name')->all();
+        $this->assertNotContains('Seeded Malaria RDT', $names);
+        $this->assertNotContains('Unclaimed HbA1c', $names);
+
+        // The patient-side catalogue reads the same allow-list.
+        $patient = \App\Models\Patient::factory()->create(['is_demo' => (bool) config('demo.enabled')]);
+        $raw = 'pat_'.Str::random(40);
+        \App\Models\PatientAccessToken::forceCreate([
+            'patient_id' => $patient->id, 'token_hash' => \Illuminate\Support\Facades\Hash::make($raw),
+            'token_prefix' => substr($raw, 0, 12), 'token_lookup_hash' => hash('sha256', $raw), 'expires_at' => now()->addDay(),
+        ]);
+        $res = $this->withToken($raw)->getJson('/api/mobile/labs/catalogue')->assertOk();
+        $patientNames = collect($res->json('data'))->pluck('name')->all();
+        $this->assertContains('Full Blood Count', $patientNames);
+        $this->assertNotContains('Seeded Malaria RDT', $patientNames);
+        $this->assertNotContains('Unclaimed HbA1c', $patientNames);
     }
 
     public function test_search_matches_name_code_or_loinc_from_two_characters(): void

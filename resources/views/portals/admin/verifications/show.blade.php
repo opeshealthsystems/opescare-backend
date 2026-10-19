@@ -1,9 +1,6 @@
 @extends('layouts.portal')
 @section('title', __('admin_desk.credential_detail', [], app()->getLocale()))
 @include('portals.admin.control_center._sidebar')
-@section('breadcrumb_home', __('professional.ver_title', [], app()->getLocale()))
-@section('breadcrumb_home_url', route('portals.admin.verifications.index'))
-@section('breadcrumb_section', __('admin_desk.credential_detail', [], app()->getLocale()))
 @section('head')<link rel="stylesheet" href="{{ asset('css/od-admin.css') }}?v={{ @filemtime(public_path('css/od-admin.css')) ?: '1' }}">@endsection
 @section('content')
 

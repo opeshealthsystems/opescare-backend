@@ -893,7 +893,7 @@ class MobileDoctorMessagingController extends Controller
                 'updated_at'      => now(),
             ]);
 
-            PatientPush::send($patient, 'message', $title, $body, [
+            PatientPush::queue($patient, 'message', $title, $body, [
                 'thread_id'  => $threadId,
                 'action_url' => $actionUrl,
             ]);

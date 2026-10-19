@@ -2,9 +2,6 @@
 
 @section('title', __('catalogue.browse_title') . ' — OpesCare')
 
-@section('breadcrumb_home', __('catalogue.breadcrumb_home'))
-@section('breadcrumb_home_url', route('portals.staff'))
-@section('breadcrumb_section', __('catalogue.browse_title'))
 
 @section('head')
 <link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">

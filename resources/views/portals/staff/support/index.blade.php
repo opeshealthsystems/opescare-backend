@@ -2,9 +2,6 @@
 
 @section('title', __('support.title') . ' — OpesCare')
 
-@section('breadcrumb_home', __('public.portal.my_portal', [], app()->getLocale()))
-@section('breadcrumb_home_url', route('portals.staff'))
-@section('breadcrumb_section', __('support.title'))
 
 @section('head')
 <link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">

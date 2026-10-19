@@ -141,7 +141,7 @@
 
             {{-- 4. Purposes --}}
             <h2 id="purposes">{{ __('legal_privacy.s4_title') }}</h2>
-            <table class="odp-table">
+            <table class="odp-table odp-stack-sm">
                 <thead>
                     <tr class="odp-panel">
                         <th>{{ __('legal_privacy.s4_col_purpose') }}</th>

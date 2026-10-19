@@ -206,24 +206,24 @@
         <div class="demo-panel-body open" id="demoPanelBody">
             <div class="demo-notice">
                 <i data-lucide="info"></i>
-                <span>Sandbox environment — demo data only. Resets periodically. Do not enter real patient data.</span>
+                <span>{{ __('public.demo.sandbox_notice') }}</span>
             </div>
 
             <div class="demo-tabs" role="tablist">
                 <button class="demo-tab-btn active" type="button" data-demo-tab="clinical">
-                    <i data-lucide="users"></i> Staff
+                    <i data-lucide="users"></i> {{ __('public.demo.tab_staff') }}
                 </button>
                 <button class="demo-tab-btn" type="button" data-demo-tab="facility">
-                    <i data-lucide="building-2"></i> Facility
+                    <i data-lucide="building-2"></i> {{ __('public.demo.tab_facility') }}
                 </button>
                 <button class="demo-tab-btn" type="button" data-demo-tab="types">
                     <i data-lucide="hospital"></i> {{ __('public.demo.tab_facility_types') }}
                 </button>
                 <button class="demo-tab-btn" type="button" data-demo-tab="patient">
-                    <i data-lucide="user"></i> Patient
+                    <i data-lucide="user"></i> {{ __('public.demo.tab_patient') }}
                 </button>
                 <button class="demo-tab-btn" type="button" data-demo-tab="developer">
-                    <i data-lucide="code-2"></i> Developer
+                    <i data-lucide="code-2"></i> {{ __('public.demo.tab_developer') }}
                 </button>
             </div>
 

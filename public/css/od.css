@@ -130,7 +130,7 @@ body.od .od-brand__mark .od-brand__ring { color: #4FA3FF; }
 body.od .od-brand__text { display: flex; flex-direction: column; min-width: 0; line-height: 1; }
 body.od .od-brand__opes { font-size: 26px; font-weight: 800; letter-spacing: -.01em; color: #fff; }
 body.od .od-brand__product { font-size: 19px; font-weight: 800; letter-spacing: .01em; color: #4FA3FF; margin-top: 2px; }
-body.od .od-brand__by { font-size: 11px; font-weight: 500; color: rgba(255,255,255,.72); margin-top: 5px; white-space: nowrap; }
+body.od .od-brand__by { font-size: 11px; font-weight: 500; color: rgba(255,255,255,.72); margin-top: 5px; line-height: 1.25; } /* wraps instead of spilling past the sidebar in FR (web audit) */
 
 body.od .sidebar-nav { padding: 0; gap: 0; overflow: visible; }
 body.od .sidebar-role-badge, body.od .sidebar-spacer { display: none; }
@@ -688,3 +688,49 @@ body.od .portal-main { position: relative; z-index: 1; }
 body.od .od-quick { align-content: start; align-items: start; }
 body.od .od-quick__tile { height: 120px; min-height: 120px; }
 body.od.od--lab .od-quick__tile { height: 92px; min-height: 92px; }
+
+/* ── Responsive tables: one shared stacked-row pattern (wave 1, 2026-10-19) ─
+   Every desk table (.od-table, .data-table, .pf-table, table.table) gets
+   .od-stack from public/js/od-tables.js, which also copies each <thead> cell
+   text into data-label on the matching <td> (authored data-label wins).
+   Below 640px each row becomes a card: label above value. A table opts out
+   with data-stack="off" (key/value sheets, wide grids that must scroll).
+   Without JS nothing stacks and .od-table-wrap keeps the horizontal scroll.
+   .odc-stack and .odp-stack-sm are older per-area names for the same thing. */
+@media (max-width: 639px) {
+  body.od table.od-stack thead { display: none; }
+  body.od table.od-stack, body.od table.od-stack tbody, body.od table.od-stack tr,
+  body.od table.od-stack td, body.od table.od-stack tbody th { display: block; width: 100%; }
+  body.od table.od-stack tbody tr { padding: 12px 16px; border-bottom: 1px solid var(--od-rule); }
+  body.od table.od-stack tbody tr:last-child { border-bottom: 0; }
+  body.od table.od-stack tbody td, body.od table.od-stack tbody th,
+  body.od table.od-stack tbody td:first-child, body.od table.od-stack tbody td:last-child {
+    height: auto; padding: 4px 0; border: 0; text-align: left; white-space: normal; overflow-wrap: anywhere;
+  }
+  body.od table.od-stack tbody tr:hover td { background: transparent; }
+  body.od table.od-stack td[data-label]:not([data-label=""])::before,
+  body.od table.od-stack tbody th[data-label]:not([data-label=""])::before {
+    content: attr(data-label); display: block; font-size: 12px; font-weight: 600; color: var(--od-muted); line-height: 1.4;
+  }
+  body.od table.od-stack td:empty { display: none; }
+  body.od table.od-stack .od-table__check, body.od table.od-stack .od-table__num { display: none; }
+  body.od table.od-stack .od-table__actions { white-space: normal; padding-top: 8px; }
+  body.od table.od-stack .od-table__actions > * { margin: 4px 8px 0 0; }
+  body.od table.od-stack .is-num { text-align: left; }
+  body.od table.od-stack td[colspan] { text-align: center; }
+  body.od table.od-stack td[colspan]::before { display: none !important; }
+}
+
+/* Long identifiers (Health IDs, references, UUIDs, emails) never widen a page. */
+body.od .portal-content { min-width: 0; overflow-wrap: break-word; }
+body.od .od-mono, body.od code, body.od .od-id { overflow-wrap: anywhere; word-break: break-word; }
+
+/* Visible keyboard focus on every desk control (WCAG 2.4.7). */
+body.od a:focus-visible, body.od button:focus-visible, body.od [role="button"]:focus-visible,
+body.od input:focus-visible, body.od select:focus-visible, body.od textarea:focus-visible,
+body.od summary:focus-visible, body.od .sidebar-link:focus-visible {
+  outline: 2px solid #0F4C81; outline-offset: 2px;
+}
+body.od .portal-sidebar a:focus-visible, body.od .portal-sidebar button:focus-visible { outline-color: #FFFFFF; }
+body.od .od-skip { position: absolute; left: -9999px; top: 8px; z-index: 1000; padding: 8px 14px; border-radius: 8px; background: #0F4C81; color: #fff; font-weight: 600; text-decoration: none; }
+body.od .od-skip:focus { left: 8px; }

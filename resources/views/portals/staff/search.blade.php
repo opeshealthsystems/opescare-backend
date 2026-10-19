@@ -1,9 +1,6 @@
 @extends('layouts.portal')
 
 @section('title', __('public.staff_portal.page_heading_search', [], app()->getLocale()))
-@section('breadcrumb_home', __('public.staff_portal.title', [], app()->getLocale()))
-@section('breadcrumb_home_url', route('portals.staff'))
-@section('breadcrumb_section', __('public.staff_portal.breadcrumb_section_search', [], app()->getLocale()))
 
 @section('head')
 <link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">

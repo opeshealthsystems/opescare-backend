@@ -653,7 +653,7 @@ class EmergencyAccessService
                 ->whereKey($event->facility_id)
                 ->value('name');
 
-            PatientPush::send(
+            PatientPush::queue(
                 $patient,
                 'emergency_access',
                 __('push.emergency_access.title', [], $locale),

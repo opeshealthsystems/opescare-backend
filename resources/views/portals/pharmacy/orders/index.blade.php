@@ -1,9 +1,6 @@
 @extends('layouts.portal')
 @section('title', __('pharmacy_orders.title'))
 @section('sidebar_user_role', __('public.pharmacy_portal.role_label'))
-@section('breadcrumb_home', __('public.pharmacy_portal.breadcrumb_home'))
-@section('breadcrumb_home_url', route('portals.pharmacy.dashboard'))
-@section('breadcrumb_section', __('pharmacy_orders.title'))
 
 @php
     $now = \Illuminate\Support\Carbon::now();

@@ -1,9 +1,6 @@
 @extends('layouts.portal')
 @section('title', __('terminology.gaps_title'))
 @include('portals.admin.control_center._sidebar')
-@section('breadcrumb_home', __('terminology.breadcrumb_home'))
-@section('breadcrumb_home_url', route('portals.admin'))
-@section('breadcrumb_section', __('terminology.gaps_title'))
 @section('head')<link rel="stylesheet" href="{{ asset('css/od-admin.css') }}?v={{ @filemtime(public_path('css/od-admin.css')) ?: '1' }}">@endsection
 
 {{--

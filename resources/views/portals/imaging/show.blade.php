@@ -1,9 +1,6 @@
 @extends('layouts.portal')
 
 @section('title', __('imaging_desk.order_title'))
-@section('breadcrumb_home', __('imaging_desk.title'))
-@section('breadcrumb_home_url', route('portals.imaging.index'))
-@section('breadcrumb_section', __('imaging_desk.order_title'))
 
 @php
     use App\Enums\ImagingOrderStatus;

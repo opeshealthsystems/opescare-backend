@@ -151,7 +151,7 @@ class ConsentService
      * The grant is written to be exactly what a reader checks for. The chart's
      * fifth access basis (MobileDoctorChartController::hasActiveConsentGrant)
      * asks for patient_id + facility_id + status 'active' + expires_at in the
-     * future, and RequireConsentGrant and verifyAccess() add scope on top of
+     * future, and verifyAccess() adds scope on top of
      * that — so facility_id comes from the REQUEST (never from anything the
      * approving patient sends) and the scope is the scope that was asked for,
      * copied verbatim rather than widened.
@@ -547,7 +547,7 @@ class ConsentService
 
                 // PatientPush never throws and is a no-op when Expo push is
                 // switched off; the try/catch guards the lookups around it.
-                PatientPush::send(
+                PatientPush::queue(
                     $patient,
                     'consent_request',
                     __('push.consent_request.title', [], $locale),

@@ -33,7 +33,16 @@ class PharmacyStockAvailability extends Model
      * Kept in sync with MedicinePharmacyStock::SYNTHETIC_SOURCE_SYSTEMS: the
      * two stock tables must not disagree about what counts as demo data.
      */
-    public const SYNTHETIC_SOURCE_SYSTEMS = ['demo_seed', 'seed'];
+    public const SYNTHETIC_SOURCE_SYSTEMS = \App\Support\AvailabilityProvenance::SYNTHETIC;
+
+    /**
+     * The ONLY `source_system` values published from this legacy table
+     * (allow-list). No application code writes this table today; the list
+     * mirrors MedicinePharmacyStock so a future pharmacy-portal or partner
+     * writer is admitted and nothing else is. NULL is withheld.
+     */
+    public const LIVE_SOURCE_SYSTEMS = ['portal', 'partner_api', 'partner_api:*'];
+
 
     protected $fillable = [
         'facility_id',
@@ -63,10 +72,8 @@ class PharmacyStockAvailability extends Model
     /**
      * Rows a PATIENT may be shown — seeded fiction excluded at the source.
      *
-     * Mirrors MedicinePharmacyStock::scopeReportedByRealSource(), including the
-     * deliberate decision to KEEP rows whose `source_system` is NULL:
-     * "unstamped" is not "seeded", and `whereNotIn` alone would drop them
-     * silently under SQL three-valued logic.
+     * Mirrors MedicinePharmacyStock::scopeReportedByRealSource(): only
+     * LIVE_SOURCE_SYSTEMS is published; NULL and every unknown value are withheld.
      */
     public function scopeReportedByRealSource(Builder $query): Builder
     {
@@ -79,10 +86,9 @@ class PharmacyStockAvailability extends Model
          * 'portal', the seeders write 'seed'/'demo_seed'. A row with no source
          * is one nobody has claimed, so it is not evidence that a medicine is
          * on a shelf — and this is the query a patient's search runs before
-         * deciding whether to travel. Allow-list, not blacklist.
+         * deciding whether to travel. Allow-list: only LIVE_SOURCE_SYSTEMS is published.
          */
-        return $query->whereNotNull($column)
-            ->whereNotIn($column, self::SYNTHETIC_SOURCE_SYSTEMS);
+        return \App\Support\AvailabilityProvenance::constrain($query, $column, self::LIVE_SOURCE_SYSTEMS);
     }
 
     public function facility()

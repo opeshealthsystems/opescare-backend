@@ -10,22 +10,13 @@
   Icons come from partials/finder/icon (Lucide); @includeIf so the page renders
   even if the foundation partial has not landed yet in this checkout.
 --}}
-<!DOCTYPE html>
-<html lang="{{ $locale ?? app()->getLocale() }}">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ __('finder_seo.pages.care_map.title') }} — OpesCare</title>
-<meta name="description" content="{{ __('finder_seo.pages.care_map.description') }}">
-<link rel="canonical" href="{{ route('public.care-map') . (app()->getLocale() === 'en' ? '' : '?lang=' . app()->getLocale()) }}">
-<link rel="alternate" hreflang="en" href="{{ route('public.care-map') }}">
-<link rel="alternate" hreflang="fr" href="{{ route('public.care-map', ['lang' => 'fr']) }}">
-<link rel="alternate" hreflang="x-default" href="{{ route('public.care-map') }}">
-<link rel="stylesheet" href="{{ asset('assets/finder.css') }}">
+@extends('layouts.finder')
+@section('title', __('finder_seo.pages.care_map.title'))
+@section('description', __('finder_seo.pages.care_map.description'))
+@push('head')
 @include('public.partials._od_pages_css')
 <link rel="stylesheet" href="{{ asset('css/leaflet.css') }}">
-<script src="{{ asset('js/leaflet.js') }}" defer></script>
-<script src="{{ asset('js/op-actions.js') }}?v={{ @filemtime(public_path('js/op-actions.js')) ?: '1' }}" defer></script>
+@endpush
 
 @php
   $now         = now();
@@ -87,8 +78,10 @@
   $lastPage = max(1, $facilities->lastPage());
 @endphp
 
+@push('head')
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+.cmap, .cmap *, .cmap *::before, .cmap *::after { box-sizing: border-box; }
+.cmap :where(h1,h2,h3,p,ul,ol,figure) { margin: 0; padding: 0; }
 
 :root {
   --brand:        var(--f-brand, #0F4C81);
@@ -106,8 +99,8 @@
   --radius-full: 9999px;
   }
 
-html { -webkit-text-size-adjust: 100%; }
-body {
+#f-main.f-main:has(.cmap) { padding: 0; }
+.cmap {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background: var(--bg); color: var(--text-1);
   -webkit-font-smoothing: antialiased;
@@ -117,7 +110,7 @@ body {
 
 /* ── Sticky header: brand row + search ─────────────────────────────── */
 .hdr {
-  position: sticky; top: 0; z-index: 300;
+  position: sticky; top: var(--f-header-h, 60px); z-index: 300;
   background: #fff;
   border-bottom: 1px solid var(--border);
 }
@@ -346,26 +339,22 @@ body {
   .disclaimer   { grid-area: disc; }
   .map-panel {
     grid-area: map; display: block !important;
-    position: sticky; top: 132px;
+    position: sticky; top: 140px;
     padding: 0.75rem 1rem 0.75rem 0;
   }
-  #map { height: calc(100vh - 150px); min-height: 420px; }
+  #map { height: calc(100vh - 210px); min-height: 420px; }
   .btn-map-toggle { display: none; }
 }
 </style>
-</head>
-<body class="odp">
+@endpush
+
+@section('content')
+<div class="cmap odp">
 
 {{-- ── Header: brand + search (sticky) ─────────────────────────────── --}}
-<header class="hdr">
+<div class="hdr">
   <div class="hdr-row">
-    <a href="{{ route('public.landing') }}" class="brand">
-      <span class="brand-mark icon" aria-hidden="true">@includeIf('partials.finder.icon', ['name' => 'map-pin'])</span>
-      <span>
-        <span class="brand-name">OpesCare</span>
-        <span class="brand-sub">{{ __('finder_directory.brand_sub') }}</span>
-      </span>
-    </a>
+    <h1 class="brand-name">{{ __('finder_seo.pages.care_map.title') }}</h1>
     <span class="hdr-spacer"></span>
     <a href="{{ route('public.care-map.emergency') }}" class="btn-emergency">
       <span class="icon" aria-hidden="true">@includeIf('partials.finder.icon', ['name' => 'phone'])</span>
@@ -373,7 +362,7 @@ body {
     </a>
   </div>
   <div class="search-row" role="search" aria-label="{{ __('finder_directory.search_label') }}">
-    <form class="search-form" method="GET" action="{{ route('public.care-map') }}">
+    <form class="search-form" data-finder-search method="GET" action="{{ route('public.care-map') }}">
       <span class="icon" aria-hidden="true">@includeIf('partials.finder.icon', ['name' => 'search'])</span>
       <input type="search" name="query" value="{{ $queryText }}"
              placeholder="{{ __('finder_directory.search_placeholder') }}"
@@ -387,7 +376,7 @@ body {
       {{ __('finder_directory.near_me') }}
     </button>
   </div>
-</header>
+</div>
 
 {{-- ── Filter chips: type, then region ─────────────────────────────── --}}
 <div class="chips-wrap">
@@ -568,6 +557,8 @@ body {
       'url'  => route('public.care-map.profile', array_filter(['id' => $f->id, 'lang' => request('lang')])),
   ])->values();
 @endphp
+@push('scripts')
+<script src="{{ asset('js/leaflet.js') }}"></script>
 <script @cspNonce>
 const MARKERS     = @json($_markers, JSON_HEX_TAG | JSON_HEX_AMP);
 const TYPE_COLORS = @json(collect($typeColors), JSON_HEX_TAG | JSON_HEX_AMP);
@@ -693,5 +684,6 @@ window.addEventListener('load', () => {
 });
 @endif
 </script>
-</body>
-</html>
+@endpush
+</div>
+@endsection

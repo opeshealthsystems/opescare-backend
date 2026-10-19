@@ -55,10 +55,12 @@
 <div class="di-page-head">
     <h1 class="demo-section-title">{{ $t('page_title', 'OpesCare Demo Access') }} — {{ $t('internal_label', 'Internal') }}</h1>
     <p class="demo-section-sub">{{ $t('internal_desc', 'Full-access demo for the product team, developers, and QA.') }}</p>
+    @if(config('demo.public_enabled'))
     <a href="{{ route('demo.public') }}" class="demo-switch-link">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
         {{ $t('switch_public', 'View Public Demo') }}
     </a>
+    @endif
 </div>
 
 {{-- Common Password Notice --}}
@@ -82,9 +84,9 @@
             </div>
         </div>
         <div class="demo-card-meta">
-            <div><strong>Email:</strong> <code>demo.patient@opescare.test</code></div>
+            <div><strong>{{ $t('label_email', 'Email') }}:</strong> <code>demo.patient@opescare.test</code></div>
             <div><strong>Health ID:</strong> <code>{{ \App\Models\Patient::withoutGlobalScopes()->where('email', 'demo.patient@opescare.test')->value('health_id') ?? '—' }}</code></div>
-            <div><strong>Also:</strong> <code>demo.reviewer@opescare.test</code> — verified ID, full record</div>
+            <div><strong>{{ $t('label_also', 'Also') }}:</strong> <code>demo.reviewer@opescare.test</code> — verified ID, full record</div>
         </div>
         <form method="POST" action="{{ route('demo.login-as') }}">
             @csrf
@@ -110,7 +112,7 @@
             </div>
         </div>
         <div class="demo-card-meta">
-            <div><strong>Email:</strong> <code>demo.doctor@opescare.test</code></div>
+            <div><strong>{{ $t('label_email', 'Email') }}:</strong> <code>demo.doctor@opescare.test</code></div>
         </div>
         <form method="POST" action="{{ route('demo.login-as') }}">
             @csrf
@@ -136,8 +138,8 @@
             </div>
         </div>
         <div class="demo-card-meta">
-            <div><strong>Email:</strong> <code>demo.multi.doctor@opescare.test</code></div>
-            <div><strong>Facilities:</strong> Central · City Clinic · Specialist</div>
+            <div><strong>{{ $t('label_email', 'Email') }}:</strong> <code>demo.multi.doctor@opescare.test</code></div>
+            <div><strong>{{ $t('label_facilities', 'Facilities') }}:</strong> Central · City Clinic · Specialist</div>
         </div>
         <form method="POST" action="{{ route('demo.login-as') }}">
             @csrf
@@ -163,7 +165,7 @@
             </div>
         </div>
         <div class="demo-card-meta">
-            <div><strong>Email:</strong> <code>demo.nurse@opescare.test</code></div>
+            <div><strong>{{ $t('label_email', 'Email') }}:</strong> <code>demo.nurse@opescare.test</code></div>
         </div>
         <form method="POST" action="{{ route('demo.login-as') }}">
             @csrf
@@ -189,7 +191,7 @@
             </div>
         </div>
         <div class="demo-card-meta">
-            <div><strong>Email:</strong> <code>demo.facility.admin@opescare.test</code></div>
+            <div><strong>{{ $t('label_email', 'Email') }}:</strong> <code>demo.facility.admin@opescare.test</code></div>
         </div>
         <form method="POST" action="{{ route('demo.login-as') }}">
             @csrf
@@ -215,7 +217,7 @@
             </div>
         </div>
         <div class="demo-card-meta">
-            <div><strong>Email:</strong> <code>demo.pharmacist@opescare.test</code></div>
+            <div><strong>{{ $t('label_email', 'Email') }}:</strong> <code>demo.pharmacist@opescare.test</code></div>
         </div>
         <form method="POST" action="{{ route('demo.login-as') }}">
             @csrf
@@ -241,7 +243,7 @@
             </div>
         </div>
         <div class="demo-card-meta">
-            <div><strong>Email:</strong> <code>demo.labtech@opescare.test</code></div>
+            <div><strong>{{ $t('label_email', 'Email') }}:</strong> <code>demo.labtech@opescare.test</code></div>
         </div>
         <form method="POST" action="{{ route('demo.login-as') }}">
             @csrf
@@ -267,7 +269,7 @@
             </div>
         </div>
         <div class="demo-card-meta">
-            <div><strong>Email:</strong> <code>demo.insurance@opescare.test</code></div>
+            <div><strong>{{ $t('label_email', 'Email') }}:</strong> <code>demo.insurance@opescare.test</code></div>
         </div>
         <form method="POST" action="{{ route('demo.login-as') }}">
             @csrf
@@ -293,7 +295,7 @@
             </div>
         </div>
         <div class="demo-card-meta">
-            <div><strong>Email:</strong> <code>demo.publichealth@opescare.test</code></div>
+            <div><strong>{{ $t('label_email', 'Email') }}:</strong> <code>demo.publichealth@opescare.test</code></div>
         </div>
         <div class="demo-card-body">Draft and simulate notifiable disease reports, blood shortage alerts, and public health surveillance drafts. No real government submission.</div>
         <form method="POST" action="{{ route('demo.login-as') }}">
@@ -330,8 +332,8 @@
                     Developer Portal
                 </div>
                 <div class="demo-card-meta di-dev-meta-gap">
-                    <div><strong>Email:</strong> <code>demo.developer@opescare.test</code></div>
-                    <div><strong>Password:</strong> <code>DemoPass!2026</code></div>
+                    <div><strong>{{ $t('label_email', 'Email') }}:</strong> <code>demo.developer@opescare.test</code></div>
+                    <div><strong>{{ $t('label_password', 'Password') }}:</strong> <code>DemoPass!2026</code></div>
                 </div>
                 <div class="di-dev-portal-desc">Access the API Connect portal, manage sandbox apps, view webhook logs, and explore integration docs.</div>
                 <form method="POST" action="{{ route('demo.login-as') }}">
@@ -353,13 +355,13 @@
                     Sandbox API Credentials
                 </div>
                 <div class="demo-card-meta di-creds-meta">
-                    <div><strong>Endpoint:</strong> <code class="di-creds-endpoint">POST /api/v1/connect/auth/token</code></div>
+                    <div><strong>{{ $t('label_endpoint', 'Endpoint') }}:</strong> <code class="di-creds-endpoint">POST /api/v1/connect/auth/token</code></div>
                     <div><strong>client_id:</strong> <code>demo_dev_sandbox</code></div>
                     <div><strong>client_secret:</strong> <code>demo_secret_sandbox_2026</code></div>
                     <div><strong>grant_type:</strong> <code>client_credentials</code></div>
                 </div>
                 <div class="di-creds-scopes">
-                    <strong>Scopes:</strong> pharmacy_stock.sync &middot; blood_stock.sync &middot; lab_results.push &middot; records.push &middot; patients.search
+                    <strong>{{ $t('label_scopes', 'Scopes') }}:</strong> pharmacy_stock.sync &middot; blood_stock.sync &middot; lab_results.push &middot; records.push &middot; patients.search
                 </div>
                 <div class="di-sandbox-warn">
                     <i data-lucide="triangle-alert" style="width:.8rem;height:.8rem;display:inline;vertical-align:middle;margin-right:.25rem;" aria-hidden="true"></i>
@@ -381,7 +383,7 @@
             </div>
         </div>
         <div class="demo-card-meta">
-            <div><strong>Email:</strong> <code>demo.admin@opescare.test</code></div>
+            <div><strong>{{ $t('label_email', 'Email') }}:</strong> <code>demo.admin@opescare.test</code></div>
         </div>
         <div class="demo-card-body">Access the full governance dashboard, role management, demo partner governance, and platform-level admin tools. Production-like capabilities on demo data only.</div>
         <form method="POST" action="{{ route('demo.login-as') }}">
@@ -432,7 +434,7 @@
 <div class="di-footer">
     {{ $t('warning_data_note', 'DEMO DATA — NOT REAL PATIENT INFORMATION') }}
     &nbsp;·&nbsp;
-    <a href="{{ url('/') }}">Return to OpesCare</a>
+    <a href="{{ url('/') }}">{{ __('public.demo.return_home') }}</a>
 </div>
 
 @endsection

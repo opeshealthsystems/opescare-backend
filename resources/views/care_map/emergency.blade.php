@@ -22,25 +22,15 @@
     service uses to bound and sort the list — distance comes from the server,
     never from a client-side guess.
 --}}
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>{{ __('finder_seo.pages.emergency.title') }} — OpesCare</title>
-<meta name="description" content="{{ __('finder_seo.pages.emergency.description') }}">
-<link rel="canonical" href="{{ route('public.care-map.emergency') . (app()->getLocale() === 'en' ? '' : '?lang=' . app()->getLocale()) }}">
-<link rel="alternate" hreflang="en" href="{{ route('public.care-map.emergency') }}">
-<link rel="alternate" hreflang="fr" href="{{ route('public.care-map.emergency', ['lang' => 'fr']) }}">
-<link rel="alternate" hreflang="x-default" href="{{ route('public.care-map.emergency') }}">
-@include('partials.favicons')
-<link rel="stylesheet" href="{{ asset('assets/finder.css') }}?v={{ @filemtime(public_path('assets/finder.css')) ?: '1' }}">
+@extends('layouts.finder')
+@section('title', __('finder_seo.pages.emergency.title'))
+@section('description', __('finder_seo.pages.emergency.description'))
+@push('head')
 @include('public.partials._od_pages_css')
 <style>
 /* Page-local styles on top of finder.css tokens. Calm, high contrast,
    list-first. --f-danger appears ONLY on the two dial actions. */
-.em-header { position: sticky; top: 0; z-index: 20; background: var(--f-surface); border-bottom: 1px solid var(--f-line); }
-.em-header__row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; }
+.em-back { padding-top: 12px; }
 .em-dial-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
 .em-dial {
     display: flex; align-items: center; justify-content: center; gap: 10px;
@@ -65,25 +55,17 @@
 .em-fc-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
 .em-fc-call { flex: 1 1 auto; }
 </style>
-{{-- Canonical, hreflang, Open Graph and schema.org --}}
-@include('partials.seo_head')
-</head>
-<body class="odp">
+@endpush
 
-<header class="em-header">
-    <div class="f-container em-header__row">
-        <a href="{{ route('public.landing') }}" class="f-brand" aria-label="OpesCare">
-            <x-brand-logo :size="22" class="f-brand__mark" />
-            <span>OpesCare</span>
-        </a>
-        <a href="{{ route('public.care-map') }}" class="f-btn f-btn--ghost">
-            @include('partials.finder.icon', ['name' => 'map-pin', 'size' => 16])
-            {{ __('finder_search.emergency.back_to_directory') }}
-        </a>
-    </div>
-</header>
+@section('content')
+<div class="odp">
+<div class="f-container em-back">
+    <a href="{{ route('public.care-map') }}" class="f-btn f-btn--ghost">
+        @include('partials.finder.icon', ['name' => 'map-pin', 'size' => 16])
+        {{ __('finder_search.emergency.back_to_directory') }}
+    </a>
+</div>
 
-<main id="f-main">
 
     {{-- 1 ── Dial first. --}}
     <section class="f-section--tight odp-pad-y">
@@ -197,13 +179,15 @@
         </div>
     </section>
 
-    <footer class="f-section--tight odp-pad-y">
+    <div class="f-section--tight odp-pad-y">
         <div class="f-container">
             <p class="f-small f-muted">{{ __('finder_search.common.info_may_change') }}</p>
         </div>
-    </footer>
-</main>
+    </div>
+</div>
+@endsection
 
+@push('scripts')
 <script @cspNonce>
 (function () {
     var btn    = document.getElementById('em-locate');
@@ -229,5 +213,4 @@
     });
 })();
 </script>
-</body>
-</html>
+@endpush

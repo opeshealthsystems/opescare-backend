@@ -22,6 +22,7 @@ return [
 
     'a11y' => [
         'skip_to_content' => 'Aller au contenu',
+        'searching' => 'Recherche en cours…',
         'open_menu' => 'Ouvrir le menu',
         'close_menu' => 'Fermer le menu',
         'main_navigation' => 'Navigation principale',

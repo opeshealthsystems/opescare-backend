@@ -13,9 +13,6 @@
 @endphp
 
 @section('title', __('imaging_desk.title'))
-@section('breadcrumb_home', __('imaging_desk.title'))
-@section('breadcrumb_home_url', route('portals.imaging.index'))
-@section('breadcrumb_section', $pageTitle)
 
 @section('head')
     @include('portals.lab.partials._head')

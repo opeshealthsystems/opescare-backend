@@ -1,9 +1,6 @@
 @extends('layouts.portal')
 
 @section('title', __('triage.create_title'))
-@section('breadcrumb_home', __('triage.title'))
-@section('breadcrumb_home_url', route('portals.triage.index'))
-@section('breadcrumb_section', __('triage.create_title'))
 
 @section('head')
 <link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">

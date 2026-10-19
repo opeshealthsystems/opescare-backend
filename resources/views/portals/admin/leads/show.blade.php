@@ -1,9 +1,6 @@
 @extends('layouts.portal')
 @section('title', ($lead->organization_name ?: $lead->name) . ' — ' . __('leads.admin.page_title'))
 @include('portals.admin.control_center._sidebar')
-@section('breadcrumb_home', __('leads.admin.breadcrumb'))
-@section('breadcrumb_home_url', route('portals.admin.leads'))
-@section('breadcrumb_section', __('admin_desk.lead_detail'))
 @section('head')<link rel="stylesheet" href="{{ asset('css/od-admin.css') }}?v={{ @filemtime(public_path('css/od-admin.css')) ?: '1' }}">@endsection
 @section('content')
 

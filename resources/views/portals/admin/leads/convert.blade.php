@@ -1,9 +1,6 @@
 @extends('layouts.portal')
 @section('title', __('leads.conversion.page_title'))
 @include('portals.admin.control_center._sidebar')
-@section('breadcrumb_home', 'Admin')
-@section('breadcrumb_home_url', route('portals.admin'))
-@section('breadcrumb_section', __('leads.admin.breadcrumb'))
 
 {{--
     Lead → tenant (LeadAdminController@convertForm / @convert, P-6).

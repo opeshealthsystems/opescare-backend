@@ -1,9 +1,6 @@
 @extends('layouts.portal')
 
 @section('title', __('imaging_report.queue_title'))
-@section('breadcrumb_home', __('imaging_desk.title'))
-@section('breadcrumb_home_url', \Illuminate\Support\Facades\Route::has('portals.imaging.index') ? route('portals.imaging.index') : route('portals.imaging.reports.index'))
-@section('breadcrumb_section', __('imaging_report.queue_title'))
 
 @section('head')
     @include('portals.lab.partials._head')

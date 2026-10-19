@@ -49,10 +49,12 @@
 <div class="dp-page-head">
     <h1 class="demo-section-title">{{ $t('page_title', 'OpesCare Demo Access') }}</h1>
     <p class="demo-section-sub">{{ $t('page_subtitle', 'Explore OpesCare using safe demo accounts and fake healthcare data.') }}</p>
+    @if(config('demo.internal_enabled'))
     <a href="{{ route('demo.internal') }}" class="demo-switch-link">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
         {{ $t('switch_internal', 'View Internal Demo') }}
     </a>
+    @endif
 </div>
 
 {{-- Role Cards Grid --}}
@@ -76,7 +78,7 @@
             </div>
         </div>
         <div class="demo-card-meta">
-            <div><strong>Email:</strong> <code>demo.patient@opescare.test</code></div>
+            <div><strong>{{ $t('label_email', 'Email') }}:</strong> <code>demo.patient@opescare.test</code></div>
             <div><strong>Health ID:</strong> <code>{{ $healthIdOf('demo.patient@opescare.test') }}</code></div>
         </div>
         <div class="demo-card-body">View Health ID, QR code, timeline, lab results, prescriptions, consent and access logs.</div>
@@ -104,7 +106,7 @@
             </div>
         </div>
         <div class="demo-card-meta">
-            <div><strong>Email:</strong> <code>demo.reviewer@opescare.test</code></div>
+            <div><strong>{{ $t('label_email', 'Email') }}:</strong> <code>demo.reviewer@opescare.test</code></div>
             <div><strong>Health ID:</strong> <code>{{ $healthIdOf('demo.reviewer@opescare.test') }}</code></div>
         </div>
         <div class="demo-card-body">Verified Health ID card, live presentation code, diagnoses, allergies, immunisations, labs with a critical result, prescriptions, appointments, referral, care plan, messages, consents, access log and invoices.</div>
@@ -132,8 +134,8 @@
             </div>
         </div>
         <div class="demo-card-meta">
-            <div><strong>Email:</strong> <code>demo.guardian@opescare.test</code></div>
-            <div><strong>Dependent:</strong> <code>OC-DEMO-CHILD-0001</code></div>
+            <div><strong>{{ $t('label_email', 'Email') }}:</strong> <code>demo.guardian@opescare.test</code></div>
+            <div><strong>{{ $t('label_dependent', 'Dependent') }}:</strong> <code>OC-DEMO-CHILD-0001</code></div>
         </div>
         <div class="demo-card-body">Approve consent for dependents, view their timeline and access logs.</div>
         <form method="POST" action="{{ route('demo.login-as') }}">
@@ -160,8 +162,8 @@
             </div>
         </div>
         <div class="demo-card-meta">
-            <div><strong>Email:</strong> <code>demo.doctor@opescare.test</code></div>
-            <div><strong>Name:</strong> Dr. Amara Diallo</div>
+            <div><strong>{{ $t('label_email', 'Email') }}:</strong> <code>demo.doctor@opescare.test</code></div>
+            <div><strong>{{ $t('label_name', 'Name') }}:</strong> Dr. Amara Diallo</div>
         </div>
         <div class="demo-card-body">Search patients, request consent, view approved summary, create consultation, order labs, issue prescriptions.</div>
         <form method="POST" action="{{ route('demo.login-as') }}">
@@ -188,8 +190,8 @@
             </div>
         </div>
         <div class="demo-card-meta">
-            <div><strong>Email:</strong> <code>demo.nurse@opescare.test</code></div>
-            <div><strong>Name:</strong> Nurse Fatou Traoré</div>
+            <div><strong>{{ $t('label_email', 'Email') }}:</strong> <code>demo.nurse@opescare.test</code></div>
+            <div><strong>{{ $t('label_name', 'Name') }}:</strong> Nurse Fatou Traoré</div>
         </div>
         <div class="demo-card-body">View triage queue, record vital signs, write nursing notes, simulate medication administration.</div>
         <form method="POST" action="{{ route('demo.login-as') }}">
@@ -216,7 +218,7 @@
             </div>
         </div>
         <div class="demo-card-meta">
-            <div><strong>Email:</strong> <code>demo.facility.admin@opescare.test</code></div>
+            <div><strong>{{ $t('label_email', 'Email') }}:</strong> <code>demo.facility.admin@opescare.test</code></div>
         </div>
         <div class="demo-card-body">View facility dashboard, staff list, departments, services, audit summaries, integration status, and reports.</div>
         <form method="POST" action="{{ route('demo.login-as') }}">
@@ -243,7 +245,7 @@
             </div>
         </div>
         <div class="demo-card-meta">
-            <div><strong>Email:</strong> <code>demo.pharmacist@opescare.test</code></div>
+            <div><strong>{{ $t('label_email', 'Email') }}:</strong> <code>demo.pharmacist@opescare.test</code></div>
         </div>
         <div class="demo-card-body">View demo prescriptions, dispense medicine, manage pharmacy stock, simulate stock sync and reservations.</div>
         <form method="POST" action="{{ route('demo.login-as') }}">
@@ -270,7 +272,7 @@
             </div>
         </div>
         <div class="demo-card-meta">
-            <div><strong>Email:</strong> <code>demo.labtech@opescare.test</code></div>
+            <div><strong>{{ $t('label_email', 'Email') }}:</strong> <code>demo.labtech@opescare.test</code></div>
         </div>
         <div class="demo-card-body">View lab orders, collect samples, enter and validate results, release results, trigger critical alerts.</div>
         <form method="POST" action="{{ route('demo.login-as') }}">
@@ -297,7 +299,7 @@
             </div>
         </div>
         <div class="demo-card-meta">
-            <div><strong>Email:</strong> <code>demo.insurance@opescare.test</code></div>
+            <div><strong>{{ $t('label_email', 'Email') }}:</strong> <code>demo.insurance@opescare.test</code></div>
         </div>
         <div class="demo-card-body">View demo claims, check eligibility, review preauthorization, approve/query/reject claims — minimum-necessary record access only.</div>
         <form method="POST" action="{{ route('demo.login-as') }}">
@@ -333,8 +335,8 @@
                     Developer Portal
                 </div>
                 <div class="demo-card-meta dp-dev-meta-gap">
-                    <div><strong>Email:</strong> <code>demo.developer@opescare.test</code></div>
-                    <div><strong>Password:</strong> <code>DemoPass!2026</code></div>
+                    <div><strong>{{ $t('label_email', 'Email') }}:</strong> <code>demo.developer@opescare.test</code></div>
+                    <div><strong>{{ $t('label_password', 'Password') }}:</strong> <code>DemoPass!2026</code></div>
                 </div>
                 <div class="dp-dev-portal-desc">Access the API Connect portal, manage sandbox apps, view webhook logs, and explore integration docs.</div>
                 <form method="POST" action="{{ route('demo.login-as') }}">
@@ -356,13 +358,13 @@
                     Sandbox API Credentials
                 </div>
                 <div class="demo-card-meta dp-creds-meta">
-                    <div><strong>Endpoint:</strong> <code class="dp-creds-endpoint">POST /api/v1/connect/auth/token</code></div>
+                    <div><strong>{{ $t('label_endpoint', 'Endpoint') }}:</strong> <code class="dp-creds-endpoint">POST /api/v1/connect/auth/token</code></div>
                     <div><strong>client_id:</strong> <code>demo_dev_sandbox</code></div>
                     <div><strong>client_secret:</strong> <code>demo_secret_sandbox_2026</code></div>
                     <div><strong>grant_type:</strong> <code>client_credentials</code></div>
                 </div>
                 <div class="dp-creds-scopes">
-                    <strong>Scopes:</strong> pharmacy_stock.sync &middot; blood_stock.sync &middot; lab_results.push &middot; records.push &middot; patients.search
+                    <strong>{{ $t('label_scopes', 'Scopes') }}:</strong> pharmacy_stock.sync &middot; blood_stock.sync &middot; lab_results.push &middot; records.push &middot; patients.search
                 </div>
                 <div class="dp-sandbox-warn">
                     <i data-lucide="triangle-alert" style="width:.8rem;height:.8rem;display:inline;vertical-align:middle;margin-right:.25rem;" aria-hidden="true"></i>
@@ -394,7 +396,7 @@
 <div class="dp-footer">
     {{ $t('warning_data_note', 'DEMO DATA — NOT REAL PATIENT INFORMATION') }}
     &nbsp;·&nbsp;
-    <a href="{{ url('/') }}">Return to OpesCare</a>
+    <a href="{{ url('/') }}">{{ __('public.demo.return_home') }}</a>
 </div>
 
 @endsection

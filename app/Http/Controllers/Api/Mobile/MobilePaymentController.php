@@ -148,6 +148,18 @@ class MobilePaymentController extends Controller
         $this->applyLocale($request);
         $patientId = $this->resolvePatientId($request);
 
+        // A patient-chosen amount is never a real bill. This path exists only
+        // so a SIMULATED provider (demo hosts) can be exercised end to end;
+        // wherever money could be real, or no provider is configured, it is
+        // refused outright. Real invoices come from InvoiceService::issueFor()
+        // with a server-computed amount.
+        if (! $this->providers->isAvailable() || ! $this->providers->isSimulated()) {
+            return response()->json([
+                'message' => __('api.self_service_invoice_unavailable'),
+                'code'    => 'self_service_invoice_unavailable',
+            ], 403);
+        }
+
         $validated = $request->validate([
             // INTEGER, not `numeric`: `numeric` would accept "5000.4".
             'amount_minor' => ['required', 'integer', 'min:1', 'max:'.Money::MAX_MINOR],
@@ -160,7 +172,7 @@ class MobilePaymentController extends Controller
             amount: Money::ofMinor((int) $validated['amount_minor']),
             description: $validated['description'],
             facilityId: $validated['facility_id'] ?? null,
-            isDemo: $this->providers->isAvailable() && $this->providers->isSimulated(),
+            isDemo: true,
         );
 
         return response()->json(['data' => $invoice->toApiArray()], 201);

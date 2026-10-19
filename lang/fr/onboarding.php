@@ -241,6 +241,8 @@ return [
         'step_4' => 'Services cliniques',
         'step_5' => 'Justificatifs d\'activité',
         'step_6' => 'Cadre d\'intégration',
+        'step_7' => 'Accord de gouvernance',
+        'step_counter' => 'Étape :current sur :total',
         
         'type_lbl' => 'Catégorie d\'organisation',
         'software_sync_lbl' => 'Votre établissement utilise-t-il déjà un logiciel clinique ou administratif ?',
@@ -289,6 +291,8 @@ return [
         ],
         
         'variants' => [
+            'hospital_notice' => 'Revue clinique par défaut activée.',
+            'clinic_notice' => 'Les règles de vérification par défaut des cliniques s\'appliquent.',
             'hospital_msg' => 'Inscrivez votre hôpital pour utiliser les identifiants de santé, l\'historique médical, les consentements, l\'accès d\'urgence, les références médicales, la facturation et les outils d\'interopérabilité.',
             'clinic_msg' => 'Inscrivez votre clinique pour gérer les identifiants de santé, les consultations, les ordonnances, les résultats de laboratoire, les références médicales et le partage autorisé des dossiers.',
             'pharmacy_msg' => 'Inscrivez votre pharmacie pour gérer la délivrance des ordonnances, l\'historique des médicaments, la disponibilité des médicaments et la synchronisation sécurisée du stock.',

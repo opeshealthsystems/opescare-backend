@@ -941,7 +941,6 @@ class ComposerStaticInit36793882908b6cbdd344b5a4840231db
         'App\\Http\\Middleware\\RequireApiAdminRole' => __DIR__ . '/../..' . '/app/Http/Middleware/RequireApiAdminRole.php',
         'App\\Http\\Middleware\\RequireCompleteGuardianProfile' => __DIR__ . '/../..' . '/app/Http/Middleware/RequireCompleteGuardianProfile.php',
         'App\\Http\\Middleware\\RequireCompletePatientProfile' => __DIR__ . '/../..' . '/app/Http/Middleware/RequireCompletePatientProfile.php',
-        'App\\Http\\Middleware\\RequireConsentGrant' => __DIR__ . '/../..' . '/app/Http/Middleware/RequireConsentGrant.php',
         'App\\Http\\Middleware\\RequireFacilityContext' => __DIR__ . '/../..' . '/app/Http/Middleware/RequireFacilityContext.php',
         'App\\Http\\Middleware\\RequirePlatformAdmin' => __DIR__ . '/../..' . '/app/Http/Middleware/RequirePlatformAdmin.php',
         'App\\Http\\Middleware\\RequireStaffCapability' => __DIR__ . '/../..' . '/app/Http/Middleware/RequireStaffCapability.php',

@@ -76,9 +76,17 @@ class PharmacyStockSearchService
             return [];
         }
 
+        // Bounding-box prefilter in SQL: without it the freshest-500 cap is
+        // taken nationally and a near pharmacy can be cut before the distance
+        // check ever sees it. Listings with no coordinates still pass (they
+        // were always shown with a null distance).
+        $box = ($lat !== null && $lon !== null)
+            ? \App\Support\Geo\BoundingBox::around((float) $lat, (float) $lon, (float) $radius)
+            : null;
+
         $matches = array_merge(
-            $this->reportedStockMatches($term),
-            $this->directoryStockMatches($term),
+            $this->reportedStockMatches($term, $box),
+            $this->directoryStockMatches($term, $box),
         );
 
         $facilities = [];
@@ -126,13 +134,13 @@ class PharmacyStockSearchService
      *
      * @return list<array{0: CareFacility, 1: array<string,mixed>}>
      */
-    private function reportedStockMatches(string $term): array
+    private function reportedStockMatches(string $term, ?\App\Support\Geo\BoundingBox $box = null): array
     {
         $rows = MedicinePharmacyStock::query()
             // Seeded rows never reach a patient. See the scope's docblock.
             ->reportedByRealSource()
             ->whereHas('medicine', fn (Builder $q) => $q->active()->matchingTerm($term))
-            ->whereHas('careFacility', fn (Builder $q) => $q->where('listing_status', 'active'))
+            ->whereHas('careFacility', fn (Builder $q) => self::nearby($q->where('listing_status', 'active'), $box))
             ->with(['medicine', 'careFacility'])
             ->orderByDesc('last_reported_at')
             ->limit(self::MAX_CANDIDATE_ROWS)
@@ -190,7 +198,7 @@ class PharmacyStockSearchService
      *
      * @return list<array{0: CareFacility, 1: array<string,mixed>}>
      */
-    private function directoryStockMatches(string $term): array
+    private function directoryStockMatches(string $term, ?\App\Support\Geo\BoundingBox $box = null): array
     {
         $needle = '%' . str_replace(['\\', '%', '_'], ['\\\\', '\%', '\_'], $term) . '%';
 
@@ -212,7 +220,7 @@ class PharmacyStockSearchService
                     ->orWhereRaw("LOWER(COALESCE(generic_name, '')) LIKE LOWER(?)", [$needle])
                     ->orWhereRaw("LOWER(COALESCE(brand_name, '')) LIKE LOWER(?)", [$needle]);
             })
-            ->whereHas('facility', fn (Builder $q) => $q->where('listing_status', 'active'))
+            ->whereHas('facility', fn (Builder $q) => self::nearby($q->where('listing_status', 'active'), $box))
             ->with('facility')
             ->orderByDesc('last_updated_at')
             ->limit(self::MAX_CANDIDATE_ROWS)
@@ -314,5 +322,17 @@ class PharmacyStockSearchService
             sin($dLon / 2) * sin($dLon / 2);
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
         return $earthRadius * $c;
+    }
+
+    private static function nearby(Builder $q, ?\App\Support\Geo\BoundingBox $box): Builder
+    {
+        if ($box === null) {
+            return $q;
+        }
+
+        return $q->where(fn (Builder $w) => $w
+            ->where(fn (Builder $in) => $box->apply($in))
+            ->orWhereNull('latitude')
+            ->orWhereNull('longitude'));
     }
 }

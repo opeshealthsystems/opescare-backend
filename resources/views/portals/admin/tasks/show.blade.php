@@ -2,9 +2,6 @@
 
 @section('title', $task->title . ' — OpesCare')
 
-@section('breadcrumb_home', __('tasks.admin_title'))
-@section('breadcrumb_home_url', route('portals.admin.tasks'))
-@section('breadcrumb_section', __('admin_desk.task_detail'))
 @section('head')<link rel="stylesheet" href="{{ asset('css/od-admin.css') }}?v={{ @filemtime(public_path('css/od-admin.css')) ?: '1' }}">@endsection
 
 @section('content')

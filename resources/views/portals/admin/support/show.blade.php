@@ -2,9 +2,6 @@
 
 @section('title', $ticket->subject . ' — OpesCare')
 
-@section('breadcrumb_home', __('support.admin_title'))
-@section('breadcrumb_home_url', route('portals.admin.support.index'))
-@section('breadcrumb_section', __('support.ticket'))
 @section('head')<link rel="stylesheet" href="{{ asset('css/od-admin.css') }}?v={{ @filemtime(public_path('css/od-admin.css')) ?: '1' }}">@endsection
 
 @section('content')

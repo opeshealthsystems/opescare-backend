@@ -2,9 +2,6 @@
 
 @section('title', __('team.page_title') . ' — OpesCare')
 
-@section('breadcrumb_home', __('team.breadcrumb_home'))
-@section('breadcrumb_home_url', route('portals.admin'))
-@section('breadcrumb_section', __('team.page_title'))
 
 @section('head')
 @include('portals.pharmacy._supply_styles')

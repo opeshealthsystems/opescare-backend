@@ -48,11 +48,32 @@ class SmsNotificationService
         ]);
     }
 
+    /**
+     * The simulated-send log never carries a usable secret or a full phone
+     * number, in ANY environment: the body has every run of 4+ digits (OTP,
+     * PIN, reference codes) replaced, and the number keeps only its last 3
+     * digits. A log file is not a secure store; sms.log once held live OTPs.
+     */
     private function logSms(string $to, string $body): void
     {
         Log::channel('sms')->info('SMS [simulated]', [
-            'to'   => $to,
-            'body' => $body,
+            'to'     => self::maskPhone($to),
+            'body'   => self::redactBody($body),
+            'length' => mb_strlen($body),
         ]);
+    }
+
+    /** "+237 677 123 456" -> "***456". Never returns more than 3 digits. */
+    public static function maskPhone(?string $phone): string
+    {
+        $digits = preg_replace('/\D+/', '', (string) $phone) ?? '';
+
+        return $digits === '' ? '***' : '***'.substr($digits, -3);
+    }
+
+    /** Replace every run of 4 or more digits with a fixed placeholder. */
+    public static function redactBody(string $body): string
+    {
+        return preg_replace('/\d{4,}/', '[redacted]', $body) ?? '[redacted]';
     }
 }

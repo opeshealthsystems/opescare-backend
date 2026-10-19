@@ -1,9 +1,6 @@
 @extends('layouts.portal')
 
 @section('title', __('triage.show_title'))
-@section('breadcrumb_home', __('triage.title'))
-@section('breadcrumb_home_url', route('portals.triage.index'))
-@section('breadcrumb_section', __('triage.show_title'))
 
 @php
     $badge = fn (?string $level) => 'od-pill od-pill--' . match (\App\Support\TriageAcuity::severity($level)) {

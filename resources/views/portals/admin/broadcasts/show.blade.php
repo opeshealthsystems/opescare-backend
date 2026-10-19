@@ -2,9 +2,6 @@
 
 @section('title', $broadcast->title . ' — OpesCare')
 
-@section('breadcrumb_home', __('broadcasts.title'))
-@section('breadcrumb_home_url', route('portals.admin.broadcasts'))
-@section('breadcrumb_section', __('broadcasts.acks_title'))
 @section('head')<link rel="stylesheet" href="{{ asset('css/od-admin.css') }}?v={{ @filemtime(public_path('css/od-admin.css')) ?: '1' }}">@endsection
 
 @section('content')

@@ -773,7 +773,7 @@ class FrontDeskService
             ]);
 
             if ($push && class_exists(\App\Support\PatientPush::class)) {
-                \App\Support\PatientPush::send($patient, 'appointment', $title, $message, [
+                \App\Support\PatientPush::queue($patient, 'appointment', $title, $message, [
                     'appointment_id' => $appointment->id,
                     'action_url'     => '/appointments',
                 ]);

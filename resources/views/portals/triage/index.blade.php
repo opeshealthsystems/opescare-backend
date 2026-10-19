@@ -1,9 +1,6 @@
 @extends('layouts.portal')
 
 @section('title', __('triage.title'))
-@section('breadcrumb_home', __('triage.title'))
-@section('breadcrumb_home_url', route('portals.triage.index'))
-@section('breadcrumb_section', __('triage.queue_title'))
 
 @php
     // TriageAcuity::severity() speaks critical|warning|info|neutral; the house

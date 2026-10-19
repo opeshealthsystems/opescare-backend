@@ -75,15 +75,17 @@ class CareMapSearchService
             // Case-insensitive (Postgres LIKE is not: "dentaire" missed every
             // "Cabinet Dentaire"), and a word that names a KIND of place in
             // EN/FR ("dentist", "dentiste") also matches that facility_type.
-            $needle      = '%' . mb_strtolower($queryText) . '%';
+            // One LOWER(col) LIKE per column: a superset of the old
+            // case-sensitive variants, and exactly the shape the pg_trgm GIN
+            // indexes on lower(col) serve (see the 2026_10_19 scale migration),
+            // so a leading wildcard no longer forces a sequential scan.
+            $needle      = '%' . self::escapeLike(mb_strtolower($queryText)) . '%';
             $synonymType = self::typeForQuery($queryText);
-            $builder->where(function ($q) use ($queryText, $needle, $synonymType) {
-                $q->where('facility_name', 'like', "%{$queryText}%")
-                  ->orWhere('facility_type', 'like', "%{$queryText}%")
-                  ->orWhere('city',          'like', "%{$queryText}%")
-                  ->orWhere('description',   'like', "%{$queryText}%")
-                  ->orWhereRaw('LOWER(facility_name) LIKE ?', [$needle])
-                  ->orWhereRaw('LOWER(city) LIKE ?', [$needle]);
+            $builder->where(function ($q) use ($needle, $synonymType) {
+                $q->whereRaw('LOWER(facility_name) LIKE ?', [$needle])
+                  ->orWhereRaw('LOWER(facility_type) LIKE ?', [$needle])
+                  ->orWhereRaw('LOWER(city) LIKE ?', [$needle])
+                  ->orWhereRaw("LOWER(COALESCE(description, '')) LIKE ?", [$needle]);
                 if ($synonymType !== null) {
                     $q->orWhere('facility_type', $synonymType);
                 }
@@ -92,12 +94,15 @@ class CareMapSearchService
 
         // 7. City filter
         if ($city !== '') {
-            $builder->where('city', 'like', "%{$city}%");
+            $builder->whereRaw('LOWER(city) LIKE ?', ['%' . self::escapeLike(mb_strtolower($city)) . '%']);
         }
 
         // 8. Geospatial: Haversine distance filter + ordering
         if ($lat !== null && $lon !== null) {
             $builder->whereNotNull('latitude')->whereNotNull('longitude');
+            // Index-friendly rectangle first; the exact Haversine below only
+            // runs on rows inside it.
+            \App\Support\Geo\BoundingBox::around((float) $lat, (float) $lon, (float) $radius)->apply($builder);
 
             if (DB::getDriverName() === 'sqlite') {
                 // SQLite has no trig functions — calculate distance in PHP
@@ -158,6 +163,11 @@ class CareMapSearchService
         }
 
         return null;
+    }
+
+    private static function escapeLike(string $value): string
+    {
+        return str_replace(['\\', '%', '_'], ['\\\\', '\%', '\_'], $value);
     }
 
     private function calculatePhpDistance($lat1, $lon1, $lat2, $lon2)

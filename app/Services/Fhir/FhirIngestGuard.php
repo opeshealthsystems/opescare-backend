@@ -184,7 +184,7 @@ class FhirIngestGuard
      * The patient must have granted this facility an active consent.
      *
      * Read the same way the platform's own reads are gated
-     * (App\Http\Middleware\RequireConsentGrant): active status, not expired,
+     * (ClinicalRelationshipGate's consent_grant basis): active status, not expired,
      * issued to THIS facility. Global scopes are dropped because the
      * IsDemoRecord scope would otherwise hide a real grant from a demo
      * context and a demo grant from a real one.

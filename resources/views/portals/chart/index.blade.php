@@ -1,9 +1,6 @@
 @extends('layouts.portal')
 
 @section('title', __('chart.lookup_title'))
-@section('breadcrumb_home', __('chart.title'))
-@section('breadcrumb_home_url', route('portals.chart.index'))
-@section('breadcrumb_section', __('chart.lookup_title'))
 
 @section('head')
 <link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">

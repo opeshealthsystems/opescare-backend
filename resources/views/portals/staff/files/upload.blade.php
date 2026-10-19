@@ -2,9 +2,6 @@
 {{-- Imported from the platform (portals/staff/files/upload). Finder: the
      patient is fixed by the URL (no free-text resource id); PDF/JPEG/PNG only. --}}
 @section('title', __('files.upload_title'))
-@section('breadcrumb_home', __('files.title'))
-@section('breadcrumb_home_url', route('portals.files.index', ['patientId' => $patient->id]))
-@section('breadcrumb_section', __('files.upload_title'))
 
 @section('head')
 <link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">

@@ -1,9 +1,6 @@
 @extends('layouts.portal')
 
 @section('title', __('diagnostic_desk.title'))
-@section('breadcrumb_home', __('diagnostic_desk.title'))
-@section('breadcrumb_home_url', route('portals.diagnostic.dashboard'))
-@section('breadcrumb_section', __('diagnostic_desk.nav'))
 
 @section('head')
     @include('portals.lab.partials._head')

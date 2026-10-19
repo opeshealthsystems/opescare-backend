@@ -27,7 +27,14 @@ class LabTestAvailability extends Model
      * Provenance values that are NOT evidence a lab performs a test. Keep in
      * sync with MedicinePharmacyStock::SYNTHETIC_SOURCE_SYSTEMS.
      */
-    public const SYNTHETIC_SOURCE_SYSTEMS = ['demo_seed', 'seed'];
+    public const SYNTHETIC_SOURCE_SYSTEMS = \App\Support\AvailabilityProvenance::SYNTHETIC;
+
+    /**
+     * The ONLY `source_system` values the lab finder publishes (allow-list):
+     * 'portal', stamped by LabCatalogueProjector. Anything else is withheld.
+     */
+    public const LIVE_SOURCE_SYSTEMS = [self::SOURCE_PORTAL];
+
 
     public const STATUS_AVAILABLE   = 'available';
     public const STATUS_UNAVAILABLE = 'unavailable';
@@ -77,8 +84,7 @@ class LabTestAvailability extends Model
     {
         $column = $this->getTable() . '.source_system';
 
-        return $query->whereNotNull($column)
-            ->whereNotIn($column, self::SYNTHETIC_SOURCE_SYSTEMS);
+        return \App\Support\AvailabilityProvenance::constrain($query, $column, self::LIVE_SOURCE_SYSTEMS);
     }
 
     /** Still offered — a retired catalogue item is kept but marked unavailable. */

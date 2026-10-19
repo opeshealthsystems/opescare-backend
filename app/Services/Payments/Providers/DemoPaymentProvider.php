@@ -291,7 +291,23 @@ final class DemoPaymentProvider implements MobileMoneyProvider
      */
     public static function callbackToken(string $externalReference): string
     {
-        return hash_hmac('sha256', 'demo-callback:'.$externalReference, (string) Config::get('app.key', 'opescare-demo'));
+        return hash_hmac('sha256', 'demo-callback:'.$externalReference, self::hmacKey());
+    }
+
+    /**
+     * The HMAC key. There is no hardcoded fallback: a guessable constant
+     * would let anyone forge callback tokens and references. With no
+     * APP_KEY the demo provider refuses to work at all.
+     */
+    private static function hmacKey(): string
+    {
+        $key = (string) Config::get('app.key', '');
+
+        if ($key === '') {
+            throw new \RuntimeException('DemoPaymentProvider requires app.key; no fallback key exists.');
+        }
+
+        return $key;
     }
 
     // ── Determinism ─────────────────────────────────────────────────────────
@@ -328,7 +344,7 @@ final class DemoPaymentProvider implements MobileMoneyProvider
             self::REFERENCE_PREFIX,
             $outcome,
             (string) Carbon::now()->getTimestamp(),
-            substr(hash_hmac('sha256', $externalReference, (string) Config::get('app.key', 'opescare-demo')), 0, 12),
+            substr(hash_hmac('sha256', $externalReference, self::hmacKey()), 0, 12),
         ]);
     }
 

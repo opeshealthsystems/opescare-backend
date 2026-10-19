@@ -1,9 +1,6 @@
 @extends('layouts.portal')
 @section('title', __('leads.admin.page_title'))
 @include('portals.admin.control_center._sidebar')
-@section('breadcrumb_home', 'Admin')
-@section('breadcrumb_home_url', route('portals.admin'))
-@section('breadcrumb_section', __('leads.admin.breadcrumb'))
 @section('head')<link rel="stylesheet" href="{{ asset('css/od-admin.css') }}?v={{ @filemtime(public_path('css/od-admin.css')) ?: '1' }}">@endsection
 @php
     $gcTones = ['blue', 'amber', 'teal', 'rose', 'sky', 'green'];

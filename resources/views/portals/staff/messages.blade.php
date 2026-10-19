@@ -2,9 +2,6 @@
 
 @section('title', __('messaging.inbox_title') . ' — OpesCare')
 
-@section('breadcrumb_home', __('messaging.staff_breadcrumb_home'))
-@section('breadcrumb_home_url', route('portals.staff'))
-@section('breadcrumb_section', __('messaging.thread_breadcrumb'))
 
 @section('head')
 <link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">

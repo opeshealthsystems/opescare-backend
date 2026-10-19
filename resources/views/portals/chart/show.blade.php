@@ -1,9 +1,6 @@
 @extends('layouts.portal')
 
 @section('title', __('chart.title'))
-@section('breadcrumb_home', __('chart.title'))
-@section('breadcrumb_home_url', route('portals.chart.index'))
-@section('breadcrumb_section', __('chart.tabs.' . $tab))
 
 @php
     $sexKey = $identity['sex'] ? 'chart.sexes.' . $identity['sex'] : null;

@@ -35,7 +35,18 @@ class MedicinePharmacyStock extends Model
      * Keep in sync with PharmacyStockAvailability::SYNTHETIC_SOURCE_SYSTEMS
      * and with the takeover rule in PharmacyStockReportService::report().
      */
-    public const SYNTHETIC_SOURCE_SYSTEMS = ['demo_seed', 'seed'];
+    public const SYNTHETIC_SOURCE_SYSTEMS = \App\Support\AvailabilityProvenance::SYNTHETIC;
+
+    /**
+     * The ONLY `source_system` values the medicine finder publishes (allow-list).
+     *
+     *  - 'portal'           PharmacyStockReportService::SOURCE_PORTAL (pharmacy desk).
+     *  - 'partner_api', 'partner_api:*'  PartnerStockIngestService::sourceFor().
+     *
+     * Anything else, including NULL, is withheld. See App\Support\AvailabilityProvenance.
+     */
+    public const LIVE_SOURCE_SYSTEMS = ['portal', 'partner_api', 'partner_api:*'];
+
 
     /**
      * The "low" threshold a line falls back to when the pharmacy has not set
@@ -102,7 +113,7 @@ class MedicinePharmacyStock extends Model
      * PharmacyStockReportService::SOURCE_PORTAL, the seeders write
      * 'seed'/'demo_seed' — so an unstamped row is one nobody has claimed. That
      * is not evidence a medicine is on a shelf, and this is the query a patient
-     * runs before deciding whether to travel. Allow-list, not blacklist.
+     * runs before deciding whether to travel. Allow-list: only LIVE_SOURCE_SYSTEMS is published.
      *
      * It is `whereNotNull` plus `whereNotIn` rather than `whereNotIn` alone
      * because SQL three-valued logic would drop NULL rows anyway — spelling it
@@ -123,10 +134,9 @@ class MedicinePharmacyStock extends Model
          * 'portal', the seeders write 'seed'/'demo_seed'. A row with no source
          * is one nobody has claimed, so it is not evidence that a medicine is
          * on a shelf — and this is the query a patient's search runs before
-         * deciding whether to travel. Allow-list, not blacklist.
+         * deciding whether to travel. Allow-list: only LIVE_SOURCE_SYSTEMS is published.
          */
-        return $query->whereNotNull($column)
-            ->whereNotIn($column, self::SYNTHETIC_SOURCE_SYSTEMS);
+        return \App\Support\AvailabilityProvenance::constrain($query, $column, self::LIVE_SOURCE_SYSTEMS);
     }
 
     /** Whether this listing may back a new reservation right now. */

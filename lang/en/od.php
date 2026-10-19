@@ -27,4 +27,9 @@ return [
     'search_patient'      => 'Find a medicine in stock near you…',
     'search_pro'          => 'Find a medicine in stock nearby…',
     'search_go'           => 'Search',
+    'portal_title' => 'OpesCare Portal',
+    'portal_navigation' => 'Portal navigation',
+    'skip_to_content' => 'Skip to main content',
+    'breadcrumb' => 'Breadcrumb',
+    'role_slug_example' => 'e.g. senior_nurse',
 ];

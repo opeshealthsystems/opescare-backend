@@ -175,6 +175,25 @@ final class PatientPush
      * settings lookup must never decide, by breaking, that a patient hears
      * nothing.
      */
+    /**
+     * Fire-and-forget variant for request paths: the Expo call happens on the
+     * queue worker (see SendPatientPushJob), not inside the HTTP request.
+     * Use send() only where the caller needs the ExpoPushResult (CLI tools).
+     */
+    public static function queue(Patient $patient, string $type, string $title, string $body, array $data = []): void
+    {
+        try {
+            \App\Jobs\SendPatientPushJob::dispatch($patient, $type, $title, $body, $data);
+        } catch (\Throwable $e) {
+            // A queue outage must not fail the clinical write that triggered it.
+            Log::warning('PatientPush: push not queued', [
+                'patient_id' => $patient->getKey(),
+                'type'       => $type,
+                'error'      => $e->getMessage(),
+            ]);
+        }
+    }
+
     public static function suppressedBy(Patient $patient, string $type): ?string
     {
         if (in_array($type, self::ALWAYS_DELIVERED, true)) {

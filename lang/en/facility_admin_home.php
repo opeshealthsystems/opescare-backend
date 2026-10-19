@@ -22,4 +22,12 @@ return [
     'step_verify_title' => 'Verify a Health ID',
     'step_verify_body'  => 'Check a patient\'s Health ID card from their QR code. Done once your facility has verified one.',
     'step_verify_action' => 'Verify a Health ID',
+    'kpi_ids' => "Health IDs registered here",
+    'kpi_ids_sub' => "Patients registered at this facility",
+    'kpi_cards' => "Active patient QR cards",
+    'kpi_cards_sub' => "Cards held by your patients",
+    'kpi_lookups' => "Health ID checks here",
+    'kpi_lookups_sub' => "Every lookup made by your team",
+    'section_access' => "Recent Health ID checks",
+    'no_access' => "No Health ID checks at this facility yet.",
 ];

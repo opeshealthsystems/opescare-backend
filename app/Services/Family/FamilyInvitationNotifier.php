@@ -57,7 +57,7 @@ final class FamilyInvitationNotifier
         // its chime. PatientPush never throws and is a no-op when push is off.
         $locale = PatientPush::localeFor($dependent);
 
-        PatientPush::send(
+        PatientPush::queue(
             $dependent,
             self::TYPE_INVITED,
             __('push.family_invitation.title', [], $locale),

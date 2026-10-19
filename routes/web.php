@@ -1095,3 +1095,19 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'capability:i
     Route::get('/facility/imaging/orders/{id}/report/attachment', [\App\Http\Controllers\MedicalId\ImagingReportController::class, 'attachment'])
         ->whereUuid('id')->name('portals.imaging.report.attachment');
 });
+
+// Unmatched pages render the 404 through the web stack (session + SetLocale),
+// so a visitor who chose French gets the French 404 (UI audit P2-4). API/FHIR
+// paths are excluded and keep their JSON ENDPOINT_NOT_FOUND.
+// EVERY method, not just GET: a GET-only fallback makes a POST to a deleted
+// path answer 405 ("this path exists, wrong verb") instead of 404. CSRF is
+// skipped here only because the handler does nothing but 404 — otherwise an
+// unknown POST would answer 419 and still leak that nothing matched.
+Route::any('/{fallbackPlaceholder}', fn () => abort(404))
+    ->where('fallbackPlaceholder', '^(?!api/|fhir/).*')
+    ->withoutMiddleware([
+        \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
+        \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+    ])
+    ->fallback()
+    ->name('web.fallback');

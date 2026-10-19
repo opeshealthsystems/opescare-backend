@@ -139,6 +139,8 @@ class PharmacyCoverageProvenanceTest extends TestCase
         $sources = [
             'portal'    => PharmacyStockReportService::SOURCE_PORTAL,
             'partner'   => PartnerStockIngestService::SOURCE_PREFIX . ':' . Str::uuid()->toString(),
+            // No writer stamps 'bridge_agent' on medicine stock: an unknown
+            // source is withheld by the allow-list, like NULL and demo_seed.
             'bridge'    => 'bridge_agent',
             'seeded'    => MedicinePharmacyStock::SYNTHETIC_SOURCE_SYSTEMS[0],
             'unclaimed' => null,
@@ -195,8 +197,8 @@ class PharmacyCoverageProvenanceTest extends TestCase
         // Pin the arithmetic too, so a fix that made both sides equally wrong
         // (count everything, or count nothing) cannot pass on the equality alone.
         $this->assertSame(5, $coverage['total'], 'Five rows exist at this listing.');
-        $this->assertSame(3, $published, 'portal + partner + bridge are published; demo_seed and NULL are not.');
-        $this->assertSame(2, $coverage['seeded'], 'Seeded and unclaimed rows are the withheld remainder.');
+        $this->assertSame(2, $published, 'portal + partner are published; unknown bridge_agent, demo_seed and NULL are not.');
+        $this->assertSame(3, $coverage['seeded'], 'Seeded and unclaimed rows are the withheld remainder.');
         $this->assertSame(
             $coverage['total'],
             $coverage['reported'] + $coverage['seeded'],
@@ -267,7 +269,7 @@ class PharmacyCoverageProvenanceTest extends TestCase
             ->get('/pharmacy/stock')
             ->assertOk()
             ->assertSee(
-                __('public.pharmacy_portal.stock_cov_summary', ['reported' => 3, 'total' => 5]),
+                __('public.pharmacy_portal.stock_cov_summary', ['reported' => 2, 'total' => 5]),
                 false,
             );
     }

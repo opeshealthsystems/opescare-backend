@@ -1,9 +1,6 @@
 @extends('layouts.portal')
 
 @section('title', __('referral_desk.show_title'))
-@section('breadcrumb_home', __('referral_desk.title'))
-@section('breadcrumb_home_url', route('portals.referrals.index', ['tab' => $direction]))
-@section('breadcrumb_section', __('referral_desk.show_title'))
 
 @section('head')
 <link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">

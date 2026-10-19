@@ -16,6 +16,11 @@ return [
     'unauthenticated'               => 'Non authentifié.',
     'unauthorized'                  => 'Non autorisé.',
     'account_suspended'             => 'Votre compte a été suspendu. Contactez le support.',
+    'account_pending'               => 'Votre compte est en attente d’approbation. Vous pourrez vous connecter une fois qu’il sera activé.',
+    'mfa_required'                  => 'Saisissez le code de votre application d’authentification pour terminer la connexion.',
+    'mfa_setup_required'            => 'Ce compte doit configurer l’authentification à deux facteurs sur le portail web avant de pouvoir se connecter sur l’application.',
+    'mfa_code_invalid'              => 'Ce code d’authentification n’est pas valide.',
+    'too_many_attempts'             => 'Trop de tentatives. Veuillez patienter quelques minutes et réessayer.',
     'two_factor_required'           => 'L\'authentification à deux facteurs est requise.',
     'two_factor_invalid'            => 'Code d\'authentification à deux facteurs invalide.',
     'session_expired'               => 'Votre session a expiré. Veuillez vous reconnecter.',
@@ -402,4 +407,5 @@ return [
     'qr_revoked'                     => 'Le patient a retiré ce code. Demandez-lui d\'en présenter un nouveau.',
 
     'capability_forbidden'           => 'Votre rôle ne comprend pas cette partie d’OpesCare.',
+    'self_service_invoice_unavailable' => 'La création de votre propre facture n’est pas disponible. Les factures sont émises par l’établissement qui vous a soigné.',
 ];

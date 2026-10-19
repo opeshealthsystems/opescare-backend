@@ -10,7 +10,6 @@
 @section('breadcrumb_home', $facilityTier
     ? __('facility_admin_home.breadcrumb_home')
     : __('public.admin_governance.breadcrumb_home', [], app()->getLocale()))
-@section('breadcrumb_home_url', route('portals.admin'))
 
 @section('head')
     <link rel="stylesheet" href="{{ asset('css/od-admin.css') }}?v={{ @filemtime(public_path('css/od-admin.css')) ?: '1' }}">
@@ -124,9 +123,9 @@
     <a href="{{ $kpiHref('portals.admin.mpi.index') }}" class="od-kpi od-tint--green">
         <span class="od-kpi__icon"><i data-lucide="id-card"></i></span>
         <span class="od-kpi__body">
-            <span class="od-kpi__label">{{ __('public.admin_governance.kpi_total_health_ids', [], $l) }}</span>
+            <span class="od-kpi__label">{{ $kpiTier ? __('public.admin_governance.kpi_total_health_ids', [], $l) : __('facility_admin_home.kpi_ids', [], $l) }}</span>
             <span class="od-kpi__value">{{ number_format($stats['total_ids'] ?? 0) }}</span>
-            <span class="od-kpi__sub">{{ __('public.admin_governance.kpi_registered_patients', [], $l) }}</span>
+            <span class="od-kpi__sub">{{ $kpiTier ? __('public.admin_governance.kpi_registered_patients', [], $l) : __('facility_admin_home.kpi_ids_sub', [], $l) }}</span>
         </span>
     </a>
     <a href="#security" class="od-kpi od-tint--red">
@@ -144,18 +143,18 @@
         <a href="#security" class="od-kpi od-tint--sky" data-kpi="active_tokens">
             <span class="od-kpi__icon"><i data-lucide="qr-code"></i></span>
             <span class="od-kpi__body">
-                <span class="od-kpi__label">{{ __('public.admin_governance.kpi_active_tokens', [], $l) }}</span>
+                <span class="od-kpi__label">{{ $kpiTier ? __('public.admin_governance.kpi_active_tokens', [], $l) : __('facility_admin_home.kpi_cards', [], $l) }}</span>
                 <span class="od-kpi__value" data-kpi-value="active_tokens">{{ number_format($stats['active_tokens']) }}</span>
-                <span class="od-kpi__sub">{{ __('public.admin_governance.kpi_live_tokens', [], $l) }}</span>
+                <span class="od-kpi__sub">{{ $kpiTier ? __('public.admin_governance.kpi_live_tokens', [], $l) : __('facility_admin_home.kpi_cards_sub', [], $l) }}</span>
             </span>
         </a>
         @endif
         <a href="#security" class="od-kpi od-tint--blue">
             <span class="od-kpi__icon"><i data-lucide="activity"></i></span>
             <span class="od-kpi__body">
-                <span class="od-kpi__label">{{ __('public.admin_governance.kpi_total_lookups', [], $l) }}</span>
+                <span class="od-kpi__label">{{ $kpiTier ? __('public.admin_governance.kpi_total_lookups', [], $l) : __('facility_admin_home.kpi_lookups', [], $l) }}</span>
                 <span class="od-kpi__value">{{ number_format($stats['total_access_logs'] ?? 0) }}</span>
-                <span class="od-kpi__sub">{{ __('public.admin_governance.kpi_alltime_events', [], $l) }}</span>
+                <span class="od-kpi__sub">{{ $kpiTier ? __('public.admin_governance.kpi_alltime_events', [], $l) : __('facility_admin_home.kpi_lookups_sub', [], $l) }}</span>
             </span>
         </a>
     @endunless
@@ -185,7 +184,7 @@
     {{-- Recent security events (the activity feed) --}}
     <section class="od-card" id="security" aria-labelledby="oda-security-title">
         <header class="od-card__head">
-            <h2 class="od-card__title" id="oda-security-title">{{ __('public.admin_governance.section_security_events', [], $l) }} <span class="od-card__count">({{ isset($recentLogs) ? $recentLogs->count() : 0 }})</span></h2>
+            <h2 class="od-card__title" id="oda-security-title">{{ $kpiTier ? __('public.admin_governance.section_security_events', [], $l) : __('facility_admin_home.section_access', [], $l) }} <span class="od-card__count">({{ isset($recentLogs) ? $recentLogs->count() : 0 }})</span></h2>
             @platformadmin
             <a href="{{ route('portals.admin.security.audit_explorer') }}" class="od-card__link">{{ __('public.portal.view_all', [], $l) }}</a>
             @endplatformadmin
@@ -194,11 +193,11 @@
             <div class="od-card__body"><div class="od-empty">
                 <span class="od-empty__icon od-tint--green"><i data-lucide="shield-check"></i></span>
                 <div class="od-empty__title">{{ __('admin_desk.home_events_empty_title', [], $l) }}</div>
-                <p class="od-empty__text">{{ __('public.admin_governance.no_security_events', [], $l) }}</p>
+                <p class="od-empty__text">{{ $kpiTier ? __('public.admin_governance.no_security_events', [], $l) : __('facility_admin_home.no_access', [], $l) }}</p>
             </div></div>
         @else
         <div class="od-table-wrap">
-            <table class="od-table" aria-label="{{ __('public.admin_governance.section_security_events', [], $l) }}">
+            <table class="od-table" aria-label="{{ $kpiTier ? __('public.admin_governance.section_security_events', [], $l) : __('facility_admin_home.section_access', [], $l) }}">
                 <thead>
                     <tr>
                         <th class="od-table__num">#</th>
@@ -302,8 +301,8 @@
                 <a href="{{ $kpiHref('portals.admin.security.audit_explorer') }}" class="od-list__row">
                     <span class="od-list__icon od-tint--blue"><i data-lucide="activity"></i></span>
                     <span class="od-list__text">
-                        <span class="od-list__title">{{ __('public.admin_governance.kpi_total_lookups', [], $l) }}</span>
-                        <span class="od-list__sub">{{ __('public.admin_governance.kpi_alltime_events', [], $l) }}</span>
+                        <span class="od-list__title">{{ $kpiTier ? __('public.admin_governance.kpi_total_lookups', [], $l) : __('facility_admin_home.kpi_lookups', [], $l) }}</span>
+                        <span class="od-list__sub">{{ $kpiTier ? __('public.admin_governance.kpi_alltime_events', [], $l) : __('facility_admin_home.kpi_lookups_sub', [], $l) }}</span>
                     </span>
                     <span class="od-list__value">{{ number_format($stats['total_access_logs'] ?? 0) }}</span>
                 </a>
@@ -313,8 +312,8 @@
                 <a href="{{ route('portals.admin.security.index') }}" class="od-list__row" data-kpi="active_tokens">
                     <span class="od-list__icon od-tint--teal"><i data-lucide="qr-code"></i></span>
                     <span class="od-list__text">
-                        <span class="od-list__title">{{ __('public.admin_governance.kpi_active_tokens', [], $l) }}</span>
-                        <span class="od-list__sub">{{ __('public.admin_governance.kpi_live_tokens', [], $l) }}</span>
+                        <span class="od-list__title">{{ $kpiTier ? __('public.admin_governance.kpi_active_tokens', [], $l) : __('facility_admin_home.kpi_cards', [], $l) }}</span>
+                        <span class="od-list__sub">{{ $kpiTier ? __('public.admin_governance.kpi_live_tokens', [], $l) : __('facility_admin_home.kpi_cards_sub', [], $l) }}</span>
                     </span>
                     <span class="od-list__value" data-kpi-value="active_tokens">{{ number_format($stats['active_tokens']) }}</span>
                 </a>

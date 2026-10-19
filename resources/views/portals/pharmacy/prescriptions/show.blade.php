@@ -22,9 +22,6 @@
 @endphp
 @section('title', __('pharmacy_desk.rx_title', ['reference' => $rx->reference ?? '—'], $l))
 @section('sidebar_user_role', __('public.pharmacy_portal.role_label', [], $l))
-@section('breadcrumb_home', __('public.pharmacy_portal.breadcrumb_home', [], $l))
-@section('breadcrumb_home_url', route('portals.pharmacy.dashboard'))
-@section('breadcrumb_section', __('pharmacy_desk.rx_breadcrumb', [], $l))
 
 @section('head')
     <link rel="stylesheet" href="{{ asset('css/od-pharmacy.css') }}?v={{ @filemtime(public_path('css/od-pharmacy.css')) ?: '1' }}">

@@ -1375,7 +1375,7 @@ class MobileResultsInboxController extends Controller
             ]);
 
             if (class_exists(PatientPush::class)) {
-                PatientPush::send($patient, 'lab_result', $title, $body, [
+                PatientPush::queue($patient, 'lab_result', $title, $body, [
                     'lab_order_id' => (string) $order->id,
                     'action_url'   => $actionUrl,
                     'has_note'     => $shared ? '1' : '0',

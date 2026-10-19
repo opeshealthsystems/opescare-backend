@@ -77,7 +77,7 @@ reverted:
 |---|---|
 | Health ID, patient identity | Live. Registration, recovery, QR, `PatientIdentityService`. Duplicate detection is centralised in `Patient::findExistingIdentity()` — see its docblock before touching any patient-creation path. |
 | Clinical records, encounters | Live. Longitudinal record, prescriptions, labs, vitals, referrals. |
-| Consent-grant plumbing | Live. Request → approve → scoped read, break-glass, access log. `RequireConsentGrant` gates every patient endpoint. |
+| Consent-grant plumbing | Live. Request → approve → scoped read, break-glass, access log. Gates: `App\Support\ClinicalRelationshipGate` (appointment / care team / treating clinician / facility episode / consent grant) on every clinician read of a patient, `capability:` middleware by role, and `FhirIngestGuard` for partner ingest. (The unused `RequireConsentGrant` middleware was deleted 2026-10-19.) |
 | Clinician portal | Live. 39 mobile endpoints, facility switching, rosters. |
 | One-off payments | Live. MTN MoMo / Orange Money against an invoice, `simulated` on demo hosts. This is *pay a bill for care*, NOT insurance or subscriptions — those stay out. |
 | Telemedicine | Still thin: book-to-consult only, no in-app video. |

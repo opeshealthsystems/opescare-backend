@@ -2,9 +2,6 @@
 
 @section('title', __('facility_admin.member_title') . ' — OpesCare')
 
-@section('breadcrumb_home', __('facility_admin.breadcrumb_home'))
-@section('breadcrumb_home_url', route('portals.admin'))
-@section('breadcrumb_section', __('facility_admin.member_title'))
 
 @section('head')
 <link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">

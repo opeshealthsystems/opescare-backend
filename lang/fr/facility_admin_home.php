@@ -22,4 +22,12 @@ return [
     'step_verify_title' => 'Vérifiez un Health ID',
     'step_verify_body'  => 'Contrôlez la carte Health ID d\'un patient à partir de son code QR. Terminé dès que votre établissement en a vérifié un.',
     'step_verify_action' => 'Vérifier un Health ID',
+    'kpi_ids' => "Identifiants de santé enregistrés ici",
+    'kpi_ids_sub' => "Patients enregistrés dans cet établissement",
+    'kpi_cards' => "Cartes QR patients actives",
+    'kpi_cards_sub' => "Cartes détenues par vos patients",
+    'kpi_lookups' => "Vérifications d’identifiant ici",
+    'kpi_lookups_sub' => "Chaque consultation faite par votre équipe",
+    'section_access' => "Vérifications récentes d’identifiant de santé",
+    'no_access' => "Aucune vérification d’identifiant de santé dans cet établissement pour l’instant.",
 ];

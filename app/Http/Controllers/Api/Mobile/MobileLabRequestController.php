@@ -72,6 +72,10 @@ class MobileLabRequestController extends Controller
         $query = DB::table('lab_test_availability')
             ->whereNotIn(DB::raw('lower(availability_status)'), ['unavailable', 'discontinued', 'withdrawn']);
 
+        // Provenance allow-list: only rows a real source published. Seeded,
+        // fixture or unclaimed (NULL) rows never reach a patient or prescriber.
+        \App\Support\AvailabilityProvenance::constrain($query, 'lab_test_availability.source_system', \App\Models\LabTestAvailability::LIVE_SOURCE_SYSTEMS);
+
         if (mb_strlen($term) >= self::MIN_SEARCH_LENGTH) {
             $like = '%' . str_replace(['%', '_'], ['\%', '\_'], $term) . '%';
 
@@ -210,7 +214,10 @@ class MobileLabRequestController extends Controller
             return null;
         }
 
-        $row = DB::table('lab_test_availability')
+        $live = DB::table('lab_test_availability');
+        \App\Support\AvailabilityProvenance::constrain($live, 'lab_test_availability.source_system', \App\Models\LabTestAvailability::LIVE_SOURCE_SYSTEMS);
+
+        $row = $live
             ->whereNotIn(DB::raw('lower(availability_status)'), ['unavailable', 'discontinued', 'withdrawn'])
             ->where(function ($query) use ($needle) {
                 $query->whereRaw('lower(local_test_code) = ?', [mb_strtolower($needle)])

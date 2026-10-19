@@ -1,9 +1,6 @@
 @extends('layouts.portal')
 @section('title', __('caremap_claim.review_title'))
 @include('portals.admin.control_center._sidebar')
-@section('breadcrumb_home', 'Admin')
-@section('breadcrumb_home_url', route('portals.admin'))
-@section('breadcrumb_section', __('caremap_claim.review_title'))
 @section('head')<link rel="stylesheet" href="{{ asset('css/od-admin.css') }}?v={{ @filemtime(public_path('css/od-admin.css')) ?: '1' }}">@endsection
 
 @section('content')

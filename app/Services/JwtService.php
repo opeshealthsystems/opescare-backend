@@ -77,7 +77,10 @@ class JwtService
      *   2. RS256 signature
      *   3. Expiry (exp)
      *   4. Issuer (iss)
-     *   5. Audience (aud) — grace: tokens without aud are accepted (pre-migration)
+     *   5. Audience (aud) — REQUIRED; a token without aud is rejected
+     *      (the pre-migration grace is over: every token this service mints
+     *      carries aud, and TTL is 1 h, so no aud-less token is still live)
+     *   exp is REQUIRED too: a signed token with no expiry would be valid forever.
      *   6. JTI revocation — cache first, then DB
      *
      * @throws \RuntimeException on any validation failure
@@ -91,6 +94,13 @@ class JwtService
         }
 
         [$headerB64, $payloadB64, $signatureB64] = $parts;
+
+        // Header: pin the algorithm. Only RS256 is ever issued; refusing any
+        // other alg closes alg-confusion / "none" downgrades outright.
+        $header = json_decode($this->base64UrlDecode($headerB64), true);
+        if (! is_array($header) || ($header['alg'] ?? null) !== self::ALGORITHM) {
+            throw new \RuntimeException('JWT algorithm not accepted.');
+        }
 
         // Signature verification
         $signingInput = $headerB64 . '.' . $payloadB64;
@@ -107,7 +117,10 @@ class JwtService
         }
 
         // Expiry
-        if (isset($payload['exp']) && $payload['exp'] < time()) {
+        if (! isset($payload['exp']) || ! is_numeric($payload['exp'])) {
+            throw new \RuntimeException('JWT has no expiry.');
+        }
+        if ((int) $payload['exp'] < time()) {
             throw new \RuntimeException('JWT has expired.');
         }
 
@@ -116,8 +129,10 @@ class JwtService
             throw new \RuntimeException('JWT issuer mismatch.');
         }
 
-        // Audience — grace period for tokens without aud (issued before migration)
-        if (isset($payload['aud']) && $payload['aud'] !== self::AUDIENCE) {
+        // Audience — required. RFC 7519 allows a string or an array.
+        $aud = $payload['aud'] ?? null;
+        $audOk = is_array($aud) ? in_array(self::AUDIENCE, $aud, true) : $aud === self::AUDIENCE;
+        if (! $audOk) {
             throw new \RuntimeException('JWT audience mismatch.');
         }
 

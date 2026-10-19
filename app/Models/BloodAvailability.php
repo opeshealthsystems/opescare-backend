@@ -33,7 +33,22 @@ class BloodAvailability extends Model
      * PharmacyStockAvailability::SYNTHETIC_SOURCE_SYSTEMS: the availability
      * tables must not disagree about what counts as demo data.
      */
-    public const SYNTHETIC_SOURCE_SYSTEMS = ['demo_seed', 'seed'];
+    public const SYNTHETIC_SOURCE_SYSTEMS = \App\Support\AvailabilityProvenance::SYNTHETIC;
+
+    /**
+     * The ONLY `source_system` values the Blood Finder publishes (allow-list).
+     *
+     *  - 'blood_inventory'  BloodAvailabilityProjector::SOURCE_OPERATIONAL, the
+     *                       default for the facility blood API, the bridge sync
+     *                       and `blood:sync-availability`.
+     *  - 'portal'           InventoryPortalController::BLOOD_SOURCE (staff screen).
+     *  - 'partner_api', 'partner_api:*'  PartnerStockIngestService::sourceFor()
+     *                       via BloodInventoryService::upsertUnit().
+     *
+     * Anything else, including NULL, is withheld. See App\Support\AvailabilityProvenance.
+     */
+    public const LIVE_SOURCE_SYSTEMS = ['blood_inventory', 'portal', 'partner_api', 'partner_api:*'];
+
 
     protected $fillable = [
         'facility_id',
@@ -81,7 +96,7 @@ class BloodAvailability extends Model
      * decided one. Every legitimate write stamps a source: the projector
      * stamps every row it publishes from the operational blood-bank record,
      * and the seeder stamps 'demo_seed'. A row with no source is one nobody has
-     * claimed. Allow-list, not blacklist.
+     * claimed. Allow-list: only LIVE_SOURCE_SYSTEMS is published.
      *
      * Any query that feeds a public surface MUST go through this scope.
      */
@@ -89,14 +104,12 @@ class BloodAvailability extends Model
     {
         $column = $this->getTable() . '.source_system';
 
-        return $query->whereNotNull($column)
-            ->whereNotIn($column, self::SYNTHETIC_SOURCE_SYSTEMS);
+        return \App\Support\AvailabilityProvenance::constrain($query, $column, self::LIVE_SOURCE_SYSTEMS);
     }
 
     /** Whether this row may be shown to a patient. Mirrors the scope above. */
     public function isReportedByRealSource(): bool
     {
-        return $this->source_system !== null
-            && ! in_array($this->source_system, self::SYNTHETIC_SOURCE_SYSTEMS, true);
+        return \App\Support\AvailabilityProvenance::isLive($this->source_system, self::LIVE_SOURCE_SYSTEMS);
     }
 }

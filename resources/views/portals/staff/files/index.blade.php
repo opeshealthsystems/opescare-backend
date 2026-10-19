@@ -3,9 +3,6 @@
      patient, reached from the chart; signed download links; void with a
      reason instead of delete; release to the patient. --}}
 @section('title', __('files.title'))
-@section('breadcrumb_home', __('chart.title'))
-@section('breadcrumb_home_url', route('portals.chart.show', $patient->id))
-@section('breadcrumb_section', __('files.title'))
 
 @section('head')
 <link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">

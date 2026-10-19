@@ -1,9 +1,6 @@
 @extends('layouts.portal')
 @section('title', __('public.pharmacy_portal.page_heading_controlled', [], app()->getLocale()))
 @section('sidebar_user_role', __('public.pharmacy_portal.role_label', [], app()->getLocale()))
-@section('breadcrumb_home', __('public.pharmacy_portal.breadcrumb_home', [], app()->getLocale()))
-@section('breadcrumb_home_url', route('portals.pharmacy.dashboard'))
-@section('breadcrumb_section', __('public.pharmacy_portal.breadcrumb_section_controlled', [], app()->getLocale()))
 @section('head')@include('portals.pharmacy.stock_ops._styles')@endsection
 @php
     $l = app()->getLocale();

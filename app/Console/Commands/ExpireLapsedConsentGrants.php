@@ -16,7 +16,7 @@ use Illuminate\Console\Command;
  * That is NOT how any access decision was being made, and it is worth being
  * precise about why, because it changes what this command is for. Every reader
  * that gates access independently checks the date as well as the column —
- * `RequireConsentGrant`, `ConsentService::grantsFor()`,
+ * `ConsentService::grantsFor()`, `ClinicalRelationshipGate`,
  * `MobileDoctorChartController::hasActiveConsentGrant()` and both consent reads
  * in `MobileMessagingController` all require
  * `status = 'active' AND expires_at >= now()`. So a stale column never opened a

@@ -4,9 +4,6 @@
 
 @section('sidebar_user_role', __('public.pharmacy_portal.role_label', [], app()->getLocale()))
 
-@section('breadcrumb_home', __('public.pharmacy_portal.page_title', [], app()->getLocale()))
-@section('breadcrumb_home_url', route('portals.pharmacy.dashboard'))
-@section('breadcrumb_section', __('public.pharmacy_portal.nav_dashboard', [], app()->getLocale()))
 
 @php
     $l = app()->getLocale();

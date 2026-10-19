@@ -15,16 +15,15 @@
    - The "Book appointment" CTA renders only when the controller proved the
      listing is backed by a live operational facility ($bookable).
 --}}
-<!DOCTYPE html>
-<html lang="{{ $locale ?? app()->getLocale() }}">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+@extends('layouts.finder')
+@section('seo_head')
 @include('partials.finder.schema.facility-meta', ['facility' => $facility])
 @include('partials.finder.schema.facility', ['facility' => $facility])
 @include('partials.finder.schema.breadcrumbs', ['facility' => $facility])
-<link rel="stylesheet" href="{{ asset('assets/finder.css') }}">
+@endsection
+@push('head')
 @include('public.partials._od_pages_css')
+@endpush
 
 @php
   use App\Models\CareFacility;
@@ -94,11 +93,12 @@
   $langParam = fn (string $l) => request()->fullUrlWithQuery(['lang' => $l]);
 @endphp
 
+@push('head')
 <style>
 /* Page-specific layer on top of finder.css — tokens only, no new colors. */
 .p-wrap { max-width: 760px; margin-inline: auto; padding: 24px 16px 64px; }
-body.odp { background: var(--lx-canvas); }
-body.odp .p-wrap .f-card { border-color: transparent; }
+#f-main:has(.p-wrap) { background: var(--lx-canvas); }
+.odp .p-wrap .f-card { border-color: transparent; }
 .p-card-title .f-icon { color: var(--f-brand); }
 .p-stack { display: flex; flex-direction: column; gap: 14px; }
 
@@ -138,32 +138,27 @@ body.odp .p-wrap .f-card { border-color: transparent; }
 .p-note .f-icon { flex-shrink: 0; margin-top: 2px; }
 .p-provenance { font-size: 0.85rem; color: var(--f-ink-soft); line-height: 1.6; margin: 0 0 8px; }
 .p-claim { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--f-line); font-size: 0.88rem; }
+.p-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
 .p-back { display: inline-flex; align-items: center; gap: 4px; text-decoration: none; font-weight: 650; font-size: 0.9rem; color: var(--f-brand); white-space: nowrap; }
 .p-emergency { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; background: #fff; border: 1px solid var(--f-line); color: var(--f-danger); font-weight: 600; font-size: 0.8rem; text-decoration: none; white-space: nowrap; }
 </style>
-</head>
-<body class="odp">
+@endpush
 
-<header class="f-header">
-  <div class="f-container f-header__row">
+@section('content')
+<div class="odp">
+<div class="p-wrap p-stack">
+
+  <div class="p-bar">
     <a class="p-back" href="{{ $backUrl }}">
       @include('partials.finder.icon', ['name' => 'chevron-left', 'size' => 18])
       {{ __('finder_directory.back_to_directory') }}
     </a>
-    <div class="f-header__actions">
-      <nav class="f-lang" aria-label="EN / FR">
-        <a href="{{ $langParam('en') }}" @if(app()->getLocale() === 'en') class="is-active" aria-current="true" @endif>EN</a>
-        <a href="{{ $langParam('fr') }}" @if(app()->getLocale() === 'fr') class="is-active" aria-current="true" @endif>FR</a>
-      </nav>
-      <a class="p-emergency" href="{{ route('public.care-map.emergency', array_filter(['lang' => request('lang')])) }}">
-        @include('partials.finder.icon', ['name' => 'phone', 'size' => 13])
-        {{ __('finder_directory.emergency') }}
-      </a>
-    </div>
+    <a class="p-emergency" href="{{ route('public.care-map.emergency', array_filter(['lang' => request('lang')])) }}">
+      @include('partials.finder.icon', ['name' => 'phone', 'size' => 13])
+      {{ __('finder_directory.emergency') }}
+    </a>
   </div>
-</header>
 
-<main class="p-wrap p-stack">
 
   {{-- ── Identity ─────────────────────────────────────────────────────── --}}
   <section class="f-card p-head">
@@ -451,6 +446,6 @@ body.odp .p-wrap .f-card { border-color: transparent; }
     @endunless
   </section>
 
-</main>
-</body>
-</html>
+</div>
+</div>
+@endsection

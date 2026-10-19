@@ -72,7 +72,7 @@
 
             <!-- Step Indicators -->
             <div class="stepper-header">
-                <span class="step-indicator" id="step-badge-label">Step 1 of 7</span>
+                <span class="step-indicator" id="step-badge-label">{{ __('onboarding.org.step_counter', ['current' => 1, 'total' => 7]) }}</span>
                 <span class="step-title-label" id="step-title-label">{{ __('ui_sweep.register.org_type') }}</span>
             </div>
             <div class="step-progress-bar">
@@ -361,22 +361,23 @@
         };
 
         const safetyNotices = {
-            hospital: "Default clinical review active.",
-            clinic: "Default clinic verification rules apply.",
+            hospital: @json(__('onboarding.org.variants.hospital_notice')),
+            clinic: @json(__('onboarding.org.variants.clinic_notice')),
             pharmacy: "{{ __('onboarding.org.variants.pharmacy_notice') }}",
             laboratory: "{{ __('onboarding.org.variants.laboratory_notice') }}",
             public_health: "{{ __('onboarding.org.variants.public_health_notice') }}"
         };
 
         const stepTitles = [
-            "Organization Type",
-            "Organization Details",
-            "Primary Contact Profile",
-            "Clinical Options & Services",
-            "Support Documents Upload",
-            "System Integration Specs",
-            "Governance Agreement"
+            @json(__('onboarding.org.step_1')),
+            @json(__('onboarding.org.step_2')),
+            @json(__('onboarding.org.step_3')),
+            @json(__('onboarding.org.step_4')),
+            @json(__('onboarding.org.step_5')),
+            @json(__('onboarding.org.step_6')),
+            @json(__('onboarding.org.step_7'))
         ];
+        const stepCounter = @json(__('onboarding.org.step_counter'));
 
         document.addEventListener('DOMContentLoaded', function() {
             adaptOrgType();
@@ -427,7 +428,7 @@
                 document.getElementById('pane-' + i).style.display = 'none';
             }
             document.getElementById('pane-' + currentStep).style.display = 'block';
-            document.getElementById('step-badge-label').innerText = `Step ${currentStep} of ${totalSteps}`;
+            document.getElementById('step-badge-label').innerText = stepCounter.replace(':current', currentStep).replace(':total', totalSteps);
             document.getElementById('step-title-label').innerText = stepTitles[currentStep - 1];
             const fillPct = (currentStep / totalSteps) * 100;
             document.getElementById('step-progress').style.width = fillPct + '%';

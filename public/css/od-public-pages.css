@@ -186,3 +186,17 @@ body.docs-body .docs-nav-link.active { background: var(--lx-white); color: var(-
 body.docs-body .docs-callout { border-left: 0; border-radius: 12px; }
 body.docs-body .docs-callout.info { background: var(--lx-canvas); color: var(--lx-ink); }
 .odp-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Responsive tables on public pages: below 640px rows become labelled cards.
+   public/js/od-tables.js copies each <th> into data-label and adds .od-stack. */
+@media (max-width: 640px) {
+  .odp-table-wrap:has(table.od-stack) { overflow-x: visible; }
+  table.odp-table.od-stack thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+  table.odp-table.od-stack, table.odp-table.od-stack tbody, table.odp-table.od-stack tr, table.odp-table.od-stack td { display: block; width: 100%; }
+  table.odp-table.od-stack tbody tr { padding: 12px 16px; border-bottom: 1px solid var(--lx-hair, #E6ECF3); }
+  table.odp-table.od-stack tbody tr:last-child { border-bottom: 0; }
+  table.odp-table.od-stack tbody td { border: 0; padding: 4px 0; }
+  table.odp-table.od-stack td[data-label]:not([data-label=""])::before {
+    content: attr(data-label); display: block; font-size: 12px; font-weight: 600; color: var(--lx-muted, #5B6B80); margin-bottom: 2px;
+  }
+}

@@ -1,9 +1,6 @@
 @extends('layouts.portal')
 
 @section('title', __('billing_desk.receipt.title') . ' ' . $receipt->receipt_number)
-@section('breadcrumb_home', __('billing_desk.title'))
-@section('breadcrumb_home_url', route('portals.billing.index'))
-@section('breadcrumb_section', $receipt->receipt_number)
 
 @php
     use App\Services\Billing\BillingDeskService;

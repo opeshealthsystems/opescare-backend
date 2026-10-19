@@ -25,7 +25,7 @@
     @endphp
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'OpesCare Portal')</title>
+    <title>@yield('title', __('od.portal_title'))</title>
     <meta name="theme-color" content="#0F4C81">
     @include('partials.favicons')
     <link rel="manifest" href="{{ asset('site.webmanifest') }}">
@@ -47,6 +47,8 @@
     @yield('head')
 </head>
 <body class="portal-body od od--{{ $odArea }}{{ $odPharmacy ? ' section-pharmacy' : '' }}{{ $odArea === 'admin' ? ' section-admin' : '' }}">
+
+<a class="od-skip" href="#main-content">{{ __('od.skip_to_content') }}</a>
 
 <div class="portal-wrap">
 
@@ -86,15 +88,14 @@
         $sidebarRoleKey     = $sidebarRole?->name;
         $sidebarRoleLabel   = $sidebarRoleKey && \Illuminate\Support\Facades\Lang::has('portal.role_name.' . $sidebarRoleKey)
             ? __('portal.role_name.' . $sidebarRoleKey)
-            : ($sidebarRole?->description ?? (auth()->user()?->roleName() ?? 'Portal'));
+            : ($sidebarRole?->description ?? (auth()->user()?->roleName() ?? __('od.portal_title')));
 
         $topbarFacilityName = auth()->user()?->primaryFacility?->name;
     @endphp
 
     <!-- Sidebar -->
-    <aside class="portal-sidebar" id="portal-sidebar" role="navigation" aria-label="Portal navigation">
+    <aside class="portal-sidebar" id="portal-sidebar" role="navigation" aria-label="{{ __('od.portal_navigation') }}">
 
-        @if($od)
             @include('partials.od.brand', ['odProduct' => $odProduct, 'odHome' => match ($odArea) {
                 'pharmacy' => route('portals.pharmacy.dashboard'),
                 'lab'      => request()->is('facility/imaging*') ? route('portals.imaging.index') : (request()->is('facility/diagnostic*') ? route('portals.diagnostic.dashboard') : route('portals.lab.index')),
@@ -103,17 +104,6 @@
                 'pro'      => request()->is('developer*', 'portals/developer*') ? route('portals.developer.dashboard') : route('professional.profile'),
                 default    => route('portals.staff'),
             }])
-        @else
-        <a href="{{ url('/') }}" class="sidebar-brand" aria-label="OpesCare Home">
-            <x-brand-logo :size="32" tile />
-            <div>
-                <div class="sidebar-brand-name">OpesCare</div>
-                <div class="sidebar-brand-sub">
-                    @hasSection('sidebar_user_role')@yield('sidebar_user_role')@else{{ $sidebarRoleLabel }}@endif
-                </div>
-            </div>
-        </a>
-        @endif
 
         <div class="sidebar-nav">
             @hasSection('sidebar_nav')
@@ -131,7 +121,7 @@
                     {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
                 </div>
                 <div class="min-w-0">
-                    <div class="sidebar-user-name">{{ auth()->user()->name ?? 'User' }}</div>
+                    <div class="sidebar-user-name">{{ auth()->user()->name ?? '' }}</div>
                     <div class="sidebar-user-role">
                         @hasSection('sidebar_user_role')@yield('sidebar_user_role')@else{{ $sidebarRoleLabel }}@endif
                     </div>
@@ -175,73 +165,7 @@
     <!-- Main Area -->
     <div class="portal-main" id="portal-main">
 
-        @if($od)
-            @include('partials.od.topbar')
-        @else
-        <!-- Topbar -->
-        <header class="portal-topbar" role="banner">
-            <button class="topbar-menu-btn" id="sidebar-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="portal-sidebar">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-            </button>
-
-            <nav class="topbar-breadcrumb" aria-label="Breadcrumb">
-                <a href="@yield('breadcrumb_home_url', url('/'))">@yield('breadcrumb_home', 'Portal')</a>
-                @hasSection('breadcrumb_section')
-                    <span class="topbar-breadcrumb-sep" aria-hidden="true">/</span>
-                    <span class="topbar-breadcrumb-current">@yield('breadcrumb_section')</span>
-                @endif
-            </nav>
-
-            @if($topbarFacilityName)
-            <div class="topbar-facility" title="{{ $topbarFacilityName }}">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/></svg>
-                <span>{{ $topbarFacilityName }}</span>
-            </div>
-            @endif
-
-            <div class="topbar-actions">
-                @includeIf('partials.notifications.bell')
-                @php
-                    $locale = app()->getLocale();
-                    $otherLocale = $locale === 'fr' ? 'en' : 'fr';
-                    $otherLabel  = $locale === 'fr' ? 'EN' : 'FR';
-                @endphp
-                <a href="{{ url('/lang/' . $otherLocale) }}" class="topbar-lang" aria-label="Switch language to {{ $otherLabel }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                    <span>{{ $otherLabel }}</span>
-                </a>
-
-                <a href="{{ route('public.help') }}" class="topbar-icon-btn" aria-label="Help">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                </a>
-
-                <div class="topbar-user">
-                    <button type="button" class="topbar-user-btn" id="topbar-user-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="topbar-user-menu" aria-label="{{ auth()->user()->name ?? 'User' }}">
-                        <span class="topbar-avatar" aria-hidden="true">{{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-                    </button>
-                    <div class="topbar-user-menu" id="topbar-user-menu" hidden>
-                        <div class="topbar-user-meta">
-                            <div class="topbar-user-name">{{ auth()->user()->name ?? 'User' }}</div>
-                            <div class="topbar-user-role">
-                                @hasSection('sidebar_user_role')@yield('sidebar_user_role')@else{{ $sidebarRoleLabel }}@endif
-                            </div>
-                            @if($topbarFacilityName)
-                                <div class="topbar-user-facility">{{ $topbarFacilityName }}</div>
-                            @endif
-                        </div>
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit" class="topbar-user-signout">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                                {{ __('public.portal.sign_out', [], app()->getLocale()) }}
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </header>
-        @endif
+        @include('partials.od.topbar')
 
         @yield('patient_banner')
 
@@ -275,6 +199,7 @@
 
 <!-- Lucide Icons -->
 <script src="{{ asset('js/lucide.min.js') }}"></script>
+<script src="{{ asset('js/od-tables.js') }}?v={{ @filemtime(public_path('js/od-tables.js')) ?: '1' }}" defer></script>
 <script src="{{ asset('js/op-actions.js') }}?v={{ @filemtime(public_path('js/op-actions.js')) ?: '1' }}" defer></script>
 @auth
 <script src="{{ asset('js/notification-sounds.js') }}" defer></script>

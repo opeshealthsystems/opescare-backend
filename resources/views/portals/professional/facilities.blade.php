@@ -2,9 +2,6 @@
 
 @section('title', __('team.join_page_title') . ' — OpesCare')
 
-@section('breadcrumb_home', __('professional.page_title'))
-@section('breadcrumb_home_url', route('professional.profile'))
-@section('breadcrumb_section', __('team.join_page_title'))
 
 @section('head')
     <link rel="stylesheet" href="{{ asset('css/od-pro.css') }}?v={{ @filemtime(public_path('css/od-pro.css')) ?: '1' }}">

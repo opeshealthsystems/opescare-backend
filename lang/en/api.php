@@ -17,6 +17,11 @@ return [
     'unauthenticated'               => 'Unauthenticated.',
     'unauthorized'                  => 'Unauthorized.',
     'account_suspended'             => 'Your account has been suspended. Contact support.',
+    'account_pending'               => 'Your account is awaiting approval. You will be able to sign in once it is activated.',
+    'mfa_required'                  => 'Enter the code from your authenticator app to finish signing in.',
+    'mfa_setup_required'            => 'This account must set up two-factor authentication on the web portal before it can sign in on the app.',
+    'mfa_code_invalid'              => 'That authentication code is not valid.',
+    'too_many_attempts'             => 'Too many attempts. Please wait a few minutes and try again.',
     'two_factor_required'           => 'Two-factor authentication is required.',
     'two_factor_invalid'            => 'Invalid two-factor code.',
     'session_expired'               => 'Your session has expired. Please log in again.',
@@ -415,4 +420,5 @@ return [
     'qr_revoked'                     => 'The patient withdrew this code. Ask them to present a new one.',
 
     'capability_forbidden'           => 'Your role does not include this part of OpesCare.',
+    'self_service_invoice_unavailable' => 'Raising your own invoice is not available. Invoices are issued by the facility that provided your care.',
 ];

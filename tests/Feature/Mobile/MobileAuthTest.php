@@ -196,15 +196,16 @@ class MobileAuthTest extends TestCase
             'date_of_birth' => '2000-01-01',
         ])->assertStatus(422);
 
-        // Correct date_of_birth — PIN bootstrap should succeed and OTP sent
+        // Correct date_of_birth — an OTP is sent, but the PIN is NOT set yet:
+        // it takes effect only after the OTP round-trip (see
+        // tests/Feature/Security/MobilePinBootstrapRequiresOtpTest).
         $this->postJson('/api/mobile/auth/login', [
             'phone_number'  => '0700000099',
             'pin'           => '5678',
             'date_of_birth' => '1985-03-20',
         ])->assertStatus(200);
 
-        // Verify PIN was persisted
         $patient->refresh();
-        $this->assertTrue(Hash::check('5678', $patient->pin_hash));
+        $this->assertNull($patient->pin_hash);
     }
 }

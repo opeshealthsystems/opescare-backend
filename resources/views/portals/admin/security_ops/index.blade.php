@@ -1,9 +1,6 @@
 @extends('layouts.portal')
 @section('title', __('security_ops.index_title'))
 @include('portals.admin.control_center._sidebar')
-@section('breadcrumb_home', __('security_ops.breadcrumb_home'))
-@section('breadcrumb_home_url', route('portals.admin'))
-@section('breadcrumb_section', __('security_ops.index_title'))
 @section('head')<link rel="stylesheet" href="{{ asset('css/od-admin.css') }}?v={{ @filemtime(public_path('css/od-admin.css')) ?: '1' }}">@endsection
 
 @section('content')

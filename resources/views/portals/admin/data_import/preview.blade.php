@@ -1,9 +1,6 @@
 @extends('layouts.portal')
 @section('title', __('public.stf_import_validation_summary'))
 @include('portals.admin.control_center._sidebar')
-@section('breadcrumb_home', __('staff_data.title_import'))
-@section('breadcrumb_home_url', route('portals.admin.data_import.index'))
-@section('breadcrumb_section', __('public.stf_import_validation_summary'))
 @section('head')<link rel="stylesheet" href="{{ asset('css/od-admin.css') }}?v={{ @filemtime(public_path('css/od-admin.css')) ?: '1' }}">@endsection
 
 @section('content')

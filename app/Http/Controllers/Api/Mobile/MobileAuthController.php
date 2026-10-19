@@ -16,7 +16,10 @@ use App\Services\Identity\HealthIdGeneratorService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use App\Modules\Auth\Services\TwoFactorService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -25,6 +28,18 @@ use Illuminate\Support\Str;
 
 class MobileAuthController extends Controller
 {
+    /** Access-token lifetime. */
+    private const TOKEN_TTL_DAYS = 30;
+
+    /** How long after expiry a token may still be exchanged at /refresh. */
+    private const REFRESH_GRACE_HOURS = 48;
+
+    /** A first-login PIN waits here until the OTP round-trip proves the phone. */
+    private const PIN_BOOTSTRAP_KEY = 'mobile_pin_bootstrap:';
+
+    /** Wrong-OTP budget per patient before the live codes are burned. */
+    private const OTP_MAX_ATTEMPTS = 5;
+
     public function __construct(private SmsNotificationService $sms) {}
 
     /**
@@ -52,7 +67,19 @@ class MobileAuthController extends Controller
             if (!$request->has('date_of_birth') || $request->date_of_birth !== $patient->date_of_birth?->format('Y-m-d')) {
                 return response()->json(['message' => __('api.identity_verification_required')], 422);
             }
-            $patient->update(['pin_hash' => Hash::make($request->pin)]);
+            // Bootstrap is throttled per patient (on top of the per-IP route
+            // throttle): DOB + phone are guessable, so a stranger must not be
+            // able to spray attempts or SMS at someone else's number.
+            $bootKey = 'mobile-pin-bootstrap:'.$patient->id;
+            if (RateLimiter::tooManyAttempts($bootKey, 3)) {
+                return response()->json(['message' => __('api.too_many_attempts'), 'code' => 'too_many_attempts'], 429);
+            }
+            RateLimiter::hit($bootKey, 3600);
+
+            // DOB + phone alone no longer sets the PIN. The hashed PIN (a
+            // string, never an object) is held until the OTP sent to the
+            // patient's own phone is verified in verifyOtp().
+            Cache::put(self::PIN_BOOTSTRAP_KEY.$patient->id, Hash::make($request->pin), now()->addMinutes(10));
         } elseif (!Hash::check($request->pin, $patient->pin_hash)) {
             return response()->json(['message' => __('api.invalid_credentials')], 401);
         }
@@ -114,21 +141,36 @@ class MobileAuthController extends Controller
             ->latest()
             ->first();
 
+        $attemptKey = 'mobile-otp-verify:'.$patient->id;
+        if (RateLimiter::tooManyAttempts($attemptKey, self::OTP_MAX_ATTEMPTS)) {
+            return response()->json(['message' => __('api.too_many_attempts'), 'code' => 'too_many_attempts'], 429);
+        }
+
         if (!$otpRecord || !Hash::check($request->otp, $otpRecord->code_hash)) {
+            RateLimiter::hit($attemptKey, 600);
+            if (RateLimiter::tooManyAttempts($attemptKey, self::OTP_MAX_ATTEMPTS)) {
+                // Budget spent: burn every live code so guessing cannot continue.
+                PatientOtpCode::where('phone_number', $request->phone_number)
+                    ->whereNull('used_at')
+                    ->update(['used_at' => Carbon::now()]);
+            }
+
             return response()->json(['message' => __('api.otp_invalid')], 401);
         }
+
+        RateLimiter::clear($attemptKey);
 
         // Mark OTP as used
         $otpRecord->update(['used_at' => Carbon::now()]);
 
-        // Issue a 30-day access token
-        $rawToken = 'pat_' . Str::random(40);
-        PatientAccessToken::create([
-            'patient_id'   => $patient->id,
-            'token_hash'   => Hash::make($rawToken),
-            'token_prefix' => substr($rawToken, 0, 12),
-            'expires_at'   => Carbon::now()->addDays(30),
-        ]);
+        // A PIN chosen at first login takes effect only now, after the phone
+        // has proved itself. Cache::pull makes it one-shot.
+        $pendingPin = Cache::pull(self::PIN_BOOTSTRAP_KEY.$patient->id);
+        if (is_string($pendingPin) && is_null($patient->pin_hash)) {
+            $patient->forceFill(['pin_hash' => $pendingPin])->save();
+        }
+
+        $rawToken = $this->issueToken($patient->id);
 
         return response()->json([
             'status'       => 'authenticated',
@@ -154,13 +196,48 @@ class MobileAuthController extends Controller
             'password' => 'required|string|min:4',
         ]);
 
-        // Step 1: Verify credentials against the users table (same as web portal)
-        if (! Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+        // Step 1: Verify credentials against the users table (same as web portal).
+        // validate() checks the password without starting a session.
+        if (! Auth::validate(['email' => $request->email, 'password' => $request->password])) {
             return response()->json(['message' => __('api.invalid_email_or_password')], 401);
         }
 
-        $user = Auth::user();
-        Auth::logout(); // We only used Auth to verify — mobile uses its own token system
+        $user = User::where('email', $request->email)->first();
+
+        // Step 1b: the account gates the web login applies
+        // (PublicPageController::login). Each refusal carries a stable `code`
+        // the app can branch on; `message` stays human-readable, which is all
+        // older app builds read (they display it).
+        if ($user->status === 'suspended') {
+            return response()->json(['message' => __('api.account_suspended'), 'code' => 'account_suspended'], 403);
+        }
+
+        // `pending` is refused for every account EXCEPT a patient's own:
+        // POST /mobile/auth/register creates patient users as `pending`
+        // (identity is confirmed later at a facility) and signs them in, so
+        // refusing them here would lock every app registrant out on next login.
+        if ($user->status === 'pending' && $user->roleName() !== 'patient') {
+            return response()->json(['message' => __('api.account_pending'), 'code' => 'account_pending'], 403);
+        }
+
+        // MFA: an account with a confirmed second factor (or a role that
+        // requires one) never gets a token from a password alone. The app may
+        // resend the same request with `mfa_code`; without it the answer is a
+        // 403 `mfa_required` the app can handle.
+        if ($user->hasTwoFactorEnabled() || $user->requiresTwoFactor()) {
+            if (! $user->hasTwoFactorEnabled()) {
+                return response()->json(['message' => __('api.mfa_setup_required'), 'code' => 'mfa_setup_required'], 403);
+            }
+
+            $code = (string) $request->input('mfa_code', '');
+            if ($code === '') {
+                return response()->json(['message' => __('api.mfa_required'), 'code' => 'mfa_required'], 403);
+            }
+
+            if (! app(TwoFactorService::class)->verify($user->two_factor_secret, $code)) {
+                return response()->json(['message' => __('api.mfa_code_invalid'), 'code' => 'mfa_code_invalid'], 401);
+            }
+        }
 
         // Step 2: Find the matching patient record by email
         $patient = Patient::where('email', $request->email)->first();
@@ -172,14 +249,7 @@ class MobileAuthController extends Controller
         }
 
         // Step 3: Issue a 30-day mobile access token
-        $rawToken = 'pat_' . Str::random(40);
-
-        PatientAccessToken::create([
-            'patient_id'   => $patient->id,
-            'token_hash'   => Hash::make($rawToken),
-            'token_prefix' => substr($rawToken, 0, 12),
-            'expires_at'   => Carbon::now()->addDays(30),
-        ]);
+        $rawToken = $this->issueToken($patient->id);
 
         return response()->json([
             'status'       => 'authenticated',
@@ -287,13 +357,7 @@ class MobileAuthController extends Controller
 
             // Issue a 30-day mobile access token so the app can sign the patient
             // straight in — same token shape as loginWithCredentials()/verifyOtp().
-            $rawToken = 'pat_' . Str::random(40);
-            PatientAccessToken::create([
-                'patient_id'   => $patient->id,
-                'token_hash'   => Hash::make($rawToken),
-                'token_prefix' => substr($rawToken, 0, 12),
-                'expires_at'   => Carbon::now()->addDays(30),
-            ]);
+            $rawToken = $this->issueToken($patient->id);
 
             return [$patient, $rawToken];
         });
@@ -328,8 +392,13 @@ class MobileAuthController extends Controller
     }
 
     /**
-     * Refresh an existing token, issuing a new 30-day token.
-     * Accepts both valid and recently-expired tokens (up to 7 days grace).
+     * Exchange a token for a fresh 30-day one. Single-use: the presented token
+     * is revoked in the same transaction that mints its successor, under a row
+     * lock, so a replayed or raced refresh gets 401.
+     *
+     * Lookup is by SHA-256 of the full bearer (same as AuthenticateMobilePatient);
+     * the 12-char prefix path survives only for legacy rows with no lookup hash.
+     * An expired token is accepted for REFRESH_GRACE_HOURS (48 h), down from 7 days.
      *
      * POST /mobile/auth/refresh
      * Body: { token } or Authorization: Bearer <token>
@@ -338,39 +407,50 @@ class MobileAuthController extends Controller
     {
         $bearer = $request->bearerToken() ?? $request->input('token');
 
-        if (!$bearer) {
+        if (! is_string($bearer) || $bearer === '') {
             return response()->json(['message' => __('api.no_token_provided')], 401);
         }
 
-        $prefix = substr($bearer, 0, 12);
+        $graceFloor = Carbon::now()->subHours(self::REFRESH_GRACE_HOURS);
 
-        // Allow tokens expired within the last 7 days (grace period for refresh)
-        $token = PatientAccessToken::where('token_prefix', $prefix)
-            ->where('expires_at', '>', Carbon::now()->subDays(7))
-            ->first();
+        $result = DB::transaction(function () use ($bearer, $graceFloor) {
+            $token = PatientAccessToken::where('token_lookup_hash', hash('sha256', $bearer))
+                ->where('expires_at', '>', $graceFloor)
+                ->lockForUpdate()
+                ->first();
 
-        if (!$token || !Hash::check($bearer, $token->token_hash)) {
+            if (! $token) {
+                $token = PatientAccessToken::where('token_prefix', substr($bearer, 0, 12))
+                    ->whereNull('token_lookup_hash')
+                    ->where('expires_at', '>', $graceFloor)
+                    ->lockForUpdate()
+                    ->first();
+            }
+
+            if (! $token || ! Hash::check($bearer, $token->token_hash)) {
+                return null;
+            }
+
+            // Revoke first; if another request already consumed it, nothing is deleted.
+            if (PatientAccessToken::whereKey($token->getKey())->delete() !== 1) {
+                return null;
+            }
+
+            return [$token->patient_id, $this->issueToken($token->patient_id)];
+        });
+
+        if ($result === null) {
             return response()->json(['message' => __('api.token_too_old')], 401);
         }
 
-        // Revoke old token
-        $token->delete();
-
-        // Issue a fresh 30-day token
-        $rawToken = 'pat_' . Str::random(40);
-        PatientAccessToken::create([
-            'patient_id'   => $token->patient_id,
-            'token_hash'   => Hash::make($rawToken),
-            'token_prefix' => substr($rawToken, 0, 12),
-            'expires_at'   => Carbon::now()->addDays(30),
-        ]);
+        [$patientId, $rawToken] = $result;
 
         return response()->json([
             'status'       => 'refreshed',
             'access_token' => $rawToken,
             'token_type'   => 'Bearer',
-            'expires_in'   => 2592000,
-            'patient_id'   => $token->patient_id,
+            'expires_in'   => self::TOKEN_TTL_DAYS * 86400,
+            'patient_id'   => $patientId,
         ], 200);
     }
 
@@ -474,10 +554,32 @@ class MobileAuthController extends Controller
                 "Your OpesCare verification code is: {$otp}. Valid for 10 minutes."
             );
         } catch (\Throwable $e) {
+            // Never the number or the code: patient id + masked tail only.
             \Illuminate\Support\Facades\Log::warning('OpesCare SMS delivery failed', [
-                'phone' => $patient->phone_number,
-                'error' => $e->getMessage(),
+                'patient_id' => $patient->id,
+                'phone'      => SmsNotificationService::maskPhone($patient->phone_number),
+                'error'      => SmsNotificationService::redactBody($e->getMessage()),
             ]);
         }
+    }
+
+    /**
+     * Mint a patient access token. Every path (OTP, email, register, refresh)
+     * goes through here so each row carries the full-entropy lookup hash and
+     * is found by AuthenticateMobilePatient's primary path, never the prefix.
+     */
+    private function issueToken(string $patientId): string
+    {
+        $rawToken = 'pat_' . Str::random(40);
+
+        PatientAccessToken::forceCreate([
+            'patient_id'        => $patientId,
+            'token_hash'        => Hash::make($rawToken),
+            'token_prefix'      => substr($rawToken, 0, 12),
+            'token_lookup_hash' => hash('sha256', $rawToken),
+            'expires_at'        => Carbon::now()->addDays(self::TOKEN_TTL_DAYS),
+        ]);
+
+        return $rawToken;
     }
 }

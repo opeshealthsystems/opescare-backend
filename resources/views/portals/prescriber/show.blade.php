@@ -1,8 +1,5 @@
 @extends('layouts.portal')
 @section('title', __('prescriber.detail_title'))
-@section('breadcrumb_home', __('prescriber.title'))
-@section('breadcrumb_home_url', route('portals.prescriber.index'))
-@section('breadcrumb_section', __('prescriber.detail_title'))
 
 @section('head')
 <link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">

@@ -266,7 +266,6 @@ return array(
     'App\\Http\\Middleware\\RequireApiAdminRole' => $baseDir . '/app/Http/Middleware/RequireApiAdminRole.php',
     'App\\Http\\Middleware\\RequireCompleteGuardianProfile' => $baseDir . '/app/Http/Middleware/RequireCompleteGuardianProfile.php',
     'App\\Http\\Middleware\\RequireCompletePatientProfile' => $baseDir . '/app/Http/Middleware/RequireCompletePatientProfile.php',
-    'App\\Http\\Middleware\\RequireConsentGrant' => $baseDir . '/app/Http/Middleware/RequireConsentGrant.php',
     'App\\Http\\Middleware\\RequireFacilityContext' => $baseDir . '/app/Http/Middleware/RequireFacilityContext.php',
     'App\\Http\\Middleware\\RequirePlatformAdmin' => $baseDir . '/app/Http/Middleware/RequirePlatformAdmin.php',
     'App\\Http\\Middleware\\RequireStaffCapability' => $baseDir . '/app/Http/Middleware/RequireStaffCapability.php',

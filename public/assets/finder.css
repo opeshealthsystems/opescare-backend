@@ -329,7 +329,7 @@ select.f-input { appearance: none; padding-right: 38px; background-image: url("d
 
 /* Desktop inline nav — hidden on mobile */
 .f-nav { display: none; }
-@media (min-width: 961px) {
+@media (min-width: 1300px) {
   .f-nav { display: flex; align-items: center; gap: 2px; }
   .f-nav a {
     display: inline-flex;
@@ -350,7 +350,7 @@ select.f-input { appearance: none; padding-right: 38px; background-image: url("d
 
 /* Header login — desktop only; on mobile it lives in the nav panel CTA */
 .f-nav__login { display: none; }
-@media (min-width: 961px) { .f-nav__login { display: inline-flex; } }
+@media (min-width: 1300px) { .f-nav__login { display: inline-flex; } }
 
 /* Burger — mobile/tablet only */
 .f-burger {
@@ -370,8 +370,25 @@ select.f-input { appearance: none; padding-right: 38px; background-image: url("d
 .f-nav-toggle:checked ~ .f-header .f-burger .f-burger__open { display: none; }
 .f-nav-toggle:checked ~ .f-header .f-burger .f-burger__close { display: block; }
 .f-nav-toggle:focus-visible ~ .f-header .f-burger { outline: 3px solid var(--f-brand); outline-offset: 2px; }
-@media (min-width: 961px) {
+@media (min-width: 1300px) {
   .f-burger { display: none; }
+}
+
+/* Desktop nav breakpoint (web audit 2026-10-19): the inline nav needs
+   ~1200px in English and ~1650px in French, more than the 1100px content
+   column. The header row gets a wider track and the inline nav only shows
+   where it fits; below that the burger panel carries the links. */
+@media (min-width: 1300px) {
+  .f-header__row { max-width: 1320px; }
+}
+@media (min-width: 1300px) and (max-width: 1759px) {
+  html:lang(fr) .f-nav,
+  html:lang(fr) .f-nav__login { display: none; }
+  html:lang(fr) .f-burger { display: inline-flex; }
+  html:lang(fr) .f-nav-toggle:checked ~ .f-nav-panel { display: flex !important; }
+}
+@media (min-width: 1760px) {
+  html:lang(fr) .f-header__row { max-width: 1720px; }
 }
 
 /* Full-screen mobile panel */
@@ -413,7 +430,11 @@ body:has(.f-nav-toggle:checked) { overflow: hidden; }
 }
 .f-nav-panel__label .f-icon { color: var(--f-brand); }
 .f-nav-panel__cta { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
-@media (min-width: 961px) {
+/* The panel's row style (.f-nav-panel a) out-ranks .f-btn--primary: keep the
+   CTA a centred button with white text on brand blue. */
+.f-nav-panel .f-nav-panel__cta a.f-btn { justify-content: center; color: #FFFFFF; border-bottom: 0; font-size: 1rem; min-height: 52px; }
+.f-nav-panel .f-nav-panel__cta a.f-btn .f-icon { color: currentColor; }
+@media (min-width: 1300px) {
   .f-nav-panel { display: none !important; }
 }
 
@@ -473,4 +494,26 @@ body:has(.f-nav-toggle:checked) { overflow: hidden; }
     scroll-behavior: auto !important;
   }
   .f-skeleton::after { animation: none; }
+}
+
+/* ── Search loading state (public/js/finder-loading.js) ─────────────── */
+.f-loading-status {
+  position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%);
+  z-index: 400; display: inline-flex; align-items: center; gap: 10px;
+  padding: 10px 16px; border-radius: 9999px;
+  background: var(--f-ink, #0F2340); color: #fff;
+  font-size: 0.9rem; font-weight: 600; box-shadow: 0 6px 24px rgba(15, 35, 64, .25);
+}
+.f-loading-status:empty { width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; box-shadow: none; }
+.f-loading-status:empty::before { display: none; }
+.f-loading-status::before,
+button.is-loading::before {
+  content: ""; width: 16px; height: 16px; flex-shrink: 0;
+  border: 2px solid currentColor; border-right-color: transparent;
+  border-radius: 50%; animation: f-spin .7s linear infinite;
+}
+button.is-loading { cursor: progress; opacity: .85; display: inline-flex; align-items: center; gap: 8px; }
+@keyframes f-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .f-loading-status::before, button.is-loading::before { animation-duration: 2.4s; }
 }

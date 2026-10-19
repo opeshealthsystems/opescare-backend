@@ -1,7 +1,6 @@
 @extends('layouts.portal')
 
 @section('title', __('notifications_ui.center_title', [], app()->getLocale()))
-@section('breadcrumb_section', __('notifications_ui.center_title', [], app()->getLocale()))
 
 @section('head')
 <link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">

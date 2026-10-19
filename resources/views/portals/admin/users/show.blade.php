@@ -1,9 +1,6 @@
 @extends('layouts.portal')
 @section('title', 'User: ' . $user->name)
 @include('portals.admin.control_center._sidebar')
-@section('breadcrumb_home', 'Admin')
-@section('breadcrumb_home_url', route('portals.admin'))
-@section('breadcrumb_section', __('public.adm_users_idx_breadcrumb_section'))
 @section('head')<link rel="stylesheet" href="{{ asset('css/od-admin.css') }}?v={{ @filemtime(public_path('css/od-admin.css')) ?: '1' }}">@endsection
 @php
     $gcTones = ['blue', 'amber', 'teal', 'rose', 'sky', 'green'];
@@ -13,7 +10,7 @@
 @section('content')
 <div class="od-page">
 
-<nav class="oda-gc-crumbs" aria-label="breadcrumb">
+<nav class="oda-gc-crumbs" aria-label="{{ __('od.breadcrumb') }}">
     <a href="{{ route('admin.users.index') }}">{{ __('public.adm_users_show_breadcrumb_users') }}</a>
     <i data-lucide="chevron-right"></i>
     <span>{{ $user->name }}</span>

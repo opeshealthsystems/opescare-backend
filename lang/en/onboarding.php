@@ -241,6 +241,8 @@ return [
         'step_4' => 'Clinical Services',
         'step_5' => 'Documents Upload',
         'step_6' => 'Integration Context',
+        'step_7' => 'Governance Agreement',
+        'step_counter' => 'Step :current of :total',
         
         'type_lbl' => 'Organization Category',
         'software_sync_lbl' => 'Is this organization already using clinical or administrative software?',
@@ -289,6 +291,8 @@ return [
         ],
         
         'variants' => [
+            'hospital_notice' => 'Default clinical review active.',
+            'clinic_notice' => 'Default clinic verification rules apply.',
             'hospital_msg' => 'Register your hospital to use Health IDs, patient timelines, consent workflows, emergency access, referrals, billing, pharmacy, laboratory, and interoperability tools.',
             'clinic_msg' => 'Register your clinic to manage patient Health IDs, visits, prescriptions, lab results, referrals, and approved record sharing.',
             'pharmacy_msg' => 'Register your pharmacy to support prescription dispensing, medication history, medicine availability, and safe stock synchronization.',

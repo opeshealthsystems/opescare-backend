@@ -2,8 +2,6 @@
 
 @section('title', __('public.staff_portal.dashboard_title', [], app()->getLocale()))
 
-@section('breadcrumb_home', __('public.staff_portal.title', [], app()->getLocale()))
-@section('breadcrumb_home_url', route('portals.staff'))
 
 @section('head')
     <link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">

@@ -2,9 +2,6 @@
 
 @section('title', __('public.portal.nav_appointments', [], app()->getLocale()))
 
-@section('breadcrumb_home', __('public.staff_portal.title', [], app()->getLocale()))
-@section('breadcrumb_home_url', route('portals.staff'))
-@section('breadcrumb_section', __('public.portal.nav_appointments', [], app()->getLocale()))
 
 @section('head')
 <link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">

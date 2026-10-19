@@ -1,14 +1,12 @@
-<!DOCTYPE html>
-<html lang="{{ app()->getLocale() }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ __('public.portal.invite_accept_title') }}</title>
-    <meta name="theme-color" content="#0F4C81">
-    <link rel="stylesheet" href="{{ asset('assets/finder.css') }}">
-</head>
-<body>
-<main class="ods-b5553ba">
+@extends('layouts.finder')
+@section('title', __('public.portal.invite_accept_title'))
+@push('head')
+<link rel="stylesheet" href="{{ asset('css/od-patient.css') }}?v={{ @filemtime(public_path('css/od-patient.css')) ?: '1' }}">
+<style>.fam-invite { display: flex; justify-content: center; padding: 48px 16px 64px; }</style>
+@endpush
+
+@section('content')
+<div class="fam-invite">
     <div class="f-card ods-93f49cc">
         @if($error)
             <div class="ods-c06b534">
@@ -39,6 +37,5 @@
             </form>
         @endif
     </div>
-</main>
-</body>
-</html>
+</div>
+@endsection
