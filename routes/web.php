@@ -34,6 +34,9 @@ Route::prefix('docs')->name('docs.')->group(function () {
     Route::get('/errors',        [DocsController::class, 'errors'])->name('errors');
     Route::get('/playground',    [DocsController::class, 'playground'])->name('playground');
     Route::get('/changelog',     [DocsController::class, 'changelog'])->name('changelog');
+    Route::get('/architecture',  [DocsController::class, 'architecture'])->name('architecture');
+    Route::get('/flows/{flow}',  [DocsController::class, 'flow'])
+        ->whereIn('flow', \App\Support\Docs\DocsDiagrams::FLOWS)->name('flows');
 });
 
 // ── OAuth 2.0 / OIDC discovery (public, no auth, cacheable) ─────────────────

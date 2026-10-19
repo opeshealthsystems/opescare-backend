@@ -21,7 +21,7 @@
 <h2 id="base">Base URL</h2>
 <div class="docs-code-block">
     <div class="docs-code-tabs"><button class="docs-code-tab active" data-lang="text">URL</button></div>
-    <div class="docs-code-pane active" data-lang="text"><pre>https://opescare.test/api/v1/connect</pre></div>
+    <div class="docs-code-pane active" data-lang="text"><pre>{{ $docsBase }}/api/v1/connect</pre></div>
 </div>
 
 <h2 id="auth-endpoint">Step 1 — Get a Token</h2>
@@ -72,7 +72,7 @@
     </div>
     <div class="docs-code-pane" data-lang="curl">
 <pre># Case A — patient has no Health ID yet (auto-creates)
-curl -X POST https://opescare.test/api/v1/connect/patients/resolve \
+curl -X POST {{ $docsBase }}/api/v1/connect/patients/resolve \
   -H "Authorization: Bearer {access_token}" \
   -H "Content-Type: application/json" \
   -d '{
@@ -86,14 +86,14 @@ curl -X POST https://opescare.test/api/v1/connect/patients/resolve \
   }'
 
 # Case B — patient already has a Health ID (lookup only)
-curl -X POST https://opescare.test/api/v1/connect/patients/resolve \
+curl -X POST {{ $docsBase }}/api/v1/connect/patients/resolve \
   -H "Authorization: Bearer {access_token}" \
   -H "Content-Type: application/json" \
   -d '{"health_id": "CM-HID-7KQ9-MP42-X8D1"}'</pre>
     </div>
     <div class="docs-code-pane" data-lang="php">
 <pre>$response = Http::withToken($accessToken)
-    ->post('https://opescare.test/api/v1/connect/patients/resolve', [
+    ->post('{{ $docsBase }}/api/v1/connect/patients/resolve', [
         'first_name'         => 'Marie',
         'last_name'          => 'Fouda',
         'date_of_birth'      => '1990-07-22',
@@ -108,7 +108,7 @@ $status   = $response['status'];     // 'found' or 'created'</pre>
     </div>
     <div class="docs-code-pane" data-lang="js">
 <pre>const res = await fetch(
-  'https://opescare.test/api/v1/connect/patients/resolve',
+  '{{ $docsBase }}/api/v1/connect/patients/resolve',
   {
     method: 'POST',
     headers: {
@@ -133,7 +133,7 @@ const healthId = res.health_id;
     </div>
     <div class="docs-code-pane" data-lang="python">
 <pre>resp = requests.post(
-    'https://opescare.test/api/v1/connect/patients/resolve',
+    '{{ $docsBase }}/api/v1/connect/patients/resolve',
     json={
         'first_name': 'Marie',
         'last_name': 'Fouda',
@@ -164,7 +164,7 @@ health_id = data['health_id']</pre>
 <div class="docs-code-block">
     <div class="docs-code-tabs"><button class="docs-code-tab active" data-lang="curl">cURL</button></div>
     <div class="docs-code-pane active" data-lang="curl">
-<pre>curl "https://opescare.test/api/v1/connect/patients/verify/CM-HID-7KQ9-MP42-X8D1" \
+<pre>curl "{{ $docsBase }}/api/v1/connect/patients/verify/CM-HID-7KQ9-MP42-X8D1" \
   -H "Authorization: Bearer {access_token}"</pre>
     </div>
 </div>
@@ -193,31 +193,31 @@ health_id = data['health_id']</pre>
         <button class="docs-code-tab" data-lang="java">Java</button>
     </div>
     <div class="docs-code-pane" data-lang="curl">
-<pre>curl "https://opescare.test/api/v1/connect/patient/search?health_id=OPC-2024-XK7T9" \
+<pre>curl "{{ $docsBase }}/api/v1/connect/patient/search?health_id=OPC-2024-XK7T9" \
   -H "Authorization: Bearer {access_token}"</pre>
     </div>
     <div class="docs-code-pane" data-lang="php">
 <pre>$patient = Http::withToken($accessToken)
-    ->get('https://opescare.test/api/v1/connect/patient/search', [
+    ->get('{{ $docsBase }}/api/v1/connect/patient/search', [
         'health_id' =&gt; 'OPC-2024-XK7T9',
     ])->json();</pre>
     </div>
     <div class="docs-code-pane" data-lang="js">
 <pre>const patient = await fetch(
-  'https://opescare.test/api/v1/connect/patient/search?health_id=OPC-2024-XK7T9',
+  '{{ $docsBase }}/api/v1/connect/patient/search?health_id=OPC-2024-XK7T9',
   { headers: { Authorization: `Bearer ${accessToken}` } }
 ).then(r => r.json());</pre>
     </div>
     <div class="docs-code-pane" data-lang="python">
 <pre>patient = requests.get(
-    'https://opescare.test/api/v1/connect/patient/search',
+    '{{ $docsBase }}/api/v1/connect/patient/search',
     params={'health_id': 'OPC-2024-XK7T9'},
     headers={'Authorization': f'Bearer {access_token}'}
 ).json()</pre>
     </div>
     <div class="docs-code-pane" data-lang="java">
 <pre>HttpRequest req = HttpRequest.newBuilder()
-    .uri(URI.create("https://opescare.test/api/v1/connect/patient/search?health_id=OPC-2024-XK7T9"))
+    .uri(URI.create("{{ $docsBase }}/api/v1/connect/patient/search?health_id=OPC-2024-XK7T9"))
     .header("Authorization", "Bearer " + accessToken)
     .GET().build();</pre>
     </div>
@@ -244,7 +244,7 @@ health_id = data['health_id']</pre>
         <button class="docs-code-tab" data-lang="python">Python</button>
     </div>
     <div class="docs-code-pane" data-lang="curl">
-<pre>curl -X POST "https://opescare.test/api/v1/connect/patient/OPC-2024-XK7T9/consent/grant" \
+<pre>curl -X POST "{{ $docsBase }}/api/v1/connect/patient/OPC-2024-XK7T9/consent/grant" \
   -H "Authorization: Bearer {access_token}" \
   -H "Content-Type: application/json" \
   -d '{
@@ -254,14 +254,14 @@ health_id = data['health_id']</pre>
     </div>
     <div class="docs-code-pane" data-lang="php">
 <pre>Http::withToken($accessToken)
-    ->post('https://opescare.test/api/v1/connect/patient/OPC-2024-XK7T9/consent/grant', [
+    ->post('{{ $docsBase }}/api/v1/connect/patient/OPC-2024-XK7T9/consent/grant', [
         'consent_type' =&gt; 'full_record',
         'expires_at'   =&gt; '2026-12-31T23:59:59Z',
     ]);</pre>
     </div>
     <div class="docs-code-pane" data-lang="python">
 <pre>requests.post(
-    'https://opescare.test/api/v1/connect/patient/OPC-2024-XK7T9/consent/grant',
+    '{{ $docsBase }}/api/v1/connect/patient/OPC-2024-XK7T9/consent/grant',
     headers={'Authorization': f'Bearer {access_token}'},
     json={'consent_type': 'full_record', 'expires_at': '2026-12-31T23:59:59Z'}
 )</pre>

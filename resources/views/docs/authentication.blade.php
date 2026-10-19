@@ -36,7 +36,7 @@
         <button class="docs-code-tab" data-lang="java">Java</button>
     </div>
     <div class="docs-code-pane" data-lang="curl">
-<pre>curl -X POST https://opescare.test/api/v1/connect/auth/token \
+<pre>curl -X POST {{ $docsBase }}/api/v1/connect/auth/token \
   -H "Content-Type: application/json" \
   -d '{
     "grant_type":    "client_credentials",
@@ -47,7 +47,7 @@
     <div class="docs-code-pane" data-lang="php">
 <pre>use Illuminate\Support\Facades\Http;
 
-$response = Http::post('https://opescare.test/api/v1/connect/auth/token', [
+$response = Http::post('{{ $docsBase }}/api/v1/connect/auth/token', [
     'grant_type'    =&gt; 'client_credentials',
     'client_id'     =&gt; env('OPESCARE_CLIENT_ID'),
     'client_secret' =&gt; env('OPESCARE_CLIENT_SECRET'),
@@ -58,7 +58,7 @@ $expiresIn   = $response->json('expires_in'); // 3600 seconds</pre>
     </div>
     <div class="docs-code-pane" data-lang="js">
 <pre>async function getToken() {
-  const res = await fetch('https://opescare.test/api/v1/connect/auth/token', {
+  const res = await fetch('{{ $docsBase }}/api/v1/connect/auth/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -75,7 +75,7 @@ $expiresIn   = $response->json('expires_in'); // 3600 seconds</pre>
 <pre>import requests, os
 
 def get_token() -> str:
-    resp = requests.post('https://opescare.test/api/v1/connect/auth/token', json={
+    resp = requests.post('{{ $docsBase }}/api/v1/connect/auth/token', json={
         'grant_type':    'client_credentials',
         'client_id':     os.environ['OPESCARE_CLIENT_ID'],
         'client_secret': os.environ['OPESCARE_CLIENT_SECRET'],
@@ -93,7 +93,7 @@ String body = String.format(
     System.getenv("OPESCARE_CLIENT_SECRET")
 );
 HttpRequest request = HttpRequest.newBuilder()
-    .uri(URI.create("https://opescare.test/api/v1/connect/auth/token"))
+    .uri(URI.create("{{ $docsBase }}/api/v1/connect/auth/token"))
     .header("Content-Type", "application/json")
     .POST(HttpRequest.BodyPublishers.ofString(body))
     .build();
@@ -118,7 +118,7 @@ var response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandler
 <div class="docs-code-block">
     <div class="docs-code-tabs"><button class="docs-code-tab active" data-lang="curl">cURL</button></div>
     <div class="docs-code-pane active" data-lang="curl">
-<pre>curl https://opescare.test/api/fhir/R4/metadata \
+<pre>curl {{ $docsBase }}/api/fhir/R4/metadata \
   -H "Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."</pre>
     </div>
 </div>
@@ -227,7 +227,7 @@ client = OpesCareClient(
         <button class="docs-code-tab" data-lang="python">Python</button>
     </div>
     <div class="docs-code-pane" data-lang="curl">
-<pre>curl -X POST https://opescare.test/api/v1/bridge/heartbeat \
+<pre>curl -X POST {{ $docsBase }}/api/v1/bridge/heartbeat \
   -H "X-Bridge-Agent-ID: YOUR_AGENT_ID" \
   -H "X-Bridge-Agent-Key: YOUR_AGENT_KEY" \
   -H "X-Bridge-Timestamp: 1717228800" \
@@ -239,7 +239,7 @@ client = OpesCareClient(
     'X-Bridge-Agent-ID'  =&gt; env('BRIDGE_AGENT_ID'),
     'X-Bridge-Agent-Key' =&gt; env('BRIDGE_AGENT_KEY'),
     'X-Bridge-Timestamp' =&gt; time(),
-])->post('https://opescare.test/api/v1/bridge/heartbeat', [
+])->post('{{ $docsBase }}/api/v1/bridge/heartbeat', [
     'agent_id'    =&gt; env('BRIDGE_AGENT_ID'),
     'facility_id' =&gt; env('BRIDGE_FACILITY_ID'),
     'version'     =&gt; '1.0.0',
@@ -248,7 +248,7 @@ client = OpesCareClient(
     <div class="docs-code-pane" data-lang="python">
 <pre>import requests, os, time
 
-requests.post('https://opescare.test/api/v1/bridge/heartbeat',
+requests.post('{{ $docsBase }}/api/v1/bridge/heartbeat',
     headers={
         'X-Bridge-Agent-ID':  os.environ['BRIDGE_AGENT_ID'],
         'X-Bridge-Agent-Key': os.environ['BRIDGE_AGENT_KEY'],

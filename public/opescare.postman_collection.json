@@ -5831,6 +5831,26 @@
                     }
                 },
                 {
+                    "name": "Show",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/mobile/medicines/{medicine}/image",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "mobile",
+                                "medicines",
+                                "{medicine}",
+                                "image"
+                            ]
+                        }
+                    }
+                },
+                {
                     "name": "Recipients",
                     "request": {
                         "method": "GET",
@@ -6985,6 +7005,27 @@
                                 "mobile",
                                 "pharmacy",
                                 "nearby"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Pharmacy Stock",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/mobile/pharmacy/pharmacies/{id}/stock",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "mobile",
+                                "pharmacy",
+                                "pharmacies",
+                                "{id}",
+                                "stock"
                             ]
                         }
                     }
@@ -8221,7 +8262,7 @@
     "variable": [
         {
             "key": "baseUrl",
-            "value": "https://api.opescare.com"
+            "value": "https://opescare.com"
         },
         {
             "key": "bearerToken",

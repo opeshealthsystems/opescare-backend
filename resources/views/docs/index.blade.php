@@ -22,17 +22,23 @@
     </div>
 </div>
 
-<h2 id="base-urls">Base URLs</h2>
+<h2 id="base-urls">{{ __('docs_ui.base.h') }}</h2>
 
 <table class="docs-table">
     <thead>
-        <tr><th>Environment</th><th>Base URL</th><th>Access</th></tr>
+        <tr><th>{{ __('docs_ui.base.environment') }}</th><th>{{ __('docs_ui.base.base_url') }}</th><th>{{ __('docs_ui.base.access') }}</th></tr>
     </thead>
     <tbody>
-        <tr><td>Sandbox</td><td><code>https://opescare.test/api/v1</code></td><td>Open — use sandbox credentials below</td></tr>
-        <tr><td>Production</td><td><code>https://api.opescare.health/v1</code></td><td>Requires approved developer account</td></tr>
+        <tr><td>{{ __('docs_ui.base.production') }}</td><td><code>{{ $docsBase }}/api/v1</code></td><td>{{ __('docs_ui.base.prod_access') }}</td></tr>
+        <tr><td>{{ __('docs_ui.base.sandbox') }}</td><td><code>{{ $docsBase }}/api/v1</code></td><td>{{ __('docs_ui.base.sandbox_access') }}</td></tr>
     </tbody>
 </table>
+
+<p>{{ __('docs_ui.base.same_host') }}</p>
+
+<h2 id="architecture">{{ __('docs_ui.arch.title') }}</h2>
+<p>{{ __('docs_ui.arch.lead', ['host' => parse_url($docsBase, PHP_URL_HOST)]) }} <a href="{{ route('docs.architecture') }}">{{ __('docs_ui.nav.platform_overview') }}</a></p>
+@include('docs.diagrams.overview')
 
 <h2 id="sandbox-credentials">Sandbox Credentials</h2>
 
@@ -55,29 +61,9 @@
     </tbody>
 </table>
 
-<h2 id="production-credentials">Production Credentials — OpesCare HIS</h2>
+<h2 id="production-credentials">{{ __('docs_ui.base.prod_creds_h') }}</h2>
 
-<p>For the production integration with <strong>OpesCare HIS</strong>, use the credentials below. These are fully approved with access to Health ID resolution, patient data read, and clinical record push.</p>
-
-<table class="docs-table">
-    <thead>
-        <tr><th>Field</th><th>Value</th></tr>
-    </thead>
-    <tbody>
-        <tr><td><code>client_id</code></td><td><code>opeshisos_production</code></td></tr>
-        <tr><td><code>client_secret</code></td><td><code>prod_secret_opeshisos_2026</code></td></tr>
-        <tr><td><code>environment</code></td><td><code>production</code></td></tr>
-        <tr><td>Approved scopes</td><td>
-            <code>health_id:verify</code> &nbsp;
-            <code>patient:read</code> &nbsp;
-            <code>encounter:push</code> &nbsp;
-            <code>lab:push</code> &nbsp;
-            <code>prescription:push</code> &nbsp;
-            <code>facility:sync</code>
-        </td></tr>
-        <tr><td>Key endpoint</td><td><code>POST /api/v1/connect/patients/resolve</code> — find or auto-create Health ID</td></tr>
-    </tbody>
-</table>
+<p>{{ __('docs_ui.base.prod_creds') }}</p>
 
 <div class="docs-callout info">
     <i data-lucide="info" class="docs-icon"></i>
@@ -99,7 +85,7 @@
         <button class="docs-code-tab" data-lang="java">Java</button>
     </div>
     <div class="docs-code-pane" data-lang="curl">
-<pre>curl -X POST https://opescare.test/api/v1/connect/auth/token \
+<pre>curl -X POST {{ $docsBase }}/api/v1/connect/auth/token \
   -H "Content-Type: application/json" \
   -d '{
     "grant_type": "client_credentials",
@@ -111,7 +97,7 @@
     <div class="docs-code-pane" data-lang="php">
 <pre>&lt;?php
 // Laravel / Guzzle example
-$response = Http::post('https://opescare.test/api/v1/connect/auth/token', [
+$response = Http::post('{{ $docsBase }}/api/v1/connect/auth/token', [
     'grant_type'    =&gt; 'client_credentials',
     'client_id'     =&gt; 'demo_dev_sandbox',
     'client_secret' =&gt; 'demo_secret_sandbox_2026',
@@ -120,7 +106,7 @@ $response = Http::post('https://opescare.test/api/v1/connect/auth/token', [
 $token = $response->json('access_token');</pre>
     </div>
     <div class="docs-code-pane" data-lang="js">
-<pre>const res = await fetch('https://opescare.test/api/v1/connect/auth/token', {
+<pre>const res = await fetch('{{ $docsBase }}/api/v1/connect/auth/token', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -135,7 +121,7 @@ const { access_token } = await res.json();</pre>
     <div class="docs-code-pane" data-lang="python">
 <pre>import requests
 
-resp = requests.post('https://opescare.test/api/v1/connect/auth/token', json={
+resp = requests.post('{{ $docsBase }}/api/v1/connect/auth/token', json={
     'grant_type': 'client_credentials',
     'client_id': 'demo_dev_sandbox',
     'client_secret': 'demo_secret_sandbox_2026',
@@ -157,7 +143,7 @@ String body = """
     }
     """;
 HttpRequest request = HttpRequest.newBuilder()
-    .uri(URI.create("https://opescare.test/api/v1/connect/auth/token"))
+    .uri(URI.create("{{ $docsBase }}/api/v1/connect/auth/token"))
     .header("Content-Type", "application/json")
     .POST(HttpRequest.BodyPublishers.ofString(body))
     .build();
@@ -188,31 +174,31 @@ HttpResponse&lt;String&gt; response = client.send(request, HttpResponse.BodyHand
         <button class="docs-code-tab" data-lang="java">Java</button>
     </div>
     <div class="docs-code-pane" data-lang="curl">
-<pre>curl "https://opescare.test/api/v1/connect/patient/search?health_id=OPC-2024-DEMO1" \
+<pre>curl "{{ $docsBase }}/api/v1/connect/patient/search?health_id=OPC-2024-DEMO1" \
   -H "Authorization: Bearer {access_token}"</pre>
     </div>
     <div class="docs-code-pane" data-lang="php">
 <pre>$patient = Http::withToken($token)
-    ->get('https://opescare.test/api/v1/connect/patient/search', [
+    ->get('{{ $docsBase }}/api/v1/connect/patient/search', [
         'health_id' =&gt; 'OPC-2024-DEMO1',
     ])->json();</pre>
     </div>
     <div class="docs-code-pane" data-lang="js">
 <pre>const patient = await fetch(
-  'https://opescare.test/api/v1/connect/patient/search?health_id=OPC-2024-DEMO1',
+  '{{ $docsBase }}/api/v1/connect/patient/search?health_id=OPC-2024-DEMO1',
   { headers: { 'Authorization': `Bearer ${access_token}` } }
 ).then(r => r.json());</pre>
     </div>
     <div class="docs-code-pane" data-lang="python">
 <pre>patient = requests.get(
-    'https://opescare.test/api/v1/connect/patient/search',
+    '{{ $docsBase }}/api/v1/connect/patient/search',
     params={'health_id': 'OPC-2024-DEMO1'},
     headers={'Authorization': f'Bearer {access_token}'}
 ).json()</pre>
     </div>
     <div class="docs-code-pane" data-lang="java">
 <pre>HttpRequest req = HttpRequest.newBuilder()
-    .uri(URI.create("https://opescare.test/api/v1/connect/patient/search?health_id=OPC-2024-DEMO1"))
+    .uri(URI.create("{{ $docsBase }}/api/v1/connect/patient/search?health_id=OPC-2024-DEMO1"))
     .header("Authorization", "Bearer " + accessToken)
     .GET().build();
 HttpResponse&lt;String&gt; res = client.send(req, HttpResponse.BodyHandlers.ofString());</pre>

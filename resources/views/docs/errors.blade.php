@@ -74,7 +74,7 @@
     </div>
     <div class="docs-code-pane" data-lang="php">
 <pre>$response = Http::withToken($token)
-    ->get('https://opescare.test/api/v1/connect/patient/search', [
+    ->get('{{ $docsBase }}/api/v1/connect/patient/search', [
         'health_id' =&gt; $healthId,
     ]);
 
@@ -82,7 +82,7 @@ if ($response->status() === 401) {
     // Re-fetch token and retry once
     $token    = getNewToken();
     $response = Http::withToken($token)
-        ->get('https://opescare.test/api/v1/connect/patient/search', [
+        ->get('{{ $docsBase }}/api/v1/connect/patient/search', [
             'health_id' =&gt; $healthId,
         ]);
 }
@@ -99,7 +99,7 @@ $patient = $response->json();</pre>
     <div class="docs-code-pane" data-lang="js">
 <pre>async function searchPatient(healthId, token) {
   const res = await fetch(
-    `https://opescare.test/api/v1/connect/patient/search?health_id=${healthId}`,
+    `{{ $docsBase }}/api/v1/connect/patient/search?health_id=${healthId}`,
     { headers: { Authorization: `Bearer ${token}` } }
   );
 
@@ -123,7 +123,7 @@ import requests
 
 def search_patient(health_id: str, token: str, retry: int = 1):
     resp = requests.get(
-        'https://opescare.test/api/v1/connect/patient/search',
+        '{{ $docsBase }}/api/v1/connect/patient/search',
         params={'health_id': health_id},
         headers={'Authorization': f'Bearer {token}'},
     )

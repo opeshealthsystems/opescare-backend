@@ -53,7 +53,7 @@ opescare-bridge --help</pre>
     <div class="docs-code-tabs"><button class="docs-code-tab active" data-lang="json">bridge_config.json</button></div>
     <div class="docs-code-pane active" data-lang="json">
 <pre>{
-  "server_url":   "https://api.opescare.com",
+  "server_url":   "{{ $docsBase }}",
   "agent_id":     "YOUR_AGENT_ID_FROM_OPESCARE_ADMIN",
   "agent_key":    "SET_VIA_OPESCARE_AGENT_KEY_ENV_VAR",
   "facility_id":  "YOUR_FACILITY_UUID",
@@ -115,7 +115,7 @@ opescare-bridge --config bridge_config.json</pre>
         <button class="docs-code-tab" data-lang="python">Python</button>
     </div>
     <div class="docs-code-pane" data-lang="curl">
-<pre>curl -X POST https://opescare.test/api/v1/bridge/sync \
+<pre>curl -X POST {{ $docsBase }}/api/v1/bridge/sync \
   -H "X-Bridge-Agent-ID: YOUR_AGENT_ID" \
   -H "X-Bridge-Agent-Key: YOUR_AGENT_KEY" \
   -H "X-Bridge-Timestamp: $(date +%s)" \
@@ -142,7 +142,7 @@ opescare-bridge --config bridge_config.json</pre>
     'X-Bridge-Agent-Key' =&gt; env('BRIDGE_AGENT_KEY'),
     'X-Bridge-Timestamp' =&gt; time(),
     'Idempotency-Key'    =&gt; 'sync-' . \Str::uuid(),
-])->post('https://opescare.test/api/v1/bridge/sync', [
+])->post('{{ $docsBase }}/api/v1/bridge/sync', [
     'agent_id' =&gt; env('BRIDGE_AGENT_ID'),
     'records'  =&gt; [
         [
@@ -159,7 +159,7 @@ opescare-bridge --config bridge_config.json</pre>
 <pre>import requests, os, time, uuid
 
 requests.post(
-    'https://opescare.test/api/v1/bridge/sync',
+    '{{ $docsBase }}/api/v1/bridge/sync',
     headers={
         'X-Bridge-Agent-ID':  os.environ['BRIDGE_AGENT_ID'],
         'X-Bridge-Agent-Key': os.environ['BRIDGE_AGENT_KEY'],
@@ -210,7 +210,7 @@ requests.post(
         <button class="docs-code-tab" data-lang="python">Python</button>
     </div>
     <div class="docs-code-pane" data-lang="curl">
-<pre>curl -X POST https://opescare.test/api/v1/bridge/heartbeat \
+<pre>curl -X POST {{ $docsBase }}/api/v1/bridge/heartbeat \
   -H "X-Bridge-Agent-ID: YOUR_AGENT_ID" \
   -H "X-Bridge-Agent-Key: YOUR_AGENT_KEY" \
   -H "X-Bridge-Timestamp: $(date +%s)" \
@@ -220,7 +220,7 @@ requests.post(
     <div class="docs-code-pane" data-lang="python">
 <pre>import requests, os, time
 
-requests.post('https://opescare.test/api/v1/bridge/heartbeat',
+requests.post('{{ $docsBase }}/api/v1/bridge/heartbeat',
     headers={
         'X-Bridge-Agent-ID':  os.environ['BRIDGE_AGENT_ID'],
         'X-Bridge-Agent-Key': os.environ['BRIDGE_AGENT_KEY'],

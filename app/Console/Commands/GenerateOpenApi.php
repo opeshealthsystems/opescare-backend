@@ -60,10 +60,11 @@ class GenerateOpenApi extends Command
         $spec = [
             'openapi' => '3.1.0',
             'info'    => $this->specInfo($ops, count($paths)),
+            // One public host (config/docs.php). There is no separate sandbox
+            // host: a sandbox-scoped client authenticates against the same
+            // base. Paths already carry their /api prefix.
             'servers' => [
-                ['url' => 'https://api.opescare.com', 'description' => 'Production (approved accounts)'],
-                ['url' => 'https://sandbox-api.opescare.com', 'description' => 'Sandbox (cloud)'],
-                ['url' => 'http://opescare.test', 'description' => 'Local dev'],
+                ['url' => (string) config('docs.public_url', 'https://opescare.com'), 'description' => 'Production (sandbox clients use the same host)'],
             ],
             'tags'       => $this->tags($paths),
             'components' => $this->components(),

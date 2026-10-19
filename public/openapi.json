@@ -14,16 +14,8 @@
     },
     "servers": [
         {
-            "url": "https://api.opescare.com",
-            "description": "Production (approved accounts)"
-        },
-        {
-            "url": "https://sandbox-api.opescare.com",
-            "description": "Sandbox (cloud)"
-        },
-        {
-            "url": "http://opescare.test",
-            "description": "Local dev"
+            "url": "https://opescare.com",
+            "description": "Production (sandbox clients use the same host)"
         }
     ],
     "tags": [

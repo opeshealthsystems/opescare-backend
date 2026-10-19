@@ -14,6 +14,10 @@
     replays.
 </p>
 
+<h2 id="delivery-flow">{{ __('docs_ui.dg.webhooks.title') }}</h2>
+<p>{{ __('docs_ui.dg.webhooks.lead') }} <a href="{{ route('docs.flows', 'webhooks') }}">{{ __('docs_ui.flow.h_sequence') }}</a></p>
+@include('docs.diagrams.sequence', ['flow' => 'webhooks'])
+
 <h2 id="subscribe">Subscribe to Events</h2>
 
 <p>
@@ -30,7 +34,7 @@
         <button class="docs-code-tab" data-lang="python">Python</button>
     </div>
     <div class="docs-code-pane" data-lang="curl">
-<pre>curl -X POST https://opescare.test/api/v1/connect/webhooks/subscriptions \
+<pre>curl -X POST {{ $docsBase }}/api/v1/connect/webhooks/subscriptions \
   -H "Authorization: Bearer {access_token}" \
   -H "Content-Type: application/json" \
   -d '{
@@ -41,7 +45,7 @@
     </div>
     <div class="docs-code-pane" data-lang="php">
 <pre>$subscription = Http::withToken($accessToken)
-    ->post('https://opescare.test/api/v1/connect/webhooks/subscriptions', [
+    ->post('{{ $docsBase }}/api/v1/connect/webhooks/subscriptions', [
         'callback_url'      =&gt; 'https://your-system.example.com/opescare/webhook',
         'subscribed_events' =&gt; ['lab_result.released', 'prescription.issued', 'consent.granted'],
         'description'       =&gt; 'My CDSS event listener',
@@ -51,7 +55,7 @@
 $webhookSecret = $subscription['webhook_secret']; // "whsec_xxxxxxxxxxxxxxxx"</pre>
     </div>
     <div class="docs-code-pane" data-lang="js">
-<pre>const res = await fetch('https://opescare.test/api/v1/connect/webhooks/subscriptions', {
+<pre>const res = await fetch('{{ $docsBase }}/api/v1/connect/webhooks/subscriptions', {
   method: 'POST',
   headers: {
     Authorization: `Bearer ${accessToken}`,
@@ -70,7 +74,7 @@ const webhookSecret = subscription.webhook_secret; // "whsec_xxxxxxxxxxxxxxxx"</
     </div>
     <div class="docs-code-pane" data-lang="python">
 <pre>subscription = requests.post(
-    'https://opescare.test/api/v1/connect/webhooks/subscriptions',
+    '{{ $docsBase }}/api/v1/connect/webhooks/subscriptions',
     headers={'Authorization': f'Bearer {access_token}'},
     json={
         'callback_url':      'https://your-system.example.com/opescare/webhook',
@@ -397,14 +401,14 @@ public class WebhookVerifier {
 <div class="docs-code-block">
     <div class="docs-code-tabs"><button class="docs-code-tab active" data-lang="curl">cURL</button></div>
     <div class="docs-code-pane active" data-lang="curl">
-<pre>curl -X POST https://opescare.test/api/v1/connect/webhooks/events/evt_01HX9K2ABCD/replay \
+<pre>curl -X POST {{ $docsBase }}/api/v1/connect/webhooks/events/evt_01HX9K2ABCD/replay \
   -H "Authorization: Bearer {access_token}"</pre>
     </div>
 </div>
 
 <h2 id="testing">Testing Your Endpoint</h2>
 
-<p>During development, use a tunnel tool like <a href="https://ngrok.com" rel="noopener noreferrer" target="_blank">ngrok</a> or <a href="https://expose.dev" rel="noopener noreferrer" target="_blank">expose</a> to receive webhooks on <code>localhost</code>:</p>
+<p>During development, use a tunnel tool like <a href="https://ngrok.com" rel="noopener noreferrer" target="_blank">ngrok</a> or <a href="https://expose.dev" rel="noopener noreferrer" target="_blank">expose</a> to receive webhooks on your development machine:</p>
 
 <div class="docs-code-block">
     <div class="docs-code-tabs"><button class="docs-code-tab active" data-lang="curl">Shell</button></div>
@@ -413,7 +417,7 @@ public class WebhookVerifier {
 ngrok http 8000
 
 # Then subscribe using the ngrok URL:
-curl -X POST https://opescare.test/api/v1/connect/webhooks/subscriptions \
+curl -X POST {{ $docsBase }}/api/v1/connect/webhooks/subscriptions \
   -H "Authorization: Bearer {access_token}" \
   -H "Content-Type: application/json" \
   -d '{

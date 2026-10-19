@@ -52,7 +52,7 @@ class GeneratePostman extends Command
             ],
             'item'     => $items,
             'variable' => [
-                ['key' => 'baseUrl', 'value' => 'https://api.opescare.com'],
+                ['key' => 'baseUrl', 'value' => (string) config('docs.public_url', 'https://opescare.com')],
                 ['key' => 'bearerToken', 'value' => ''],
                 ['key' => 'clientId', 'value' => ''],
                 ['key' => 'clientSecret', 'value' => ''],

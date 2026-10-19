@@ -24,7 +24,7 @@
 &lt;div id="opescare-widget"&gt;&lt;/div&gt;
 
 &lt;!-- 2. Loader script --&gt;
-&lt;script src="https://opescare.test/widget/v1/loader.js"&gt;&lt;/script&gt;
+&lt;script src="{{ $docsBase }}/widget/v1/loader.js"&gt;&lt;/script&gt;
 
 &lt;!-- 3. Initialise --&gt;
 &lt;script&gt;
@@ -121,7 +121,7 @@ window.addEventListener('opescare:error', function(e) {
     <div class="docs-code-tabs"><button class="docs-code-tab active" data-lang="html">Generated iframe attributes</button></div>
     <div class="docs-code-pane active" data-lang="html">
 <pre>&lt;iframe
-  src="https://opescare.test/widget/v1/frame?token=..."
+  src="{{ $docsBase }}/widget/v1/frame?token=..."
   sandbox="allow-scripts allow-same-origin allow-forms"
   allow="camera 'none'; microphone 'none'"
   referrerpolicy="no-referrer"

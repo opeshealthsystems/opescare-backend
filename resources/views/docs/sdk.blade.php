@@ -488,7 +488,7 @@ try {
         <button class="docs-code-tab" data-lang="curl">cURL</button>
     </div>
     <div class="docs-code-pane" data-lang="curl">
-<pre>curl https://opescare.test/api/v1/sdk/token/introspect \
+<pre>curl {{ $docsBase }}/api/v1/sdk/token/introspect \
   -H "Authorization: Bearer YOUR_BEARER_TOKEN"
 
 # Response:
