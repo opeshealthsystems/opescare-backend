@@ -83,11 +83,10 @@ class DashboardProfileService
     private function pathExists(string $url): bool
     {
         try {
-            app('router')->getRoutes()->match(
+            // The web 404 fallback matches every path; it is not a landing page.
+            return ! app('router')->getRoutes()->match(
                 \Illuminate\Http\Request::create($url, 'GET')
-            );
-
-            return true;
+            )->isFallback;
         } catch (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException|\Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException) {
             return false;
         }

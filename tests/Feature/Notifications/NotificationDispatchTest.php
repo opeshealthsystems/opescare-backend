@@ -28,7 +28,8 @@ class NotificationDispatchTest extends TestCase
             ->once()
             ->withArgs(fn ($msg, $ctx) =>
                 str_contains($msg, 'SMS') &&
-                $ctx['to'] === '+237600000001'
+                // The number is masked in logs (never the full phone number).
+                $ctx['to'] === '***001'
             );
 
         $service->send('+237600000001', 'Your appointment is confirmed.');

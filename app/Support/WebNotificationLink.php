@@ -58,7 +58,10 @@ final class WebNotificationLink
         }
 
         try {
-            Route::getRoutes()->match(Request::create($path, 'GET'));
+            // The web 404 fallback matches every path; it is not a page.
+            if (Route::getRoutes()->match(Request::create($path, 'GET'))->isFallback) {
+                return null;
+            }
         } catch (NotFoundHttpException|HttpException|UrlGenerationException) {
             return null;
         }

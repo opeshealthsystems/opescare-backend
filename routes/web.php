@@ -1103,7 +1103,28 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'capability:i
 // path answer 405 ("this path exists, wrong verb") instead of 404. CSRF is
 // skipped here only because the handler does nothing but 404 — otherwise an
 // unknown POST would answer 419 and still leak that nothing matched.
-Route::any('/{fallbackPlaceholder}', fn () => abort(404))
+// A path that exists under OTHER verbs keeps the router's 405 (e.g. DELETE on
+// an append-only record): only paths that exist under no verb are 404.
+Route::any('/{fallbackPlaceholder}', function (\Illuminate\Http\Request $request) {
+    $allowed = [];
+    foreach (['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] as $verb) {
+        if ($verb === $request->method()) {
+            continue;
+        }
+        try {
+            $route = app('router')->getRoutes()->match(\Illuminate\Http\Request::create($request->getPathInfo(), $verb));
+            if (! $route->isFallback) {
+                $allowed[] = $verb;
+            }
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpExceptionInterface) {
+            // not routable under this verb
+        }
+    }
+    if ($allowed !== []) {
+        throw new \Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException($allowed);
+    }
+    abort(404);
+})
     ->where('fallbackPlaceholder', '^(?!api/|fhir/).*')
     ->withoutMiddleware([
         \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
