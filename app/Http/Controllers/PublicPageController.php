@@ -218,9 +218,11 @@ class PublicPageController extends Controller
         return view('public.consent');
     }
 
-    public function faq()
+    public function faq(\App\Services\Blog\FaqRepository $faq)
     {
-        return view('public.faq');
+        // content/faq/{locale}.yaml when present; the view falls back to the
+        // lang-file questions when it is empty.
+        return view('public.faq', ['faqGroups' => $faq->grouped(app()->getLocale())]);
     }
 
     public function help()

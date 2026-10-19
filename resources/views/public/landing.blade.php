@@ -57,6 +57,7 @@
     <link rel="preload" href="{{ asset('brand/login/background.webp') }}" as="image" type="image/webp">
     <link rel="stylesheet" href="{{ asset('css/landing-v2.css') }}?v={{ @filemtime(public_path('css/landing-v2.css')) ?: '1' }}">
     @include('partials.finder.schema.site')
+    @includeIf('partials.seo.entity-schema')
 </head>
 <body class="lx">
 
@@ -75,6 +76,7 @@
             <a href="#lx-flow">{{ __('landing.v2.nav.interop') }}</a>
             <a href="#lx-pilot">{{ __('landing.v2.nav.pilot') }}</a>
             <a href="#lx-who">{{ __('landing.v2.nav.who') }}</a>
+            <a href="{{ route('blog.index') }}">{{ __('blog.nav') }}</a>
         </nav>
 
         <div class="lx-header__actions">
@@ -92,6 +94,7 @@
                     <a href="#lx-flow">{{ __('landing.v2.nav.interop') }}</a>
                     <a href="#lx-pilot">{{ __('landing.v2.nav.pilot') }}</a>
                     <a href="#lx-who">{{ __('landing.v2.nav.who') }}</a>
+                    <a href="{{ route('blog.index') }}">{{ __('blog.nav') }}</a>
                     <a href="{{ route('login') }}">{{ __('landing.v2.nav.sign_in') }}</a>
                     <a class="lx-btn lx-btn--primary" href="{{ route('register.organization') }}">{{ __('landing.v2.cta_hospital') }}</a>
                 </nav>
@@ -360,6 +363,8 @@
                     <li><a href="{{ route('public.network.blood-finder') }}">{{ __('landing.v2.footer.blood') }}</a></li>
                     <li><a href="{{ route('public.care-map') }}">{{ __('landing.v2.footer.directory') }}</a></li>
                     <li><a href="{{ route('public.care-map.emergency') }}">{{ __('landing.v2.footer.emergency') }}</a></li>
+                    <li><a href="{{ route('blog.index') }}">{{ __('blog.nav') }}</a></li>
+                    <li><a href="{{ route('public.faq') }}">{{ __('landing.footer.link_faq') }}</a></li>
                 </ul>
             </nav>
             <nav aria-labelledby="lx-f2">
@@ -380,6 +385,7 @@
                     <li><a href="{{ route('public.consent') }}">{{ __('landing.v2.footer.consent') }}</a></li>
                     <li><a href="{{ route('public.security') }}">{{ __('landing.v2.footer.security') }}</a></li>
                     <li><a href="{{ route('public.contact') }}">{{ __('landing.v2.footer.contact') }}</a></li>
+                    @includeIf('partials.seo.footer-facts-link')
                 </ul>
             </nav>
         </div>

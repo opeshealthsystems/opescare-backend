@@ -1,0 +1,82 @@
+# OpesCare — full description
+
+Canonical site: https://opescare.com (English). French: append `?lang=fr` to any page.
+Facts page: https://opescare.com/about/facts
+Last updated: 2026-10-19
+
+## What OpesCare is
+
+OpesCare is a free, bilingual (English and French) web service for Cameroon. It helps people:
+
+1. find a medicine in stock at a nearby pharmacy (drug finder);
+2. find blood products by blood type at blood banks (blood finder);
+3. book an appointment with a provider at a facility;
+4. browse and search the national register of health facilities (facility directory).
+
+It also provides a portable patient Health ID and a longitudinal health record, and lets patients pay a care invoice by mobile money.
+
+OpesCare works in any phone browser; there is also an Android app. Searching needs no account. Booking and a Health ID need a free account.
+
+## Who runs it
+
+OpesCare is operated by Opes Health Systems Sarl, a company in the Republic of Cameroon. OpesCare is not a government service and does not claim government endorsement.
+
+## How each service works
+
+- **Drug finder** (https://opescare.com/network/medicine-finder): searches stock reported by pharmacies, nearest first. Results come only from live stock feeds on an approved list of sources. Seeded, demo or estimated stock is never shown as live availability; an empty result means no pharmacy has reported that medicine. Availability is timestamped and is not a guarantee: call the pharmacy to confirm stock and price.
+- **Blood finder** (https://opescare.com/network/blood-finder): shows which blood banks report a blood product and blood type.
+- **Lab test and imaging finders** (https://opescare.com/network/lab-test-finder, https://opescare.com/network/imaging-finder): locate facilities offering a test or exam.
+- **Appointment booking**: a signed-in patient books a slot with a provider at a facility. Booking is book-to-consult; there is no in-app video consultation.
+- **Facility directory** (https://opescare.com/care-map): public register of hospitals, clinics, pharmacies, laboratories and other facilities in Cameroon, searchable by name, type and region. Each facility has a profile page. A facility can claim its listing for free and keep it up to date; claims are reviewed by staff. Emergency facilities: https://opescare.com/care-map/emergency
+- **Health ID**: a unique patient identifier the patient owns, shown on a QR card, with account recovery. Possible duplicate identities are detected and reviewed by staff in a Master Patient Index (MPI); nothing merges automatically and merges are reversible. A QR on a Health ID or OpesCare document can be checked on OpesCare's verification page.
+- **Health record**: encounters, prescriptions, lab results, vitals and referrals, visible to the patient. Patients can download their documents as PDFs generated on demand.
+- **Payments**: pay a care invoice by MTN Mobile Money or Orange Money, in XAF (FCFA). Care is never withheld for lack of payment.
+
+## Privacy and security
+
+- A clinician can read a patient's record only with a recorded basis: an appointment, membership of the care team, a facility episode, or a consent grant from the patient.
+- Every access is logged and visible to the patient. Emergency ("break-glass") access is recorded and the patient is notified.
+- Patients have privacy switches that restrict access to their chart.
+- Staff permissions are role-based.
+- Contact for data protection: privacy@opeshealthsystems.com
+
+## Interoperability
+
+Partner systems can send data to OpesCare using HL7 FHIR R4 (DiagnosticReport, Immunization, Observation and transaction bundles), with scoped bearer tokens. Patients can export their record in FHIR format from the app. OpesCare does not run an outbound FHIR server or HL7 v2. See https://opescare.com/interoperability and https://opescare.com/developers
+
+## What OpesCare does NOT do
+
+- It does not guarantee medicine or blood stock.
+- It does not show demo or estimated stock as real availability.
+- It does not sell insurance, process insurance claims or run pharmacy inventory management for facilities.
+- It does not offer in-app video consultations.
+- It is not an emergency service. In an emergency call the local emergency number or go to the nearest hospital.
+
+## Coverage and languages
+
+- Country: Cameroon.
+- Languages: English and French throughout the site and app.
+- Currency: XAF (FCFA).
+
+## How to join
+
+- Patients: https://opescare.com/signup/patient (free).
+- Pharmacies, hospitals, clinics, laboratories: claim your listing in the directory, or register an organisation at https://opescare.com/signup/organization. Listing is free.
+- Health professionals: https://opescare.com/signup/professional
+- Developers and partner systems: https://opescare.com/developers
+
+## Contact
+
+- Support: support@opescare.com
+- Data protection: privacy@opeshealthsystems.com
+- Contact form: https://opescare.com/contact
+
+## Key URLs
+
+- Home: https://opescare.com/
+- Facts: https://opescare.com/about/facts
+- About: https://opescare.com/about
+- FAQ: https://opescare.com/faq
+- Privacy: https://opescare.com/privacy
+- Terms: https://opescare.com/terms
+- Security: https://opescare.com/security

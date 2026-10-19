@@ -1,0 +1,218 @@
+# OpesCare public FAQ (EN). Schema: list of {category, q, a, link}.
+# Answers are answer-first, 40-60 words, and describe only features that exist in the code.
+# Keep 1:1 with fr.yaml (same order, same categories, same links).
+
+- category: "Health ID"
+  q: "What is an OpesCare Health ID?"
+  a: "An OpesCare Health ID is one personal identifier that links your medical records across the hospitals, clinics, laboratories and pharmacies that use OpesCare. It replaces a separate paper file at every facility. You register once, and clinicians can read your history only when you give consent or a recorded legal basis applies."
+  link: /signup/patient
+
+- category: "Health ID"
+  q: "How do I get a Health ID in Cameroon?"
+  a: "You can get an OpesCare Health ID by registering online at the patient sign-up page or by asking a facility on the network to register you. Registration asks for your name, date of birth and contact details. Your identity starts as provisional and becomes verified once a facility confirms who you are."
+  link: /signup/patient
+
+- category: "Health ID"
+  q: "Is the OpesCare Health ID free?"
+  a: "Yes, creating an OpesCare Health ID and searching for medicines, blood and facilities is free for patients. OpesCare offers optional paid plans, but care is never blocked because of payment. A facility may still charge its own fees for consultations, tests or medicines, which you settle with that facility."
+  link: /signup/patient
+
+- category: "Health ID"
+  q: "What if I lose my Health ID card or number?"
+  a: "If you lose your Health ID card or number, you can recover it through the account recovery flow using the phone number or email you registered with. Your identity and records are not lost with the card. Any facility on the network can also look you up and confirm your identity in person."
+  link: /help
+
+- category: "Health ID"
+  q: "What is the QR code on my Health ID for?"
+  a: "The QR code on your Health ID lets a clinician or facility identify you quickly and confirm that the credential is genuine. Scanning it does not open your medical record by itself. Access to clinical information still requires your consent or another recorded basis, and every access is logged."
+  link: /help
+
+- category: "Health ID"
+  q: "What happens if I was registered twice by mistake?"
+  a: "If you were registered twice, OpesCare can merge the duplicate records into one Health ID after staff review the pair. Nothing merges automatically, and a merge is reversible. The old number keeps working as an alias, so documents carrying it still lead to your single record."
+  link: /contact
+
+- category: "Finding medicines"
+  q: "How can I find a pharmacy that has my medicine in stock?"
+  a: "Type the medicine name into the OpesCare Medicine Finder to see pharmacies that have reported it in stock, with the time of each report and a phone number. Results are the pharmacies' own reports, not a reservation, so call the pharmacy to confirm before you travel. Searching is free and needs no account."
+  link: /network/medicine-finder
+
+- category: "Finding medicines"
+  q: "How do I find a pharmacie de garde near me?"
+  a: "Use the OpesCare care map to see pharmacies near you with their reported opening hours and phone numbers, then call to confirm they are on duty. On-duty rotas are set locally and change often, so a phone call is the reliable check. Pharmacies on duty usually also post the rota on their door."
+  link: /care-map
+
+- category: "Finding medicines"
+  q: "Why does the Medicine Finder show no results?"
+  a: "An empty result means no pharmacy on the network has reported that medicine yet, not that it is unavailable. OpesCare only shows stock that pharmacies report themselves and never fills gaps with estimated data. Try the generic name, check spelling, or call a nearby pharmacy listed on the care map."
+  link: /network/medicine-finder
+
+- category: "Finding medicines"
+  q: "Are medicine prices shown on OpesCare?"
+  a: "Yes, when a pharmacy reports a price, OpesCare shows it in FCFA next to the stock report. Prices are set by each pharmacy and can change, so treat them as a guide. Not every pharmacy reports prices, and the amount paid at the counter is the one that applies."
+  link: /network/medicine-finder
+
+- category: "Finding medicines"
+  q: "Can I reserve or buy a medicine through OpesCare?"
+  a: "No, the Medicine Finder does not reserve or sell medicines; it shows what pharmacies have reported and how to contact them. A report is not a reservation, because stock moves during the day. Call the pharmacy to check and ask it to set the item aside if it offers that."
+  link: /network/medicine-finder
+
+- category: "Finding medicines"
+  q: "How do I use a prescription from my doctor at a pharmacy?"
+  a: "If your clinician issued the prescription in OpesCare, the pharmacy can find it from your Health ID and dispense against it at the counter. Partial dispensing is recorded, so another pharmacy can supply the rest. A paper prescription from outside the network is handled by the pharmacy in the usual way."
+  link: /help
+
+- category: "Blood"
+  q: "How can I find blood of a specific group in Cameroon?"
+  a: "Select the blood group and component in the OpesCare Blood Finder to see hospitals and blood banks that have reported holding it, with a phone number for each. OpesCare relays their reports and does not count units itself, so call the facility to confirm availability before you travel."
+  link: /network/blood-finder
+
+- category: "Blood"
+  q: "Where can I donate blood in Cameroon?"
+  a: "You can donate blood at hospital blood banks and transfusion centres; the OpesCare care map lists facilities near you with their phone numbers. Call ahead to confirm donation hours and eligibility rules, which the blood bank sets. Donors usually answer a health questionnaire and see a clinician before giving blood."
+  link: /care-map
+
+- category: "Blood"
+  q: "Does OpesCare guarantee that blood is available?"
+  a: "No, OpesCare does not guarantee blood availability; it shows what hospitals and blood banks have reported, with the time of each report. Stock changes quickly, especially in emergencies. Always call the facility before travelling, and in a life-threatening situation go directly to the nearest emergency service."
+  link: /network/blood-finder
+
+- category: "Blood"
+  q: "Why is the Blood Finder empty for my blood group?"
+  a: "An empty Blood Finder means no facility on the network has reported that blood group recently, not that none exists. OpesCare never displays estimated or demo stock as real availability. Contact the nearest hospital blood bank directly, and ask relatives or friends about replacement donation if the hospital requests it."
+  link: /network/blood-finder
+
+- category: "Facilities & directory"
+  q: "How do I find a hospital or clinic near me?"
+  a: "Open the OpesCare care map to browse and search health facilities across Cameroon by name, type and location, with phone numbers and directions on an in-app map. Listings come from the national facility directory and from facilities themselves. Call before travelling, because hours and services can change."
+  link: /care-map
+
+- category: "Facilities & directory"
+  q: "How do I find the nearest emergency service?"
+  a: "Open the OpesCare emergency page to see facilities near you that offer emergency care, with phone numbers and directions. In a life-threatening situation, go to the nearest emergency department immediately rather than searching online. Calling ahead helps the team prepare, but do not delay travel to make the call."
+  link: /care-map/emergency
+
+- category: "Facilities & directory"
+  q: "Can I book a doctor's appointment online in Cameroon?"
+  a: "Yes, at facilities that publish appointment slots on OpesCare you can choose a provider and book a time online. Booking requires a free patient account so the facility knows who is coming. Where a facility does not offer online booking, its listing gives a phone number to arrange a visit."
+  link: /signup/patient
+
+- category: "Facilities & directory"
+  q: "A facility's phone number or hours are wrong. How do I report it?"
+  a: "Report wrong details through the OpesCare contact page, naming the facility and what is incorrect. Messages are read in French and English. Facilities can also claim their listing to keep their own hours, phone numbers and services accurate, which is the quickest way for errors to be fixed."
+  link: /contact
+
+- category: "For hospitals"
+  q: "How do I register a hospital or clinic on OpesCare?"
+  a: "Register a hospital or clinic by completing the organization sign-up form with the facility's details and a responsible contact. OpesCare reviews each application before activating it. Once approved, staff accounts can be created by role, and the facility can manage its listing, appointments and patient records."
+  link: /signup/organization
+
+- category: "For hospitals"
+  q: "What can a hospital do with OpesCare?"
+  a: "A hospital can use OpesCare to register patients with a Health ID, keep longitudinal records, manage appointments and queues, issue prescriptions, record lab results and vitals, and make referrals. Clinicians see a patient's history from other facilities only with consent or a recorded legal basis."
+  link: /solutions/hospitals
+
+- category: "For hospitals"
+  q: "Can a doctor access a patient's records in an emergency?"
+  a: "Yes, a clinician can use emergency break-glass access when a patient cannot consent and care is urgent. The clinician must state a reason, the access is time-limited, the patient is notified, and the event is recorded in the access log for review. It is an exception, not a routine path."
+  link: /privacy
+
+- category: "For hospitals"
+  q: "Does my hospital have to replace its current software?"
+  a: "No, OpesCare is designed to work alongside the systems a facility already runs. Partner systems can send records in through the FHIR R4 interface, and staff can also work directly in the OpesCare web portal and mobile app. A facility can start with only the parts it needs."
+  link: /docs
+
+- category: "For pharmacies"
+  q: "How do I register my pharmacy on OpesCare?"
+  a: "Register a pharmacy by completing the organization sign-up form and choosing pharmacy as the facility type. OpesCare reviews the application before activation. Once approved, the pharmacy can report stock, prices and opening hours so patients searching the Medicine Finder can see what it holds and call."
+  link: /signup/organization
+
+- category: "For pharmacies"
+  q: "Why should a pharmacy report its stock to OpesCare?"
+  a: "Reporting stock lets patients who search for a medicine see that your pharmacy has it, call your number and come to you. Each report carries its time, so fresher reports are more useful to patients. Pharmacies can also dispense against OpesCare prescriptions using the patient's Health ID."
+  link: /solutions/pharmacies
+
+- category: "For pharmacies"
+  q: "Can a pharmacy upload its stock list instead of typing it?"
+  a: "Yes, a pharmacy can import its stock from a spreadsheet file, map the columns, preview the result and then confirm the import. This saves entering each line by hand. Only stock a pharmacy reports itself through its own account appears in the Medicine Finder."
+  link: /solutions/pharmacies
+
+- category: "Privacy & consent"
+  q: "Who can see my medical records on OpesCare?"
+  a: "Your medical records can be seen by clinicians who have a care relationship with you, such as an appointment, a care team or a consent you approved. Every access is logged and you can review who opened your record. OpesCare staff do not browse records, and facilities cannot read records freely."
+  link: /privacy
+
+- category: "Privacy & consent"
+  q: "How does consent to access my medical records work?"
+  a: "When a clinician outside your current care needs your records, they send a consent request that you approve or refuse. An approved consent is limited in scope and time, and you can withdraw it. Access without your consent is possible only in a recorded emergency, which is logged and notified."
+  link: /privacy
+
+- category: "Privacy & consent"
+  q: "Can I see who has looked at my medical record?"
+  a: "Yes, OpesCare keeps an access log of every time your record is opened, showing who, when and on what basis. You can view it from your patient account. If you see an access you do not recognise, contact OpesCare so it can be reviewed with the facility concerned."
+  link: /privacy
+
+- category: "Privacy & consent"
+  q: "Which law protects personal health data in Cameroon?"
+  a: "Cameroon's personal data protection law of December 2024 (Law No. 2024/017) treats health data as a sensitive category that needs extra protection. OpesCare's privacy notice explains what data it processes, why, for how long and how to exercise your rights. It does not replace legal advice."
+  link: /blog/health-data-law-innovation-cameroon
+
+- category: "Privacy & consent"
+  q: "Does OpesCare sell my data?"
+  a: "No, OpesCare does not sell personal or medical data. Data is used to provide the service, keep records safe and meet legal obligations, as described in the privacy notice. Aggregate counts with no individual identities may be reported for public-health purposes, never individual patient records."
+  link: /privacy
+
+- category: "Privacy & consent"
+  q: "Can I manage a family member's health records?"
+  a: "Yes, OpesCare supports family links, so a parent or guardian can manage the records and appointments of a child or a dependent relative. The guardian acts on the dependent's behalf from their own account, and each action is recorded. Adults keep control of their own records."
+  link: /help
+
+- category: "Account & app"
+  q: "Do I need an account to search for medicines or blood?"
+  a: "No, you can search medicines, blood and facilities on OpesCare without an account. An account is needed only for personal features such as your Health ID, booking appointments, viewing your records and managing consent. Creating a patient account is free."
+  link: /network/medicine-finder
+
+- category: "Account & app"
+  q: "Is there an OpesCare mobile app?"
+  a: "Yes, OpesCare has a mobile app for patients and clinicians, with the Health ID, records, appointments and the finders. The same features are also available in a web browser at opescare.com, so you can use OpesCare on any phone or computer with an internet connection."
+  link: /help
+
+- category: "Account & app"
+  q: "Is OpesCare available in French?"
+  a: "Yes, OpesCare is fully available in French and English. You can switch language at any time from the language selector, and your choice applies across the site. Support messages sent through the contact page are read and answered in either language."
+  link: /help
+
+- category: "Account & app"
+  q: "How do I delete my OpesCare account?"
+  a: "You can request deletion of your OpesCare account from the account deletion page, which explains the steps and what happens to your data. Some medical records may be kept for a legally required period even after the account is closed, as the privacy notice explains."
+  link: /account-deletion
+
+- category: "Account & app"
+  q: "I forgot my password. How do I sign in?"
+  a: "Use the forgot-password link on the OpesCare login page to reset your password with the email or phone number on your account. For your security, sign-in attempts are rate-limited. If you no longer have access to those contact details, reach support through the contact page."
+  link: /login
+
+- category: "Payments"
+  q: "Can I pay a hospital bill with Mobile Money?"
+  a: "Yes, where a facility issues its invoice through OpesCare you can pay it with MTN Mobile Money or Orange Money. You confirm the payment on your phone, and the invoice is updated once the operator confirms it. All amounts are shown in FCFA."
+  link: /help
+
+- category: "Payments"
+  q: "Will I be refused care if I cannot pay on OpesCare?"
+  a: "No, OpesCare never blocks access to care, records or the finders because of a missing payment. Optional subscription plans add convenience features only. Each facility sets and collects its own fees for services, under its own policies, separately from OpesCare."
+  link: /terms
+
+- category: "Developers & interoperability"
+  q: "Does OpesCare support FHIR?"
+  a: "Yes, OpesCare accepts FHIR R4 data from authorised partner systems, including diagnostic reports, immunizations, observations and transaction bundles. Each partner uses scoped bearer credentials, and incoming data is checked before it is stored. Patients can also export their own record in FHIR format from the mobile app."
+  link: /docs
+
+- category: "Developers & interoperability"
+  q: "Where is the OpesCare API documentation?"
+  a: "The OpesCare developer documentation is published at the docs section of opescare.com. It describes the REST API, authentication and the FHIR R4 ingest endpoints. Access for a partner system is granted per organization after review, with credentials scoped to what that partner may send or read."
+  link: /docs
+
+- category: "Developers & interoperability"
+  q: "How can my organization integrate with OpesCare?"
+  a: "To integrate with OpesCare, register your organization and then contact the team to describe the system you want to connect. Integrations run through the documented REST and FHIR R4 interfaces with scoped credentials. Data exchange stays bound by patient consent and the same access rules as the web portal."
+  link: /contact

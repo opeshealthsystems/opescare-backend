@@ -12,7 +12,24 @@
 --}}
 @push('schema')
 {{-- FAQPage JSON-LD, built from the same lang array the page renders --}}
+@if(! empty($faqGroups))
+@php
+    $fyEntities = [];
+    foreach ($faqGroups as $fyGroup) {
+        foreach ($fyGroup['items'] as $fyItem) {
+            $fyEntities[] = ['@type' => 'Question', 'name' => $fyItem['q'], 'acceptedAnswer' => ['@type' => 'Answer', 'text' => $fyItem['a']]];
+        }
+    }
+    // Built in this php block on purpose (Blade directive trap on the schema key).
+    $fyJsonLd = json_encode(['@context' => 'https://schema.org', '@type' => 'FAQPage', 'inLanguage' => app()->getLocale(), 'mainEntity' => $fyEntities],
+        JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP);
+@endphp
+<script type="application/ld+json">
+{!! $fyJsonLd !!}
+</script>
+@else
 @include('partials.finder.schema.faq')
+@endif
 @endpush
 
 @push('head')
@@ -60,6 +77,23 @@
     <section class="f-section f-section--tight">
         <div class="f-container">
             <div class="fs-narrow">
+                @if(! empty($faqGroups))
+                    @foreach ($faqGroups as $fyGroup)
+                        <h2 class="f-h2" id="faq-{{ $fyGroup['slug'] }}" style="margin-top:2rem">{{ \Illuminate\Support\Facades\Lang::has('blog.faq_categories.' . $fyGroup['slug']) ? __('blog.faq_categories.' . $fyGroup['slug']) : $fyGroup['category'] }}</h2>
+                        @foreach ($fyGroup['items'] as $fyItem)
+                            <details class="fs-qa" @if ($loop->parent->first && $loop->first) open @endif>
+                                <summary>
+                                    <h3>{{ $fyItem['q'] }}</h3>
+                                    @include('partials.finder.icon', ['name' => 'chevron-down', 'size' => 18])
+                                </summary>
+                                <p class="f-muted">{{ $fyItem['a'] }}</p>
+                                @if($fyItem['link'])
+                                    <p style="padding:0 0 1rem;margin:0"><a href="{{ str_starts_with($fyItem['link'], '/') ? url($fyItem['link']) : $fyItem['link'] }}">{{ __('blog.faq_learn_more') }}</a></p>
+                                @endif
+                            </details>
+                        @endforeach
+                    @endforeach
+                @else
                 @foreach (__('finder_story.faq.items') as $fsItem)
                     <details class="fs-qa" @if ($loop->first) open @endif>
                         <summary>
@@ -69,6 +103,7 @@
                         <p class="f-muted">{{ $fsItem['a'] }}</p>
                     </details>
                 @endforeach
+                @endif
             </div>
         </div>
     </section>

@@ -1,0 +1,81 @@
+<?php
+
+// OpesCare facts page (/about/facts) — a citable reference for answer engines
+// and journalists. Facts only; every line is checked against routes/ and app/.
+
+return [
+    'page_title'       => 'OpesCare facts',
+    'meta_description' => 'Key facts about OpesCare: a free bilingual (English/French) health finder and Health ID service for Cameroon, operated by Opes Health Systems Sarl.',
+    'eyebrow'          => 'Reference',
+    'heading'          => 'OpesCare facts',
+    'intro'            => 'A short, citable description of what OpesCare is, what it does and what it does not do.',
+    'updated'          => 'Last updated: :date',
+
+    'definition_title' => 'In one sentence',
+    'definition'       => 'OpesCare is a free, bilingual (English and French) web service for Cameroon that helps people find a medicine at a nearby pharmacy, find blood products at blood banks, book an appointment with a provider, and browse the national health facility directory.',
+    'definition_2'     => 'It also gives patients a portable Health ID and a longitudinal health record that clinicians can read only with a recorded basis, such as an appointment or a consent grant.',
+
+    'table_title'     => 'Key facts',
+    'row_name'        => 'Name',
+    'row_operator'    => 'Operator',
+    'row_operator_v'  => 'Opes Health Systems Sarl, Republic of Cameroon',
+    'row_url'         => 'Website',
+    'row_country'     => 'Country served',
+    'row_country_v'   => 'Cameroon',
+    'row_languages'   => 'Languages',
+    'row_languages_v' => 'English and French',
+    'row_platforms'   => 'Platforms',
+    'row_platforms_v' => 'Web (any phone browser) and an Android app',
+    'row_price'       => 'Price for patients',
+    'row_price_v'     => 'Free. Searching, browsing the directory and booking cost nothing; care is never gated on payment.',
+    'row_standards'   => 'Standards',
+    'row_standards_v' => 'HL7 FHIR R4 inbound ingest for partner systems',
+    'row_contact'     => 'Contact',
+
+    'modules_title' => 'What OpesCare does',
+    'mod_drug'      => 'Drug finder: searches live stock reported by pharmacies for a medicine near the user.',
+    'mod_blood'     => 'Blood finder: shows blood products by blood type at blood banks.',
+    'mod_lab'       => 'Lab test and imaging finders: locate facilities offering a test or an imaging exam.',
+    'mod_booking'   => 'Appointment booking: book a slot with a provider at a facility (a free account is required).',
+    'mod_directory' => 'Facility directory: browse and search the national register of hospitals, clinics, pharmacies and laboratories; facilities can claim their listing for free.',
+    'mod_health_id' => 'Health ID: a portable patient identity with a QR card, recovery and duplicate detection.',
+    'mod_records'   => 'Health record: encounters, prescriptions, lab results, vitals and referrals, readable by the patient.',
+    'mod_payments'  => 'Bill payment: pay a care invoice by MTN Mobile Money or Orange Money.',
+
+    'not_title' => 'What OpesCare does not do',
+    'not_1'     => 'It does not guarantee stock. Availability is reported by facilities and timestamped; call the pharmacy to confirm.',
+    'not_2'     => 'It does not show demo or estimated stock as live availability. An empty result means no facility has reported stock.',
+    'not_3'     => 'It does not sell insurance or process insurance claims.',
+    'not_4'     => 'It does not offer in-app video consultations.',
+    'not_5'     => 'It is not an emergency service. In an emergency, call the local emergency number or go to the nearest hospital.',
+
+    'join_title'      => 'How to join',
+    'join_patients'   => 'Patients: searching needs no account; create a free account to book and to get a Health ID.',
+    'join_facilities' => 'Pharmacies, hospitals and laboratories: claim the facility listing in the directory, or register an organisation.',
+    'join_developers' => 'Developers and partner systems: see the developer pages and the FHIR R4 interface.',
+
+    'glossary_title' => 'Glossary',
+    'g_health_id'    => 'Health ID',
+    'g_health_id_d'  => 'A unique identifier that a patient owns and carries between facilities, shown on a QR card.',
+    'g_mpi'          => 'MPI (Master Patient Index)',
+    'g_mpi_d'        => 'The index that resolves records of the same person to one identity. Possible duplicates are reviewed by staff; nothing merges automatically, and merges are reversible.',
+    'g_consent'      => 'Consent grant',
+    'g_consent_d'    => 'A patient’s recorded permission for a clinician or facility to read a defined part of their record, for a purpose and a period.',
+    'g_fhir'         => 'FHIR R4',
+    'g_fhir_d'       => 'HL7 Fast Healthcare Interoperability Resources, release 4: the standard partner systems use to send results and observations to OpesCare.',
+    'g_blood'        => 'Blood finder',
+    'g_blood_d'      => 'The OpesCare search that shows which blood banks report a given blood product and type.',
+    'g_drug'         => 'Drug finder',
+    'g_drug_d'       => 'The OpesCare search that shows which pharmacies report a medicine in stock, nearest first.',
+    'g_directory'    => 'Facility directory',
+    'g_directory_d'  => 'The public, searchable register of health facilities in Cameroon on OpesCare.',
+
+    'privacy_title' => 'Privacy and security',
+    'privacy_p'     => 'Clinicians read a patient’s record only with a recorded basis (appointment, care team, facility episode or consent grant). Every access is logged and visible to the patient. Emergency (break-glass) access is recorded and notified.',
+
+    'contact_title'   => 'Contact',
+    'contact_support' => 'Support',
+    'contact_privacy' => 'Data protection',
+    'contact_form'    => 'Contact form',
+    'footer_link'     => 'OpesCare facts',
+];

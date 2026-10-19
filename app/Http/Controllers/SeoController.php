@@ -34,7 +34,9 @@ class SeoController extends Controller
         'pending-approval', 'account-suspended', 'portal-unavailable',
         'lang', 'up', '_', '.well-known', 'document-preview', 'demo-access',
         // The discovery files themselves are not pages.
-        'robots.txt', 'sitemap.xml', 'sitemap-pages.xml', 'llms.txt',
+        'robots.txt', 'sitemap.xml', 'sitemap-pages.xml', 'sitemap-blog.xml', 'llms.txt', 'llms-full.txt',
+        // The RSS feed is a feed, not a page.
+        'blog/feed.xml',
     ];
 
     /**
@@ -50,6 +52,8 @@ class SeoController extends Controller
         'about'                     => ['0.7', 'monthly'],
         'how-it-works'              => ['0.8', 'monthly'],
         'faq'                       => ['0.8', 'monthly'],
+        'blog'                      => ['0.8', 'weekly'],
+        'about/facts'               => ['0.7', 'monthly'],
         'contact'                   => ['0.6', 'monthly'],
         'interoperability'          => ['0.6', 'monthly'],
         'security'                  => ['0.6', 'monthly'],
@@ -103,7 +107,7 @@ class SeoController extends Controller
         ];
 
         $group = function (string $agent) use ($disallow): array {
-            $out = ["User-agent: {$agent}", 'Allow: /'];
+            $out = ["User-agent: {$agent}", 'Allow: /', 'Allow: /llms.txt', 'Allow: /llms-full.txt'];
             foreach ($disallow as $path) {
                 $out[] = "Disallow: {$path}";
             }
@@ -153,6 +157,7 @@ class SeoController extends Controller
         $xml = Cache::remember('finder-seo.sitemap.index', $this->cacheTtl(), function () {
             $entries = [
                 ['loc' => url('/sitemap-pages.xml'), 'lastmod' => null],
+                ['loc' => url('/sitemap-blog.xml'), 'lastmod' => $this->blogLastmod()],
             ];
 
             foreach ($this->facilityChunks() as $page => $lastmod) {
@@ -348,6 +353,67 @@ class SeoController extends Controller
         return response($body, 200)
             ->header('Content-Type', 'text/plain; charset=UTF-8')
             ->header('Cache-Control', 'public, max-age=86400');
+    }
+
+    /**
+     * sitemap-blog.xml — every blog post and topic page.
+     *
+     * A post's translations have DIFFERENT slugs, so its hreflang alternates
+     * come from the translation_of link, not from ?lang= on one url. A post
+     * without a translation lists only itself (plus x-default). Not cached
+     * here: BlogRepository already caches the parsed posts, and a new post
+     * must reach the sitemap as soon as its file lands.
+     */
+    public function sitemapBlog(\App\Services\Blog\BlogRepository $posts): Response
+    {
+        $urls = [];
+
+        foreach (SetLocale::SUPPORTED as $locale) {
+            foreach ($posts->all($locale) as $post) {
+                $alternates = [];
+                foreach (SetLocale::SUPPORTED as $l) {
+                    if ($t = $posts->translation($post, $l)) {
+                        $alternates[$l] = \App\Http\Controllers\BlogController::postUrl($t);
+                    }
+                }
+                $alternates['x-default'] = $alternates['en'] ?? \App\Http\Controllers\BlogController::postUrl($post);
+
+                $urls[] = [
+                    'loc'        => \App\Http\Controllers\BlogController::postUrl($post),
+                    'lastmod'    => $post['updated'],
+                    'changefreq' => 'monthly',
+                    'priority'   => '0.7',
+                    'alternates' => $alternates,
+                ];
+            }
+
+            foreach (array_keys($posts->categories($locale)) as $category) {
+                $loc = \App\Http\Controllers\BlogController::localised(route('blog.category', $category), $locale);
+                $urls[] = [
+                    'loc'        => $loc,
+                    'changefreq' => 'weekly',
+                    'priority'   => '0.5',
+                    'alternates' => [$locale => $loc],
+                ];
+            }
+        }
+
+        return $this->xmlResponse($this->urlsetXml($urls));
+    }
+
+    private function blogLastmod(): ?string
+    {
+        try {
+            $posts = app(\App\Services\Blog\BlogRepository::class);
+            $dates = [];
+            foreach (SetLocale::SUPPORTED as $locale) {
+                $dates = array_merge($dates, array_column($posts->all($locale), 'updated'));
+            }
+
+            return $dates === [] ? null : max($dates);
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     // ── internals ───────────────────────────────────────────────────────────

@@ -39,6 +39,7 @@
     @sectionMissing('seo_head')
     @include('partials.finder.schema.site')
     @endif
+    @includeIf('partials.seo.entity-schema')
 
     {{-- Landing-page language for the public + auth shells (Inter, #EEF3F9, one accent, flat cards). Loads last. --}}
     <link rel="stylesheet" href="{{ asset('css/od-public.css') }}?v={{ @filemtime(public_path('css/od-public.css')) ?: '1' }}">
@@ -67,6 +68,7 @@
                 <a href="{{ route('portals.patient.appointments.book') }}">{{ __('finder_shell.nav.book_appointment') }}</a>
                 <a href="{{ route('public.care-map') }}">{{ __('finder_shell.nav.directory') }}</a>
                 <a href="{{ route('public.solutions.pharmacies') }}">{{ __('finder_shell.nav.for_pharmacies') }}</a>
+                <a href="{{ route('blog.index') }}" @if(request()->routeIs('blog.*')) aria-current="page" @endif>{{ __('blog.nav') }}</a>
             </nav>
 
             <div class="f-header__actions">
@@ -115,6 +117,10 @@
         </a>
         <a href="{{ route('public.solutions.pharmacies') }}">
             <span class="f-nav-panel__label">@include('partials.finder.icon', ['name' => 'building-2', 'size' => 22]){{ __('finder_shell.nav.for_pharmacies') }}</span>
+            <span class="f-nav-panel__go">@include('partials.finder.icon', ['name' => 'chevron-right', 'size' => 20])</span>
+        </a>
+        <a href="{{ route('blog.index') }}">
+            <span class="f-nav-panel__label">@include('partials.finder.icon', ['name' => 'newspaper', 'size' => 22]){{ __('blog.nav') }}</span>
             <span class="f-nav-panel__go">@include('partials.finder.icon', ['name' => 'chevron-right', 'size' => 20])</span>
         </a>
         <div class="f-nav-panel__cta">
@@ -167,6 +173,9 @@
                         <li><a class="f-footer__link" href="{{ route('public.terms') }}">{{ __('finder_shell.footer.terms') }}</a></li>
                         <li><a class="f-footer__link" href="{{ route('public.privacy') }}">{{ __('finder_shell.footer.privacy') }}</a></li>
                         <li><a class="f-footer__link" href="{{ route('public.help') }}">{{ __('finder_shell.footer.help') }}</a></li>
+                        <li><a class="f-footer__link" href="{{ route('public.faq') }}">{{ __('landing.footer.link_faq') }}</a></li>
+                        <li><a class="f-footer__link" href="{{ route('blog.index') }}">{{ __('blog.nav') }}</a></li>
+                        @includeIf('partials.seo.footer-facts-link')
                         <li><a class="f-footer__link" href="{{ route('public.contact') }}">{{ __('finder_shell.footer.contact') }}</a></li>
                     </ul>
                 </nav>

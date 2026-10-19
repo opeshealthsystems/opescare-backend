@@ -33,7 +33,7 @@ return [
     ],
 
     'medicine' => [
-        'intro'             => 'Search stock that pharmacies have reported to the network. OpesCare does not check shelves — every result is the pharmacy’s own report.',
+        'intro'             => 'Find a pharmacy that has your medicine: type its name to see pharmacies across Cameroon that have reported it in stock, with the report time and a number to call. OpesCare does not check shelves — every result is the pharmacy’s own report.',
         'search_label'      => 'What medicine do you need?',
         'search_placeholder' => 'e.g. Paracetamol, Amoxicillin…',
         'results_count'     => '{1} :count pharmacy has reported this medicine.|[2,*] :count pharmacies have reported this medicine.',
@@ -52,7 +52,7 @@ return [
     ],
 
     'blood' => [
-        'intro'             => 'Hospitals and blood banks publish what they hold to the network. OpesCare relays their reports — it does not count units itself.',
+        'intro'             => 'Find blood by group: choose a blood group to see hospitals and blood banks that have reported holding it, with a number to call before you travel. OpesCare relays their reports — it does not count units itself.',
         'group_label'       => 'Select a blood group',
         'component_label'   => 'Component',
         'component_whole_blood' => 'Whole blood',

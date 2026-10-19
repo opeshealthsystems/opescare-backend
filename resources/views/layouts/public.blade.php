@@ -21,6 +21,7 @@
 
     {{-- Canonical, hreflang and schema.org — see partials/seo_head --}}
     @include('partials.seo_head')
+    @includeIf('partials.seo.entity-schema')
 
     <!-- Fonts -->
     <link rel="stylesheet" href="{{ asset('css/od-fonts.css') }}">
@@ -108,6 +109,7 @@
                     <a href="{{ route('public.help') }}" class="nav-link dropdown-trigger">{{ __('landing.nav.resources', [], app()->getLocale()) }} <i data-lucide="chevron-down" class="icon-xs"></i></a>
                     <div class="dropdown-menu">
                         <a href="{{ route('public.faq') }}" class="dropdown-item"><i data-lucide="help-circle" class="nav-icon"></i>{{ __('landing.nav.faq', [], app()->getLocale()) }}</a>
+                        <a href="{{ route('blog.index') }}" class="dropdown-item"><i data-lucide="newspaper" class="nav-icon"></i>{{ __('blog.nav') }}</a>
                         <a href="{{ route('public.help') }}" class="dropdown-item"><i data-lucide="book-open" class="nav-icon"></i>{{ __('landing.nav.help_center', [], app()->getLocale()) }}</a>
                         <a href="{{ route('public.status') }}" class="dropdown-item"><i data-lucide="activity" class="nav-icon"></i>{{ __('landing.nav.system_status', [], app()->getLocale()) }}</a>
                         <a href="{{ route('public.request-demo') }}" class="dropdown-item"><i data-lucide="presentation" class="nav-icon"></i>{{ __('leads.demo.nav_label', [], app()->getLocale()) }}</a>
@@ -181,6 +183,7 @@
                     <div class="mobile-nav-group">
                         <span class="mobile-nav-label">{{ __('landing.nav.resources', [], app()->getLocale()) }}</span>
                         <a href="{{ route('public.faq') }}" class="mobile-nav-link">{{ __('landing.nav.faq', [], app()->getLocale()) }}</a>
+                        <a href="{{ route('blog.index') }}" class="mobile-nav-link">{{ __('blog.nav') }}</a>
                         <a href="{{ route('public.help') }}" class="mobile-nav-link">{{ __('landing.nav.help_center', [], app()->getLocale()) }}</a>
                         <a href="{{ route('public.status') }}" class="mobile-nav-link">{{ __('landing.nav.system_status', [], app()->getLocale()) }}</a>
                         <a href="{{ route('public.request-demo') }}" class="mobile-nav-link">{{ __('leads.demo.nav_label', [], app()->getLocale()) }}</a>
@@ -274,6 +277,8 @@
                     <li><a href="{{ route('public.privacy') }}" class="footer-link">{{ __('landing.footer.link_privacy', [], app()->getLocale()) }}</a></li>
                     <li><a href="{{ route('public.terms') }}" class="footer-link">{{ __('landing.footer.link_terms', [], app()->getLocale()) }}</a></li>
                     <li><a href="{{ route('public.faq') }}" class="footer-link">{{ __('landing.footer.link_faq', [], app()->getLocale()) }}</a></li>
+                    <li><a href="{{ route('blog.index') }}" class="footer-link">{{ __('blog.nav') }}</a></li>
+                    @includeIf('partials.seo.footer-facts-link')
                     <li><a href="{{ route('public.contact') }}" class="footer-link">{{ __('landing.footer.link_partnerships', [], app()->getLocale()) }}</a></li>
                 </ul>
             </div>

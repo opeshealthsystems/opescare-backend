@@ -65,6 +65,7 @@ Route::prefix('network')->group(function () {
 
 // Core Institutional Pages
 Route::get('/about', [PublicPageController::class, 'about'])->name('public.about');
+Route::view('/about/facts', 'public.facts')->name('public.facts'); // GEO: answer-engine facts page
 Route::get('/how-it-works', [PublicPageController::class, 'howItWorks'])->name('public.how-it-works');
 
 // Solutions

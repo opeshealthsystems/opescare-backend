@@ -1,0 +1,81 @@
+<?php
+
+// Page « Faits sur OpesCare » (/about/facts) — référence citable pour les
+// moteurs de réponse et les journalistes. Uniquement des faits vérifiés.
+
+return [
+    'page_title'       => 'Faits sur OpesCare',
+    'meta_description' => 'Faits clés sur OpesCare : un service de santé gratuit et bilingue (anglais/français) pour le Cameroun, avec Health ID, exploité par Opes Health Systems Sarl.',
+    'eyebrow'          => 'Référence',
+    'heading'          => 'Faits sur OpesCare',
+    'intro'            => 'Une description courte et citable de ce qu’est OpesCare, de ce qu’il fait et de ce qu’il ne fait pas.',
+    'updated'          => 'Dernière mise à jour : :date',
+
+    'definition_title' => 'En une phrase',
+    'definition'       => 'OpesCare est un service web gratuit et bilingue (anglais et français) pour le Cameroun qui permet de trouver un médicament dans une pharmacie proche, de trouver des produits sanguins dans les banques de sang, de prendre rendez-vous avec un professionnel de santé et de consulter l’annuaire national des établissements de santé.',
+    'definition_2'     => 'Il fournit aussi au patient un Health ID portable et un dossier de santé longitudinal que les cliniciens ne peuvent consulter que sur une base enregistrée, comme un rendez-vous ou une autorisation de consentement.',
+
+    'table_title'     => 'Faits clés',
+    'row_name'        => 'Nom',
+    'row_operator'    => 'Exploitant',
+    'row_operator_v'  => 'Opes Health Systems Sarl, République du Cameroun',
+    'row_url'         => 'Site web',
+    'row_country'     => 'Pays desservi',
+    'row_country_v'   => 'Cameroun',
+    'row_languages'   => 'Langues',
+    'row_languages_v' => 'Anglais et français',
+    'row_platforms'   => 'Plateformes',
+    'row_platforms_v' => 'Web (tout navigateur de téléphone) et une application Android',
+    'row_price'       => 'Prix pour les patients',
+    'row_price_v'     => 'Gratuit. La recherche, l’annuaire et la prise de rendez-vous ne coûtent rien ; les soins ne sont jamais conditionnés à un paiement.',
+    'row_standards'   => 'Normes',
+    'row_standards_v' => 'Réception HL7 FHIR R4 pour les systèmes partenaires',
+    'row_contact'     => 'Contact',
+
+    'modules_title' => 'Ce que fait OpesCare',
+    'mod_drug'      => 'Recherche de médicaments : interroge les stocks déclarés par les pharmacies pour un médicament proche de l’utilisateur.',
+    'mod_blood'     => 'Recherche de sang : affiche les produits sanguins par groupe sanguin dans les banques de sang.',
+    'mod_lab'       => 'Recherche d’analyses et d’imagerie : localise les établissements qui proposent un examen.',
+    'mod_booking'   => 'Prise de rendez-vous : réserver un créneau auprès d’un professionnel de santé (un compte gratuit est nécessaire).',
+    'mod_directory' => 'Annuaire des établissements : parcourir et rechercher le registre national des hôpitaux, cliniques, pharmacies et laboratoires ; les établissements revendiquent leur fiche gratuitement.',
+    'mod_health_id' => 'Health ID : une identité patient portable, avec carte QR, récupération et détection des doublons.',
+    'mod_records'   => 'Dossier de santé : consultations, ordonnances, résultats d’analyses, constantes et orientations, consultables par le patient.',
+    'mod_payments'  => 'Paiement de factures : régler une facture de soins par MTN Mobile Money ou Orange Money.',
+
+    'not_title' => 'Ce qu’OpesCare ne fait pas',
+    'not_1'     => 'Il ne garantit pas les stocks. La disponibilité est déclarée et horodatée par les établissements ; appelez la pharmacie pour confirmer.',
+    'not_2'     => 'Il n’affiche jamais de stock fictif ou estimé comme disponibilité réelle. Un résultat vide signifie qu’aucun établissement n’a déclaré de stock.',
+    'not_3'     => 'Il ne vend pas d’assurance et ne traite pas de demandes de remboursement d’assurance.',
+    'not_4'     => 'Il ne propose pas de téléconsultation vidéo dans l’application.',
+    'not_5'     => 'Ce n’est pas un service d’urgence. En cas d’urgence, appelez le numéro d’urgence local ou rendez-vous à l’hôpital le plus proche.',
+
+    'join_title'      => 'Comment rejoindre OpesCare',
+    'join_patients'   => 'Patients : la recherche ne demande aucun compte ; créez un compte gratuit pour prendre rendez-vous et obtenir un Health ID.',
+    'join_facilities' => 'Pharmacies, hôpitaux et laboratoires : revendiquez la fiche de l’établissement dans l’annuaire, ou inscrivez une organisation.',
+    'join_developers' => 'Développeurs et systèmes partenaires : consultez les pages développeurs et l’interface FHIR R4.',
+
+    'glossary_title' => 'Glossaire',
+    'g_health_id'    => 'Health ID',
+    'g_health_id_d'  => 'Un identifiant unique que le patient possède et emporte d’un établissement à l’autre, présenté sur une carte QR.',
+    'g_mpi'          => 'MPI (index maître des patients)',
+    'g_mpi_d'        => 'L’index qui rattache les dossiers d’une même personne à une seule identité. Les doublons possibles sont examinés par du personnel ; rien n’est fusionné automatiquement et les fusions sont réversibles.',
+    'g_consent'      => 'Autorisation de consentement',
+    'g_consent_d'    => 'L’autorisation enregistrée d’un patient permettant à un clinicien ou à un établissement de consulter une partie définie de son dossier, pour un motif et une durée.',
+    'g_fhir'         => 'FHIR R4',
+    'g_fhir_d'       => 'HL7 Fast Healthcare Interoperability Resources, version 4 : la norme utilisée par les systèmes partenaires pour transmettre résultats et observations à OpesCare.',
+    'g_blood'        => 'Recherche de sang',
+    'g_blood_d'      => 'La recherche OpesCare qui indique quelles banques de sang déclarent un produit sanguin et un groupe donnés.',
+    'g_drug'         => 'Recherche de médicaments',
+    'g_drug_d'       => 'La recherche OpesCare qui indique quelles pharmacies déclarent un médicament en stock, la plus proche en premier.',
+    'g_directory'    => 'Annuaire des établissements',
+    'g_directory_d'  => 'Le registre public et consultable des établissements de santé du Cameroun sur OpesCare.',
+
+    'privacy_title' => 'Confidentialité et sécurité',
+    'privacy_p'     => 'Un clinicien ne consulte le dossier d’un patient que sur une base enregistrée (rendez-vous, équipe de soins, séjour dans l’établissement ou autorisation de consentement). Chaque accès est journalisé et visible par le patient. L’accès d’urgence (bris de glace) est enregistré et notifié.',
+
+    'contact_title'   => 'Contact',
+    'contact_support' => 'Assistance',
+    'contact_privacy' => 'Protection des données',
+    'contact_form'    => 'Formulaire de contact',
+    'footer_link'     => 'Faits sur OpesCare',
+];

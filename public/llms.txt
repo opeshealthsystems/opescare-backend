@@ -1,0 +1,39 @@
+# OpesCare
+
+> OpesCare (https://opescare.com) is a free, bilingual (English and French) health service for Cameroon, operated by Opes Health Systems Sarl. It helps people find a medicine in stock at a nearby pharmacy, find blood products at blood banks, book an appointment with a provider, and browse the national health facility directory. It also gives patients a portable Health ID and a health record that clinicians read only with a recorded basis such as an appointment or consent grant.
+
+Stock and blood availability are reported by facilities and timestamped; OpesCare never shows demo or estimated stock as live, so an empty result is a real answer. OpesCare is not an emergency service and does not sell insurance. Every page is available in French by adding `?lang=fr`.
+
+## Facts
+
+- [OpesCare facts](https://opescare.com/about/facts): citable definitions, key facts, modules, glossary and contact
+- [Full description for language models](https://opescare.com/llms-full.txt): complete plain-Markdown description
+- [About](https://opescare.com/about): what OpesCare is and where its data comes from
+- [FAQ](https://opescare.com/faq): plain answers in English and French
+
+## Services
+
+- [Medicine finder](https://opescare.com/network/medicine-finder): pharmacies reporting a medicine in stock, nearest first
+- [Blood finder](https://opescare.com/network/blood-finder): blood products by type at blood banks
+- [Lab test finder](https://opescare.com/network/lab-test-finder): facilities offering a lab test
+- [Imaging finder](https://opescare.com/network/imaging-finder): facilities offering an imaging exam
+- [Facility directory](https://opescare.com/care-map): searchable register of hospitals, clinics, pharmacies and laboratories in Cameroon
+- [Emergency facilities](https://opescare.com/care-map/emergency): facilities with emergency services
+
+## For facilities and partners
+
+- [For pharmacies](https://opescare.com/solutions/pharmacies)
+- [For hospitals](https://opescare.com/solutions/hospitals)
+- [Interoperability](https://opescare.com/interoperability): HL7 FHIR R4 ingest for partner systems
+- [Developers](https://opescare.com/developers)
+- [Security](https://opescare.com/security)
+
+## Blog
+
+- [OpesCare blog](https://opescare.com/blog): guides on finding medicines, blood and care in Cameroon
+
+## Optional
+
+- [Privacy policy](https://opescare.com/privacy)
+- [Terms](https://opescare.com/terms)
+- [Contact](https://opescare.com/contact)

@@ -227,6 +227,16 @@
 </div>
 {{-- ── end Group E import ── --}}
 
+{{-- Blog comment moderation (routes/blog.php). Platform tier only. --}}
+<div class="sidebar-nav-section">
+    <div class="sidebar-nav-label">{{ __('blog.admin.nav', [], $l) }}</div>
+    <a href="{{ route('portals.admin.blog.comments') }}" class="sidebar-link {{ request()->routeIs('portals.admin.blog.*') ? 'active' : '' }}">
+        <i data-lucide="message-circle"></i><span>{{ __('blog.admin.nav_comments', [], $l) }}</span>
+        @php $blogPending = rescue(fn () => \App\Models\BlogComment::where('status', 'pending')->count(), 0, false); @endphp
+        @if($blogPending > 0)<span class="sidebar-badge sidebar-badge--warning">{{ $blogPending }}</span>@endif
+    </a>
+</div>
+
 {{-- Control Center --}}
 <div class="sidebar-nav-section">
     <div class="sidebar-nav-label">{{ __('public.portal.nav_control_center', [], $l) }}</div>

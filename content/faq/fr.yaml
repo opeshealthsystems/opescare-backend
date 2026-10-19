@@ -1,0 +1,218 @@
+# FAQ publique OpesCare (FR). Schéma : liste de {category, q, a, link}.
+# Les catégories restent en anglais (clés techniques partagées avec en.yaml).
+# Garder 1:1 avec en.yaml (même ordre, mêmes catégories, mêmes liens).
+
+- category: "Health ID"
+  q: "Qu'est-ce que le Health ID d'OpesCare ?"
+  a: "Le Health ID d'OpesCare est un identifiant personnel unique qui relie votre dossier médical entre les hôpitaux, cliniques, laboratoires et pharmacies qui utilisent OpesCare. Fini le carnet différent dans chaque structure. Vous vous inscrivez une fois, et les soignants ne consultent votre historique qu'avec votre consentement ou un motif légal enregistré."
+  link: /signup/patient
+
+- category: "Health ID"
+  q: "Comment obtenir un Health ID au Cameroun ?"
+  a: "Vous obtenez un Health ID en vous inscrivant en ligne sur la page d'inscription patient, ou en demandant à une structure du réseau de vous enregistrer. Il faut votre nom, votre date de naissance et un contact. Votre identité est d'abord provisoire, puis vérifiée dès qu'une structure confirme qui vous êtes."
+  link: /signup/patient
+
+- category: "Health ID"
+  q: "Le Health ID d'OpesCare est-il gratuit ?"
+  a: "Oui, la création du Health ID et la recherche de médicaments, de sang et de structures de santé sont gratuites pour les patients. Des formules payantes existent en option, mais aucun soin n'est jamais bloqué faute de paiement. Chaque structure facture toutefois ses propres consultations, examens et médicaments."
+  link: /signup/patient
+
+- category: "Health ID"
+  q: "J'ai perdu ma carte ou mon numéro Health ID, que faire ?"
+  a: "Vous pouvez récupérer votre Health ID grâce à la procédure de récupération de compte, avec le téléphone ou l'e-mail utilisé à l'inscription. Perdre la carte ne fait perdre ni votre identité ni votre dossier. Toute structure du réseau peut aussi vous retrouver et confirmer votre identité sur place."
+  link: /help
+
+- category: "Health ID"
+  q: "À quoi sert le QR code de mon Health ID ?"
+  a: "Le QR code permet à un soignant ou à une structure de vous identifier rapidement et de vérifier que la carte est authentique. Le scanner n'ouvre pas votre dossier médical à lui seul : l'accès aux informations cliniques exige toujours votre consentement ou un autre motif enregistré, et chaque accès est journalisé."
+  link: /help
+
+- category: "Health ID"
+  q: "J'ai été enregistré deux fois par erreur, que se passe-t-il ?"
+  a: "En cas de double inscription, OpesCare peut fusionner les deux dossiers en un seul Health ID après examen par le personnel. Rien n'est fusionné automatiquement et une fusion peut être annulée. L'ancien numéro reste valable comme alias : les documents qui le portent mènent toujours à votre dossier unique."
+  link: /contact
+
+- category: "Finding medicines"
+  q: "Comment trouver une pharmacie qui a mon médicament en stock ?"
+  a: "Saisissez le nom du médicament dans la recherche de médicaments d'OpesCare pour voir les pharmacies qui l'ont déclaré en stock, avec l'heure de chaque déclaration et un numéro de téléphone. Une déclaration n'est pas une réservation : appelez avant de vous déplacer. La recherche est gratuite et sans compte."
+  link: /network/medicine-finder
+
+- category: "Finding medicines"
+  q: "Comment trouver une pharmacie de garde près de chez moi ?"
+  a: "Ouvrez la carte des soins d'OpesCare pour voir les pharmacies proches avec leurs horaires déclarés et leur numéro, puis appelez pour savoir si elles sont de garde. Les tours de garde sont fixés localement et changent souvent ; l'appel reste la vérification fiable. Le tableau de garde est aussi généralement affiché en devanture."
+  link: /care-map
+
+- category: "Finding medicines"
+  q: "Pourquoi la recherche de médicaments n'affiche-t-il aucun résultat ?"
+  a: "Une recherche vide signifie qu'aucune pharmacie du réseau n'a encore déclaré ce médicament, pas qu'il est introuvable. OpesCare n'affiche que les stocks déclarés par les pharmacies elles-mêmes et ne comble jamais les vides par des estimations. Essayez le nom générique, vérifiez l'orthographe ou appelez une pharmacie proche."
+  link: /network/medicine-finder
+
+- category: "Finding medicines"
+  q: "Les prix des médicaments sont-ils affichés sur OpesCare ?"
+  a: "Oui, lorsqu'une pharmacie déclare un prix, OpesCare l'affiche en FCFA à côté de sa déclaration de stock. Chaque pharmacie fixe ses prix, qui peuvent évoluer : prenez-les comme une indication. Toutes ne déclarent pas leurs prix, et c'est le montant demandé au comptoir qui fait foi."
+  link: /network/medicine-finder
+
+- category: "Finding medicines"
+  q: "Puis-je réserver ou acheter un médicament sur OpesCare ?"
+  a: "Non, la recherche de médicaments ne réserve ni ne vend de médicaments : il montre ce que les pharmacies ont déclaré et comment les joindre. Le stock bouge dans la journée, une déclaration n'est donc pas une réservation. Appelez la pharmacie et demandez-lui de vous mettre le produit de côté si elle le propose."
+  link: /network/medicine-finder
+
+- category: "Finding medicines"
+  q: "Comment utiliser en pharmacie une ordonnance de mon médecin ?"
+  a: "Si votre soignant a établi l'ordonnance dans OpesCare, la pharmacie la retrouve grâce à votre Health ID et vous délivre les médicaments au comptoir. Une délivrance partielle est enregistrée, et une autre pharmacie peut fournir le reste. Une ordonnance papier hors réseau est traitée comme d'habitude par la pharmacie."
+  link: /help
+
+- category: "Blood"
+  q: "Comment trouver du sang d'un groupe précis au Cameroun ?"
+  a: "Choisissez le groupe sanguin et le produit dans la recherche de sang d'OpesCare pour voir les hôpitaux et banques de sang qui ont déclaré en disposer, avec leur numéro. OpesCare relaie leurs déclarations sans compter les poches lui-même : appelez la structure pour confirmer avant de vous déplacer."
+  link: /network/blood-finder
+
+- category: "Blood"
+  q: "Où donner son sang au Cameroun ?"
+  a: "On donne son sang dans les banques de sang hospitalières et les centres de transfusion ; la carte des soins d'OpesCare liste les structures proches avec leur numéro. Appelez pour connaître les horaires et les conditions, fixés par chaque banque de sang. Le donneur remplit d'abord un questionnaire et voit un soignant."
+  link: /care-map
+
+- category: "Blood"
+  q: "OpesCare garantit-il que du sang est disponible ?"
+  a: "Non, OpesCare ne garantit pas la disponibilité du sang : il affiche ce que les hôpitaux et banques de sang ont déclaré, avec l'heure de chaque déclaration. Les stocks changent vite, surtout en urgence. Appelez toujours avant de partir et, en cas de danger vital, rendez-vous directement aux urgences les plus proches."
+  link: /network/blood-finder
+
+- category: "Blood"
+  q: "Pourquoi la recherche de sang est-il vide pour mon groupe sanguin ?"
+  a: "Une recherche de sang vide signifie qu'aucune structure du réseau n'a déclaré ce groupe récemment, pas qu'il n'en existe nulle part. OpesCare n'affiche jamais de stocks estimés ou de démonstration comme disponibles. Contactez directement la banque de sang la plus proche et mobilisez vos proches si l'hôpital demande un don de remplacement."
+  link: /network/blood-finder
+
+- category: "Facilities & directory"
+  q: "Comment trouver un hôpital ou une clinique près de chez moi ?"
+  a: "Ouvrez la carte des soins d'OpesCare pour rechercher les structures de santé du Cameroun par nom, type et lieu, avec téléphone et itinéraire sur une carte intégrée. Les fiches viennent du répertoire national des structures et des structures elles-mêmes. Appelez avant de vous déplacer : horaires et services peuvent changer."
+  link: /care-map
+
+- category: "Facilities & directory"
+  q: "Comment trouver le service d'urgences le plus proche ?"
+  a: "Ouvrez la page Urgences d'OpesCare pour voir les structures proches qui assurent les urgences, avec leur numéro et l'itinéraire. En cas de danger vital, rendez-vous immédiatement aux urgences les plus proches plutôt que de chercher en ligne. Appeler aide l'équipe à se préparer, mais ne retardez pas le départ."
+  link: /care-map/emergency
+
+- category: "Facilities & directory"
+  q: "Peut-on prendre rendez-vous chez un médecin en ligne au Cameroun ?"
+  a: "Oui, dans les structures qui publient leurs créneaux sur OpesCare, vous choisissez un praticien et réservez une heure en ligne. Il faut un compte patient gratuit pour que la structure sache qui vient. Si une structure ne propose pas la réservation en ligne, sa fiche donne un numéro pour fixer le rendez-vous."
+  link: /signup/patient
+
+- category: "Facilities & directory"
+  q: "Le numéro ou les horaires d'une structure sont faux. Comment le signaler ?"
+  a: "Signalez l'erreur via la page Contact d'OpesCare en indiquant la structure et ce qui est inexact. Les messages sont lus en français et en anglais. Une structure peut aussi revendiquer sa fiche pour tenir elle-même à jour horaires, numéros et services : c'est le moyen le plus rapide de corriger une erreur."
+  link: /contact
+
+- category: "For hospitals"
+  q: "Comment inscrire un hôpital ou une clinique sur OpesCare ?"
+  a: "Inscrivez votre hôpital ou votre clinique en remplissant le formulaire d'inscription des organisations avec les informations de la structure et d'un responsable. OpesCare examine chaque demande avant activation. Une fois validée, la structure crée les comptes du personnel par rôle et gère sa fiche, ses rendez-vous et ses dossiers patients."
+  link: /signup/organization
+
+- category: "For hospitals"
+  q: "Que peut faire un hôpital avec OpesCare ?"
+  a: "Un hôpital peut, avec OpesCare, enregistrer ses patients avec un Health ID, tenir un dossier longitudinal, gérer rendez-vous et files d'attente, prescrire, saisir résultats d'analyses et constantes, et orienter des patients. Les soignants ne voient l'historique venu d'autres structures qu'avec consentement ou un motif légal enregistré."
+  link: /solutions/hospitals
+
+- category: "For hospitals"
+  q: "Un médecin peut-il consulter un dossier médical en urgence ?"
+  a: "Oui, un soignant peut utiliser l'accès d'urgence (« bris de glace ») quand le patient ne peut pas consentir et que les soins pressent. Il doit en donner le motif, l'accès est limité dans le temps, le patient est prévenu et l'événement est consigné dans le journal d'accès. C'est une exception, pas la règle."
+  link: /privacy
+
+- category: "For hospitals"
+  q: "Mon hôpital doit-il remplacer son logiciel actuel ?"
+  a: "Non, OpesCare est conçu pour fonctionner à côté des logiciels déjà en place. Les systèmes partenaires peuvent transmettre des données via l'interface FHIR R4, et le personnel peut aussi travailler directement dans le portail web et l'application mobile. Une structure peut commencer par les seuls modules utiles."
+  link: /docs
+
+- category: "For pharmacies"
+  q: "Comment inscrire ma pharmacie sur OpesCare ?"
+  a: "Inscrivez votre pharmacie via le formulaire d'inscription des organisations, en choisissant le type pharmacie. OpesCare examine la demande avant activation. Une fois validée, la pharmacie déclare ses stocks, ses prix et ses horaires, pour que les patients qui cherchent un médicament voient ce qu'elle détient et l'appellent."
+  link: /signup/organization
+
+- category: "For pharmacies"
+  q: "Pourquoi une pharmacie a-t-elle intérêt à déclarer son stock sur OpesCare ?"
+  a: "Déclarer son stock permet aux patients qui cherchent un médicament de voir que votre pharmacie l'a, de vous appeler et de venir chez vous. Chaque déclaration est horodatée : plus elle est récente, plus elle est utile. La pharmacie peut aussi délivrer les ordonnances OpesCare à partir du Health ID du patient."
+  link: /solutions/pharmacies
+
+- category: "For pharmacies"
+  q: "Une pharmacie peut-elle importer son stock au lieu de tout saisir ?"
+  a: "Oui, une pharmacie peut importer son stock depuis un fichier tableur, faire correspondre les colonnes, prévisualiser le résultat puis valider l'import. Cela évite de saisir chaque ligne à la main. Seul le stock déclaré par la pharmacie depuis son propre compte apparaît dans la recherche de médicaments."
+  link: /solutions/pharmacies
+
+- category: "Privacy & consent"
+  q: "Qui peut voir mon dossier médical sur OpesCare ?"
+  a: "Votre dossier n'est visible que par les soignants qui ont un lien de soins avec vous : rendez-vous, équipe soignante ou consentement que vous avez accepté. Chaque accès est journalisé et vous pouvez voir qui a ouvert votre dossier. Le personnel d'OpesCare ne parcourt pas les dossiers, et les structures n'y accèdent pas librement."
+  link: /privacy
+
+- category: "Privacy & consent"
+  q: "Comment fonctionne le consentement pour accéder à mon dossier médical ?"
+  a: "Quand un soignant extérieur à votre prise en charge a besoin de votre dossier, il vous envoie une demande de consentement que vous acceptez ou refusez. Un consentement accordé est limité en portée et en durée, et vous pouvez le retirer. Sans consentement, seul un accès d'urgence journalisé et notifié est possible."
+  link: /privacy
+
+- category: "Privacy & consent"
+  q: "Puis-je savoir qui a consulté mon dossier médical ?"
+  a: "Oui, OpesCare tient un journal de chaque ouverture de votre dossier : qui, quand et à quel titre. Vous le consultez depuis votre compte patient. Si un accès vous paraît inconnu, contactez OpesCare pour qu'il soit examiné avec la structure concernée."
+  link: /privacy
+
+- category: "Privacy & consent"
+  q: "Quelle loi protège les données de santé au Cameroun ?"
+  a: "La loi camerounaise de décembre 2024 sur la protection des données à caractère personnel (loi n° 2024/017) classe les données de santé parmi les données sensibles, qui exigent une protection renforcée. La politique de confidentialité d'OpesCare explique quelles données sont traitées, pourquoi, combien de temps et comment exercer vos droits."
+  link: /blog/health-data-law-innovation-cameroon
+
+- category: "Privacy & consent"
+  q: "OpesCare vend-il mes données ?"
+  a: "Non, OpesCare ne vend aucune donnée personnelle ou médicale. Les données servent à fournir le service, à protéger les dossiers et à respecter la loi, comme le décrit la politique de confidentialité. Seuls des chiffres agrégés, sans aucune identité, peuvent être transmis à des fins de santé publique."
+  link: /privacy
+
+- category: "Privacy & consent"
+  q: "Puis-je gérer le dossier de santé d'un membre de ma famille ?"
+  a: "Oui, OpesCare permet les liens familiaux : un parent ou un tuteur gère le dossier et les rendez-vous d'un enfant ou d'un proche à charge. Le tuteur agit pour son proche depuis son propre compte, et chaque action est enregistrée. Un adulte garde la maîtrise de son propre dossier."
+  link: /help
+
+- category: "Account & app"
+  q: "Faut-il un compte pour chercher un médicament ou du sang ?"
+  a: "Non, vous pouvez chercher médicaments, sang et structures de santé sur OpesCare sans compte. Un compte n'est utile que pour les fonctions personnelles : Health ID, prise de rendez-vous, consultation de votre dossier et gestion des consentements. La création d'un compte patient est gratuite."
+  link: /network/medicine-finder
+
+- category: "Account & app"
+  q: "Existe-t-il une application mobile OpesCare ?"
+  a: "Oui, OpesCare propose une application mobile pour les patients et les soignants, avec le Health ID, le dossier, les rendez-vous et les outils de recherche. Les mêmes fonctions sont accessibles dans un navigateur sur opescare.com, depuis n'importe quel téléphone ou ordinateur connecté à Internet."
+  link: /help
+
+- category: "Account & app"
+  q: "OpesCare est-il disponible en français ?"
+  a: "Oui, OpesCare est entièrement disponible en français et en anglais. Vous changez de langue à tout moment grâce au sélecteur de langue, et votre choix s'applique à tout le site. Les messages envoyés via la page Contact sont lus et traités dans les deux langues."
+  link: /help
+
+- category: "Account & app"
+  q: "Comment supprimer mon compte OpesCare ?"
+  a: "Vous demandez la suppression de votre compte OpesCare depuis la page dédiée, qui détaille les étapes et le sort de vos données. Certaines données médicales peuvent être conservées pendant la durée imposée par la loi après la fermeture du compte, comme l'explique la politique de confidentialité."
+  link: /account-deletion
+
+- category: "Account & app"
+  q: "J'ai oublié mon mot de passe, comment me connecter ?"
+  a: "Utilisez le lien « mot de passe oublié » de la page de connexion pour le réinitialiser avec l'e-mail ou le téléphone de votre compte. Par sécurité, le nombre de tentatives de connexion est limité. Si vous n'avez plus accès à ces coordonnées, contactez l'assistance via la page Contact."
+  link: /login
+
+- category: "Payments"
+  q: "Peut-on payer une facture d'hôpital par Mobile Money ?"
+  a: "Oui, lorsqu'une structure émet sa facture via OpesCare, vous pouvez la régler par MTN Mobile Money ou Orange Money. Vous validez le paiement sur votre téléphone, et la facture est mise à jour dès la confirmation de l'opérateur. Tous les montants sont affichés en FCFA."
+  link: /help
+
+- category: "Payments"
+  q: "Puis-je être privé de soins si je ne paie pas sur OpesCare ?"
+  a: "Non, OpesCare ne bloque jamais l'accès aux soins, au dossier ou aux outils de recherche pour défaut de paiement. Les formules d'abonnement facultatives n'ajoutent que du confort. Chaque structure fixe et encaisse ses propres tarifs, selon ses règles, indépendamment d'OpesCare."
+  link: /terms
+
+- category: "Developers & interoperability"
+  q: "OpesCare prend-il en charge FHIR ?"
+  a: "Oui, OpesCare reçoit des données FHIR R4 de systèmes partenaires autorisés : comptes rendus d'examens, vaccinations, observations et lots de transactions. Chaque partenaire dispose d'identifiants à portée limitée, et les données entrantes sont contrôlées avant enregistrement. Le patient peut aussi exporter son dossier au format FHIR depuis l'application."
+  link: /docs
+
+- category: "Developers & interoperability"
+  q: "Où trouver la documentation de l'API OpesCare ?"
+  a: "La documentation développeurs d'OpesCare est publiée dans la rubrique Docs d'opescare.com. Elle décrit l'API REST, l'authentification et les points d'entrée FHIR R4. L'accès d'un système partenaire est accordé par organisation après examen, avec des identifiants limités à ce qu'il peut envoyer ou lire."
+  link: /docs
+
+- category: "Developers & interoperability"
+  q: "Comment mon organisation peut-elle s'intégrer à OpesCare ?"
+  a: "Pour vous intégrer à OpesCare, inscrivez votre organisation puis contactez l'équipe en décrivant le système à connecter. Les intégrations passent par les interfaces REST et FHIR R4 documentées, avec des identifiants à portée limitée. Les échanges restent soumis au consentement du patient et aux mêmes règles d'accès que le portail web."
+  link: /contact

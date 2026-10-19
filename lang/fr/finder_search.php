@@ -30,7 +30,7 @@ return [
     ],
 
     'medicine' => [
-        'intro'             => 'Recherchez le stock que les pharmacies ont déclaré au réseau. OpesCare ne vérifie aucun rayon — chaque résultat est la déclaration de la pharmacie elle-même.',
+        'intro'             => 'Trouvez une pharmacie qui a votre médicament : saisissez son nom pour voir les pharmacies du Cameroun qui l’ont déclaré en stock, avec l’heure de la déclaration et un numéro à appeler. OpesCare ne vérifie aucun rayon — chaque résultat est la déclaration de la pharmacie elle-même.',
         'search_label'      => 'De quel médicament avez-vous besoin ?',
         'search_placeholder' => 'ex. Paracétamol, Amoxicilline…',
         'results_count'     => '{1} :count pharmacie a déclaré ce médicament.|[2,*] :count pharmacies ont déclaré ce médicament.',
@@ -49,7 +49,7 @@ return [
     ],
 
     'blood' => [
-        'intro'             => 'Les hôpitaux et banques de sang publient leurs disponibilités sur le réseau. OpesCare relaie leurs déclarations — il ne compte pas les poches lui-même.',
+        'intro'             => 'Trouvez du sang par groupe : choisissez un groupe sanguin pour voir les hôpitaux et banques de sang qui ont déclaré en disposer, avec un numéro à appeler avant de vous déplacer. OpesCare relaie leurs déclarations — il ne compte pas les poches lui-même.',
         'group_label'       => 'Choisissez un groupe sanguin',
         'component_label'   => 'Composant',
         'component_whole_blood' => 'Sang total',

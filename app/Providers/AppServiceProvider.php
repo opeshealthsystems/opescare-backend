@@ -367,6 +367,9 @@ class AppServiceProvider extends ServiceProvider
         // Public imaging-exam finder (docs/audits/IMAGING_DASHBOARD_AUDIT_2.md, I-1).
         Route::middleware('web')->group(base_path('routes/imaging_finder.php'));
 
+        // Public blog (file-based posts) + its comment moderation desk.
+        Route::middleware('web')->group(base_path('routes/blog.php'));
+
         // Code imported from the platform (docs/PLATFORM_IMPORTS.md), one route file per group.
         Route::group([], base_path('routes/imports_files.php'));
         Route::group([], base_path('routes/imports_tasks.php'));
