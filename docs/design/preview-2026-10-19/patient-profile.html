@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Preview — clinician patient profile</title>
+<style>
+:root{--brand:#0F4C81;--ink:#0F172A;--ink2:#334155;--muted:#64748B;--line:#E2E8F0;--soft:#F8FAFC;--pain:#DC2626}
+*{box-sizing:border-box}body{margin:0;font:14px/1.5 Inter,Segoe UI,system-ui,sans-serif;color:var(--ink);background:#F1F5F9}
+.page{max-width:1240px;margin:0 auto;padding:20px 16px}
+.bar{display:flex;align-items:center;gap:16px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:14px}
+.id b{font-size:18px}.id small{display:block;color:var(--muted);font-size:13px}
+.kv{display:flex;gap:22px;margin-left:24px;font-size:13px}.kv span{color:var(--muted);display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.consent{margin-left:auto;font-size:13px;color:var(--ink2);border:1px solid var(--line);border-radius:6px;padding:6px 10px}
+.alert{font-size:13px;color:#7F1D1D;border:1px solid #FECACA;background:#FEF2F2;border-radius:6px;padding:6px 10px}
+.layout{display:grid;grid-template-columns:300px minmax(0,1fr) 300px;gap:14px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.panel h2{margin:0;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:12px 16px;border-bottom:1px solid var(--line)}
+.panel .in{padding:12px 16px}
+.fig{position:relative;background:#0B2A4A url(img/guilloche-texture.webp) center/cover;padding:14px 0 10px}
+.fig::before{content:"";position:absolute;inset:0;background:rgba(11,42,74,.55)}
+.stage{position:relative;width:170px;margin:0 auto;aspect-ratio:305/720}
+.stage img{width:100%;height:100%;object-fit:contain}
+.pin{position:absolute;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--pain);border:2px solid #fff;animation:t 1.6s ease-out infinite}
+@keyframes t{0%{box-shadow:0 0 0 0 rgba(220,38,38,.7)}75%{box-shadow:0 0 0 14px rgba(220,38,38,0)}100%{box-shadow:0 0 0 0 rgba(220,38,38,0)}}
+@media (prefers-reduced-motion:reduce){.pin{animation:none}}
+.pn{position:absolute;font:600 10px Inter,sans-serif;color:#fff;transform:translate(10px,-50%)}
+.legend{position:relative;color:#CBD5E1;font-size:11px;text-align:center;margin-top:6px}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:9px 0;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--muted);font-size:12px}tr:last-child td{border-bottom:0}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.sev{display:inline-block;min-width:34px;text-align:center;font-weight:600;color:var(--ink)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--pain);margin-right:8px;vertical-align:1px}
+.sub{color:var(--muted);font-size:12px}
+.vit{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line)}
+.vit div{padding:10px 16px;border-bottom:1px solid var(--line)}.vit div:nth-child(odd){border-right:1px solid var(--line)}
+.vit span{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}.vit b{font-size:17px;font-variant-numeric:tabular-nums}
+.vit i{font-style:normal;font-size:11px;color:var(--muted);margin-left:6px}
+.spark{display:block;margin-top:4px}
+.tag{font-size:12px;color:var(--ink2);border:1px solid var(--line);border-radius:4px;padding:1px 6px;margin-right:4px}
+.flag{color:#B91C1C;font-weight:600}
+.actions{display:flex;gap:8px;margin-left:12px}.actions a{font-size:13px;border:1px solid var(--line);border-radius:6px;padding:6px 10px;color:var(--brand);text-decoration:none}
+.actions a.p{background:var(--brand);color:#fff;border-color:var(--brand)}
+.cap{font-size:12px;color:var(--muted);margin:12px 2px 0}
+</style></head><body><div class="page">
+<div class="bar">
+ <div class="id"><b>Amara D.</b><small>CM-HID-XXXX-XXXX-XXXX · Female · 34 y · O+</small></div>
+ <div class="kv"><div><span>Weight</span>62 kg</div><div><span>Height</span>164 cm</div><div><span>Last visit</span>12 Oct 2026</div></div>
+ <div class="alert">Allergy: penicillin</div>
+ <div class="consent">Consent active · until 18:40</div>
+ <div class="actions"><a href="#">Request results</a><a class="p" href="#">New encounter</a></div>
+</div>
+<div class="layout">
+ <div class="panel"><h2>Presenting complaint</h2>
+  <div class="fig"><div class="stage"><img src="img/adult-female-base.png" alt="Anatomy figure, adult female"><span class="pin" style="left:50%;top:6.5%"></span><span class="pin" style="left:50%;top:23%;animation-delay:.6s"></span></div>
+   <p class="legend">Figure follows sex and age band · red = reported pain</p></div>
+  <div class="in"><table><tr><th>Site</th><th class="num">Severity</th></tr>
+   <tr><td><span class="dot"></span>Forehead<div class="sub">Headache · 3 days · patient, check-in</div></td><td class="num"><span class="sev">6/10</span></td></tr>
+   <tr><td><span class="dot"></span>Chest<div class="sub">Chest pain · since 07:30 · nurse, triage</div></td><td class="num"><span class="sev">7/10</span></td></tr></table></div>
+ </div>
+ <div style="display:grid;gap:14px;align-content:start">
+  <div class="panel"><h2>Vitals · triage 09:12</h2><div class="vit">
+   <div><span>Blood pressure</span><b>128/84</b><i>mmHg</i><svg class="spark" width="120" height="22"><polyline fill="none" stroke="#0F4C81" stroke-width="1.5" points="0,14 20,12 40,13 60,10 80,11 100,8 120,9"/></svg></div>
+   <div><span>Pulse</span><b>96</b><i>bpm</i><svg class="spark" width="120" height="22"><polyline fill="none" stroke="#0F4C81" stroke-width="1.5" points="0,16 20,15 40,14 60,12 80,10 100,8 120,6"/></svg></div>
+   <div><span>SpO₂</span><b>97</b><i>%</i></div><div><span>Temperature</span><b>37.4</b><i>°C</i></div>
+   <div><span>Resp. rate</span><b>18</b><i>/min</i></div><div><span>Pain score</span><b>7</b><i>/10</i></div></div></div>
+  <div class="panel"><h2>Active problems</h2><div class="in"><table>
+   <tr><td>Essential hypertension<div class="sub">I10 · since 2024</div></td><td class="num sub">Dr N. · Hôpital Central</td></tr>
+   <tr><td>Iron-deficiency anaemia<div class="sub">D50.9 · since Mar 2026</div></td><td class="num sub">Dr K. · Clinique ESSEC</td></tr></table></div></div>
+  <div class="panel"><h2>Recent results</h2><div class="in"><table><tr><th>Test</th><th class="num">Result</th><th class="num">Range</th><th class="num">Date</th></tr>
+   <tr><td>Haemoglobin</td><td class="num flag">10.9 g/dL</td><td class="num sub">12.0–15.5</td><td class="num sub">10 Oct</td></tr>
+   <tr><td>Troponin I</td><td class="num">pending</td><td class="num sub">&lt; 0.04</td><td class="num sub">today</td></tr>
+   <tr><td>Fasting glucose</td><td class="num">5.2 mmol/L</td><td class="num sub">3.9–5.6</td><td class="num sub">10 Oct</td></tr></table></div></div>
+ </div>
+ <div style="display:grid;gap:14px;align-content:start">
+  <div class="panel"><h2>Medicines</h2><div class="in"><table>
+   <tr><td>Amlodipine 5 mg<div class="sub">1 tablet daily · since 2024</div></td></tr>
+   <tr><td>Ferrous sulfate 200 mg<div class="sub">twice daily · 3 months</div></td></tr></table></div></div>
+  <div class="panel"><h2>Encounters</h2><div class="in"><table>
+   <tr><td>Consultation<div class="sub">12 Oct · Hôpital Central</div></td></tr>
+   <tr><td>Lab visit<div class="sub">10 Oct · Laboratoire Biocentre</div></td></tr>
+   <tr><td>Pharmacy dispense<div class="sub">10 Oct · Pharmacie ESSEC</div></td></tr></table></div></div>
+  <div class="panel"><h2>Access</h2><div class="in sub">Opened under consent granted 14:40, 4 h, scope: summary + results. This view is recorded in the patient's access log.</div></div>
+ </div>
+</div>
+<p class="cap">Preview only, not deployed. Sample data. Red appears only on reported pain sites and the out-of-range result.</p>
+</div></body></html>

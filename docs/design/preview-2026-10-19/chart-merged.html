@@ -1,0 +1,826 @@
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="2VhyluaMspzLEmA0kVx2iTed0j4OHXGaywKti1Mx">
+    <title>Patient chart</title>
+    <meta name="theme-color" content="#0F4C81">
+    <link rel="icon" href="http://127.0.0.1:8081/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="http://127.0.0.1:8081/brand/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="http://127.0.0.1:8081/brand/favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="http://127.0.0.1:8081/brand/apple-touch-icon.png">
+<meta name="theme-color" content="#0F4C81">
+    <link rel="manifest" href="http://127.0.0.1:8081/site.webmanifest">
+            <link rel="stylesheet" href="http://127.0.0.1:8081/assets/finder.css">
+        <link rel="stylesheet" href="http://127.0.0.1:8081/css/portal.css">
+    <link rel="stylesheet" href="http://127.0.0.1:8081/css/helix-v2.css">
+            
+        <link rel="preload" href="http://127.0.0.1:8081/fonts/inter/inter-500.woff2" as="font" type="font/woff2" crossorigin="">
+        <link rel="preload" href="http://127.0.0.1:8081/fonts/inter/inter-700.woff2" as="font" type="font/woff2" crossorigin="">
+        <link rel="stylesheet" href="http://127.0.0.1:8081/css/od.css?v=1792422189">
+        
+        <link rel="stylesheet" href="http://127.0.0.1:8081/css/od-legacy.css?v=1792422189">
+        <link rel="stylesheet" href="http://127.0.0.1:8081/css/od-clinic.css?v=1792422194">
+
+<style>
+/* Preview-only additions; colours come from od.css tokens. */
+.od-page{position:relative}
+.od-page::after{content:"";position:absolute;pointer-events:none;z-index:5;
+ left:50%;top:640px;width:620px;height:620px;transform:translateX(-50%);
+ background:url(img/seal.webp) center/contain no-repeat;filter:grayscale(1) brightness(1.15);opacity:.07;mix-blend-mode:multiply}
+.mx-kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 0 14px}
+.mx-kpis .od-kpi__value{white-space:nowrap}
+.odc-tab-body .od-table{width:100%}.odc-tab-body .od-table td,.odc-tab-body .od-table th{white-space:nowrap}
+.odc-tab-body .od-table td:first-child{white-space:normal}
+.mx-row{display:grid;grid-template-columns:250px minmax(0,1fr);gap:14px;margin-bottom:14px}
+.mx-row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-bottom:14px}
+.mx-fig{position:relative;border-radius:12px;overflow:hidden;background:var(--od-side-bot) url(img/guilloche-texture.webp) center/cover}
+.mx-fig::before{content:"";position:absolute;inset:0;background:rgba(10,46,87,.6)}
+.mx-stage{position:relative;width:150px;margin:0 auto;padding:12px 0 4px;aspect-ratio:305/720;box-sizing:content-box}
+.mx-stage img{width:100%;height:100%;object-fit:contain}
+.mx-pin{position:absolute;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--od-urgent);border:2px solid #fff;animation:mxt 1.6s ease-out infinite}
+@keyframes mxt{0%{box-shadow:0 0 0 0 rgba(179,38,30,.7)}75%{box-shadow:0 0 0 14px rgba(179,38,30,0)}100%{box-shadow:0 0 0 0 rgba(179,38,30,0)}}
+@media (prefers-reduced-motion:reduce){.mx-pin{animation:none}}
+.mx-fig p{position:relative;margin:0;padding:0 10px 8px;color:#C9D7E8;font-size:11px;text-align:center}
+.mx-views{position:relative;display:flex;justify-content:center;gap:6px;padding:0 0 10px}
+.mx-views span{font-size:11px;color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:2px 10px}
+.mx-views span.on{background:#fff;color:var(--od-primary)}
+.mx-key{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--od-muted);margin-top:8px}
+.mx-key i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:3px;margin-right:6px}
+.mx-key b{display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:-1px;margin-right:6px}
+.mx-pain{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--od-rule);font-size:13px}
+.mx-pain:last-child{border-bottom:0}.mx-pain small{display:block;color:var(--od-muted);font-size:12px}
+.mx-sev{font-weight:700;font-variant-numeric:tabular-nums;color:var(--od-ink-h);white-space:nowrap}
+.mx-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--od-urgent);margin-right:8px}
+.mx-trend{font-size:11px;color:var(--od-muted)}
+.mx-donut{display:flex;align-items:center;gap:16px}
+.mx-dl{display:grid;gap:6px;font-size:13px}.mx-dl span{color:var(--od-muted)}
+.mx-tl{list-style:none;margin:0;padding:0}
+.mx-tl li{position:relative;padding:0 0 14px 22px;font-size:13px}
+.mx-tl li::before{content:"";position:absolute;left:5px;top:6px;width:8px;height:8px;border-radius:50%;background:var(--od-primary)}
+.mx-tl li::after{content:"";position:absolute;left:8px;top:16px;bottom:0;width:2px;background:var(--od-rule)}
+.mx-tl li:last-child::after{display:none}
+.mx-tl small{display:block;color:var(--od-muted);font-size:12px}
+.mx-num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.mx-head{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.mx-actions{display:flex;gap:8px;margin-left:auto}
+.mx-cap{font-size:12px;color:var(--od-muted);margin:6px 0 0}
+</style>
+</head>
+<body class="portal-body od od--clinic">
+
+<a class="od-skip" href="#main-content">Skip to main content</a>
+
+<div class="portal-wrap">
+
+    <!-- Sidebar Overlay (mobile) -->
+    <div class="sidebar-overlay" id="sidebar-overlay" aria-hidden="true"></div>
+
+    
+    <!-- Sidebar -->
+    <aside class="portal-sidebar" id="portal-sidebar" role="navigation" aria-label="Portal navigation">
+
+            <a href="http://127.0.0.1:8081/facility" class="od-brand" aria-label="OPES desk home">
+    <img src="http://127.0.0.1:8081/brand/opescare-mark-128.png" alt="" width="64" height="64" decoding="async" class="brand-logo brand-logo--tile od-brand__mark" style="width:64px;height:64px;object-fit:contain;flex-shrink:0;background:#FFFFFF;border-radius:16px;padding:6px;box-sizing:border-box;">
+    <span class="od-brand__text">
+        <span class="od-brand__opes">OPES</span>
+        <span class="od-brand__product">CARE</span>
+        <span class="od-brand__by">by OPES Health Systems</span>
+    </span>
+</a>
+
+        <div class="sidebar-nav">
+                            <div class="sidebar-role-badge">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="stethoscope" class="lucide lucide-stethoscope"><path d="M11 2v2"></path><path d="M5 2v2"></path><path d="M5 3H4a2 2 0 0 0-2 2v4a6 6 0 0 0 12 0V5a2 2 0 0 0-2-2h-1"></path><path d="M8 15a6 6 0 0 0 12 0v-3"></path><circle cx="20" cy="10" r="2"></circle></svg>
+    Doctor
+</div>
+<div class="sidebar-spacer"></div>
+<div class="sidebar-nav-section">
+    <a href="http://127.0.0.1:8081/facility" class="sidebar-link ">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="layout-dashboard" class="lucide lucide-layout-dashboard"><rect width="7" height="9" x="3" y="3" rx="1"></rect><rect width="7" height="5" x="14" y="3" rx="1"></rect><rect width="7" height="9" x="14" y="12" rx="1"></rect><rect width="7" height="5" x="3" y="16" rx="1"></rect></svg>
+        <span>Dashboard</span>
+    </a>
+    
+    <a href="http://127.0.0.1:8081/facility/search" class="sidebar-link ">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="search" class="lucide lucide-search"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg><span>Global Search</span>
+    </a>
+</div>
+<div class="sidebar-nav-section">
+    <div class="sidebar-nav-label">Clinical</div>
+    
+        <a href="http://127.0.0.1:8081/facility/patients" class="sidebar-link active">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="folder-heart" class="lucide lucide-folder-heart"><path d="M11 20H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H20a2 2 0 0 1 2 2v1.5"></path><path d="M13.9 17.45c-1.2-1.2-1.14-2.8-.2-3.73a2.43 2.43 0 0 1 3.44 0l.36.34.34-.34a2.43 2.43 0 0 1 3.45-.01c.95.95 1 2.53-.2 3.74L17.5 21Z"></path></svg><span>Patient chart</span>
+    </a>
+            <a href="http://127.0.0.1:8081/facility/referrals" class="sidebar-link ">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="arrow-right-left" class="lucide lucide-arrow-right-left"><path d="m16 3 4 4-4 4"></path><path d="M20 7H4"></path><path d="m8 21-4-4 4-4"></path><path d="M4 17h16"></path></svg><span>Referrals</span>
+    </a>
+        
+        <a href="http://127.0.0.1:8081/facility/triage" class="sidebar-link ">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="siren" class="lucide lucide-siren"><path d="M7 18v-6a5 5 0 1 1 10 0v6"></path><path d="M5 21a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2z"></path><path d="M21 12h1"></path><path d="M18.5 4.5 18 5"></path><path d="M2 12h1"></path><path d="M12 2v1"></path><path d="m4.929 4.929.707.707"></path><path d="M12 12v6"></path></svg><span>Triage</span>
+    </a>
+        
+        <a href="http://127.0.0.1:8081/facility/queue" class="sidebar-link ">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="list-ordered" class="lucide lucide-list-ordered"><path d="M10 12h11"></path><path d="M10 18h11"></path><path d="M10 6h11"></path><path d="M4 10h2"></path><path d="M4 6h1v4"></path><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg><span>Patient queue</span>
+    </a>
+            <a href="http://127.0.0.1:8081/facility/appointments" class="sidebar-link ">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="calendar-check-2" class="lucide lucide-calendar-check-2"><path d="M8 2v4"></path><path d="M16 2v4"></path><path d="M21 14V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8"></path><path d="M3 10h18"></path><path d="m16 20 2 2 4-4"></path></svg>
+        <span>Appointments</span>
+    </a>
+    <a href="http://127.0.0.1:8081/facility/appointments/waitlist" class="sidebar-link ">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="list-ordered" class="lucide lucide-list-ordered"><path d="M10 12h11"></path><path d="M10 18h11"></path><path d="M10 6h11"></path><path d="M4 10h2"></path><path d="M4 6h1v4"></path><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg><span>Waitlist</span>
+    </a>
+            <a href="http://127.0.0.1:8081/facility/prescriptions" class="sidebar-link ">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="file-text" class="lucide lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>
+        <span>Prescriptions</span>
+    </a>
+    <a href="http://127.0.0.1:8081/facility/certificates" class="sidebar-link ">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="file-badge" class="lucide lucide-file-badge"><path d="M12 22h6a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v3"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M5 17a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"></path><path d="M7 16.5 8 22l-3-1-3 1 1-5.5"></path></svg>
+        <span>Certificates</span>
+    </a>
+            <a href="http://127.0.0.1:8081/facility/inventory/blood" class="sidebar-link ">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="droplet" class="lucide lucide-droplet"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"></path></svg>
+        <span>Blood Inventory</span>
+    </a>
+    
+    <a href="http://127.0.0.1:8081/facility/blood-requests" class="sidebar-link ">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="clipboard-list" class="lucide lucide-clipboard-list"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><path d="M12 11h4"></path><path d="M12 16h4"></path><path d="M8 11h.01"></path><path d="M8 16h.01"></path></svg><span>Blood Requests</span>
+    </a>
+            <a href="http://127.0.0.1:8081/facility/messages" class="sidebar-link ">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="messages-square" class="lucide lucide-messages-square"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"></path><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"></path></svg>
+        <span>Messages</span>
+    </a>
+    </div>
+
+
+
+<div class="sidebar-nav-section">
+    <a href="http://127.0.0.1:8081/facility/tasks" class="sidebar-link ">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="check-square" class="lucide lucide-check-square"><path d="M21 10.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12.5"></path><path d="m9 11 3 3L22 4"></path></svg><span>Tasks</span>
+    </a>
+    <a href="http://127.0.0.1:8081/facility/support" class="sidebar-link ">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="life-buoy" class="lucide lucide-life-buoy"><circle cx="12" cy="12" r="10"></circle><path d="m4.93 4.93 4.24 4.24"></path><path d="m14.83 9.17 4.24-4.24"></path><path d="m14.83 14.83 4.24 4.24"></path><path d="m9.17 14.83-4.24 4.24"></path><circle cx="12" cy="12" r="4"></circle></svg><span>Help</span>
+    </a>
+</div>
+
+
+<div class="sidebar-nav-section">
+                    <div class="sidebar-nav-label">
+                Acting as: Afamba
+            </div>
+                <a href="http://127.0.0.1:8081/select-facility" class="sidebar-link ">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="repeat" class="lucide lucide-repeat"><path d="m17 2 4 4-4 4"></path><path d="M3 11v-1a4 4 0 0 1 4-4h14"></path><path d="m7 22-4-4 4-4"></path><path d="M21 13v1a4 4 0 0 1-4 4H3"></path></svg>
+            <span>Switch Facility</span>
+        </a>
+    </div>
+                    </div>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-user">
+                <div class="sidebar-avatar" aria-hidden="true">
+                    D
+                </div>
+                <div class="min-w-0">
+                    <div class="sidebar-user-name">Dr. Amara Diallo</div>
+                    <div class="sidebar-user-role">
+                        General Doctor                    </div>
+                </div>
+            </div>
+                                        
+                <a href="http://127.0.0.1:8081/professional/profile" class="sidebar-link sidebar-link-footer ">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="id-card" class="lucide lucide-id-card"><path d="M16 10h2"></path><path d="M16 14h2"></path><path d="M6.17 15a3 3 0 0 1 5.66 0"></path><circle cx="9" cy="11" r="2"></circle><rect x="2" y="5" width="20" height="14" rx="2"></rect></svg><span>My Profile</span>
+                </a>
+                                        
+                <a href="http://127.0.0.1:8081/professional/facilities" class="sidebar-link sidebar-link-footer ">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="building-2" class="lucide lucide-building-2"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path><path d="M10 6h4"></path><path d="M10 10h4"></path><path d="M10 14h4"></path><path d="M10 18h4"></path></svg><span>Join a facility</span>
+                </a>
+                        <form method="POST" action="http://127.0.0.1:8081/logout">
+                <input type="hidden" name="_token" value="2VhyluaMspzLEmA0kVx2iTed0j4OHXGaywKti1Mx" autocomplete="off">                <button type="submit" class="sidebar-logout">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    Sign Out
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <!-- Main Area -->
+    <div class="portal-main" id="portal-main">
+
+        <header class="portal-topbar od-topbar" role="banner">
+    <button class="topbar-menu-btn" id="sidebar-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="portal-sidebar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="6" x2="20" y2="6"></line><line x1="4" y1="18" x2="20" y2="18"></line></svg>
+    </button>
+
+    <form class="od-search" method="GET" action="http://127.0.0.1:8081/facility/search" role="search">
+        <svg class="od-search__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+        <label for="od-search-q" class="od-sr">Search</label>
+        <input id="od-search-q" class="od-search__input" type="search" name="q" value="" autocomplete="off" placeholder="Search facilities, documents, medicines, tests…">
+                <button type="submit" class="od-search__scan" aria-label="Scan or type a barcode, then press Enter" title="Scan or type a barcode, then press Enter">
+            <svg class="od-ico" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 7V5a2 2 0 0 1 2-2h2"></path><path d="M17 3h2a2 2 0 0 1 2 2v2"></path><path d="M21 17v2a2 2 0 0 1-2 2h-2"></path><path d="M7 21H5a2 2 0 0 1-2-2v-2"></path><path d="M7 7v10"></path><path d="M10 7v10"></path><path d="M12.5 7v10"></path><path d="M14.5 7v10"></path><path d="M17 7v10"></path></svg>
+        </button>
+            </form>
+
+    <div class="od-topbar__actions">
+        <div class="od-bell">
+            <div class="notif-bell" id="notif-bell" data-feed-url="http://127.0.0.1:8081/notifications/feed" data-read-url="http://127.0.0.1:8081/notifications/read" data-center-url="http://127.0.0.1:8081/notifications" data-csrf="2VhyluaMspzLEmA0kVx2iTed0j4OHXGaywKti1Mx" data-i18n="{&quot;loading&quot;:&quot;Loading…&quot;,&quot;empty&quot;:&quot;You have no notifications yet.&quot;,&quot;empty_desc&quot;:&quot;Orders, alerts and updates will appear here.&quot;,&quot;just_now&quot;:&quot;Just now&quot;,&quot;new_badge&quot;:&quot;New&quot;,&quot;title&quot;:&quot;Notifications&quot;,&quot;categories&quot;:{&quot;blood&quot;:&quot;Blood&quot;,&quot;pharmacy&quot;:&quot;Pharmacy&quot;,&quot;appointment&quot;:&quot;Appointment&quot;,&quot;account&quot;:&quot;Account&quot;,&quot;admin&quot;:&quot;Admin&quot;,&quot;general&quot;:&quot;Update&quot;}}">
+
+    <button type="button" class="topbar-icon-btn notif-bell-btn" id="notif-bell-btn" aria-haspopup="true" aria-expanded="false" aria-controls="notif-panel" aria-label="Notifications">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="bell" aria-hidden="true" class="lucide lucide-bell"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+        <span class="notif-badge" id="notif-badge" aria-live="polite" hidden="">0</span>
+    </button>
+
+    <div class="notif-panel" id="notif-panel" role="dialog" aria-modal="false" aria-label="Notifications" hidden="">
+
+        <div class="notif-panel-header">
+            <span class="notif-panel-title">Notifications</span>
+        </div>
+
+        <div class="notif-list" id="notif-list" role="list">
+            <div class="notif-loading">Loading…</div>
+        </div>
+
+        <div class="notif-panel-footer">
+            <button type="button" class="notif-foot-btn" id="notif-mark-read">
+                Mark all as read
+            </button>
+            <a href="http://127.0.0.1:8081/notifications" class="notif-foot-link">
+                View all notifications
+            </a>
+            <button type="button" class="notif-foot-btn notif-sound-toggle is-on" data-notif-sound-toggle="" aria-label="Sound alerts" aria-pressed="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="volume-2" aria-hidden="true" class="lucide lucide-volume-2"><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"></path><path d="M16 9a5 5 0 0 1 0 6"></path><path d="M19.364 18.364a9 9 0 0 0 0-12.728"></path></svg>
+                <span>Sound alerts</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Scoped to .notif-* — reuses portal.css --p-* tokens; brand navy #0F4C81. */
+    #notif-bell.notif-bell { position: relative; display: inline-flex; }
+
+    .notif-bell-btn { position: relative; }
+
+    .notif-badge {
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        min-width: 16px;
+        height: 16px;
+        padding: 0 4px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--p-danger, #B91C1C);
+        color: #fff;
+        font-size: 0.625rem;
+        font-weight: 700;
+        line-height: 1;
+        border-radius: 9999px;
+        border: 2px solid var(--p-topbar-bg, #fff);
+        box-sizing: content-box;
+        pointer-events: none;
+    }
+    .notif-badge[hidden] { display: none; }
+
+    .notif-panel {
+        position: absolute;
+        top: calc(100% + 0.5rem);
+        right: 0;
+        width: 360px;
+        max-width: calc(100vw - 1.5rem);
+        background: var(--p-surface, #fff);
+        border: 1px solid var(--p-border, #E2E8F0);
+        border-radius: var(--p-radius-lg, 0.75rem);
+        box-shadow: var(--p-shadow-lg, 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05));
+        z-index: 70;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    .notif-panel[hidden] { display: none; }
+
+    .notif-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--p-border, #E2E8F0);
+    }
+    .notif-panel-title {
+        font-size: 0.9375rem;
+        font-weight: 700;
+        color: var(--p-text, #0F172A);
+    }
+
+    .notif-list {
+        max-height: 380px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .notif-loading,
+    .notif-empty {
+        padding: 1.5rem 1rem;
+        text-align: center;
+        color: var(--p-text-muted, #64748B);
+        font-size: 0.8125rem;
+    }
+    .notif-empty-title {
+        font-weight: 600;
+        color: var(--p-text-2, #334155);
+        margin-bottom: 0.25rem;
+    }
+
+    .notif-item {
+        display: block;
+        text-decoration: none;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--p-border, #E2E8F0);
+        color: var(--p-text, #0F172A);
+        cursor: default;
+    }
+    a.notif-item { cursor: pointer; }
+    a.notif-item:hover { background: var(--p-surface-2, #F1F5F9); }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-item.is-new { background: rgba(15, 76, 129, 0.05); }
+    a.notif-item.is-new:hover { background: rgba(15, 76, 129, 0.09); }
+
+    .notif-item-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.25rem;
+    }
+    .notif-cat {
+        font-size: 0.625rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: var(--p-primary, #0F4C81);
+        background: rgba(15, 76, 129, 0.08);
+        padding: 0.05rem 0.4rem;
+        border-radius: 9999px;
+        white-space: nowrap;
+    }
+    .notif-new-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--p-danger, #B91C1C);
+        flex-shrink: 0;
+    }
+    .notif-time {
+        margin-left: auto;
+        font-size: 0.6875rem;
+        color: var(--p-text-muted, #64748B);
+        white-space: nowrap;
+    }
+    .notif-item-title {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: var(--p-text, #0F172A);
+        line-height: 1.35;
+    }
+    .notif-item-body {
+        font-size: 0.75rem;
+        color: var(--p-text-muted, #64748B);
+        margin-top: 0.15rem;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .notif-panel-footer {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        padding: 0.5rem 0.75rem;
+        border-top: 1px solid var(--p-border, #E2E8F0);
+    }
+    .notif-foot-btn,
+    .notif-foot-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--p-text-muted, #64748B);
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0.3rem 0.4rem;
+        border-radius: var(--p-radius-sm, 0.375rem);
+        text-decoration: none;
+    }
+    .notif-foot-link { color: var(--p-primary, #0F4C81); }
+    .notif-foot-btn:hover,
+    .notif-foot-link:hover {
+        color: var(--p-primary, #0F4C81);
+        background: var(--p-surface-2, #F1F5F9);
+    }
+    .notif-sound-toggle { margin-left: auto; }
+    .notif-sound-toggle i,
+    .notif-sound-toggle [data-lucide] { width: 0.875rem; height: 0.875rem; }
+
+    /* Mobile: dropdown becomes a full-width sheet under the topbar. */
+    @media (max-width: 640px) {
+        .notif-panel {
+            position: fixed;
+            top: var(--p-topbar-h, 60px);
+            left: 0;
+            right: 0;
+            width: 100%;
+            max-width: 100%;
+            border-left: none;
+            border-right: none;
+            border-radius: 0;
+            max-height: calc(100vh - var(--p-topbar-h, 60px));
+        }
+        .notif-list { max-height: 60vh; }
+    }
+</style>
+        </div>
+
+                    <a href="http://127.0.0.1:8081/select-facility" title="Switch facility: Afamba" class="od-facility">
+                <svg class="od-facility__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V7l8-4 8 4v14"></path><path d="M2 21h20"></path><path d="M10 21v-4h4v4"></path><path d="M12 7v4"></path><path d="M10 9h4"></path><path d="M7.5 13h.01"></path><path d="M16.5 13h.01"></path></svg>
+                <span class="od-facility__name">Afamba</span>
+                                    <svg class="od-facility__chev" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+                            </a>
+        
+        <a href="http://127.0.0.1:8081/lang/fr" class="od-lang" aria-label="Switch language to FR">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18"></path><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18z"></path></svg>
+            <span>FR</span>
+        </a>
+
+        <div class="od-user topbar-user">
+            <button type="button" class="od-user__btn" id="topbar-user-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="topbar-user-menu" aria-label="Account menu">
+                <span class="od-user__avatar" aria-hidden="true">AD</span>
+                <span class="od-user__meta">
+                    <span class="od-user__name">Dr. Amara Diallo</span>
+                    <span class="od-user__role">General Doctor</span>
+                </span>
+                <svg class="od-user__chev" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+            </button>
+            <div class="topbar-user-menu" id="topbar-user-menu" hidden="">
+                <div class="topbar-user-meta">
+                    <div class="topbar-user-name">Dr. Amara Diallo</div>
+                    <div class="topbar-user-role">General Doctor</div>
+                                            <div class="topbar-user-facility">Afamba</div>
+                                    </div>
+                <form method="POST" action="http://127.0.0.1:8081/logout">
+                    <input type="hidden" name="_token" value="2VhyluaMspzLEmA0kVx2iTed0j4OHXGaywKti1Mx" autocomplete="off">                    <button type="submit" class="topbar-user-signout">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        Sign Out
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</header>
+
+        
+        <!-- Flash Messages -->
+        
+        
+        <!-- Page Content -->
+        <main class="portal-content" id="main-content" role="main">
+            <div class="od-page odc-page">
+
+<div class="od-page__head">
+    <div>
+        <h1 class="od-page__title">Patient chart</h1>
+        <p class="od-page__sub">Summary</p>
+    </div>
+    <a href="http://127.0.0.1:8081/facility/patients" class="od-btn od-btn--secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="arrow-left" class="lucide lucide-arrow-left"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg> Look up another patient
+    </a>
+</div>
+
+<div class="od-grid od-grid--main">
+    
+    <section class="od-card" aria-labelledby="odc-chart-name">
+        <header class="od-card__head">
+            <h2 class="od-card__title">Patient</h2>
+            <span class="od-chip"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="lock" class="lucide lucide-lock"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> Read-only. Nothing on this page writes to the record.</span>
+        </header>
+        <div class="od-card__body od-detail">
+            <div class="od-detail__head">
+                <span class="od-avatar od-avatar--lg od-tint--sky" aria-hidden="true">DP</span>
+                <div class="od-detail__main">
+                    <h3 class="od-detail__name" id="odc-chart-name">Demo Child Patient</h3>
+                    <div class="od-detail__ref">
+                        <span>Health ID: OC-DEMO-CHILD-0001</span>
+                        <span>Opened on the basis of your appointment with this patient</span>                    </div>
+                    <div class="od-detail__facts">
+                        <span class="od-detail__fact"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="calendar" class="lucide lucide-calendar"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>
+                            8 years                        </span>
+                        <span class="od-detail__fact"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="users" class="lucide lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> Age band: Child</span>
+                        <span class="od-detail__fact"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="user" class="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> Sex: Male</span>
+                        <span class="od-detail__fact"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="droplet" class="lucide lucide-droplet"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"></path></svg> Blood group: Not recorded</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mx-head">
+                <span class="od-pill od-pill--urgent"><i data-lucide="triangle-alert"></i> Allergy: penicillin (rash, moderate)</span>
+                <span class="od-pill od-pill--ready"><i data-lucide="shield-check"></i> Consent active · summary + results · until 18:40</span>
+                <span class="od-pill od-pill--normal"><i data-lucide="users"></i> Guardian: Marie D. (mother)</span>
+                <div class="mx-actions"><a class="od-btn od-btn--secondary" href="#"><i data-lucide="flask-conical"></i> Order test</a><a class="od-btn od-btn--secondary" href="#"><i data-lucide="send"></i> Refer</a><a class="od-btn od-btn--primary" href="#"><i data-lucide="stethoscope"></i> New encounter</a></div>
+            </div>
+
+                        <div class="odc-note" role="status" style="border-color:var(--od-ready);background:var(--od-ready-bg);color:var(--od-ready-ink)">
+                <i data-lucide="shield-check"></i>
+                <div><strong>Full record open under consent</strong>
+                <p>Granted by the guardian at 14:40 for 4 hours, scope: summary and results. This view is written to the patient's access log.</p></div>
+            </div>
+            
+            
+            <nav class="od-tabs odc-chart-tabs" aria-label="Patient chart">
+                                    <a href="http://127.0.0.1:8081/facility/patients/00000000-0000-0000-0000-300000000002?tab=summary" class="od-tab is-active" aria-current="page">Summary</a>
+                                    <a href="http://127.0.0.1:8081/facility/patients/00000000-0000-0000-0000-300000000002?tab=encounters" class="od-tab ">Encounters</a>
+                                    <a href="http://127.0.0.1:8081/facility/patients/00000000-0000-0000-0000-300000000002?tab=vitals" class="od-tab ">Vitals</a>
+                                    <a href="http://127.0.0.1:8081/facility/patients/00000000-0000-0000-0000-300000000002?tab=diagnoses" class="od-tab ">Diagnoses</a>
+                                    <a href="http://127.0.0.1:8081/facility/patients/00000000-0000-0000-0000-300000000002?tab=labs" class="od-tab ">Lab results</a>
+                                    <a href="http://127.0.0.1:8081/facility/patients/00000000-0000-0000-0000-300000000002?tab=immunizations" class="od-tab ">Immunizations</a>
+                                    <a href="http://127.0.0.1:8081/facility/patients/00000000-0000-0000-0000-300000000002?tab=preconsult" class="od-tab ">Pre-consult</a>
+                                    <a href="http://127.0.0.1:8081/facility/patients/00000000-0000-0000-0000-300000000002?tab=triage" class="od-tab ">Triage history</a>
+                                    <a href="http://127.0.0.1:8081/facility/patients/00000000-0000-0000-0000-300000000002?tab=documents" class="od-tab ">Documents</a>
+                            </nav>
+
+            <div class="odc-tab-body">
+<div class="mx-kpis">
+  <div class="od-kpi od-tint--blue"><span class="od-kpi__icon"><i data-lucide="heart-pulse"></i></span><span class="od-kpi__body"><span class="od-kpi__label">Blood pressure</span><span class="od-kpi__value">102/66</span><span class="od-kpi__sub">mmHg · triage 09:12</span></span></div>
+  <div class="od-kpi od-tint--teal"><span class="od-kpi__icon"><i data-lucide="activity"></i></span><span class="od-kpi__body"><span class="od-kpi__label">Pulse</span><span class="od-kpi__value">108</span><span class="od-kpi__sub">bpm · rising since 16 Oct</span></span></div>
+  <div class="od-kpi od-tint--sky"><span class="od-kpi__icon"><i data-lucide="wind"></i></span><span class="od-kpi__body"><span class="od-kpi__label">SpO₂</span><span class="od-kpi__value">98%</span><span class="od-kpi__sub">room air</span></span></div>
+  <div class="od-kpi od-tint--amber"><span class="od-kpi__icon"><i data-lucide="thermometer"></i></span><span class="od-kpi__body"><span class="od-kpi__label">Temperature</span><span class="od-kpi__value">38.6 °C</span><span class="od-kpi__sub">fever · 26 kg · 128 cm</span></span></div>
+</div>
+
+<div class="mx-row">
+  <section class="od-card"><header class="od-card__head"><h2 class="od-card__title">Presenting complaint</h2></header><div class="od-card__body">
+    <div class="mx-fig"><div class="mx-stage"><img src="img/child-boy-base.png" alt="Anatomy figure, boy"><span class="mx-pin" style="left:50%;top:8%"></span><span class="mx-pin" style="left:50%;top:41%;animation-delay:.6s"></span></div>
+      <div class="mx-views"><span class="on">Front</span><span>Back</span></div><p>Figure follows sex and age band</p></div>
+    <div class="mx-key"><span><b style="background:var(--od-urgent)"></b>Reported pain site</span></div>
+    <div class="mx-pain"><div><span class="mx-dot"></span>Forehead · headache<small>2 days · guardian at check-in · worse</small></div><span class="mx-sev">5/10</span></div>
+    <div class="mx-pain"><div><span class="mx-dot"></span>Abdomen · stomach pain<small>Since last night · nurse at triage · same</small></div><span class="mx-sev">7/10</span></div>
+  </div></section>
+  <div class="od-stack">
+    <section class="od-card"><header class="od-card__head"><h2 class="od-card__title">Vitals trend · last 14 days</h2></header><div class="od-card__body">
+      <svg viewBox="0 0 560 190" width="100%" role="img" aria-label="Temperature and pulse over 14 days">
+        <g stroke="var(--od-rule)"><line x1="40" y1="20" x2="550" y2="20"/><line x1="40" y1="70" x2="550" y2="70"/><line x1="40" y1="120" x2="550" y2="120"/><line x1="40" y1="165" x2="550" y2="165"/></g>
+        <g fill="var(--od-muted)" font-size="11" font-family="Inter"><text x="4" y="24">120</text><text x="4" y="74">100</text><text x="10" y="124">80</text><text x="40" y="184">6 Oct</text><text x="250" y="184">12 Oct</text><text x="500" y="184">19 Oct</text></g>
+        <polyline fill="none" stroke="var(--od-teal)" stroke-width="2.5" points="40,110 125,108 210,112 295,104 380,96 465,70 550,52"/>
+        <polyline fill="none" stroke="var(--od-pending)" stroke-width="2.5" stroke-dasharray="6 4" points="40,140 125,138 210,141 295,136 380,128 465,104 550,92"/>
+        <g fill="#fff" stroke-width="2"><circle cx="550" cy="52" r="4" stroke="var(--od-teal)"/><circle cx="550" cy="92" r="4" stroke="var(--od-pending)"/></g>
+      </svg>
+      <div class="mx-key"><span><i style="background:var(--od-teal)"></i>Pulse (bpm)</span><span><i style="background:repeating-linear-gradient(90deg,var(--od-pending) 0 5px,transparent 5px 8px)"></i>Temperature (°C ×3, scaled)</span></div>
+    </div></section>
+    <section class="od-card"><header class="od-card__head"><h2 class="od-card__title">Recent results</h2><a class="od-card__link" href="#">All results</a></header><div class="od-card__body">
+      <table class="od-table"><thead><tr><th>Test</th><th class="od-table__num">Result</th><th class="od-table__num">Range</th><th class="od-table__num">Date</th></tr></thead><tbody>
+        <tr><td class="od-table__name">Malaria RDT</td><td class="od-table__num"><span class="od-pill od-pill--urgent">Positive</span></td><td class="od-table__num mx-num">Negative</td><td class="od-table__num mx-num">today</td></tr>
+        <tr><td class="od-table__name">Haemoglobin</td><td class="od-table__num"><span class="od-pill od-pill--ready mx-num">11.8 g/dL</span></td><td class="od-table__num mx-num">11.5–15.5</td><td class="od-table__num mx-num">today</td></tr>
+        <tr><td class="od-table__name">Blood culture</td><td class="od-table__num"><span class="od-pill od-pill--pending">Pending</span></td><td class="od-table__num">—</td><td class="od-table__num mx-num">today</td></tr>
+      </tbody></table>
+    </div></section>
+  </div>
+</div>
+
+<div class="mx-row2">
+  <section class="od-card"><header class="od-card__head"><h2 class="od-card__title">Encounters</h2><a class="od-card__link" href="#">All encounters</a></header><div class="od-card__body">
+    <ol class="mx-tl">
+      <li><b>Consultation · fever and abdominal pain</b><small>Today · Dr. Amara Diallo · Afamba · diagnosis pending results</small></li>
+      <li><b>Triage · priority 2</b><small>Today 09:12 · Nurse Ewane · pain 7/10, temp 38.6 °C</small></li>
+      <li><b>Immunisation · measles-rubella (MR2)</b><small>2 Sep 2026 · CSI Mvog-Ada</small></li>
+      <li><b>Consultation · otitis media</b><small>14 Jun 2026 · Dr. K. · Clinique ESSEC · resolved</small></li>
+    </ol>
+  </div></section>
+  <section class="od-card"><header class="od-card__head"><h2 class="od-card__title">Care across facilities · 12 months</h2></header><div class="od-card__body mx-donut">
+    <svg viewBox="0 0 120 120" width="116" height="116" role="img" aria-label="Encounters by type">
+      <g transform="rotate(-90 60 60)" fill="none" stroke-width="16">
+        <circle cx="60" cy="60" r="44" stroke="var(--od-primary)" stroke-dasharray="110.6 276.5"/>
+        <circle cx="60" cy="60" r="44" stroke="var(--od-teal)" stroke-dasharray="69.1 276.5" stroke-dashoffset="-110.6"/>
+        <circle cx="60" cy="60" r="44" stroke="var(--od-pending)" stroke-dasharray="55.3 276.5" stroke-dashoffset="-179.7"/>
+        <circle cx="60" cy="60" r="44" stroke="var(--od-faint)" stroke-dasharray="41.5 276.5" stroke-dashoffset="-235"/>
+      </g>
+      <text x="60" y="57" text-anchor="middle" font-size="20" font-weight="700" fill="var(--od-ink-h)" font-family="Inter">20</text>
+      <text x="60" y="73" text-anchor="middle" font-size="10" fill="var(--od-muted)" font-family="Inter">encounters</text>
+    </svg>
+    <div class="mx-dl">
+      <div><b style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--od-primary);margin-right:8px"></b>Consultations <span>8</span></div>
+      <div><b style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--od-teal);margin-right:8px"></b>Lab visits <span>5</span></div>
+      <div><b style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--od-pending);margin-right:8px"></b>Pharmacy <span>4</span></div>
+      <div><b style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--od-faint);margin-right:8px"></b>Immunisations <span>3</span></div>
+    </div>
+  </div></section>
+</div>
+
+<div class="mx-row2">
+  <section class="od-card" style="grid-column:1/-1"><header class="od-card__head"><h2 class="od-card__title">Medicines</h2><a class="od-card__link" href="#">Prescription history</a></header><div class="od-card__body">
+    <table class="od-table"><thead><tr><th>Medicine</th><th>Dose</th><th>Status</th></tr></thead><tbody>
+      <tr><td class="od-table__name">Paracetamol 250 mg</td><td>every 6 h · 3 days</td><td><span class="od-pill od-pill--normal">Partially dispensed</span></td></tr>
+      <tr><td class="od-table__name">Amoxicillin 250 mg</td><td>every 8 h · 7 days</td><td><span class="od-pill od-pill--ready">Dispensed</span></td></tr>
+    </tbody></table>
+  </div></section>
+  <section class="od-card"><header class="od-card__head"><h2 class="od-card__title">Problems and allergies</h2></header><div class="od-card__body">
+    <ul class="od-list">
+      <li class="od-list__row"><span class="od-list__icon od-tint--blue"><i data-lucide="clipboard-list"></i></span><span class="od-list__text"><span class="od-list__title">Recurrent otitis media</span><span class="od-list__sub">H66.9 · since 2025 · active</span></span></li>
+      <li class="od-list__row"><span class="od-list__icon od-tint--amber"><i data-lucide="triangle-alert"></i></span><span class="od-list__text"><span class="od-list__title">Penicillin allergy</span><span class="od-list__sub">Rash · moderate · confirmed 2025</span></span></li>
+    </ul>
+  </div></section>
+</div>
+
+<div class="mx-row2">
+  <section class="od-card"><header class="od-card__head"><h2 class="od-card__title">Referrals</h2></header><div class="od-card__body">
+    <ul class="od-list">
+      <li class="od-list__row"><span class="od-list__icon od-tint--blue"><i data-lucide="send"></i></span><span class="od-list__text"><span class="od-list__title">Paediatrics · Hôpital Central</span><span class="od-list__sub">Sent 15 Jun · accepted · completed</span></span></li>
+    </ul>
+  </div></section>
+  <section class="od-card"><header class="od-card__head"><h2 class="od-card__title">Documents</h2><a class="od-card__link" href="#">All documents</a></header><div class="od-card__body">
+    <ul class="od-list">
+      <li class="od-list__row"><span class="od-list__icon od-tint--teal"><i data-lucide="file-check"></i></span><span class="od-list__text"><span class="od-list__title">Lab report · malaria RDT</span><span class="od-list__sub">Today · verifiable QR</span></span></li>
+      <li class="od-list__row"><span class="od-list__icon od-tint--teal"><i data-lucide="file-check"></i></span><span class="od-list__text"><span class="od-list__title">Immunisation record</span><span class="od-list__sub">2 Sep 2026 · verifiable QR</span></span></li>
+    </ul>
+  </div></section>
+</div>
+<p class="mx-cap">Preview only, not deployed. Sample data. Every section respects consent scope: without a grant, only identity, allergies and current medicines show, as today.</p>
+</div>
+        </div>
+    </section>
+
+    <aside class="od-stack">
+        <section class="od-card">
+            <header class="od-card__head"><h2 class="od-card__title">Patient privacy settings</h2></header>
+            <div class="od-card__body"><ul class="od-list">
+                <li class="od-list__row">
+                    <span class="od-list__icon od-tint--blue"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="shield" class="lucide lucide-shield"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path></svg></span>
+                    <span class="od-list__text"><span class="od-list__title">Full record behind consent: ON</span></span>
+                </li>
+                <li class="od-list__row">
+                    <span class="od-list__icon od-tint--rose"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="siren" class="lucide lucide-siren"><path d="M7 18v-6a5 5 0 1 1 10 0v6"></path><path d="M5 21a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2z"></path><path d="M21 12h1"></path><path d="M18.5 4.5 18 5"></path><path d="M2 12h1"></path><path d="M12 2v1"></path><path d="m4.929 4.929.707.707"></path><path d="M12 12v6"></path></svg></span>
+                    <span class="od-list__text"><span class="od-list__title">Emergency access: allowed</span></span>
+                </li>
+            </ul></div>
+        </section>
+        <section class="od-card">
+            <header class="od-card__head"><h2 class="od-card__title">Consent and access</h2></header>
+            <div class="od-card__body"><ul class="od-list">
+                <li class="od-list__row"><span class="od-list__icon od-tint--green"><i data-lucide="shield-check"></i></span><span class="od-list__text"><span class="od-list__title">Active grant · until 18:40</span><span class="od-list__sub">Scope: summary, results · granted by guardian</span></span></li>
+                <li class="od-list__row"><span class="od-list__icon od-tint--blue"><i data-lucide="history"></i></span><span class="od-list__text"><span class="od-list__title">Access log · 3 views today</span><span class="od-list__sub">You 14:42 · Nurse Ewane 09:12 · Lab 10:05</span></span></li>
+            </ul><a class="od-btn od-btn--secondary od-btn--block" href="#"><i data-lucide="key-round"></i> Request wider access</a></div>
+        </section>
+        <section class="od-card">
+            <header class="od-card__head"><h2 class="od-card__title">Care team</h2></header>
+            <div class="od-card__body"><ul class="od-list">
+                <li class="od-list__row"><span class="od-avatar od-tint--sky">AD</span><span class="od-list__text"><span class="od-list__title">Dr. Amara Diallo</span><span class="od-list__sub">General doctor · Afamba (you)</span></span></li>
+                <li class="od-list__row"><span class="od-avatar od-tint--teal">NE</span><span class="od-list__text"><span class="od-list__title">Nurse Ewane</span><span class="od-list__sub">Triage · Afamba</span></span></li>
+            </ul></div>
+        </section>
+        <section class="od-card">
+            <header class="od-card__head"><h2 class="od-card__title">Family and emergency</h2></header>
+            <div class="od-card__body"><ul class="od-list">
+                <li class="od-list__row"><span class="od-list__icon od-tint--blue"><i data-lucide="users"></i></span><span class="od-list__text"><span class="od-list__title">Marie D. · mother</span><span class="od-list__sub">Guardian · acts for this patient</span></span></li>
+                <li class="od-list__row"><span class="od-list__icon od-tint--blue"><i data-lucide="phone"></i></span><span class="od-list__text"><span class="od-list__title">Emergency contact</span><span class="od-list__sub">Marie D. · on file</span></span></li>
+            </ul></div>
+        </section>
+
+
+        
+        <section class="od-card">
+            <header class="od-card__head"><h2 class="od-card__title">Desks</h2></header>
+            <div class="od-card__body"><ul class="od-list">
+                                <li class="od-list__row"><span class="od-list__icon od-tint--rose"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="siren" class="lucide lucide-siren"><path d="M7 18v-6a5 5 0 1 1 10 0v6"></path><path d="M5 21a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2z"></path><path d="M21 12h1"></path><path d="M18.5 4.5 18 5"></path><path d="M2 12h1"></path><path d="M12 2v1"></path><path d="m4.929 4.929.707.707"></path><path d="M12 12v6"></path></svg></span><span class="od-list__text"><a href="http://127.0.0.1:8081/facility/triage" class="od-list__title">Triage desk</a></span></li>
+                                                <li class="od-list__row"><span class="od-list__icon od-tint--blue"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="list-ordered" class="lucide lucide-list-ordered"><path d="M10 12h11"></path><path d="M10 18h11"></path><path d="M10 6h11"></path><path d="M4 10h2"></path><path d="M4 6h1v4"></path><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg></span><span class="od-list__text"><a href="http://127.0.0.1:8081/facility/queue" class="od-list__title">Patient queue</a></span></li>
+                                                <li class="od-list__row"><span class="od-list__icon od-tint--teal"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="paperclip" class="lucide lucide-paperclip"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></span><span class="od-list__text"><a href="http://127.0.0.1:8081/facility/patients/00000000-0000-0000-0000-300000000002/files" class="od-list__title">Patient files</a></span></li>
+                                                <li class="od-list__row"><span class="od-list__icon od-tint--rose"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="droplet" class="lucide lucide-droplet"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"></path></svg></span><span class="od-list__text"><a href="http://127.0.0.1:8081/facility/blood-requests" class="od-list__title">Blood requests</a></span></li>
+                            </ul></div>
+        </section>
+
+        
+        <p class="odc-hint"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="info" class="lucide lucide-info"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg> Data pushed by partner systems over the interoperability API is not shown on this chart.</p>
+    </aside>
+</div>
+
+</div>
+        </main>
+
+    </div><!-- /.portal-main -->
+
+</div><!-- /.portal-wrap -->
+
+<!-- Lucide Icons -->
+<script src="http://127.0.0.1:8081/js/lucide.min.js"></script>
+<script src="http://127.0.0.1:8081/js/od-tables.js?v=1792370052" defer=""></script>
+<script src="http://127.0.0.1:8081/js/op-actions.js?v=1791835826" defer=""></script>
+<script src="http://127.0.0.1:8081/js/notification-sounds.js" defer=""></script>
+<script src="http://127.0.0.1:8081/js/notifications.js" defer=""></script>
+<script nonce="">
+if (typeof lucide !== 'undefined') lucide.createIcons();
+</script>
+
+<!-- Portal JS -->
+<script nonce="">
+(function() {
+    var sidebar  = document.getElementById('portal-sidebar');
+    var overlay  = document.getElementById('sidebar-overlay');
+    var toggleBtn = document.getElementById('sidebar-toggle');
+
+    function openSidebar() {
+        sidebar.classList.add('open');
+        overlay.classList.add('open');
+        toggleBtn.setAttribute('aria-expanded', 'true');
+    }
+
+    function closeSidebar() {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('open');
+        toggleBtn.setAttribute('aria-expanded', 'false');
+    }
+
+    if (toggleBtn) toggleBtn.addEventListener('click', function() {
+        sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+    });
+
+    if (overlay) overlay.addEventListener('click', closeSidebar);
+
+    // Topbar user menu
+    var userToggle = document.getElementById('topbar-user-toggle');
+    var userMenu   = document.getElementById('topbar-user-menu');
+
+    function closeUserMenu() {
+        if (userMenu && !userMenu.hidden) {
+            userMenu.hidden = true;
+            userToggle.setAttribute('aria-expanded', 'false');
+        }
+    }
+
+    if (userToggle && userMenu) {
+        userToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var open = userMenu.hidden;
+            userMenu.hidden = !open;
+            userToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+        document.addEventListener('click', function(e) {
+            if (!userMenu.hidden && !userMenu.contains(e.target)) closeUserMenu();
+        });
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            if (sidebar.classList.contains('open')) closeSidebar();
+            closeUserMenu();
+        }
+    });
+
+    // Mark the active sidebar link.
+    //
+    // This compared getAttribute('href') against location.pathname. route()
+    // emits ABSOLUTE urls, so it was comparing 'https://host/portals/staff'
+    // with '/portals/staff' — never equal, and the whole block was dead. Only
+    // the handful of links carrying a Blade routeIs() guard ever highlighted.
+    //
+    // Now: compare paths to paths, and fall back to the longest matching
+    // prefix so a detail page (/portals/staff/visits/123) still lights up its
+    // section (/portals/staff/visits) instead of leaving the user with no
+    // indication of where they are.
+    var currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
+    var best = null, bestLen = -1;
+
+    document.querySelectorAll('.sidebar-link').forEach(function (link) {
+        var href = link.getAttribute('href') || '';
+        var path;
+        try {
+            path = new URL(href, window.location.origin).pathname;
+        } catch (e) {
+            return;
+        }
+        path = path.replace(/\/+$/, '') || '/';
+
+        if (path === currentPath) {
+            best = link; bestLen = Infinity;               // exact wins outright
+        } else if (
+            bestLen !== Infinity &&
+            path !== '/' &&
+            currentPath.indexOf(path + '/') === 0 &&    // real segment boundary
+            path.length > bestLen
+        ) {
+            best = link; bestLen = path.length;             // deepest prefix wins
+        }
+    });
+
+    // Blade routeIs() guards already mark some links server-side; clear those
+    // so exactly one item is highlighted rather than two.
+    if (best) {
+        document.querySelectorAll('.sidebar-link.active').forEach(function (l) {
+            if (l !== best) l.classList.remove('active');
+        });
+        best.classList.add('active');
+    }
+})();
+</script>
+
+
+
+
+<script src="http://127.0.0.1:8081/js/lucide.min.js"></script><script>window.lucide&&lucide.createIcons()</script></body></html>

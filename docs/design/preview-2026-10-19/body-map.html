@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Preview — clinician body map</title>
+<style>
+:root{--brand:#0F4C81;--ink:#0F172A;--muted:#5B6B82;--line:#E2E8F0;--pain:#DC2626}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,system-ui,sans-serif;color:var(--ink);background:#EEF3F9}
+.wrap{max-width:1180px;margin:24px auto;padding:0 16px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px}
+.head{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.av{width:48px;height:48px;border-radius:50%;background:#DCE8F5;color:var(--brand);display:grid;place-items:center;font-weight:700}
+.badge{margin-left:auto;background:#FEE2E2;color:#991B1B;font-weight:600;font-size:13px;padding:6px 12px;border-radius:999px}
+.grid{display:grid;grid-template-columns:340px 1fr;gap:22px}
+.figure{position:relative;border-radius:16px;overflow:hidden;background:#06213F url(img/guilloche-texture.webp) center/cover;padding:18px 0 8px}
+.figure::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,rgba(6,33,63,.15),rgba(6,33,63,.65))}
+.stage{position:relative;z-index:1;width:200px;margin:0 auto;aspect-ratio:305/720}
+.stage img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 18px rgba(56,189,248,.45))}
+.pin{position:absolute;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:var(--pain);border:2px solid #fff;box-shadow:0 0 0 0 rgba(220,38,38,.7);animation:tick 1.4s ease-out infinite}
+.pin::after{content:attr(data-n);position:absolute;left:18px;top:-6px;font:600 11px Inter,sans-serif;color:#fff;background:rgba(15,23,42,.75);padding:2px 6px;border-radius:6px;white-space:nowrap}
+@keyframes tick{0%{box-shadow:0 0 0 0 rgba(220,38,38,.75)}70%{box-shadow:0 0 0 16px rgba(220,38,38,0)}100%{box-shadow:0 0 0 0 rgba(220,38,38,0)}}
+@media (prefers-reduced-motion:reduce){.pin{animation:none}}
+.seg{position:relative;z-index:1;display:flex;justify-content:center;gap:6px;margin-top:10px}
+.seg button{border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.08);color:#fff;font:600 12px Inter,sans-serif;padding:6px 12px;border-radius:999px;cursor:pointer}
+.seg button.on{background:#fff;color:var(--brand)}
+.note{position:relative;z-index:1;color:#BFD7EE;font-size:11px;text-align:center;margin:8px 12px 0}
+h3{margin:0 0 10px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.site{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-left:4px solid var(--pain);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.sev{margin-left:auto;font-weight:700;color:#991B1B}
+.site p{margin:2px 0 0;font-size:13px;color:var(--muted)}
+.vit{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+.vit div{background:#F5F8FC;border-radius:10px;padding:10px}.vit b{display:block;font-size:18px}.vit span{font-size:12px;color:var(--muted)}
+.cap{font-size:12px;color:var(--muted);margin-top:10px}
+</style></head><body><div class="wrap"><div class="card">
+<div class="head"><div class="av">AD</div><div><b>Amara D.</b> · <span id="who">woman, 34</span><div style="font-size:13px;color:var(--muted)">CM-HID-XXXX-XXXX-XXXX · consent active until 18:40</div></div><span class="badge">2 pain sites · highest 7/10</span></div>
+<div class="grid">
+ <div class="figure">
+  <div class="stage" id="stage"><img id="img" src="img/adult-female-base.png" alt="Anatomy figure"><span class="pin" id="p1" data-n="Forehead 6/10"></span><span class="pin" id="p2" data-n="Chest 7/10" style="animation-delay:.5s"></span></div>
+  <div class="seg"><button data-k="child-boy">Boy</button><button data-k="child-girl">Girl</button><button data-k="adult-male">Man</button><button data-k="adult-female" class="on">Woman</button></div>
+  <p class="note">Figure chosen from the record's sex and age band. Only sites someone recorded are shown.</p>
+ </div>
+ <div>
+  <h3>Reported pain</h3>
+  <div class="site"><div><b>Forehead · headache</b><p>3 days · reported by patient at check-in</p></div><span class="sev">6/10</span></div>
+  <div class="site"><div><b>Chest · chest pain</b><p>Since this morning · recorded by nurse at triage</p></div><span class="sev">7/10</span></div>
+  <div class="vit"><div><span>Blood pressure</span><b>128/84</b></div><div><span>Pulse</span><b>96</b></div><div><span>SpO₂</span><b>97%</b></div><div><span>Allergies</span><b>Penicillin</b></div></div>
+  <p class="cap">Preview only — not deployed. Markers pulse red; motion stops for users who prefer reduced motion.</p>
+ </div>
+</div></div></div>
+<script>
+// Region anchors per figure (% of the figure box): forehead and chest.
+const F={'adult-female':{t:'woman, 34',fh:[50,6.5],ch:[50,23]},'adult-male':{t:'man, 41',fh:[50,6.5],ch:[50,23]},'child-boy':{t:'boy, 8',fh:[50,8],ch:[50,28]},'child-girl':{t:'girl, 9',fh:[50,8],ch:[50,28]}};
+function place(k){const f=F[k];document.getElementById('img').src='img/'+k+'-base.png';document.getElementById('who').textContent=f.t;
+ const p1=document.getElementById('p1'),p2=document.getElementById('p2');p1.style.left=f.fh[0]+'%';p1.style.top=f.fh[1]+'%';p2.style.left=f.ch[0]+'%';p2.style.top=f.ch[1]+'%';}
+document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.seg button').forEach(x=>x.classList.remove('on'));b.classList.add('on');place(b.dataset.k)});
+place(new URLSearchParams(location.search).get('k')||'adult-female');document.querySelectorAll('.seg button').forEach(x=>x.classList.toggle('on',x.dataset.k===(new URLSearchParams(location.search).get('k')||'adult-female')));
+</script></body></html>

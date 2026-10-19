@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Preview — clinician patient profile (OPES desk system)</title>
+<link rel="stylesheet" href="../../../public/css/od-fonts.css">
+<link rel="stylesheet" href="../../../public/css/od.css">
+<style>
+/* Preview-only layout; every colour comes from od.css tokens. */
+body{background:var(--od-canvas);margin:0;font-family:Inter,system-ui,sans-serif;color:var(--od-ink)}
+.pp{max-width:1280px;margin:0 auto;padding:20px 16px}
+.pp-head{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.pp-head h1{margin:0;font-size:20px;color:var(--od-ink-h)}
+.pp-meta{color:var(--od-muted);font-size:13px}
+.pp-actions{margin-left:auto;display:flex;gap:8px}
+.pp-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:16px 0}
+.pp-grid{display:grid;grid-template-columns:320px minmax(0,1fr) 320px;gap:14px;align-items:start}
+.pp-col{display:grid;gap:14px}
+.fig{position:relative;border-radius:12px;overflow:hidden;background:var(--od-side-bot) url(img/guilloche-texture.webp) center/cover}
+.fig::before{content:"";position:absolute;inset:0;background:rgba(10,46,87,.6)}
+.stage{position:relative;width:170px;margin:0 auto;padding:14px 0 6px;aspect-ratio:305/720;box-sizing:content-box}
+.stage img{width:100%;height:100%;object-fit:contain}
+.pin{position:absolute;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--od-urgent);border:2px solid #fff;animation:t 1.6s ease-out infinite}
+@keyframes t{0%{box-shadow:0 0 0 0 rgba(179,38,30,.7)}75%{box-shadow:0 0 0 14px rgba(179,38,30,0)}100%{box-shadow:0 0 0 0 rgba(179,38,30,0)}}
+@media (prefers-reduced-motion:reduce){.pin{animation:none}}
+.fig p{position:relative;margin:0;padding:0 12px 10px;color:#C9D7E8;font-size:11px;text-align:center}
+.key{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--od-muted);margin-top:8px}
+.key i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:3px;margin-right:6px}
+.key b{display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:-1px;margin-right:6px}
+.donut{display:flex;align-items:center;gap:18px}
+.dl{display:grid;gap:8px;font-size:13px}.dl span{color:var(--od-muted)}
+.pain{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--od-rule)}
+.pain:last-child{border-bottom:0}
+.pain small{display:block;color:var(--od-muted);font-size:12px}
+.sev{font-weight:700;font-variant-numeric:tabular-nums;color:var(--od-ink-h)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--od-urgent);margin-right:8px}
+.res td{font-variant-numeric:tabular-nums}
+.od-list__icon{color:var(--od-primary)}.res th:nth-child(n+2),.res td:nth-child(n+2){white-space:nowrap}
+.cap{font-size:12px;color:var(--od-muted);margin-top:14px}
+</style></head>
+<body class="od">
+<div class="pp">
+ <div class="od-card"><div class="od-card__body pp-head">
+  <span class="od-avatar">AD</span>
+  <div><h1>Amara D.</h1><div class="pp-meta">CM-HID-XXXX-XXXX-XXXX · Female · 34 y · O+ · 62 kg · 164 cm</div></div>
+  <span class="od-pill od-pill--urgent"><i data-lucide="triangle-alert"></i> Penicillin allergy</span>
+  <span class="od-pill od-pill--ready"><i data-lucide="shield-check"></i> Consent active · until 18:40</span>
+  <div class="pp-actions"><a class="od-btn od-btn--secondary" href="#"><i data-lucide="flask-conical"></i> Order test</a><a class="od-btn od-btn--primary" href="#"><i data-lucide="stethoscope"></i> New encounter</a></div>
+ </div></div>
+
+ <div class="pp-kpis">
+  <div class="od-kpi od-tint--blue"><span class="od-kpi__icon"><i data-lucide="heart-pulse"></i></span><span class="od-kpi__body"><span class="od-kpi__label">Blood pressure</span><span class="od-kpi__value">128/84</span><span class="od-kpi__sub">mmHg · triage 09:12</span></span></div>
+  <div class="od-kpi od-tint--teal"><span class="od-kpi__icon"><i data-lucide="activity"></i></span><span class="od-kpi__body"><span class="od-kpi__label">Pulse</span><span class="od-kpi__value">96</span><span class="od-kpi__sub">bpm · rising since 7 Oct</span></span></div>
+  <div class="od-kpi od-tint--sky"><span class="od-kpi__icon"><i data-lucide="wind"></i></span><span class="od-kpi__body"><span class="od-kpi__label">SpO₂</span><span class="od-kpi__value">97%</span><span class="od-kpi__sub">room air</span></span></div>
+  <div class="od-kpi od-tint--amber"><span class="od-kpi__icon"><i data-lucide="thermometer"></i></span><span class="od-kpi__body"><span class="od-kpi__label">Temperature</span><span class="od-kpi__value">37.4 °C</span><span class="od-kpi__sub">within normal</span></span></div>
+ </div>
+
+ <div class="pp-grid">
+  <div class="pp-col">
+   <section class="od-card"><div class="od-card__head"><h2 class="od-card__title">Presenting complaint</h2></div><div class="od-card__body">
+    <div class="fig"><div class="stage"><img src="img/adult-female-base.png" alt="Anatomy figure, adult female"><span class="pin" style="left:50%;top:6.5%"></span><span class="pin" style="left:50%;top:23%;animation-delay:.6s"></span></div><p>Figure follows sex and age band</p></div>
+    <div class="key"><span><b style="background:var(--od-urgent)"></b>Reported pain site</span></div>
+    <div class="pain"><div><span class="dot"></span>Forehead · headache<small>3 days · patient at check-in</small></div><span class="sev">6/10</span></div>
+    <div class="pain"><div><span class="dot"></span>Chest · chest pain<small>Since 07:30 · nurse at triage</small></div><span class="sev">7/10</span></div>
+   </div></section>
+  </div>
+
+  <div class="pp-col">
+   <section class="od-card"><div class="od-card__head"><h2 class="od-card__title">Vitals trend · last 14 days</h2></div><div class="od-card__body">
+    <svg viewBox="0 0 560 200" width="100%" role="img" aria-label="Systolic, diastolic and pulse over 14 days">
+     <g stroke="var(--od-rule)" stroke-width="1"><line x1="40" y1="20" x2="550" y2="20"/><line x1="40" y1="70" x2="550" y2="70"/><line x1="40" y1="120" x2="550" y2="120"/><line x1="40" y1="170" x2="550" y2="170"/></g>
+     <g fill="var(--od-muted)" font-size="11" font-family="Inter"><text x="8" y="24">160</text><text x="8" y="74">120</text><text x="12" y="124">80</text><text x="12" y="174">40</text>
+      <text x="40" y="192">6 Oct</text><text x="210" y="192">10 Oct</text><text x="380" y="192">14 Oct</text><text x="510" y="192">19 Oct</text></g>
+     <polyline fill="none" stroke="var(--od-primary)" stroke-width="2.5" points="40,60 125,62 210,58 295,55 380,57 465,50 550,54"/>
+     <polyline fill="none" stroke="var(--od-primary)" stroke-width="2" stroke-dasharray="6 4" points="40,108 125,110 210,106 295,104 380,106 465,100 550,102"/>
+     <polyline fill="none" stroke="var(--od-teal)" stroke-width="2.5" points="40,118 125,116 210,112 295,106 380,100 465,94 550,90"/>
+     <g fill="#fff" stroke-width="2"><circle cx="550" cy="54" r="4" stroke="var(--od-primary)"/><circle cx="550" cy="102" r="4" stroke="var(--od-primary)"/><circle cx="550" cy="90" r="4" stroke="var(--od-teal)"/></g>
+    </svg>
+    <div class="key"><span><i style="background:var(--od-primary)"></i>Systolic (mmHg)</span><span><i style="background:repeating-linear-gradient(90deg,var(--od-primary) 0 5px,transparent 5px 8px)"></i>Diastolic (mmHg)</span><span><i style="background:var(--od-teal)"></i>Pulse (bpm)</span></div>
+   </div></section>
+
+   <section class="od-card"><div class="od-card__head"><h2 class="od-card__title">Recent results</h2></div><div class="od-card__body">
+    <table class="od-table res"><thead><tr><th>Test</th><th class="od-table__num">Result</th><th class="od-table__num">Range</th><th class="od-table__num">Date</th></tr></thead><tbody>
+     <tr><td class="od-table__name">Haemoglobin</td><td class="od-table__num"><span class="od-pill od-pill--urgent">10.9 g/dL · low</span></td><td class="od-table__num">12.0–15.5</td><td class="od-table__num">10 Oct</td></tr>
+     <tr><td class="od-table__name">Troponin I</td><td class="od-table__num"><span class="od-pill od-pill--pending">pending</span></td><td class="od-table__num">&lt; 0.04</td><td class="od-table__num">today</td></tr>
+     <tr><td class="od-table__name">Fasting glucose</td><td class="od-table__num"><span class="od-pill od-pill--ready">5.2 mmol/L</span></td><td class="od-table__num">3.9–5.6</td><td class="od-table__num">10 Oct</td></tr>
+    </tbody></table>
+   </div></section>
+  </div>
+
+  <div class="pp-col">
+   <section class="od-card"><div class="od-card__head"><h2 class="od-card__title">Care across facilities · 12 months</h2></div><div class="od-card__body donut">
+    <svg viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="Encounters by type">
+     <g transform="rotate(-90 60 60)" fill="none" stroke-width="16">
+      <circle cx="60" cy="60" r="44" stroke="var(--od-primary)" stroke-dasharray="124.4 276.5"/>
+      <circle cx="60" cy="60" r="44" stroke="var(--od-teal)" stroke-dasharray="69.1 276.5" stroke-dashoffset="-124.4"/>
+      <circle cx="60" cy="60" r="44" stroke="var(--od-pending)" stroke-dasharray="55.3 276.5" stroke-dashoffset="-193.5"/>
+      <circle cx="60" cy="60" r="44" stroke="var(--od-faint)" stroke-dasharray="27.7 276.5" stroke-dashoffset="-248.8"/>
+     </g>
+     <text x="60" y="57" text-anchor="middle" font-size="20" font-weight="700" fill="var(--od-ink-h)" font-family="Inter">20</text>
+     <text x="60" y="73" text-anchor="middle" font-size="10" fill="var(--od-muted)" font-family="Inter">encounters</text>
+    </svg>
+    <div class="dl">
+     <div><b style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--od-primary);margin-right:8px"></b>Consultations <span>9</span></div>
+     <div><b style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--od-teal);margin-right:8px"></b>Lab visits <span>5</span></div>
+     <div><b style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--od-pending);margin-right:8px"></b>Pharmacy <span>4</span></div>
+     <div><b style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--od-faint);margin-right:8px"></b>Imaging <span>2</span></div>
+    </div>
+   </div></section>
+
+   <section class="od-card"><div class="od-card__head"><h2 class="od-card__title">Medicines</h2></div><div class="od-card__body">
+    <div class="od-list__row"><span class="od-list__icon od-tint--blue"><i data-lucide="pill"></i></span><span class="od-list__text"><span class="od-list__title">Amlodipine 5 mg</span><span class="od-list__sub">1 tablet daily · since 2024</span></span></div>
+    <div class="od-list__row"><span class="od-list__icon od-tint--blue"><i data-lucide="pill"></i></span><span class="od-list__text"><span class="od-list__title">Ferrous sulfate 200 mg</span><span class="od-list__sub">twice daily · 3 months</span></span></div>
+   </div></section>
+
+   <section class="od-card"><div class="od-card__head"><h2 class="od-card__title">Active problems</h2></div><div class="od-card__body">
+    <div class="od-list__row"><span class="od-list__icon od-tint--blue"><i data-lucide="clipboard-list"></i></span><span class="od-list__text"><span class="od-list__title">Essential hypertension</span><span class="od-list__sub">I10 · since 2024</span></span></div>
+    <div class="od-list__row"><span class="od-list__icon od-tint--blue"><i data-lucide="clipboard-list"></i></span><span class="od-list__text"><span class="od-list__title">Iron-deficiency anaemia</span><span class="od-list__sub">D50.9 · since Mar 2026</span></span></div>
+   </div></section>
+  </div>
+ </div>
+ <p class="cap">Preview only, not deployed. Sample data. Built on the live od.css desk tokens; red is reserved for pain sites and out-of-range results.</p>
+</div>
+<script src="../../../public/js/lucide.min.js"></script>
+<script>window.lucide && lucide.createIcons();</script>
+</body></html>

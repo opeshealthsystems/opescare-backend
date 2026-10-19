@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Preview — blog with guilloche background</title>
+<style>
+body{margin:0;font-family:Inter,Segoe UI,system-ui,sans-serif;color:#0F172A;
+ background:#EEF3F9}
+body::before{content:"";position:fixed;inset:0;background:url(img/guilloche-texture.webp) center/cover no-repeat;opacity:.14;z-index:-1}
+.nav{background:#fff;border-bottom:1px solid #E2E8F0;padding:14px 32px;font-weight:600;color:#0F4C81}
+.wrap{max-width:1120px;margin:0 auto;padding:28px 16px;display:grid;grid-template-columns:250px minmax(0,1fr);gap:36px}
+.side{font-size:14px}.side p{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#5B6B82;font-weight:700}
+.side a{display:block;color:#1E293B;text-decoration:none;padding:6px 0 6px 12px;border-left:2px solid #E2E8F0}
+article{background:rgba(255,255,255,.94);border:1px solid #E2E8F0;border-radius:18px;padding:32px 40px}
+.cat{font-size:12px;font-weight:700;letter-spacing:.08em;color:#0F4C81}
+h1{font-size:40px;line-height:1.15;margin:8px 0 12px}
+.dek{font-size:19px;color:#334155;line-height:1.5}
+.hero{width:100%;border-radius:14px;margin:18px 0}
+.body p{font-size:18px;line-height:1.75;color:#1E293B}
+.cap{font-size:12px;color:#5B6B82;margin-top:16px}
+</style></head><body>
+<div class="nav">OpesCare &nbsp;·&nbsp; <span style="color:#334155;font-weight:500">Find medicine · Find blood · Directory · Blog</span></div>
+<div class="wrap">
+ <aside class="side"><p>On this page</p><a>1. The spine: a portable Health ID</a><a>2. The marketplace layer</a><a>3. The governance layer</a><a>4. The family layer</a><a>5. One app, five clinics</a></aside>
+ <article><div class="cat">HEALTH ID</div><h1>The Record Is the Product</h1><p class="dek">How OpesCare turns a patient's medical identity into portable, consent-governed infrastructure for Cameroon.</p>
+ <img class="hero" src="img/hero.png" alt="">
+ <div class="body"><p>In most health systems in sub-Saharan Africa, the medical record belongs to the institution that created it. Test results sit in a file at one hospital. A prescription history lives with one pharmacy. When a patient moves, the record does not come with them.</p><p>OpesCare inverts that: the patient's record is the product itself.</p></div>
+ <p class="cap">Preview only — not deployed. The guilloche from the Health ID card sits behind the page at low strength; the article panel stays solid for readability.</p></article>
+</div></body></html>
