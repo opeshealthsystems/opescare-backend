@@ -23,9 +23,8 @@ class WebAuditRenderingTest extends TestCase
     {
         $html = $this->withSession(['locale' => 'fr'])->get('/login')->assertOk()->getContent();
 
-        if (! str_contains($html, 'id="demoPanel"')) {
-            $this->markTestSkipped('Demo panel not rendered in this environment.');
-        }
+        // Demo mode on a non-production host is the only place the panel renders.
+        $this->assertStringContainsString('id="demoPanel"', $html);
 
         $this->assertStringContainsString(__('public.demo.tab_staff', [], 'fr'), $html);
         $this->assertStringContainsString(e(__('public.demo.sandbox_notice', [], 'fr')), $html);
