@@ -89,13 +89,55 @@ class ScaleSeeder extends Seeder
             WHERE p.health_id LIKE 'SYN-%'
         ");
 
+        // Access-log actors must be real users (FK); 500 synthetic staff.
+        DB::statement("
+            INSERT INTO users (id, name, email, password, status, created_at, updated_at)
+            SELECT gen_random_uuid(), 'Synth Staff ' || g, 'synth.staff.' || g || '@scale.test', 'x', 'active', now(), now()
+            FROM generate_series(1, 500) g
+        ");
+        DB::statement("DROP TABLE IF EXISTS scale_users");
+        DB::statement("CREATE TEMP TABLE scale_users AS SELECT id, row_number() OVER () AS n FROM users WHERE email LIKE 'synth.staff.%@scale.test'");
+        DB::statement('CREATE UNIQUE INDEX ON scale_users (n)');
+        DB::statement('ANALYZE scale_users');
+
         DB::statement("
             INSERT INTO access_logs (id, patient_id, actor_id, actor_type, facility_id, purpose, data_category, resource_type, access_type, created_at)
-            SELECT gen_random_uuid(), p.id, gen_random_uuid(), 'user', t.id, 'treatment', 'clinical', 'patient', 'read',
+            SELECT gen_random_uuid(), p.id, u.id, 'user', t.id, 'treatment', 'clinical', 'patient', 'read',
                    now() - (random() * interval '365 days')
             FROM patients p CROSS JOIN generate_series(1, 2) k
             JOIN scale_tenants t ON t.n = 1 + (abs(hashtext(p.id::text || k::text)) % {$n})
+            JOIN scale_users u ON u.n = 1 + (abs(hashtext(p.id::text || 'u' || k::text)) % 500)
             WHERE p.health_id LIKE 'SYN-%'
+        ");
+
+        // One visit + two encounters per patient (chart load), one queue
+        // ticket per 4 patients (queue desk), three notifications per staff user.
+        DB::statement("
+            INSERT INTO visits (id, patient_id, facility_id, visit_type, status, started_at, created_at, updated_at)
+            SELECT gen_random_uuid(), p.id, t.id, 'outpatient', 'closed', now() - random() * interval '365 days', now(), now()
+            FROM patients p JOIN scale_tenants t ON t.n = 1 + (abs(hashtext(p.id::text)) % {$n})
+            WHERE p.health_id LIKE 'SYN-%'
+        ");
+        DB::statement("
+            INSERT INTO encounters (id, visit_id, patient_id, facility_id, encounter_type, status, started_at, created_at, updated_at)
+            SELECT gen_random_uuid(), v.id, v.patient_id, v.facility_id, 'consultation', 'completed',
+                   v.started_at + k * interval '1 hour', now(), now()
+            FROM visits v CROSS JOIN generate_series(0, 1) k
+            JOIN patients p ON p.id = v.patient_id WHERE p.health_id LIKE 'SYN-%'
+        ");
+        DB::statement("
+            INSERT INTO queue_tickets (id, patient_id, facility_id, queue_number, current_queue, status, priority_level, checked_in_at, created_at, updated_at)
+            SELECT gen_random_uuid(), p.id, t.id, 'S' || row_number() OVER (), 'triage',
+                   (ARRAY['waiting','called','completed','completed'])[1 + abs(hashtext(p.id::text || 'q')) % 4],
+                   5, now() - random() * interval '30 days', now() - random() * interval '30 days', now()
+            FROM patients p JOIN scale_tenants t ON t.n = 1 + (abs(hashtext(p.id::text)) % {$n})
+            WHERE p.health_id LIKE 'SYN-%' AND abs(hashtext(p.id::text || 'qq')) % 4 = 0
+        ");
+        DB::statement("
+            INSERT INTO notifications (id, type, notifiable_type, notifiable_id, data, read_at, created_at, updated_at)
+            SELECT gen_random_uuid(), 'App\Notifications\Synthetic', 'App\Models\User', u.id::text, '{}',
+                   CASE WHEN k % 3 = 0 THEN NULL ELSE now() END, now() - k * interval '1 hour', now()
+            FROM scale_users u CROSS JOIN generate_series(1, 60) k
         ");
 
         DB::statement("

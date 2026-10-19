@@ -9,7 +9,7 @@
         .gd-nav a{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:6px 12px;border:1px solid var(--f-line);border-radius:var(--f-r);background:var(--f-surface);color:var(--f-ink-soft);font-weight:650;font-size:.875rem;text-decoration:none}
         .gd-nav a:hover{border-color:var(--f-brand);color:var(--f-brand-ink)}
         .gd-nav a svg,.gd-nav a i{width:16px;height:16px;color:var(--f-brand)}
-        .gd-nav__label{width:100%;font-size:.75rem;font-weight:750;letter-spacing:.05em;text-transform:uppercase;color:var(--f-muted)}
+        .gd-nav__label{width:100%;font-size:.75rem;font-weight:750;letter-spacing:.05em;text-transform:uppercase;color:#5B6B82}
         .gd-grid{display:grid;gap:12px}
         @media (min-width:900px){.gd-grid{grid-template-columns:repeat(2,1fr)}}
         .gd-dep__head{display:flex;align-items:center;gap:12px}

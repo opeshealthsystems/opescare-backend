@@ -8,9 +8,7 @@
     <meta name="theme-color" content="#0F4C81">
     @include('partials.favicons')
     <link rel="manifest" href="{{ asset('site.webmanifest') }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/od-fonts.css') }}">
     <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
     <style>
         /* ── Demo Layout Overrides ─────────────────────────── */

@@ -162,7 +162,7 @@
                         <div class="f-small odp-meta">
                             @if(!empty($stock['price']))
                                 <span class="odp-bold">
-                                    {{ __('finder_search.medicine.price_fcfa', ['price' => number_format((float) $stock['price'], 0, '.', ' ')]) }}
+                                    {{ __('finder_search.medicine.price_fcfa', ['price' => \App\Support\LocaleNumber::format((float) $stock['price'])]) }}
                                     @if(!empty($stock['pack_size'])) <span class="f-muted odp-normal">— {{ __('finder_search.medicine.pack_of', ['size' => $stock['pack_size']]) }}</span>@endif
                                 </span>
                             @endif

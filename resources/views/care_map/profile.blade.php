@@ -325,7 +325,7 @@
       <div class="p-svc">
         <span>{{ $row['name'] }}</span>
         @if($row['price_xaf'] !== null)
-          <span class="f-badge">{{ __('finder_directory.price_xaf', ['amount' => number_format($row['price_xaf'], 0, ',', ' ')]) }}</span>
+          <span class="f-badge">{{ __('finder_directory.price_xaf', ['amount' => \App\Support\LocaleNumber::format($row['price_xaf'])]) }}</span>
         @else
           <span class="f-small f-muted">{{ __('finder_directory.price_not_published') }}</span>
         @endif

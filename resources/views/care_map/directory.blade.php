@@ -411,7 +411,7 @@
   {{-- ── Results meta + map toggle ──────────────────────────────────── --}}
   <div class="results-meta">
     <p class="results-count" aria-live="polite">
-      <strong>{{ trans_choice('finder_directory.results_count', $total, ['count' => number_format($total)]) }}</strong>
+      <strong>{{ trans_choice('finder_directory.results_count', $total, ['count' => \App\Support\LocaleNumber::format($total)]) }}</strong>
       @if($lastPage > 1)
         <span class="results-page"> · {{ __('finder_directory.page_of', ['current' => $facilities->currentPage(), 'last' => $lastPage]) }}</span>
       @endif

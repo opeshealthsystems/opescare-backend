@@ -105,8 +105,8 @@ class AddSecurityHeaders
                 // Styles still allow inline: ~1,000 style= attributes plus Leaflet and
                 // Chart.js set element styles at runtime. Inline CSS cannot run code;
                 // tracked as a lower-priority clean-up in docs/SECURITY_REMEDIATION.md.
-                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " .
-                "font-src 'self' https://fonts.gstatic.com; " .
+                "style-src 'self' 'unsafe-inline'; " .
+                "font-src 'self'; " .
                 "img-src 'self' data: https:; " .
                 "connect-src 'self'; " .
                 ($isDocs ? "worker-src 'self' blob:; " : '') .

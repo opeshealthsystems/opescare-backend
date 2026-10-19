@@ -5,6 +5,9 @@
 @use('App\Services\Queue\PatientQueueService', 'Q')
 
 @php
+    // Resolved once, not per row: @capability reads the role assignment from
+    // the database on every call (two queries per ticket before 2026-10-19).
+    $qCanChart = \App\Support\StaffCapabilities::can(auth()->user(), 'clinical_chart');
     $statusBadge = fn (string $status) => 'od-pill od-pill--' . match ($status) {
         Q::STATUS_WAITING   => 'neutral',
         Q::STATUS_CALLED    => 'pending',
@@ -130,7 +133,7 @@
                         <td data-label="{{ __('queue_desk.col_patient') }}">
                             <div class="od-table__person">
                                 <span class="od-avatar od-tint--{{ $odTone($qName !== '' ? $qName : (string) $ticket->id) }}" aria-hidden="true">{{ $odInitials($qPatient?->first_name, $qPatient?->last_name) }}</span>
-                                <div><span class="od-table__name">{{ $qName !== '' ? $qName : '—' }}</span>@if($qPatient?->health_id)<span class="od-table__sub">{{ $qPatient->health_id }}@capability('clinical_chart') · <a href="{{ route('portals.chart.index', ['health_id' => $qPatient->health_id]) }}" class="odc-link">{{ __('hospital_desk.open_chart') }}</a>@endcapability</span>@endif</div>
+                                <div><span class="od-table__name">{{ $qName !== '' ? $qName : '—' }}</span>@if($qPatient?->health_id)<span class="od-table__sub">{{ $qPatient->health_id }}@if($qCanChart) · <a href="{{ route('portals.chart.index', ['health_id' => $qPatient->health_id]) }}" class="odc-link">{{ __('hospital_desk.open_chart') }}</a>@endif</span>@endif</div>
                             </div>
                         </td>
                         <td data-label="{{ __('queue_desk.col_priority') }}">@include('portals.queue._priority_badge', ['ticket' => $ticket])</td>

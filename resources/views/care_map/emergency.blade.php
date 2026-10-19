@@ -41,7 +41,12 @@
     -webkit-tap-highlight-color: transparent;
 }
 .em-dial:active { transform: translateY(1px); }
-@media (max-width: 380px) { .em-dial-grid { grid-template-columns: 1fr; } .em-dial { min-height: 64px; } }
+/* "Appeler le 112" never breaks mid-label: the label is nowrap and the grid
+   stacks to one full-width button per row below 520px (two halves of a phone
+   screen are too narrow for the French label at this size). */
+.em-dial__label { white-space: nowrap; }
+.em-dial svg { flex: none; }
+@media (max-width: 520px) { .em-dial-grid { grid-template-columns: 1fr; } .em-dial { min-height: 64px; font-size: 1.1875rem; } }
 .em-note { display: flex; gap: 8px; align-items: flex-start; background: var(--f-wash); border-radius: var(--f-r); padding: 10px 14px; }
 .em-cards { display: grid; gap: 12px; margin-top: 16px; }
 /* Facility card internals as classes, not inline styles: the card repeats up
@@ -77,11 +82,11 @@
             <div class="em-dial-grid">
                 <a href="tel:112" class="em-dial">
                     @include('partials.finder.icon', ['name' => 'phone', 'size' => 26])
-                    {{ __('finder_search.emergency.dial_112') }}
+                    <span class="em-dial__label">{{ __('finder_search.emergency.dial_112') }}</span>
                 </a>
                 <a href="tel:119" class="em-dial">
                     @include('partials.finder.icon', ['name' => 'phone', 'size' => 26])
-                    {{ __('finder_search.emergency.dial_119') }}
+                    <span class="em-dial__label">{{ __('finder_search.emergency.dial_119') }}</span>
                 </a>
             </div>
             <p class="f-small f-muted odp-mt-8">{{ __('finder_search.emergency.dial_hint') }}</p>

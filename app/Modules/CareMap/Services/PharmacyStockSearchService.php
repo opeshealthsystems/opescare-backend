@@ -59,6 +59,9 @@ class PharmacyStockSearchService
      */
     private const MAX_CANDIDATE_ROWS = 500;
 
+    /** Largest facility-id list bound as parameters; beyond it a subquery is used. */
+    private const NEARBY_ID_LIST_MAX = 5000;
+
     /** Freshness ordering for the no-coordinates fallback sort. Higher is better. */
     private const FRESHNESS_RANK = ['fresh' => 3, 'recent' => 2, 'stale' => 1];
 
@@ -84,9 +87,20 @@ class PharmacyStockSearchService
             ? \App\Support\Geo\BoundingBox::around((float) $lat, (float) $lon, (float) $radius)
             : null;
 
+        // Drive both stock lookups FROM the facility box: resolve the active
+        // listings in the box once (care_facilities_lat_lng_idx), then read
+        // stock by facility id. Expressed as EXISTS against the box, the
+        // planner seq-scanned the whole stock table and hash-joined it to the
+        // few hundred facilities inside (docs/certification/SCALE_READINESS.md).
+        $nearbyIds = $box !== null ? $this->nearbyFacilityIds($box) : null;
+
+        if ($nearbyIds === []) {
+            return [];
+        }
+
         $matches = array_merge(
-            $this->reportedStockMatches($term, $box),
-            $this->directoryStockMatches($term, $box),
+            $this->reportedStockMatches($term, $box, $nearbyIds),
+            $this->directoryStockMatches($term, $box, $nearbyIds),
         );
 
         $facilities = [];
@@ -134,13 +148,12 @@ class PharmacyStockSearchService
      *
      * @return list<array{0: CareFacility, 1: array<string,mixed>}>
      */
-    private function reportedStockMatches(string $term, ?\App\Support\Geo\BoundingBox $box = null): array
+    private function reportedStockMatches(string $term, ?\App\Support\Geo\BoundingBox $box = null, ?array $nearbyIds = null): array
     {
-        $rows = MedicinePharmacyStock::query()
+        $rows = self::forFacilities(MedicinePharmacyStock::query(), 'care_facility_id', 'careFacility', $box, $nearbyIds)
             // Seeded rows never reach a patient. See the scope's docblock.
             ->reportedByRealSource()
             ->whereHas('medicine', fn (Builder $q) => $q->active()->matchingTerm($term))
-            ->whereHas('careFacility', fn (Builder $q) => self::nearby($q->where('listing_status', 'active'), $box))
             ->with(['medicine', 'careFacility'])
             ->orderByDesc('last_reported_at')
             ->limit(self::MAX_CANDIDATE_ROWS)
@@ -220,7 +233,6 @@ class PharmacyStockSearchService
                     ->orWhereRaw("LOWER(COALESCE(generic_name, '')) LIKE LOWER(?)", [$needle])
                     ->orWhereRaw("LOWER(COALESCE(brand_name, '')) LIKE LOWER(?)", [$needle]);
             })
-            ->whereHas('facility', fn (Builder $q) => self::nearby($q->where('listing_status', 'active'), $box))
             ->with('facility')
             ->orderByDesc('last_updated_at')
             ->limit(self::MAX_CANDIDATE_ROWS)
@@ -334,5 +346,37 @@ class PharmacyStockSearchService
             ->where(fn (Builder $in) => $box->apply($in))
             ->orWhereNull('latitude')
             ->orWhereNull('longitude'));
+    }
+
+    /**
+     * Active listings in the box (or with no coordinates, which have always
+     * passed with a null distance). Above NEARBY_ID_LIST_MAX ids the list is
+     * not materialised and the caller falls back to a subquery.
+     *
+     * @return list<string>|null null when the box holds too many listings
+     */
+    private function nearbyFacilityIds(\App\Support\Geo\BoundingBox $box): ?array
+    {
+        $ids = self::nearby(CareFacility::query()->where('listing_status', 'active'), $box)
+            ->limit(self::NEARBY_ID_LIST_MAX + 1)
+            ->pluck('id')
+            ->map(fn ($id) => (string) $id)
+            ->all();
+
+        return count($ids) > self::NEARBY_ID_LIST_MAX ? null : $ids;
+    }
+
+    /**
+     * Constrain a stock query to active listings near the box: by an explicit
+     * id list when one was resolved (index on the stock table's facility
+     * column), else the original relation constraint.
+     */
+    private static function forFacilities(Builder $q, string $fkColumn, string $relation, ?\App\Support\Geo\BoundingBox $box, ?array $nearbyIds): Builder
+    {
+        if ($nearbyIds !== null) {
+            return $q->whereIn($q->getModel()->getTable() . '.' . $fkColumn, $nearbyIds);
+        }
+
+        return $q->whereHas($relation, fn (Builder $f) => self::nearby($f->where('listing_status', 'active'), $box));
     }
 }

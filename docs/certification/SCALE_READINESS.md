@@ -3,28 +3,113 @@
 Written 2026-10-19. Target named in the brief: tens of thousands of facilities,
 millions of patients, then 100k facilities / national-to-continental reach.
 
-## Status of measurement — read first
+## Measured — 2026-10-19 (single dev host)
 
-The EXPLAIN / timing pass at synthetic volume **has not been completed**. The
-local PostgreSQL 16 crashed under combined load from several parallel agents
-during the first ScaleSeeder run (50k facilities / 500k patients) and was in
-crash recovery for over an hour. No plan or timing below is claimed as measured.
-What exists is the tooling to measure, and the fixes that are correct by
-construction (index shape matches predicate shape). To finish:
+An earlier attempt (50k facilities / 500k patients) crashed the local
+PostgreSQL under load from parallel agents. This pass ran alone at 20k / 100k.
+
+**Host and caveats.** One Windows 11 workstation, local PostgreSQL 16 with
+default settings (no `shared_buffers` / `work_mem` tuning), database
+`opescare_finder_test_a5`, no other heavy DB process. Timings are
+`EXPLAIN (ANALYZE, BUFFERS)` execution times for the SQL the services emit
+(captured from the query log with bindings inlined), on a warm cache. They are
+**database time only**, not request latency: PHP, Blade, the network and the
+per-request middleware queries all come on top. Prod is a different, smaller
+VPS that shares the box with other services. Read these as evidence of plan
+shape first, and of absolute speed second.
+
+**Volume** (`ScaleSeeder`, SCALE_FACILITIES=20000, SCALE_PATIENTS=100000,
+seeded in 78 s, DB 346 MB):
+
+| Table | Rows |
+|---|---|
+| care_facilities | 20,000 (plus 2,000 tenant `facilities`) |
+| patients / visits / appointments / consent_grants | 100,000 each |
+| access_logs / encounters | 200,000 each |
+| medicine_pharmacy_stocks | 40,000 (2,000 medicines) |
+| blood_availability | 32,000 |
+| notifications | 30,000 (500 staff users) |
+| queue_tickets | 25,005 |
+| health_id_aliases | 19,757 |
+
+The seeder was extended for this run. It now creates 500 synthetic staff
+users, because `access_logs.actor_id` is a real FK to `users` and the first
+run failed on it. It also generates visits, encounters, queue tickets and
+notifications, which it did not before. Synthetic stock is tagged
+`scale_synthetic`, so the provenance allow-list correctly hides it. For the
+finder measurements only, the synthetic stock and blood rows in the test DB
+were relabelled `portal` so that the plans walk real rows. The test DB was
+wiped afterwards, and the app code has nothing like this.
+
+| Hot path | Plan with 2026-10-19 indexes | Time | Without the index | Time |
+|---|---|---|---|---|
+| Directory: text + city + bbox + radius | Bitmap AND of `care_facilities_lat_lng_idx` + `city_trgm` | 1.2 ms | Seq Scan care_facilities | 6.4 ms |
+| Directory: name substring only | Bitmap on `care_facilities_name_trgm` | 0.9 ms | Seq Scan | 14.8 ms |
+| Nearby blood (O+, 50 km) | `blood_avail_public_search_idx` + facility bbox index | 4.3 ms | facility Seq Scan | 9.7 ms |
+| Medicine stock nearby ("paracetamol", 50 km) | facility ids from `care_facilities_lat_lng_idx` (0.6 ms), then Bitmap on `medicine_pharmacy_stocks (care_facility_id, stock_status)` (3.5 ms) | 4.1 ms | was **Seq Scan medicine_pharmacy_stocks** (40k) + hash join | 13.7 ms (re-measured; 11.2 ms first run) |
+| Health ID resolve | `patients_health_id_unique` | 0.04 ms | (unique, not dropped) | — |
+| Health ID resolve by alias | `health_id_aliases_value_status_idx` | 0.6 ms | **Seq Scan** | 4.8 ms |
+| Consent check (patient, facility, active, unexpired) | `consent_grants_patient_fac_status_idx` (backward) | 0.2 ms | `consent_grants_patient_id_index` + filter | 1.1 ms |
+| Access log by patient, newest first | `access_logs_patient_created_idx` (backward) | 1.0 ms | `access_logs_patient_id_index` + sort | 0.9 ms |
+| Chart encounters by patient | `encounters_patient_started_idx` (backward) | 0.5 ms | **Parallel Seq Scan** (200k) | 97 ms |
+| Appointments: facility day sheet | `appointments_facility_scheduled_idx` | 0.07 ms | not dropped | — |
+| Queue desk (facility, active statuses) | `queue_tickets_facility_status_idx` | 0.35 ms | not dropped | — |
+| Unread bell (20 newest) | partial `notifications_unread_idx` | 0.24 ms | not dropped | — |
+
+For the "without" column the indexes were dropped inside `BEGIN … ROLLBACK`,
+so they were never actually lost. The dropped set: alias, encounters, lat/lng,
+name and city trigram, the access-log composite, and the consent composite.
+
+**What the numbers say.**
+- Every patient-keyed path is an index scan and stays under a millisecond.
+  These lookups are O(log n), so they will be in the same range at 10× volume.
+- The two indexes that matter most are the two the audit flagged as missing.
+  **Encounters by patient** drops from 97 ms to 0.5 ms. A seq scan grows
+  linearly, so without the index each chart open would cost roughly 1 s at 2M
+  encounters. **Alias resolve** was a seq scan that grows with every merge.
+- The access-log and consent composites buy little at 2 rows per patient.
+  They pay off for patients with long histories, where they avoid a sort.
+- **Medicine stock nearby no longer seq-scans the stock table.** Written as
+  `EXISTS` against the facility box, the planner scanned all 40k stock rows
+  and hash-joined them to the ~100 facilities in the box (13.7 ms, 1,594
+  buffers). `PharmacyStockSearchService` now resolves the active listings in
+  the box once (one indexed query, ids only) and reads both stock tables with
+  `care_facility_id IN (…)` / `facility_id IN (…)`, so the stock lookup is a
+  bitmap scan on the existing `(care_facility_id, stock_status)` index and
+  touches only that box's rows (0.6 + 3.5 ms; most of the 3.5 ms is the
+  2,000-row `medicines` term filter). No new index was needed. Above 5,000
+  listings in one box the id list is not bound and the old relation
+  constraint is used. Results are byte-identical on the scale data (same
+  rows, distances, matched stock ids, order); the provenance allow-list is
+  still applied by `reportedByRealSource()` on both tables.
+- Extrapolation: the bbox + trigram directory plans are bitmap scans. Their
+  cost scales with the number of rows *inside the box*, not with national
+  totals, so at 100k facilities a city-sized box should still answer in single
+  digits of ms. Dense cities (Douala, Yaoundé) will put more rows in the box
+  than this uniform random spread does.
+
+**Load test (k6).** `k6` is not installed on this host, and it was not
+installed for this pass. To run the script against a local or staging copy
+(never prod, never opescare.com):
+
+```bash
+k6 run -e BASE_URL=http://127.0.0.1:8000 -e PROFILE=smoke scripts/load/finder-smoke.k6.js
+# PROFILE = smoke | load | stress | soak; expect 429s from the per-IP throttle
+```
+
+To reproduce the measurements:
 
 ```bash
 DB_DATABASE=opescare_finder_test_a5 php artisan migrate:fresh --force
 DB_DATABASE=opescare_finder_test_a5 SCALE_FACILITIES=20000 SCALE_PATIENTS=100000 \
   php artisan db:seed --class=ScaleSeeder --force
-# then EXPLAIN (ANALYZE, BUFFERS) each query in "Hot paths" below, once with
-# and once without the 2026_10_19 indexes (DROP INDEX ... ; re-run)
+# EXPLAIN (ANALYZE, BUFFERS) each hot path; to compare, drop an index inside
+# BEGIN/ROLLBACK. Measure BEFORE any test run: RefreshDatabase wipes the data.
 ```
 
 `database/seeders/ScaleSeeder.php` refuses any database whose name lacks
-`_test`, generates rows set-based with `generate_series` (factories at this
-volume take hours), and tags everything `source_system='scale_synthetic'`,
-which is now on every finder's synthetic deny-list so it can never surface
-as live availability.
+`_test`. It generates rows set-based with `generate_series` (factories at this
+volume take hours) and tags everything `source_system='scale_synthetic'`.
 
 ## What was changed
 
@@ -86,8 +171,34 @@ An interrupted CONCURRENTLY build leaves an INVALID index; drop it and re-run
 `tests/Feature/Scale/FinderQueryBudgetTest.php` asserts the directory search
 and the blood search issue the same number of queries for 3 and 30 results,
 caps them, and asserts the bounding box is in the SQL. The finders were
-already eager-loading; no N+1 was found in them. **Not done:** budgets for
-chart, queue, dashboards, mobile home/records (the brief's other 11 pages).
+already eager-loading; no N+1 was found in them.
+
+`tests/Feature/Scale/StaffAndPortalQueryBudgetTest.php` measures each page
+twice, once with a little data and once with several times more. It asserts
+that the count stays flat (+1 slack) and stays under a cap:
+
+| Page | Cap | Measured |
+|---|---|---|
+| Chart show | ≤70 | ~50 |
+| Queue desk | ≤45 | 36 |
+| Staff dashboard | ≤80 | ~75 |
+| Patient portal home | ≤70 | — |
+| Mobile doctor home, chart, encounters, prescriptions | ≤40 each | — |
+| Mobile patient me, timeline, clinical, labs, prescriptions, appointments | ≤25 each | — |
+
+`tests/Feature/Perf/PatientEndpointsQueryCountTest.php` already covers 18
+patient endpoints the same way.
+
+**N+1 found and fixed:** the queue desk issued two queries per ticket
+(`facility_role_assignments` + `roles`). The cause was the
+`@capability('clinical_chart')` directive, which re-resolved the user's role
+inside the row loop. The role is now resolved once at the top of
+`portals/queue/index.blade.php`. The directive itself is now memoised too:
+`StaffCapabilities::can()` resolves the role once per request per (user,
+global role, active facility), held on the Request's attributes so nothing
+survives the request, and a facility switch mid-request resolves afresh.
+`tests/Feature/Scale/CapabilityDirectiveMemoTest.php` renders 3 and 30 rows
+with the same query count and checks the facility switch.
 
 ### Request-path work moved to the queue
 `PatientPush::queue()` + `App\Jobs\SendPatientPushJob` (queue `default`,
@@ -97,8 +208,23 @@ clinical push is worse than a missed one). Eight request-path callers switched
 invite, front desk, pharmacy desk). CLI callers (`push:test`, the reminder
 command) keep the synchronous `send()` because they read its result.
 Tests run with `QUEUE_CONNECTION=sync`, so behaviour under test is unchanged;
-`PatientPushIsQueuedTest` uses `Queue::fake()`. **Not done:** FHIR ingest
-fan-out and exports were not moved.
+`PatientPushIsQueuedTest` uses `Queue::fake()`.
+
+**FHIR ingest and exports: reviewed, and deliberately left synchronous.**
+- **FHIR ingest has no fan-out to move.** `FhirIngestController` calls
+  `FhirIngestService`, which writes the partner rows in one transaction and
+  returns the stored resource. Nothing else fires: no push, notification,
+  mail, HTTP call or event listener on the Partner* models. Queuing it would
+  break the FHIR contract (the client gets `201` plus the stored resource, and
+  a transaction Bundle is all-or-nothing) and would save nothing.
+- **Exports cannot be queued without a product decision.**
+  `MedicalRecordExportController` renders the PDF or FHIR bundle in memory and
+  returns it in the response. A job would have to store the PDF, which the
+  documents-on-demand rule forbids: patient PDFs are never written to disk.
+  Both endpoints are throttled at 10/min per user. If PDF render time becomes
+  a problem, the option is a queued render to a short-lived encrypted blob
+  with a pickup endpoint. That changes the storage rule, so it is the owner's
+  call, not a refactor.
 
 ### Payment core
 `tests/Feature/Payments/PaymentChargeCoreTest.php` — first direct tests of
@@ -125,6 +251,10 @@ Also: the "allow-list" for availability provenance is in fact a **deny-list**
 MedicinePharmacyStock, PharmacyStockAvailability and LabTestAvailability,
 despite the docblocks and CLAUDE.md calling it an allow-list. Any new source
 string is published by default. Flagged, not changed — it is a product rule.
+*Update, later on 2026-10-19:* the SQL the finders emit now uses a true
+allow-list (`source_system IN ('portal','partner_api', …)` or a
+`partner_api:` prefix). It was observed in the query log during the
+measurement pass above.
 
 ## Honest limits of the current deployment
 - One VPS: nginx + PHP-FPM + PostgreSQL + Redis + queue worker on one host. No

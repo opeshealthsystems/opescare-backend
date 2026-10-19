@@ -112,7 +112,7 @@
 
                         <div class="f-small odp-meta">
                             @if($test->price_xaf !== null)
-                                <span class="odp-bold">{{ __('lab_manager.finder.price_fcfa', ['price' => number_format((int) $test->price_xaf, 0, '.', ' ')]) }}</span>
+                                <span class="odp-bold">{{ __('lab_manager.finder.price_fcfa', ['price' => \App\Support\LocaleNumber::format((int) $test->price_xaf)]) }}</span>
                             @else
                                 <span class="f-muted">{{ __('lab_manager.finder.no_price') }}</span>
                             @endif

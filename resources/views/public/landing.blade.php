@@ -24,9 +24,9 @@
         partials.finder.schema.site include, untouched.
 --}}
 @section('title', __('landing.v2.meta_title'))
-@section('description', __('landing.v2.meta_desc', ['count' => number_format($stats['facilities'])]))
+@section('description', __('landing.v2.meta_desc', ['count' => \App\Support\LocaleNumber::format($stats['facilities'])]))
 @php
-    $lxCount  = number_format($stats['facilities']);
+    $lxCount  = \App\Support\LocaleNumber::format($stats['facilities']);
     $lxLocale = app()->getLocale();
 
     // Illustrative QR glyph for the Health ID card: three finder squares and

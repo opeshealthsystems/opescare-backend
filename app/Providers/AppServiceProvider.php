@@ -104,6 +104,11 @@ class AppServiceProvider extends ServiceProvider
         // AddSecurityHeaders put in the Content-Security-Policy, so the block
         // runs without 'unsafe-inline'. Empty outside an HTTP request (CLI
         // rendering, mail) so the attribute is simply omitted there.
+        // @num($n): locale-aware count (EN "2,737", FR "2 737"). See App\Support\LocaleNumber.
+        \Illuminate\Support\Facades\Blade::directive('num', function (string $expression) {
+            return "<?php echo e(\\App\\Support\\LocaleNumber::format({$expression})); ?>";
+        });
+
         \Illuminate\Support\Facades\Blade::directive('cspNonce', function () {
             return "<?php echo (\$__n = request()->attributes->get('csp_nonce')) ? 'nonce=\"' . e(\$__n) . '\"' : ''; ?>";
         });

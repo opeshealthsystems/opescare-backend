@@ -30,6 +30,9 @@ use App\Models\User;
  */
 final class StaffCapabilities
 {
+    /** Request attribute holding the per-request role memo (see memoisedRoleFor()). */
+    private const MEMO_ATTRIBUTE = '_staff_capabilities_roles';
+
     /** @return list<string> every capability name */
     public static function all(): array
     {
@@ -81,7 +84,42 @@ final class StaffCapabilities
      */
     public static function can(?User $user, string ...$capabilities): bool
     {
-        return self::canAt($user, self::contextFacilityId($user), ...$capabilities);
+        if (! $user) {
+            return false;
+        }
+
+        return self::roleCan(self::memoisedRoleFor($user, self::contextFacilityId($user)), ...$capabilities);
+    }
+
+    /**
+     * roleFor(), resolved at most once per request for a given user, global
+     * role and facility. `@capability` sits inside row loops (queue desk,
+     * rosters), and each unmemoised call cost two queries
+     * (facility_role_assignments + roles).
+     *
+     * The memo lives on the current Request's attributes, so it dies with the
+     * request: nothing crosses requests, workers or tests. The key carries the
+     * facility id, so switching the active facility mid-request (session
+     * change) resolves afresh, and the global role_id, so a role change on the
+     * user model does too.
+     */
+    private static function memoisedRoleFor(User $user, ?string $facilityId): ?string
+    {
+        $request = app()->bound('request') ? app('request') : null;
+
+        if (! $request instanceof \Illuminate\Http\Request) {
+            return self::roleFor($user, $facilityId);
+        }
+
+        $key = $user->getKey() . '|' . ($user->role_id ?? '') . '|' . ($facilityId ?? '');
+        $memo = (array) $request->attributes->get(self::MEMO_ATTRIBUTE, []);
+
+        if (! array_key_exists($key, $memo)) {
+            $memo[$key] = self::roleFor($user, $facilityId);
+            $request->attributes->set(self::MEMO_ATTRIBUTE, $memo);
+        }
+
+        return $memo[$key];
     }
 
     /**

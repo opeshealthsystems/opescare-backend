@@ -4,9 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OpesCare — Care Map Admin</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/od-fonts.css') }}">
 <link rel="stylesheet" href="{{ asset('css/portal.css') }}">
 <script src="{{ asset('js/lucide.min.js') }}" defer></script>
 <script src="{{ asset('js/op-actions.js') }}?v={{ @filemtime(public_path('js/op-actions.js')) ?: '1' }}" defer></script>
@@ -24,7 +22,7 @@ html,body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:va
 .page-topbar-logo{display:flex;align-items:center;gap:.625rem;text-decoration:none}
 .page-topbar-mark{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1a6fb5,#0aab9a);display:flex;align-items:center;justify-content:center}
 .page-topbar-mark i{color:#fff;width:16px;height:16px}
-.page-topbar-name{font-family:'Outfit',sans-serif;font-size:1rem;font-weight:700;color:#fff}
+.page-topbar-name{font-family:'Inter',system-ui,sans-serif;font-size:1rem;font-weight:700;color:#fff}
 .page-topbar-tag{display:block;font-size:.52rem;color:rgba(255,255,255,.4);font-weight:500;text-transform:uppercase;letter-spacing:.07em}
 .page-topbar-spacer{flex:1}
 .page-topbar-user{font-size:.78rem;color:rgba(255,255,255,.5)}
@@ -32,12 +30,12 @@ html,body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:va
 .page-wrap{max-width:1100px;margin:0 auto;padding:1.5rem 1.25rem 3rem}
 
 .page-head{margin-bottom:1.75rem}
-.page-head h1{font-family:'Outfit',sans-serif;font-size:1.5rem;font-weight:700;color:var(--text-primary);margin-bottom:.25rem}
+.page-head h1{font-family:'Inter',system-ui,sans-serif;font-size:1.5rem;font-weight:700;color:var(--text-primary);margin-bottom:.25rem}
 .page-head p{font-size:.875rem;color:var(--text-muted)}
 
 .stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;margin-bottom:1.75rem}
 .stat-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-xl);padding:1.25rem}
-.stat-card__value{font-family:'Outfit',sans-serif;font-size:2rem;font-weight:700;color:var(--brand);margin-bottom:.25rem}
+.stat-card__value{font-family:'Inter',system-ui,sans-serif;font-size:2rem;font-weight:700;color:var(--brand);margin-bottom:.25rem}
 .stat-card__label{font-size:.78rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
 
 .content-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem}

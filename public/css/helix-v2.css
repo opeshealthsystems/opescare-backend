@@ -28,7 +28,7 @@
   --font-mono:               'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap');
+/* JetBrains Mono no longer fetched from Google Fonts: the site loads no third-party fonts; monospace stacks fall back to system fonts. */
 
 /* ═══════════════════════════════════════════
    TOPBAR — 2px accent top border (Helix v2 signature)
