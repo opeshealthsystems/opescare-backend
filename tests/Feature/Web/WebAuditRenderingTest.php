@@ -32,6 +32,21 @@ class WebAuditRenderingTest extends TestCase
         $this->assertStringNotContainsString('Sandbox environment — demo data only', $html);
     }
 
+    public function test_no_view_ships_an_image_with_an_empty_src(): void
+    {
+        // An <img src=""> resolves to the current page URL and shows up as a
+        // broken image (patient dashboard temp-QR placeholder, 2026-10-19).
+        $offenders = [];
+        $it = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(resource_path('views')));
+        foreach ($it as $file) {
+            if ($file->isFile() && str_ends_with($file->getFilename(), '.blade.php')
+                && preg_match('/<img\b[^>]*\ssrc=""/i', file_get_contents($file->getPathname()))) {
+                $offenders[] = $file->getPathname();
+            }
+        }
+        $this->assertSame([], $offenders);
+    }
+
     public function test_internal_demo_page_hides_link_to_disabled_public_demo(): void
     {
         Config::set('demo.internal_enabled', true);

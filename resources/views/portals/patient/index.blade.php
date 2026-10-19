@@ -257,7 +257,7 @@
                     @endunless
                     <p id="temp-qr-error" class="odpt-error" role="alert" hidden></p>
                     <div id="temp-qr-container" class="odpt-tempqr__box" aria-live="polite" hidden>
-                        <img id="temp-qr-img" src="" alt="{{ __('public.portal.temp_qr_alt', [], $l) }}" class="odpt-tempqr__img" hidden>
+                        <img id="temp-qr-img" alt="{{ __('public.portal.temp_qr_alt', [], $l) }}" class="odpt-tempqr__img" hidden>
                         <span id="temp-qr-placeholder" class="odpt-tempqr__ph"><i data-lucide="qr-code"></i></span>
                         <p class="odpt-tempqr__exp"><i data-lucide="clock"></i>{{ __('public.portal.expires_in', [], $l) }}: <span id="countdown">60:00</span></p>
                     </div>
