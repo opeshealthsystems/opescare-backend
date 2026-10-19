@@ -194,8 +194,8 @@ class PilotClinicalJourneyTest extends TestCase
         $this->post(route('portals.chart.consent_request'), [
             'health_id' => $patient->health_id, 'purpose' => 'continuity_of_care',
         ])->assertSessionHas('success');
-        $second = ConsentRequest::where('patient_id', $patient->id)->latest()->firstOrFail();
-        $this->assertNotSame($ask->id, $second->id);
+        // Both asks can share a created_at second, so pick the new one by id.
+        $second = ConsentRequest::where('patient_id', $patient->id)->where('id', '!=', $ask->id)->firstOrFail();
         $grant2 = $this->api($patientAuth, 'postJson', "/api/mobile/consent-requests/{$second->id}/approve")->assertOk()->json('consent_grant_id');
         $this->get(route('portals.chart.show', $patient->id))->assertOk();
         ConsentGrant::whereKey($grant2)->update(['expires_at' => now()->subMinute()]);

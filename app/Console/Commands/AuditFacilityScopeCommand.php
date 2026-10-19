@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\File;
 class AuditFacilityScopeCommand extends Command
 {
     protected $signature   = 'opescare:audit-facility-scope';
-    protected $description = 'Scan all models for facility_id in $fillable that are missing HasFacilityScope trait';
+    protected $description = 'Scan all models for facility_id in $fillable that are missing HasFacilityScope trait, and list scoped/unscoped call sites';
 
     public function handle(): int
     {
@@ -38,6 +38,22 @@ class AuditFacilityScopeCommand extends Command
         $this->warn('Models WITH facility_id MISSING HasFacilityScope: ' . count($missing));
         foreach ($missing as $m) {
             $this->line("  [MISSING] {$m}");
+        }
+
+        // Call sites: forCurrentFacility() fails closed when no facility is bound;
+        // acrossFacilities() is the deliberate unscoped escape hatch and must be justified.
+        $this->newLine();
+        $this->info('Scope call sites under app/ and routes/:');
+        foreach (array_merge(File::allFiles(app_path()), File::allFiles(base_path('routes'))) as $file) {
+            if ($file->getExtension() !== 'php' || str_ends_with($file->getFilename(), 'HasFacilityScope.php')) {
+                continue;
+            }
+            foreach (preg_split('/\R/', File::get($file->getPathname())) as $n => $line) {
+                if (preg_match('/->(forCurrentFacility|acrossFacilities)\(|::(forCurrentFacility|acrossFacilities)\(/', $line, $m)) {
+                    $tag = str_contains($m[0], 'across') ? 'UNSCOPED' : 'scoped';
+                    $this->line(sprintf('  [%s] %s:%d', $tag, $file->getRelativePathname(), $n + 1));
+                }
+            }
         }
 
         $this->newLine();
