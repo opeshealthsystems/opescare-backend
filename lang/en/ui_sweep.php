@@ -64,6 +64,7 @@ return [
         'demo_badge' => 'DEMO',
         'try_demo' => 'Try the Demo',
         'lab_technician' => 'Lab technician',
+        'receptionist_ops' => 'Receptionist · Operations Desk',
         'facility_admin' => 'Facility Administrator',
         'ceo' => 'Chief Executive Officer',
         'pharmacist' => 'Pharmacist',

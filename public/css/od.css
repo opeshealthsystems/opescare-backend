@@ -57,16 +57,16 @@ body.od {
   --od-top-h: 72px;
   --od-ink-h: #0F2340;
   --od-ink: #1F3654;
-  --od-muted: #6B7C93;
+  --od-muted: #5B6B82;
   --od-faint: #9AA9BC;
   --od-rule: #EEF2F7;
   --od-border: #DCE4EE;
   --od-select: #F2F7FD;
 
-  --od-urgent-bg: #FDECEC;  --od-urgent: #D93025;
+  --od-urgent-bg: #FDECEC;  --od-urgent: #B3261E; --od-urgent-ink: #B3261E;
   --od-normal-bg: #E8F0FE;  --od-normal: #1A5FB8;
-  --od-pending-bg: #FFF3DC; --od-pending: #B7791F;
-  --od-ready-bg: #E6F4EA;   --od-ready: #1E8E3E;
+  --od-pending-bg: #FFF3DC; --od-pending: #8A5A12; --od-pending-ink: #8A5A12;
+  --od-ready-bg: #E6F4EA;   --od-ready: #17723A; --od-ready-ink: #17723A;
   --od-teal-bg: #E6F4F1;    --od-teal: #0F7B6C;
   --od-sky-bg: #E3F4FB;     --od-sky: #0B7BA8;
   --od-rose-bg: #FCE8EF;    --od-rose: #B3245B;
@@ -318,7 +318,7 @@ body.od .od-card__body { padding: 0 20px 20px; min-width: 0; }
 body.od .od-card__body--flush { padding: 0 0 8px; }
 body.od .od-card__foot { padding: 12px 20px 16px; border-top: 1px solid var(--od-rule); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 body.od .od-live { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: var(--od-ink); }
-body.od .od-live::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: #1E8E3E; box-shadow: 0 0 0 3px #E6F4EA; }
+body.od .od-live::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: #17723A; box-shadow: 0 0 0 3px #E6F4EA; }
 
 /* ── Tabs ───────────────────────────────────────────────────────────────── */
 body.od .od-tabs { position: relative; min-width: 0; max-width: 100%; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 14px; padding: 0; list-style: none; }
@@ -435,10 +435,10 @@ body.od .od-pill {
   display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; line-height: 1; white-space: nowrap;
 }
 body.od .od-pill--dot::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex: none; }
-body.od .od-pill--urgent, body.od .od-pill--low, body.od .od-pill--critical { --pill-bg: var(--od-urgent-bg); --pill-fg: var(--od-urgent); }
+body.od .od-pill--urgent, body.od .od-pill--low, body.od .od-pill--critical { --pill-bg: var(--od-urgent-bg); --pill-fg: var(--od-urgent-ink); }
 body.od .od-pill--normal, body.od .od-pill--verifying, body.od .od-pill--processing, body.od .od-pill--received, body.od .od-pill--info { --pill-bg: var(--od-normal-bg); --pill-fg: var(--od-normal); }
-body.od .od-pill--pending, body.od .od-pill--reorder, body.od .od-pill--busy, body.od .od-pill--warning { --pill-bg: var(--od-pending-bg); --pill-fg: var(--od-pending); }
-body.od .od-pill--ready, body.od .od-pill--validated, body.od .od-pill--done, body.od .od-pill--ok { --pill-bg: var(--od-ready-bg); --pill-fg: var(--od-ready); }
+body.od .od-pill--pending, body.od .od-pill--reorder, body.od .od-pill--busy, body.od .od-pill--warning { --pill-bg: var(--od-pending-bg); --pill-fg: var(--od-pending-ink); }
+body.od .od-pill--ready, body.od .od-pill--validated, body.od .od-pill--done, body.od .od-pill--ok { --pill-bg: var(--od-ready-bg); --pill-fg: var(--od-ready-ink); }
 body.od .od-pill--counselling, body.od .od-pill--stat, body.od .od-pill--teal { --pill-bg: var(--od-teal-bg); --pill-fg: var(--od-teal); }
 body.od .od-pill--neutral { --pill-bg: #EEF2F7; --pill-fg: var(--od-muted); }
 body.od .od-chip {
@@ -446,7 +446,7 @@ body.od .od-chip {
   font-size: 14px; font-weight: 600; background: var(--od-normal-bg); color: var(--od-normal);
 }
 body.od .od-chip svg { width: 20px; height: 20px; }
-body.od .od-chip--ok { background: var(--od-ready-bg); color: var(--od-ready); }
+body.od .od-chip--ok { background: var(--od-ready-bg); color: var(--od-ready-ink); }
 
 /* ── Quick actions ──────────────────────────────────────────────────────── */
 body.od .od-quick { display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 12px; }
@@ -654,10 +654,10 @@ body.od .portal-sidebar {
 
 /* Tint modifiers must beat the component defaults on the same element. */
 body.od .od-tint--blue.od-tint--blue   { --tint-bg: #E8F0FE; --tint-fg: #1A5FB8; }
-body.od .od-tint--green.od-tint--green { --tint-bg: #E6F4EA; --tint-fg: #1E8E3E; }
-body.od .od-tint--amber.od-tint--amber { --tint-bg: #FFF3DC; --tint-fg: #B7791F; }
+body.od .od-tint--green.od-tint--green { --tint-bg: #E6F4EA; --tint-fg: #17723A; }
+body.od .od-tint--amber.od-tint--amber { --tint-bg: #FFF3DC; --tint-fg: #8A5A12; }
 body.od .od-tint--rose.od-tint--rose   { --tint-bg: #FCE8EF; --tint-fg: #B3245B; }
-body.od .od-tint--red.od-tint--red     { --tint-bg: #FDECEC; --tint-fg: #D93025; }
+body.od .od-tint--red.od-tint--red     { --tint-bg: #FDECEC; --tint-fg: #B3261E; }
 body.od .od-tint--teal.od-tint--teal   { --tint-bg: #E6F4F1; --tint-fg: #0F7B6C; }
 body.od .od-tint--sky.od-tint--sky     { --tint-bg: #E3F4FB; --tint-fg: #0B7BA8; }
 

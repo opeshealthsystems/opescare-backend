@@ -5,7 +5,7 @@
 // and are rendered unescaped by that view. Never put user input here.
 return [
     'effective_date_value' => '1 June 2026',
-    'last_updated_value'   => '7 September 2026',
+    'last_updated_value'   => '19 October 2026',
     'governing_law_value'  => 'Republic of Cameroon',
 
     'nav' => [
@@ -76,7 +76,8 @@ return [
     ],
     's34_title' => '3.4 Location, Photograph and Payment Data (Mobile App)',
     's34_items' => [
-        '<strong>Your device\'s location</strong>, only when you ask the app to find something near you &mdash; a pharmacy holding a medicine, or a facility with a blood unit. The coordinates are used to answer that search and to order the results by distance. Location is never collected in the background, and the app never follows your movements.',
+        '<strong>Your device\'s location</strong>, only when you ask the app to find something near you &mdash; a pharmacy holding a medicine, or a facility with a blood unit. The coordinates are used to answer that search and to order the results by distance. Location is read only while the app is open in the foreground, never in the background, and the app never follows your movements. We do not save these coordinates to your account or to any OpesCare database; like every web request, a search address can appear in the server\'s technical access logs, which are used only for security and troubleshooting.',
+        '<strong>Fingerprint or face unlock</strong>, if you turn on the app lock. The check is carried out entirely by your phone\'s operating system. Your fingerprint, face or any biometric template never leaves the device and is never sent to or stored by OpesCare; the app only learns whether the check succeeded, and our servers keep at most your on/off preference.',
         '<strong>A photograph of you</strong>, if you choose to add one to your Health ID card. It is held on private storage, never in a public folder, and is served only through a link that expires. You can remove it at any time and the file is deleted with it.',
         '<strong>A mobile money number</strong>, when you pay through MTN MoMo or Orange Money. We do not keep it. The number is passed to the payment provider to take the payment and then dropped; what remains on our side is a masked form (for example +2376*****01) so you can recognise which wallet you used, and a one-way cryptographic fingerprint used only to match up support queries. We never hold card details.',
     ],
@@ -107,6 +108,16 @@ return [
     's52_body'  => 'In a documented life-threatening emergency, an approved healthcare provider may access your emergency health profile (identity, blood group, critical allergies, active chronic conditions) without prior consent. This access is automatically logged, an alert is sent to compliance officers, and you or your emergency contact are notified at the earliest opportunity. See Section 10 for the full emergency access protocol.',
     's53_title' => '5.3 Sub-Processors',
     's53_body'  => 'We engage third-party sub-processors for hosting, backup, and security monitoring. All sub-processors are bound by data processing agreements (DPAs) requiring equivalent data protection standards. We do not use sub-processors established in jurisdictions that do not provide adequate data protection without implementing appropriate safeguards (Standard Contractual Clauses or equivalent). Our sub-processors are reviewed annually.',
+    's53_named_intro' => 'The service providers that process personal data on our behalf are:',
+    's53_named_items' => [
+        '<strong>Our hosting provider</strong> &mdash; the OpesCare web service, database, files and backups run on a single virtual private server rented from a hosting provider. The provider supplies the machine; it does not access your records as part of the service.',
+        '<strong>Expo push service (Expo / 650 Industries, Inc.)</strong> &mdash; if you allow notifications, the app\'s push token and the text of each alert are passed through Expo\'s push service so the alert can reach your phone.',
+        '<strong>Google Firebase Cloud Messaging (Google LLC)</strong> &mdash; on Android, notifications are delivered through Google\'s Firebase Cloud Messaging, which receives the device token and the alert text.',
+        '<strong>Email</strong> &mdash; emails such as account notices and password resets are sent by a mail server running on our own server; no third-party email service receives them before they leave our server for your mail provider.',
+        '<strong>SMS provider (Twilio Inc.), when enabled</strong> &mdash; if SMS sending is switched on, your phone number and the message text are passed to Twilio to deliver text messages. When it is not enabled, no SMS provider receives your data.',
+        '<strong>Mobile money operators (MTN MoMo, Orange Money)</strong> &mdash; only when you choose to pay, as described in section 3.4.',
+    ],
+    's53_named_outro' => 'We do not use advertising or tracking services in the app.',
     's54_title' => '5.4 Public Health and Government Authorities',
     's54_body'  => 'We may share <strong>aggregated, de-identified</strong> data with MINSANTE, the World Health Organisation (WHO), and other public health bodies for disease surveillance, epidemiological reporting, health system planning, and to support the objectives of Cameroon\'s National Digital Health Strategy 2026–2030. No individual patient record is shared for this purpose.',
     's55_title' => '5.5 Legal Compliance',
@@ -228,6 +239,6 @@ return [
     's16_intro' => 'For all data protection enquiries, rights requests, or complaints:',
     's16_card'  => '<strong>Data Protection Officer — Opes Health Systems Sarl</strong><br>Email: <a href="mailto:privacy@opeshealthsystems.com">privacy@opeshealthsystems.com</a><br>Subject line: <em>"DPO Request — [Your Name / Health ID]"</em><br>Response time: 30 calendar days for all valid requests',
 
-    'foot_versions' => '<strong>Effective date:</strong> 1 June 2026 &nbsp;|&nbsp; <strong>Version:</strong> 2.1 &nbsp;|&nbsp; <strong>Last updated:</strong> 7 September 2026',
+    'foot_versions' => '<strong>Effective date:</strong> 1 June 2026 &nbsp;|&nbsp; <strong>Version:</strong> 2.1 &nbsp;|&nbsp; <strong>Last updated:</strong> 19 October 2026',
     'foot_legal'    => 'For legal correspondence:',
 ];

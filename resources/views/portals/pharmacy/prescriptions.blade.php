@@ -1,5 +1,5 @@
 @extends('layouts.portal')
-@section('title', __('public.pharmacy_portal.page_title', [], app()->getLocale()))
+@section('title', __('public.pharmacy_portal.page_heading_rx', [], app()->getLocale()))
 @section('sidebar_user_role', __('public.pharmacy_portal.role_label', [], app()->getLocale()))
 @php
     $l = app()->getLocale();

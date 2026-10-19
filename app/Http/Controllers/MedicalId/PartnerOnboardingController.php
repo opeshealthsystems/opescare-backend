@@ -379,7 +379,7 @@ class PartnerOnboardingController extends Controller
     private function guard(): void
     {
         if (! RequirePlatformAdmin::isPlatformTier(auth()->user())) {
-            abort(403, 'role_forbidden');
+            abort(403, __('errors.abort.platform_admin_only'));
         }
     }
 

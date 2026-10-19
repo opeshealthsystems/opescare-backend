@@ -37,4 +37,11 @@ return [
         '503' => ['title' => 'Service indisponible', 'body' => 'OpesCare est momentanément indisponible, généralement pour une maintenance planifiée. Veuillez réessayer dans quelques minutes.'],
     ],
     'reason_label' => 'Motif :',
+    'abort' => [
+        'no_facility_role'   => 'Votre compte n’a aucun rôle dans cet établissement. Contactez votre administrateur.',
+        'demo_disabled'      => 'Le mode démo est désactivé.',
+        'demo_ip_denied'     => 'Accès refusé depuis votre adresse IP.',
+        'demo_account_unavailable' => 'Ce compte de démonstration n’est pas disponible.',
+        'platform_admin_only' => 'Cet espace est réservé aux administrateurs de la plateforme OpesCare.',
+    ],
 ];

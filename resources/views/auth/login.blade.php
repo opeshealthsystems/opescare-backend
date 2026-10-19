@@ -257,7 +257,7 @@
                     <button type="button" class="demo-login-btn demo-btn-clinical" data-demo-role="receptionist" data-demo-email="demo.receptionist@opescare.test">
                         <i data-lucide="monitor"></i>
                         <span>Front Desk — Aminata</span>
-                        <small>Receptionist · Operations Desk</small>
+                        <small>{{ __('ui_sweep.login.receptionist_ops') }}</small>
                     </button>
                 </div>
             </div>

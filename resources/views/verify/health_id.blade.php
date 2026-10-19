@@ -7,9 +7,7 @@
     <meta name="description" content="{{ __('verify.health_id_meta_description') }}">
     <meta name="theme-color" content="#0F4C81">
     @include('partials.favicons')
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    @include('public.partials._od_pages_css')
     <script src="{{ asset('js/lucide.min.js') }}"></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -228,7 +226,7 @@
         .verify-footer {
             text-align: center;
             font-size: 0.75rem;
-            color: #94A3B8;
+            color: #5B6B82;
             margin-top: 2rem;
         }
         .verify-footer a { color: #0F4C81; text-decoration: none; font-weight: 600; }

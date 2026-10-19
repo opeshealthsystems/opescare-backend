@@ -1127,6 +1127,9 @@ Route::any('/{fallbackPlaceholder}', function (\Illuminate\Http\Request $request
 })
     ->where('fallbackPlaceholder', '^(?!api/|fhir/).*')
     ->withoutMiddleware([
+        // Laravel 13 registers PreventRequestForgery in the web group; the two
+        // older names are kept so an upgrade or downgrade cannot re-arm 419.
+        \Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class,
         \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
         \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
     ])

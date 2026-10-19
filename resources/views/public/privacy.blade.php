@@ -47,7 +47,7 @@
             <div class="odp-links">
                 <span><strong>{{ __('public.privacy_page.effective_date') }}</strong> {{ __('legal_privacy.effective_date_value') }}</span>
                 <span><strong>{{ __('public.privacy_page.last_updated') }}</strong> {{ __('legal_privacy.last_updated_value') }}</span>
-                <span><strong>{{ __('public.privacy_page.version') }}</strong> 2.0</span>
+                <span><strong>{{ __('public.privacy_page.version') }}</strong> 2.1</span>
             </div>
         </div>
     </header>
@@ -163,6 +163,13 @@
             @foreach(['s51', 's52', 's53', 's54', 's55'] as $sub)
             <h3>{{ __('legal_privacy.'.$sub.'_title') }}</h3>
             <p>{!! __('legal_privacy.'.$sub.'_body') !!}</p>
+            @if($sub === 's53')
+            <p>{{ __('legal_privacy.s53_named_intro') }}</p>
+            <ul>
+                @foreach(__('legal_privacy.s53_named_items') as $item)<li>{!! $item !!}</li>@endforeach
+            </ul>
+            <p>{{ __('legal_privacy.s53_named_outro') }}</p>
+            @endif
             @endforeach
 
             <h3>{{ __('legal_privacy.s56_title') }}</h3>

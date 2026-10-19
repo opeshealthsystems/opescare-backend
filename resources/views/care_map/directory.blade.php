@@ -183,7 +183,7 @@
 .chip:hover { border-color: var(--brand); color: var(--brand); }
 .chip.on { background: var(--brand); border-color: var(--brand); color: #fff; font-weight: 600; }
 .chip .dot { display: none; }
-.chip .n { font-size: 0.68rem; font-weight: 700; opacity: .65; }
+.chip .n { font-size: 0.68rem; font-weight: 700; opacity: .8; } /* .65 gave 4.2:1 on white; .8 clears AA */
 .chips-label {
   font-size: 0.75rem; font-weight: 600;
   color: var(--text-3); flex-shrink: 0; padding-right: 0.1rem;
@@ -263,7 +263,7 @@
   font-size: 0.875rem; color: var(--text-2); line-height: 1.45;
 }
 .card-loc .icon { color: var(--text-3); margin-top: 2px; flex-shrink: 0; font-size: 0.8rem; }
-.card-actions { display: flex; gap: 0.5rem; align-items: center; margin-top: auto; }
+.card-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-top: auto; } /* wraps at 390px: three FR buttons were clipped by the card */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;
   padding: 0.5rem 0.9rem; border-radius: var(--radius);

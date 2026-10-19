@@ -64,6 +64,7 @@ return [
         'demo_badge' => 'DÉMO',
         'try_demo' => 'Essayer la démo',
         'lab_technician' => 'Technicien de laboratoire',
+        'receptionist_ops' => 'Réceptionniste · Accueil des opérations',
         'facility_admin' => 'Administrateur d\'établissement',
         'ceo' => 'Directeur général',
         'pharmacist' => 'Pharmacien',

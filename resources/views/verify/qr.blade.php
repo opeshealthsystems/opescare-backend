@@ -7,8 +7,6 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="theme-color" content="#0E1729">
     @include('partials.favicons')
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     @include('public.partials._od_pages_css')
     <script src="{{ asset('js/lucide.min.js') }}"></script>
     <style>

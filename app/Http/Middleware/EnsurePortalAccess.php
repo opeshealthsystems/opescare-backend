@@ -319,7 +319,7 @@ class EnsurePortalAccess
 
         // No role assigned at this facility (or globally): abort for all non-patient portals.
         if (!$roleName) {
-            abort(403, 'Your account has no role assigned at this facility. Contact your administrator.');
+            abort(403, __('errors.abort.no_facility_role'));
         }
 
         $allowedRoles = self::PORTAL_ROLES[$requestedPrefix] ?? [];

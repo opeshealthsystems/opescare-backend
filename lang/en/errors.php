@@ -37,4 +37,11 @@ return [
         '503' => ['title' => 'Service unavailable', 'body' => 'OpesCare is briefly unavailable, usually for scheduled maintenance. Please try again in a few minutes.'],
     ],
     'reason_label' => 'Reason:',
+    'abort' => [
+        'no_facility_role'   => 'Your account has no role assigned at this facility. Contact your administrator.',
+        'demo_disabled'      => 'Demo mode disabled.',
+        'demo_ip_denied'     => 'Access denied from your IP address.',
+        'demo_account_unavailable' => 'This demo account is not available.',
+        'platform_admin_only' => 'This area is restricted to OpesCare platform administrators.',
+    ],
 ];

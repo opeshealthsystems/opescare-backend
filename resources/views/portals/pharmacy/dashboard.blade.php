@@ -50,6 +50,7 @@
 @endsection
 
 @section('content')
+<h1 class="od-sr">{{ __('public.pharmacy_portal.page_heading', [], $l) }}</h1>
 
 @if(session('success'))<div class="alert alert-success mb-6"><i data-lucide="check-circle"></i><div>{{ session('success') }}</div></div>@endif
 

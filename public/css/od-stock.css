@@ -22,19 +22,19 @@
     --os-accent: #1A5FB8;
     --os-ink: #0F2340;
     --os-body: #1F3654;
-    --os-muted: #6B7C93;
+    --os-muted: #5B6B82;
     --os-faint: #9AA9BC;
     --os-rule: #EEF2F7;
     --os-input: #DCE4EE;
     --os-shadow: none;
 
-    --os-green-bg: #E6F4EA;  --os-green: #1E8E3E;
-    --os-red-bg: #FDECEC;    --os-red: #D93025;
-    --os-amber-bg: #FFF3DC;  --os-amber: #B7791F;
+    --os-green-bg: #E6F4EA;  --os-green: #17723A;
+    --os-red-bg: #FDECEC;    --os-red: #B3261E;
+    --os-amber-bg: #FFF3DC;  --os-amber: #8A5A12;
     --os-blue-bg: #E8F0FE;   --os-blue: #1A5FB8;
     --os-teal-bg: #E6F4F1;   --os-teal: #0F7B6C;
     --os-rose-bg: #FDE9EF;   --os-rose: #C2185B;
-    --os-grey-bg: #EEF2F7;   --os-grey: #6B7C93;
+    --os-grey-bg: #EEF2F7;   --os-grey: #5B6B82;
 }
 
 /* --------------------------------------------------------------------------
@@ -542,9 +542,9 @@
 :is(body.od--pharmacy, body.section-pharmacy) .os-pillselect select { min-width: 112px; }
 :is(body.od--pharmacy, body.section-pharmacy) .os-table .os-input--num { min-width: 84px; }
 /* KPI tint: one colour per tile (od.css sets the default tint on .od-kpi itself). */
-body.od .od-kpi.od-tint--green { --tint-bg: #E6F4EA; --tint-fg: #1E8E3E; }
-body.od .od-kpi.od-tint--amber { --tint-bg: #FFF3DC; --tint-fg: #B7791F; }
-body.od .od-kpi.od-tint--red   { --tint-bg: #FDECEC; --tint-fg: #D93025; }
+body.od .od-kpi.od-tint--green { --tint-bg: #E6F4EA; --tint-fg: #17723A; }
+body.od .od-kpi.od-tint--amber { --tint-bg: #FFF3DC; --tint-fg: #8A5A12; }
+body.od .od-kpi.od-tint--red   { --tint-bg: #FDECEC; --tint-fg: #B3261E; }
 body.od .od-kpi.od-tint--teal  { --tint-bg: #E6F4F1; --tint-fg: #0F7B6C; }
 body.od .od-kpi.od-tint--blue  { --tint-bg: #E8F0FE; --tint-fg: #1A5FB8; }
 body.od a.od-kpi:hover { box-shadow: none; background: #F9FBFE; }

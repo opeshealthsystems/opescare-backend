@@ -81,7 +81,7 @@ class RequirePlatformAdmin
         }
 
         if (! self::isPlatformTier(Auth::user())) {
-            abort(403, 'This area is restricted to OpesCare platform administrators.');
+            abort(403, __('errors.abort.platform_admin_only'));
         }
 
         return $next($request);

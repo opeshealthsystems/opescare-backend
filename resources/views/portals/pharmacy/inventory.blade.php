@@ -1,5 +1,5 @@
 @extends('layouts.portal')
-@section('title', __('public.pharmacy_portal.page_title', [], app()->getLocale()))
+@section('title', __('public.pharmacy_portal.page_heading_stock', [], app()->getLocale()))
 @section('sidebar_user_role', __('public.pharmacy_portal.role_label', [], app()->getLocale()))
 @section('head')@include('portals.pharmacy.stock_ops._styles')@endsection
 

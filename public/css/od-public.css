@@ -82,7 +82,7 @@ body.f-auth { background: #EEF3F9; }
 }
 .f-auth .demo-login-btn:hover { background: #F7F9FC; border-color: #C3D2E3; transform: none; box-shadow: none; }
 .f-auth .demo-login-btn svg { color: #0F4C81; }
-.f-auth .demo-login-btn small { color: var(--f-muted); }
+.f-auth .demo-login-btn small { color: var(--f-muted); opacity: 1; } /* auth.css dims it to .75 → 3.2:1; muted ink alone is 5.3:1 (AA) */
 .f-auth .demo-sandbox-creds { background: #EEF3F9; border: 0; color: var(--f-ink-soft); }
 
 /* Alerts: flat tints, no borders */

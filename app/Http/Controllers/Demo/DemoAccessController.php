@@ -38,13 +38,13 @@ class DemoAccessController extends Controller
     public function loginAs(Request $request)
     {
         if (!config('demo.enabled')) {
-            abort(403, 'Demo mode disabled.');
+            abort(403, __('errors.abort.demo_disabled'));
         }
 
         // IP allowlist check — empty means any IP is allowed
         $allowedIps = array_filter(array_map('trim', explode(',', config('demo.allowed_ips', ''))));
         if (!empty($allowedIps) && !in_array($request->ip(), $allowedIps, true)) {
-            abort(403, 'Access denied from your IP address.');
+            abort(403, __('errors.abort.demo_ip_denied'));
         }
 
         $request->validate([
@@ -69,7 +69,7 @@ class DemoAccessController extends Controller
                 'role'         => $roleName,
                 'ip_address'   => $request->ip(),
             ]);
-            abort(403, 'This demo account is not available.');
+            abort(403, __('errors.abort.demo_account_unavailable'));
         }
 
         Auth::login($user);

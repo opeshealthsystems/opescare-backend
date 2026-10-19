@@ -5,7 +5,7 @@
 // uniquement), rendues sans échappement par cette vue. Jamais de saisie utilisateur ici.
 return [
     'effective_date_value' => '1er juin 2026',
-    'last_updated_value'   => '7 septembre 2026',
+    'last_updated_value'   => '19 octobre 2026',
     'governing_law_value'  => 'République du Cameroun',
 
     'nav' => [
@@ -76,7 +76,8 @@ return [
     ],
     's34_title' => '3.4 Données de localisation, photographie et paiement (application mobile)',
     's34_items' => [
-        '<strong>La position de votre appareil</strong>, uniquement lorsque vous demandez à l\'application de trouver quelque chose près de vous &mdash; une pharmacie disposant d\'un médicament ou un établissement disposant d\'une poche de sang. Les coordonnées servent à répondre à cette recherche et à classer les résultats par distance. La position n\'est jamais collectée en arrière-plan et l\'application ne suit jamais vos déplacements.',
+        '<strong>La position de votre appareil</strong>, uniquement lorsque vous demandez à l\'application de trouver quelque chose près de vous &mdash; une pharmacie disposant d\'un médicament ou un établissement disposant d\'une poche de sang. Les coordonnées servent à répondre à cette recherche et à classer les résultats par distance. La position n\'est lue que lorsque l\'application est ouverte au premier plan, jamais en arrière-plan, et l\'application ne suit jamais vos déplacements. Nous n\'enregistrons pas ces coordonnées dans votre compte ni dans aucune base de données d\'OpesCare ; comme pour toute requête web, l\'adresse d\'une recherche peut figurer dans les journaux d\'accès techniques du serveur, utilisés uniquement à des fins de sécurité et de dépannage.',
+        '<strong>Le déverrouillage par empreinte digitale ou par reconnaissance faciale</strong>, si vous activez le verrouillage de l\'application. La vérification est effectuée entièrement par le système d\'exploitation de votre téléphone. Votre empreinte, votre visage ou tout modèle biométrique ne quittent jamais l\'appareil et ne sont jamais transmis à OpesCare ni conservés par OpesCare ; l\'application sait seulement si la vérification a réussi, et nos serveurs conservent tout au plus votre préférence (activé ou désactivé).',
         '<strong>Une photographie de vous</strong>, si vous choisissez d\'en ajouter une à votre carte d\'ID de Santé. Elle est conservée sur un stockage privé, jamais dans un dossier public, et n\'est servie qu\'au moyen d\'un lien qui expire. Vous pouvez la retirer à tout moment, et le fichier est alors supprimé.',
         '<strong>Un numéro de mobile money</strong>, lorsque vous payez via MTN MoMo ou Orange Money. Nous ne le conservons pas. Le numéro est transmis au prestataire de paiement pour encaisser le paiement, puis abandonné ; il ne reste de notre côté qu\'une forme masquée (par exemple +2376*****01) pour que vous puissiez reconnaître le portefeuille utilisé, et une empreinte cryptographique à sens unique utilisée uniquement pour rapprocher les demandes d\'assistance. Nous ne conservons jamais de données de carte.',
     ],
@@ -107,6 +108,16 @@ return [
     's52_body'  => 'En cas d\'urgence vitale documentée, un professionnel de santé agréé peut consulter votre profil de santé d\'urgence (identité, groupe sanguin, allergies critiques, maladies chroniques actives) sans consentement préalable. Cet accès est automatiquement journalisé, une alerte est adressée aux responsables de la conformité, et vous-même ou votre contact d\'urgence êtes informés dans les meilleurs délais. Voir la section 10 pour le protocole complet d\'accès d\'urgence.',
     's53_title' => '5.3 Sous-traitants',
     's53_body'  => 'Nous faisons appel à des sous-traitants tiers pour l\'hébergement, la sauvegarde et la surveillance de la sécurité. Tous les sous-traitants sont liés par des accords de traitement des données (DPA) imposant des normes de protection équivalentes. Nous ne recourons pas à des sous-traitants établis dans des juridictions n\'offrant pas une protection adéquate sans mettre en place des garanties appropriées (clauses contractuelles types ou équivalent). Nos sous-traitants sont réexaminés chaque année.',
+    's53_named_intro' => 'Les prestataires qui traitent des données personnelles pour notre compte sont :',
+    's53_named_items' => [
+        '<strong>Notre hébergeur</strong> &mdash; le service web d\'OpesCare, sa base de données, ses fichiers et ses sauvegardes fonctionnent sur un serveur privé virtuel unique loué auprès d\'un hébergeur. L\'hébergeur fournit la machine ; il n\'accède pas à vos dossiers dans le cadre de ce service.',
+        '<strong>Service de notifications push d\'Expo (Expo / 650 Industries, Inc.)</strong> &mdash; si vous autorisez les notifications, le jeton push de l\'application et le texte de chaque alerte transitent par le service push d\'Expo afin que l\'alerte parvienne à votre téléphone.',
+        '<strong>Google Firebase Cloud Messaging (Google LLC)</strong> &mdash; sur Android, les notifications sont acheminées par Firebase Cloud Messaging de Google, qui reçoit le jeton de l\'appareil et le texte de l\'alerte.',
+        '<strong>Courrier électronique</strong> &mdash; les e-mails, tels que les avis de compte et les réinitialisations de mot de passe, sont envoyés par un serveur de messagerie installé sur notre propre serveur ; aucun service d\'e-mail tiers ne les reçoit avant qu\'ils ne quittent notre serveur pour votre fournisseur de messagerie.',
+        '<strong>Fournisseur de SMS (Twilio Inc.), lorsqu\'il est activé</strong> &mdash; si l\'envoi de SMS est activé, votre numéro de téléphone et le texte du message sont transmis à Twilio pour l\'acheminement des SMS. Lorsqu\'il n\'est pas activé, aucun fournisseur de SMS ne reçoit vos données.',
+        '<strong>Opérateurs de mobile money (MTN MoMo, Orange Money)</strong> &mdash; uniquement lorsque vous choisissez de payer, comme décrit à la section 3.4.',
+    ],
+    's53_named_outro' => 'Nous n\'utilisons aucun service de publicité ou de pistage dans l\'application.',
     's54_title' => '5.4 Santé publique et autorités publiques',
     's54_body'  => 'Nous pouvons partager des données <strong>agrégées et désidentifiées</strong> avec le MINSANTE, l\'Organisation mondiale de la santé (OMS) et d\'autres organismes de santé publique à des fins de surveillance des maladies, de rapports épidémiologiques, de planification du système de santé et pour soutenir les objectifs de la Stratégie nationale de santé numérique 2026–2030 du Cameroun. Aucun dossier patient individuel n\'est partagé à cette fin.',
     's55_title' => '5.5 Conformité légale',
@@ -228,6 +239,6 @@ return [
     's16_intro' => 'Pour toute question relative à la protection des données, demande d\'exercice de droits ou réclamation :',
     's16_card'  => '<strong>Délégué à la protection des données — Opes Health Systems Sarl</strong><br>E-mail : <a href="mailto:privacy@opeshealthsystems.com">privacy@opeshealthsystems.com</a><br>Objet : <em>« Demande DPD — [Votre nom / ID de Santé] »</em><br>Délai de réponse : 30 jours calendaires pour toute demande valable',
 
-    'foot_versions' => '<strong>Date d\'effet :</strong> 1er juin 2026 &nbsp;|&nbsp; <strong>Version :</strong> 2.1 &nbsp;|&nbsp; <strong>Dernière mise à jour :</strong> 7 septembre 2026',
+    'foot_versions' => '<strong>Date d\'effet :</strong> 1er juin 2026 &nbsp;|&nbsp; <strong>Version :</strong> 2.1 &nbsp;|&nbsp; <strong>Dernière mise à jour :</strong> 19 octobre 2026',
     'foot_legal'    => 'Pour toute correspondance juridique :',
 ];
