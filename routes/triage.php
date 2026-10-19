@@ -56,6 +56,17 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'capability:t
     Route::get('/facility/triage/{id}', [\App\Http\Controllers\MedicalId\TriageDeskController::class, 'show'])
         ->name('portals.triage.show');
 
+    // Pain sites (patient_pain_sites), added and resolved from the triage
+    // record because the chart is read-only. Never deleted. {site} is a uuid
+    // re-checked against this record's patient and this facility.
+    Route::post('/facility/triage/{id}/pain-sites', [\App\Http\Controllers\MedicalId\TriageDeskController::class, 'storePainSites'])
+        ->whereUuid('id')
+        ->name('portals.triage.pain_sites.store');
+
+    Route::post('/facility/triage/{id}/pain-sites/{site}/resolve', [\App\Http\Controllers\MedicalId\TriageDeskController::class, 'resolvePainSite'])
+        ->whereUuid('id')->whereUuid('site')
+        ->name('portals.triage.pain_sites.resolve');
+
     // Re-triage. There is deliberately no PUT/PATCH and no delete anywhere in
     // this feature: a triage record is superseded by a reassessment, never
     // overwritten and never removed.

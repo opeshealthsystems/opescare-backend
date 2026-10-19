@@ -87,7 +87,7 @@ class DentalFinderTest extends TestCase
         $this->get(route('public.care-map.profile', $l->id))
             ->assertOk()
             ->assertSee('Extraction of tooth without incision')
-            ->assertSee('15 000 FCFA')
+            ->assertSee('15,000 FCFA')
             ->assertSee(__('finder_directory.price_not_published'))
             ->assertDontSee('Hemoglobin [Mass/volume] in Blood', false)
             ->assertDontSee('Dental scaling');

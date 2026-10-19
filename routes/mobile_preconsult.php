@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Mobile\MobileDoctorPreconsultController;
 use App\Http\Controllers\Api\Mobile\MobilePreconsultController;
+use App\Http\Controllers\Api\Mobile\MobilePreconsultPainSiteController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -53,6 +54,10 @@ Route::prefix('api/mobile')->middleware('auth.mobile')->group(function () {
             Route::get('/', [MobilePreconsultController::class, 'show']);
             Route::put('draft', [MobilePreconsultController::class, 'saveDraft']);
             Route::post('submit', [MobilePreconsultController::class, 'submit']);
+            // Where it hurts, at check-in (patient_pain_sites, source
+            // patient_checkin). Facility copied off the appointment.
+            Route::get('pain-sites', [MobilePreconsultPainSiteController::class, 'index']);
+            Route::post('pain-sites', [MobilePreconsultPainSiteController::class, 'store']);
         });
 });
 

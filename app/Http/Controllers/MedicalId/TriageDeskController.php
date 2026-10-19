@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\MedicalId;
 
+use App\Enums\PainSiteSource;
+use App\Services\Chart\PainSiteService;
 use App\Http\Controllers\Controller;
 use App\Models\PatientRecordedVital;
 use App\Models\Patient;
@@ -191,7 +193,9 @@ class TriageDeskController extends Controller
             'height_cm'           => 'nullable|numeric|min:20|max:260',
             'gcs_score'           => 'nullable|integer|min:3|max:15',
             'consciousness_level' => ['nullable', 'string', 'in:' . implode(',', TriageDeskService::CONSCIOUSNESS_LEVELS)],
-        ]);
+
+            'pain_sites'          => ['nullable', 'array', 'max:' . PainSiteService::MAX_PER_SUBMISSION],
+        ] + PainSiteService::rules('pain_sites.*.', required: false));
 
         $patient = Patient::resolveId($validated['patient_id']);
 
@@ -213,6 +217,17 @@ class TriageDeskController extends Controller
             // the patient's own readings.
             'vitals'               => $this->vitalsFrom($validated),
         ]);
+
+        foreach (PainSiteService::filledRows($validated['pain_sites'] ?? []) as $site) {
+            app(PainSiteService::class)->record(
+                $patient->id,
+                $facilityId,
+                PainSiteSource::Triage,
+                (string) auth()->id(),
+                $site,
+                ['triage_record_id' => $record->id],
+            );
+        }
 
         $this->context->auditPatientAccess(
             'triage_recorded',
@@ -265,7 +280,69 @@ class TriageDeskController extends Controller
             'acuityLevels'    => TriageAcuity::LEVELS,
             'consciousness'   => TriageDeskService::CONSCIOUSNESS_LEVELS,
             'selfReported'    => $patient ? $this->selfReported($patient->id) : collect(),
+            'painSites'       => $patient ? app(PainSiteService::class)->activeAt($patient->id, $this->facilityId()) : collect(),
         ]);
+    }
+
+    /**
+     * Add pain sites from the triage record. The chart is read-only by design
+     * (routes/chart.php), so this is where a clinician records where it hurts.
+     * The record is facility-scoped (scoped()), the facility is the session's.
+     * Source: `clinician` for a prescriber role, otherwise `triage`.
+     */
+    public function storePainSites(Request $request, string $id): RedirectResponse
+    {
+        $record = $this->scoped()->with('visit')->findOrFail($id);
+
+        $validated = $request->validate([
+            'pain_sites' => ['required', 'array', 'min:1', 'max:' . PainSiteService::MAX_PER_SUBMISSION],
+        ] + PainSiteService::rules('pain_sites.*.', required: false));
+
+        $rows = PainSiteService::filledRows($validated['pain_sites']);
+
+        if ($rows === []) {
+            return back()->withErrors(['pain_sites' => __('validation.required', ['attribute' => __('pain.region_label')])]);
+        }
+
+        $role   = $this->actorRole();
+        $source = in_array($role, (array) config('staff_capabilities.capabilities.prescribe', []), true)
+            ? PainSiteSource::Clinician
+            : PainSiteSource::Triage;
+
+        foreach ($rows as $site) {
+            $created = app(PainSiteService::class)->record(
+                (string) $record->visit->patient_id,
+                $this->facilityId(),
+                $source,
+                (string) auth()->id(),
+                $site,
+                ['triage_record_id' => $record->id],
+            );
+
+            $this->context->auditPatientAccess('pain_site_recorded', 'PatientPainSite', $created->id, $record->visit->patient_id);
+        }
+
+        return redirect()->to(route('portals.triage.show', $record->id) . '#pain-sites')
+            ->with('success', __('pain.recorded'));
+    }
+
+    /** Resolve one site reported to THIS facility for this record's patient. */
+    public function resolvePainSite(Request $request, string $id, string $site): RedirectResponse
+    {
+        $record = $this->scoped()->with('visit')->findOrFail($id);
+
+        $painSite = \App\Models\PatientPainSite::query()
+            ->where('id', $site)
+            ->where('patient_id', $record->visit->patient_id)
+            ->where('facility_id', $this->facilityId())
+            ->firstOrFail();
+
+        app(PainSiteService::class)->resolve($painSite, (string) auth()->id());
+
+        $this->context->auditPatientAccess('pain_site_resolved', 'PatientPainSite', $painSite->id, $record->visit->patient_id);
+
+        return redirect()->to(route('portals.triage.show', $record->id) . '#pain-sites')
+            ->with('success', __('pain.resolved'));
     }
 
     /**

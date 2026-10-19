@@ -87,6 +87,15 @@ return [
         'prescriptions'      => 'Prescriptions',
         'problem_list'       => 'Ongoing problems',
         'vitals'             => 'Vital signs',
+        'documents'          => 'Documents',
+        'immunization'       => 'Immunizations',
+        'patient_reported_intake' => 'Your pre-consult answers',
+        'triage'             => 'Triage',
+        'pain_sites'         => 'Where it hurts (pain sites)',
+        'referrals'          => 'Referrals',
+        'family_links'       => 'Family and emergency contacts',
+        'access_log'         => 'Who opened your record',
+        'care_team'          => 'Your care team',
     ],
 
 ];

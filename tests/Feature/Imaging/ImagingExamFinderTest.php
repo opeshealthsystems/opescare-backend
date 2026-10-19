@@ -143,7 +143,7 @@ class ImagingExamFinderTest extends TestCase
         $this->get('/network/imaging-finder?q=Echographie')
             ->assertOk()
             ->assertSee('Imagerie Bonanjo')
-            ->assertSee('15 000 FCFA');
+            ->assertSee('15,000 FCFA');
 
         $this->get('/network/imaging-finder?q=IRM%20genou')
             ->assertOk()

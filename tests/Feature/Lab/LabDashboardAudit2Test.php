@@ -257,7 +257,7 @@ class LabDashboardAudit2Test extends TestCase
             ->assertOk()
             ->assertViewHas('results', fn ($r) => $r->count() === 1)
             ->assertSee('Laboratoire Akwa')
-            ->assertSee('3 500 FCFA')
+            ->assertSee('3,500 FCFA')
             ->assertDontSee('Labo Seed');
 
         $this->get('/network/lab-test-finder?q=zzzz-nothing')

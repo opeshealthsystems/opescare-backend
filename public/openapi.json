@@ -3,7 +3,7 @@
     "info": {
         "title": "OpesCare API",
         "version": "1.2.0",
-        "description": "OpesCare's full REST API surface \u2014 Connect interoperability, SDK, Bridge agent, FHIR R4, clinical, and platform endpoints.\n\n**Auto-generated** from the live route table by `php artisan opescare:generate-openapi` (307 operations across 277 paths). Every path is therefore a real registered route \u2014 the spec cannot drift (enforced by OpenApiContractTest). Security is derived from each route's middleware; request/response bodies are generic stubs except for the hand-curated operations in config/openapi.php (full schemas).",
+        "description": "OpesCare's full REST API surface \u2014 Connect interoperability, SDK, Bridge agent, FHIR R4, clinical, and platform endpoints.\n\n**Auto-generated** from the live route table by `php artisan opescare:generate-openapi` (309 operations across 278 paths). Every path is therefore a real registered route \u2014 the spec cannot drift (enforced by OpenApiContractTest). Security is derived from each route's middleware; request/response bodies are generic stubs except for the hand-curated operations in config/openapi.php (full schemas).",
         "contact": {
             "name": "OpesCare Developer Support",
             "email": "developer-support@opescare.com"
@@ -104,6 +104,85 @@
                     },
                     "message": {
                         "type": "string"
+                    }
+                }
+            },
+            "PainSite": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "region": {
+                        "type": "string",
+                        "enum": [
+                            "head",
+                            "forehead",
+                            "face",
+                            "neck",
+                            "chest",
+                            "upper_abdomen",
+                            "lower_abdomen",
+                            "pelvis",
+                            "right_arm",
+                            "left_arm",
+                            "right_leg",
+                            "left_leg",
+                            "upper_back",
+                            "lower_back"
+                        ]
+                    },
+                    "region_label": {
+                        "type": "string"
+                    },
+                    "severity": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 10
+                    },
+                    "onset_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "trend": {
+                        "type": "string",
+                        "enum": [
+                            "better",
+                            "same",
+                            "worse"
+                        ],
+                        "nullable": true
+                    },
+                    "trend_label": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "note": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "source": {
+                        "type": "string",
+                        "enum": [
+                            "patient_checkin",
+                            "triage",
+                            "clinician"
+                        ]
+                    },
+                    "source_label": {
+                        "type": "string"
+                    },
+                    "resolved_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "recorded_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
                     }
                 }
             },
@@ -20248,6 +20327,189 @@
                             "schema": {
                                 "type": "object",
                                 "additionalProperties": true
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/mobile/preconsult/appointments/{appointment}/pain-sites": {
+            "get": {
+                "tags": [
+                    "Mobile"
+                ],
+                "summary": "List the pain sites sent at check-in for this appointment",
+                "operationId": "MobilePreconsultPainSite_index",
+                "security": [
+                    {
+                        "MobileToken": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "appointment",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Unresolved check-in sites",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/PainSite"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not this patient\u2019s appointment (indistinguishable from none)"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Mobile"
+                ],
+                "summary": "Report where it hurts at pre-consult check-in",
+                "operationId": "MobilePreconsultPainSite_store",
+                "description": "Patient (or guardian acting for a dependent) reports 1-8 pain sites. Facility is taken from the appointment. Accepted only while the pre-consult window is open (409 preconsult_window_closed otherwise). Left/right are the patient\u2019s.",
+                "security": [
+                    {
+                        "MobileToken": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "appointment",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "sites"
+                                ],
+                                "properties": {
+                                    "sites": {
+                                        "type": "array",
+                                        "minItems": 1,
+                                        "maxItems": 8,
+                                        "items": {
+                                            "type": "object",
+                                            "required": [
+                                                "region",
+                                                "severity"
+                                            ],
+                                            "properties": {
+                                                "region": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "head",
+                                                        "forehead",
+                                                        "face",
+                                                        "neck",
+                                                        "chest",
+                                                        "upper_abdomen",
+                                                        "lower_abdomen",
+                                                        "pelvis",
+                                                        "right_arm",
+                                                        "left_arm",
+                                                        "right_leg",
+                                                        "left_leg",
+                                                        "upper_back",
+                                                        "lower_back"
+                                                    ]
+                                                },
+                                                "severity": {
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 10
+                                                },
+                                                "onset_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "nullable": true
+                                                },
+                                                "trend": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "better",
+                                                        "same",
+                                                        "worse"
+                                                    ],
+                                                    "nullable": true
+                                                },
+                                                "note": {
+                                                    "type": "string",
+                                                    "maxLength": 500,
+                                                    "nullable": true
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Recorded",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/PainSite"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not this patient\u2019s appointment"
+                    },
+                    "409": {
+                        "description": "Pre-consult window closed"
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
                             }
                         }
                     }

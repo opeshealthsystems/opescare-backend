@@ -67,6 +67,15 @@ return [
         'prescriptions'      => 'Ordonnances',
         'problem_list'       => 'Problèmes en cours',
         'vitals'             => 'Signes vitaux',
+        'documents'          => 'Documents',
+        'immunization'       => 'Vaccinations',
+        'patient_reported_intake' => 'Vos réponses de pré-consultation',
+        'triage'             => 'Triage',
+        'pain_sites'         => 'Où vous avez mal (sites douloureux)',
+        'referrals'          => 'Références',
+        'family_links'       => 'Famille et contacts d\'urgence',
+        'access_log'         => 'Qui a ouvert votre dossier',
+        'care_team'          => 'Votre équipe de soins',
     ],
 
 ];

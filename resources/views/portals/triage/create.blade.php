@@ -153,6 +153,8 @@
                         <div class="odc-hint">{{ __('triage.pregnancy_hint') }}</div>
                     </div>
                 </div>
+
+                @include('portals.triage._pain_site_fields', ['name' => 'pain_sites', 'rows' => 3])
             </div>
         </div>
 

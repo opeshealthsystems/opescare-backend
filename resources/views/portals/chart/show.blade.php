@@ -13,11 +13,12 @@
 
 @section('head')
 <link rel="stylesheet" href="{{ asset('css/od-clinic.css') }}?v={{ @filemtime(public_path('css/od-clinic.css')) ?: '1' }}">
+<link rel="stylesheet" href="{{ asset('css/chart-summary.css') }}?v={{ @filemtime(public_path('css/chart-summary.css')) ?: '1' }}">
 @endsection
 
 
 @section('content')
-<div class="od-page odc-page">
+<div class="od-page odc-page cs-sealed">
 
 <div class="od-page__head">
     <div>
@@ -59,6 +60,25 @@
                 </div>
             </div>
 
+            @if($tab === 'summary')
+                @include('portals.chart.partials.header_extras')
+            @endif
+
+            @if($tab === 'summary' && !empty($grant) && $scope !== \App\Support\ClinicalRelationshipGate::SCOPE_PREVIEW)
+            <div class="odc-note cs-note--ok" role="status">
+                <i data-lucide="shield-check"></i>
+                <div>
+                    <strong>{{ __('chart_summary.consent_open_title') }}</strong>
+                    <p>{{ __('chart_summary.consent_open_note', [
+                        'by' => __('chart_summary.granted_by.' . (in_array($grant['by'], ['patient', 'guardian'], true) ? $grant['by'] : 'other')),
+                        'at' => $grant['granted_at']?->translatedFormat('d M Y H:i') ?? '—',
+                        'duration' => $grant['minutes'] !== null ? \Carbon\CarbonInterval::minutes($grant['minutes'])->cascade()->forHumans(['short' => false, 'parts' => 2]) : '—',
+                        'scope' => $grant['scope'] ? collect($grant['scope'])->map(fn ($s) => \Illuminate\Support\Facades\Lang::has('chart_summary.scopes.' . str_replace('.', '_', $s)) ? __('chart_summary.scopes.' . str_replace('.', '_', $s)) : $s)->implode(', ') : '—',
+                    ]) }}</p>
+                </div>
+            </div>
+            @endif
+
             @if($scope === \App\Support\ClinicalRelationshipGate::SCOPE_PREVIEW)
             <div class="odc-note odc-note--pending" role="alert">
                 <i data-lucide="eye-off"></i>
@@ -95,6 +115,9 @@
     </section>
 
     <aside class="od-stack">
+        @if($tab === 'summary')
+            @include('portals.chart.partials.side_panels')
+        @endif
         <section class="od-card">
             <header class="od-card__head"><h2 class="od-card__title">{{ __('chart.privacy_title') }}</h2></header>
             <div class="od-card__body"><ul class="od-list">

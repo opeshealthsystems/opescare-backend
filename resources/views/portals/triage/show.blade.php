@@ -251,6 +251,42 @@
     </div>
 </div>
 
+{{-- ── Pain sites ─────────────────────────────────────────────────────────
+     Where it hurts, at THIS facility. Added here by the nurse or the
+     clinician working from this triage record (the chart itself is read-only);
+     never deleted, only resolved. --}}
+<div class="od-card" id="pain-sites">
+    <div class="od-card__head">
+        <h2 class="od-card__title">{{ __('pain.list_title') }}</h2>
+    </div>
+    <div class="od-card__body">
+        @if($painSites->isEmpty())
+            <p class="od-muted">{{ __('pain.none_active') }}</p>
+        @else
+            <ul class="od-list">
+                @foreach($painSites as $site)
+                    <li class="od-list__row">
+                        <span class="od-list__text">
+                            <span class="od-list__title">{{ $site->region->label() }} · {{ $site->severity }}/10</span>
+                            <span class="od-list__sub">{{ $site->source->label() }}@if($site->trend) · {{ $site->trend->label() }}@endif @if($site->note) · {{ $site->note }}@endif</span>
+                        </span>
+                        <form method="POST" action="{{ route('portals.triage.pain_sites.resolve', ['id' => $record->id, 'site' => $site->id]) }}">
+                            @csrf
+                            <button type="submit" class="od-btn od-btn--secondary"><i data-lucide="check"></i> {{ __('pain.resolve') }}</button>
+                        </form>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+
+        <form method="POST" action="{{ route('portals.triage.pain_sites.store', $record->id) }}">
+            @csrf
+            @include('portals.triage._pain_site_fields', ['name' => 'pain_sites', 'rows' => 1])
+            <button type="submit" class="od-btn od-btn--secondary"><i data-lucide="plus"></i> {{ __('pain.add') }}</button>
+        </form>
+    </div>
+</div>
+
 {{-- ── Reassess ───────────────────────────────────────────────────────────
      Re-triage, not edit. The form writes a new reassessment, a new score row
      and — if observations were retaken — a new observation row. Nothing above

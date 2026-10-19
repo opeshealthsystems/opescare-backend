@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Api\Mobile\MobileConsentRequestController;
 use App\Models\Patient;
 use App\Modules\Governance\Services\ConsentService;
+use App\Services\Chart\ChartSummaryBuilder;
 use App\Services\Chart\PatientChartAccess;
 use App\Services\Chart\PatientChartService;
 use App\Services\Portal\DeskFacilityContext;
@@ -192,7 +193,19 @@ class PatientChartController extends Controller
             abort(503, __('chart.audit_unavailable'));
         }
 
-        $data = $consentRequired ? [] : $this->section($tab, $patient, $facilityId);
+        if ($tab === 'summary') {
+            // Every section gated by its own category; each one shown is its
+            // own access-log row, so the patient's log lists what was read.
+            $data = app(ChartSummaryBuilder::class)->build($patient, $access, $facilityId);
+
+            foreach ($data['disclosed'] as $category) {
+                if (! $access->auditRead($category, 'Patient')) {
+                    abort(503, __('chart.audit_unavailable'));
+                }
+            }
+        } else {
+            $data = $consentRequired ? [] : $this->section($tab, $patient, $facilityId);
+        }
 
         return view('portals.chart.show', [
             'patient'         => $patient,
@@ -203,6 +216,7 @@ class PatientChartController extends Controller
             'scope'           => $access->verdict->scope,
             'consentRequired' => $consentRequired,
             'facilityId'      => $facilityId,
+            'purposes'        => MobileConsentRequestController::PURPOSES,
         ] + $data);
     }
 
@@ -218,11 +232,8 @@ class PatientChartController extends Controller
     private function section(string $tab, Patient $patient, string $facilityId): array
     {
         return match ($tab) {
-            'summary' => [
-                'allergies' => $this->chart->allergies($patient),
-                'problems'  => $this->chart->problems($patient),
-                'medicines' => $this->chart->currentMedicines($patient),
-            ],
+            // Built by ChartSummaryBuilder in show(); never reached.
+            'summary' => [],
             'encounters' => ['encounters' => $this->chart->encounters($patient)],
             'vitals' => $this->chart->facilityVitals($patient) + [
                 'selfReported' => $this->chart->selfReportedVitals($patient),

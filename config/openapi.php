@@ -43,6 +43,20 @@ return [
     ],
 
     'schemas' => [
+        'PainSite' => ['type' => 'object', 'properties' => [
+            'id' => $uuid,
+            'region' => ['type' => 'string', 'enum' => ['head', 'forehead', 'face', 'neck', 'chest', 'upper_abdomen', 'lower_abdomen', 'pelvis', 'right_arm', 'left_arm', 'right_leg', 'left_leg', 'upper_back', 'lower_back']],
+            'region_label' => ['type' => 'string'],
+            'severity' => ['type' => 'integer', 'minimum' => 0, 'maximum' => 10],
+            'onset_at' => $iso,
+            'trend' => ['type' => 'string', 'enum' => ['better', 'same', 'worse'], 'nullable' => true],
+            'trend_label' => ['type' => 'string', 'nullable' => true],
+            'note' => ['type' => 'string', 'nullable' => true],
+            'source' => ['type' => 'string', 'enum' => ['patient_checkin', 'triage', 'clinician']],
+            'source_label' => ['type' => 'string'],
+            'resolved_at' => $iso,
+            'recorded_at' => $iso,
+        ]],
         'ClinicalNote' => ['type' => 'object', 'properties' => [
             'id' => $uuid, 'visit_id' => $uuid, 'provider_id' => $uuid,
             'status' => ['type' => 'string', 'enum' => ['draft', 'signed', 'amended']],
@@ -90,6 +104,36 @@ return [
     ],
 
     'overrides' => [
+        'GET /api/mobile/preconsult/appointments/{appointment}/pain-sites' => [
+            'tags' => ['Mobile'], 'summary' => 'List the pain sites sent at check-in for this appointment', 'operationId' => 'MobilePreconsultPainSite_index',
+            'security' => [['MobileToken' => []]],
+            'parameters' => [['name' => 'appointment', 'in' => 'path', 'required' => true, 'schema' => $uuid]],
+            'responses' => [
+                '200' => ['description' => 'Unresolved check-in sites', 'content' => ['application/json' => ['schema' => ['type' => 'object', 'properties' => ['data' => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/PainSite']]]]]]],
+                '404' => ['description' => 'Not this patient’s appointment (indistinguishable from none)'],
+            ],
+        ],
+        'POST /api/mobile/preconsult/appointments/{appointment}/pain-sites' => [
+            'tags' => ['Mobile'], 'summary' => 'Report where it hurts at pre-consult check-in', 'operationId' => 'MobilePreconsultPainSite_store',
+            'description' => 'Patient (or guardian acting for a dependent) reports 1-8 pain sites. Facility is taken from the appointment. Accepted only while the pre-consult window is open (409 preconsult_window_closed otherwise). Left/right are the patient’s.',
+            'security' => [['MobileToken' => []]],
+            'parameters' => [['name' => 'appointment', 'in' => 'path', 'required' => true, 'schema' => $uuid]],
+            'requestBody' => $jsonBody(['type' => 'object', 'required' => ['sites'], 'properties' => [
+                'sites' => ['type' => 'array', 'minItems' => 1, 'maxItems' => 8, 'items' => ['type' => 'object', 'required' => ['region', 'severity'], 'properties' => [
+                    'region' => ['type' => 'string', 'enum' => ['head', 'forehead', 'face', 'neck', 'chest', 'upper_abdomen', 'lower_abdomen', 'pelvis', 'right_arm', 'left_arm', 'right_leg', 'left_leg', 'upper_back', 'lower_back']],
+                    'severity' => ['type' => 'integer', 'minimum' => 0, 'maximum' => 10],
+                    'onset_at' => ['type' => 'string', 'format' => 'date-time', 'nullable' => true],
+                    'trend' => ['type' => 'string', 'enum' => ['better', 'same', 'worse'], 'nullable' => true],
+                    'note' => ['type' => 'string', 'maxLength' => 500, 'nullable' => true],
+                ]]],
+            ]]),
+            'responses' => [
+                '201' => ['description' => 'Recorded', 'content' => ['application/json' => ['schema' => ['type' => 'object', 'properties' => ['message' => ['type' => 'string'], 'data' => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/PainSite']]]]]]],
+                '404' => ['description' => 'Not this patient’s appointment'],
+                '409' => ['description' => 'Pre-consult window closed'],
+                '422' => ['description' => 'Validation failed', 'content' => ['application/json' => ['schema' => ['$ref' => '#/components/schemas/Error']]]],
+            ],
+        ],
         'POST /api/v1/connect/auth/token' => [
             'tags' => ['Connect'], 'summary' => 'Issue an access token (client_credentials)', 'operationId' => 'Connect_token',
             'security' => [],

@@ -1,0 +1,135 @@
+/*
+ * Patient chart: Summary tab (resources/views/portals/chart/tabs/summary.blade.php).
+ * Colours come from od.css tokens. Red (--od-urgent) is reserved for pain sites
+ * and out-of-range results; nothing else on this page uses it.
+ */
+
+/* Faint OpesCare seal behind the chart content. */
+body.od .cs-sealed { position: relative; isolation: isolate; }
+body.od .cs-sealed::after {
+  content: ""; position: absolute; pointer-events: none; z-index: 0;
+  left: 50%; top: 420px; width: min(620px, 90%); aspect-ratio: 1; transform: translateX(-50%);
+  background: url(../images/health-id/seal.webp) center / contain no-repeat;
+  filter: grayscale(1) brightness(1.15); opacity: .07; mix-blend-mode: multiply;
+}
+body.od .cs-sealed > * { position: relative; z-index: 1; }
+
+/* Header extras */
+body.od .cs-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+body.od .cs-head .od-pill { display: inline-flex; align-items: center; gap: 6px; }
+body.od .cs-head .od-pill svg, body.od .cs-head .od-pill i { width: 14px; height: 14px; }
+body.od .cs-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
+
+body.od .cs-note--ok { border-color: var(--od-ready); background: var(--od-ready-bg); color: var(--od-ready-ink); }
+
+/* KPI tiles */
+body.od .cs-kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0 0 14px; }
+body.od .cs-kpis .od-kpi__label { white-space: normal; overflow: visible; text-overflow: clip; }
+body.od .cs-kpis .od-kpi__sub { white-space: normal; }
+body.od .cs-kpis .od-kpi__value { white-space: nowrap; }
+body.od .cs-kpis .od-kpi__value--empty { font-size: 14px; font-weight: 500; color: var(--od-muted); }
+
+/* Layout rows */
+body.od .cs-row  { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 14px; margin-bottom: 14px; }
+body.od .cs-row2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; margin-bottom: 14px; }
+body.od .cs-row2 > .cs-wide { grid-column: 1 / -1; }
+body.od .cs-row .od-card, body.od .cs-row2 .od-card { margin: 0; }
+body.od .cs-stack { display: grid; gap: 14px; align-content: start; }
+body.od .od-table.cs-table, body.od .cs-table { width: 100%; min-width: 100%; display: table; }
+body.od .cs-table th { white-space: nowrap; }
+body.od .cs-table .od-pill { white-space: nowrap; }
+body.od .cs-list-wrap .od-list__title, body.od .cs-list-wrap .od-list__sub { white-space: normal; overflow: visible; text-overflow: clip; }
+body.od .cs-num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* Body map */
+body.od .cs-fig { position: relative; border-radius: 12px; overflow: hidden;
+  background: var(--od-side-bot) url(../images/health-id/guilloche-texture.webp) center / cover; }
+body.od .cs-fig::before { content: ""; position: absolute; inset: 0; background: rgba(10, 46, 87, .6); }
+body.od .cs-stage { position: relative; width: 150px; aspect-ratio: 305 / 720; margin: 0 auto; padding: 12px 0 4px; box-sizing: content-box; }
+body.od .cs-stage__box { position: absolute; left: 0; right: 0; top: 12px; bottom: 4px; }
+body.od .cs-stage__base { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+
+/* The current: 24 frames (6 x 4) stepped once per beat (833 ms, 72 bpm),
+   exactly as LivingAnatomy.tsx steps the same sheet. X walks the 6 columns
+   six times a beat; Y walks the 4 rows once a beat; both start together. */
+body.od .cs-current { position: absolute; inset: 0; background-repeat: no-repeat; background-size: 600% 400%;
+  background-position: 0 0; animation: cs-cur-x 208.25ms steps(6) infinite, cs-cur-y 833ms steps(4) infinite; }
+@keyframes cs-cur-x { from { background-position-x: 0%; } to { background-position-x: 120%; } }
+@keyframes cs-cur-y { from { background-position-y: 0%; } to { background-position-y: 133.3333%; } }
+
+/* The heart: lub-dub, the same keyframes as the app (contract, rebound,
+   second smaller contraction, rest). */
+body.od .cs-heart { position: absolute; background-repeat: no-repeat; background-size: 100% 100%;
+  transform-origin: 50% 50%; animation: cs-beat 833ms linear infinite; }
+@keyframes cs-beat {
+  0%   { transform: scale(1); }
+  10%  { transform: scale(.9); }
+  18%  { transform: scale(1.03); }
+  30%  { transform: scale(.94); }
+  45%  { transform: scale(1); }
+  100% { transform: scale(1); }
+}
+
+body.od .cs-pin { position: absolute; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%;
+  background: var(--od-urgent); border: 2px solid #fff; animation: cs-throb 1.6s ease-out infinite; }
+@keyframes cs-throb {
+  0%   { box-shadow: 0 0 0 0 rgba(179, 38, 30, .7); }
+  75%  { box-shadow: 0 0 0 14px rgba(179, 38, 30, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(179, 38, 30, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.od .cs-current, body.od .cs-heart, body.od .cs-pin { animation: none; }
+}
+
+body.od .cs-views { position: relative; display: flex; justify-content: center; gap: 6px; padding: 4px 0 10px; }
+body.od .cs-views button { font: inherit; font-size: 11px; color: #fff; background: transparent; border: 1px solid rgba(255, 255, 255, .35); border-radius: 999px; padding: 2px 10px; }
+body.od .cs-views button[aria-pressed="true"] { background: #fff; color: var(--od-primary); }
+body.od .cs-views button:disabled { opacity: .55; cursor: not-allowed; }
+body.od .cs-fig__cap { position: relative; margin: 0; padding: 0 10px 8px; color: #C9D7E8; font-size: 11px; text-align: center; }
+
+body.od .cs-key { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--od-muted); margin-top: 8px; }
+body.od .cs-key i, body.od .cs-key b { display: inline-block; vertical-align: -1px; margin-right: 6px; }
+body.od .cs-key i { width: 14px; height: 3px; border-radius: 2px; vertical-align: 3px; }
+body.od .cs-key b { width: 10px; height: 10px; border-radius: 3px; }
+
+body.od .cs-pain { display: flex; justify-content: space-between; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--od-rule); font-size: 13px; }
+body.od .cs-pain:last-child { border-bottom: 0; }
+body.od .cs-pain small { display: block; color: var(--od-muted); font-size: 12px; }
+body.od .cs-sev { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--od-ink-h); white-space: nowrap; }
+body.od .cs-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--od-urgent); margin-right: 8px; }
+
+/* Donut */
+body.od .cs-donut { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+body.od .cs-dl { display: grid; gap: 6px; font-size: 13px; }
+body.od .cs-dl span { color: var(--od-muted); }
+
+/* Timeline */
+body.od .cs-tl { list-style: none; margin: 0; padding: 0; }
+body.od .cs-tl li { position: relative; padding: 0 0 14px 22px; font-size: 13px; }
+body.od .cs-tl li::before { content: ""; position: absolute; left: 5px; top: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--od-primary); }
+body.od .cs-tl li::after { content: ""; position: absolute; left: 8px; top: 16px; bottom: 0; width: 2px; background: var(--od-rule); }
+body.od .cs-tl li:last-child::after { display: none; }
+body.od .cs-tl small { display: block; color: var(--od-muted); font-size: 12px; }
+
+body.od .cs-cap { font-size: 12px; color: var(--od-muted); margin: 6px 0 0; }
+body.od .cs-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+body.od .cs-form { display: grid; gap: 8px; margin-top: 10px; }
+
+@media (max-width: 1279px) {
+  body.od .cs-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 900px) {
+  body.od .cs-row, body.od .cs-row2 { grid-template-columns: minmax(0, 1fr); }
+  body.od .cs-stage { width: 110px; }
+  body.od .odc-chart-tabs { flex-wrap: wrap; }
+  body.od .cs-actions { margin-left: 0; }
+}
+@media (max-width: 480px) {
+  body.od .cs-kpis { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Compact tables inside the narrow summary cards; scroll rather than clip. */
+body.od .odc-tab-body .od-table-wrap { overflow-x: auto; }
+body.od .cs-table th, body.od .cs-table td { padding-left: 8px; padding-right: 8px; font-size: 13px; }
+body.od .cs-table th:first-child, body.od .cs-table td:first-child { padding-left: 0; }
