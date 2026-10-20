@@ -106,6 +106,9 @@ class RolesSeeder extends Seeder
         // the laboratory category because that is the tenant they belong to.
         ['imaging_tech',         'laboratory',              'imaging_tech',         'Imaging Technologist'],
         ['radiologist',          'laboratory',              'radiologist',          'Radiologist'],
+        // Blood bank (2026-10-20, DX-5): a blood bank's own staff.
+        ['blood_bank_officer',   'laboratory',              'blood_bank',           'Blood Bank Officer'],
+        ['blood_bank_manager',   'laboratory',              'blood_bank',           'Blood Bank Manager'],
 
         // Pharmacy
         ['pharmacist',           'pharmacy',                'pharmacist',           'Pharmacist'],

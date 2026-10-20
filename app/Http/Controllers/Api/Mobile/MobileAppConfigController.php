@@ -25,6 +25,13 @@ class MobileAppConfigController extends Controller
                 'min_supported_build' => (int) config('mobile.min_supported_build'),
                 'latest_version'      => (string) config('mobile.latest_version'),
                 'store_url'           => (string) config('mobile.store_url'),
+                // Can this host take a payment online at all? When false the
+                // app hides every "pay" control and says "pay at the facility";
+                // initiating a charge answers 409 `provider_unavailable`.
+                'payments' => [
+                    'online_available' => \App\Support\Payments::onlineAvailable(),
+                    'pay_at_facility_note' => __('payments.errors.provider_unavailable'),
+                ],
             ])
             ->header('Cache-Control', 'no-store, no-cache, must-revalidate')
             ->header('Pragma', 'no-cache');

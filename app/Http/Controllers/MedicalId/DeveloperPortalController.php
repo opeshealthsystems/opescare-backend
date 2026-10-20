@@ -284,6 +284,11 @@ class DeveloperPortalController extends Controller
             ->where('client_id', $client->client_id)
             ->firstOrFail();
 
+        if (! \App\Support\Payments::onlineAvailable()) {
+            return redirect()->route('portals.developer.apps.show', $client->id)
+                ->with('error', __('public.developer_portal.pay_offline_note'));
+        }
+
         $result = $billing->payInvoice($invoice, $validated['provider'], $validated['phone']);
 
         return redirect()

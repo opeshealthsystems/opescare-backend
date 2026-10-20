@@ -48,6 +48,11 @@ class FacilityClaimSelfServiceTest extends TestCase
         parent::setUp();
         $this->claims = app(FacilityClaimService::class);
         $this->withoutMiddleware(ThrottleRequests::class);
+        // Approval now creates a manager-role assignment (owner decision
+        // 2026-10-20), so the role vocabulary must exist.
+        $this->seed(AccountCategoriesSeeder::class);
+        $this->seed(DashboardProfilesSeeder::class);
+        $this->seed(RolesSeeder::class);
     }
 
     // ─── Fixtures ────────────────────────────────────────────────────────────
@@ -72,9 +77,6 @@ class FacilityClaimSelfServiceTest extends TestCase
 
     private function platformAdmin(): User
     {
-        $this->seed(AccountCategoriesSeeder::class);
-        $this->seed(DashboardProfilesSeeder::class);
-        $this->seed(RolesSeeder::class);
 
         $role = Role::where('name', 'super_admin')->firstOrFail();
         $user = User::factory()->create(['status' => 'active', 'primary_facility_id' => null]);
@@ -95,7 +97,7 @@ class FacilityClaimSelfServiceTest extends TestCase
             'claimant_role'  => 'owner',
             'claimant_email' => 'ada@example.cm',
             'claimant_phone' => '+237 600 000 001',
-        ]);
+        ], \Illuminate\Http\UploadedFile::fake()->createWithContent('licence.pdf', '%PDF-1.4 test'));
 
         $this->claims->approveClaim($claim->id, $admin->id);
 
@@ -115,13 +117,14 @@ class FacilityClaimSelfServiceTest extends TestCase
             'claimant_email' => 'jean@example.cm',
             'claimant_phone' => '+237 690 000 000',
             'claim_reason'   => 'I manage this hospital.',
+            'document'       => \Illuminate\Http\UploadedFile::fake()->createWithContent('licence.pdf', '%PDF-1.4 test'),
         ]);
 
         $response->assertRedirect(route('portals.listing.claims'));
 
         $claim = FacilityClaim::where('care_facility_id', $listing->id)->firstOrFail();
 
-        $this->assertSame(FacilityClaimStatus::Submitted, $claim->claim_status);
+        $this->assertSame(FacilityClaimStatus::PendingReview, $claim->claim_status);
         $this->assertFalse($claim->claim_status->grantsEditAccess());
         $this->assertNull($claim->reviewed_by);
         $this->assertNull($claim->reviewed_at);
@@ -181,7 +184,7 @@ class FacilityClaimSelfServiceTest extends TestCase
         $claim = $this->claims->submitDirectoryClaim($listing->id, $user->id, [
             'claimant_name' => 'Marie Fotso',
             'claimant_role' => 'owner',
-        ]);
+        ], \Illuminate\Http\UploadedFile::fake()->createWithContent('licence.pdf', '%PDF-1.4 test'));
 
         $this->claims->approveClaim($claim->id, $admin->id);
 
@@ -355,6 +358,7 @@ class FacilityClaimSelfServiceTest extends TestCase
                 'claimant_role'  => 'owner',
                 'claimant_email' => 'nope@example.cm',
                 'claimant_phone' => '+237 600 000 999',
+                'document'       => \Illuminate\Http\UploadedFile::fake()->createWithContent('licence.pdf', '%PDF-1.4 test'),
             ])
             ->assertRedirect(route('public.care-map.claim', $listing->id))
             ->assertSessionHas('error', __('caremap_claim.error_already_claimed'));
@@ -488,8 +492,8 @@ class FacilityClaimSelfServiceTest extends TestCase
         $userA = User::factory()->create();
         $userB = User::factory()->create();
 
-        $claimA = $this->claims->submitDirectoryClaim($approveListing->id, $userA->id, ['claimant_name' => 'A']);
-        $claimB = $this->claims->submitDirectoryClaim($rejectListing->id, $userB->id, ['claimant_name' => 'B']);
+        $claimA = $this->claims->submitDirectoryClaim($approveListing->id, $userA->id, ['claimant_name' => 'A'], \Illuminate\Http\UploadedFile::fake()->createWithContent('licence.pdf', '%PDF-1.4 test'));
+        $claimB = $this->claims->submitDirectoryClaim($rejectListing->id, $userB->id, ['claimant_name' => 'B'], \Illuminate\Http\UploadedFile::fake()->createWithContent('licence.pdf', '%PDF-1.4 test'));
 
         $this->actingAs($admin)->get(route('admin.care-map.review'))->assertOk();
 
@@ -594,7 +598,7 @@ class FacilityClaimSelfServiceTest extends TestCase
             'claimant_email' => 'paul@example.cm',
             'claimant_phone' => '+237 600 111 222',
             'claim_reason'   => str_repeat('Registration number CM-2019-4471. ', 12),
-        ]);
+        ], \Illuminate\Http\UploadedFile::fake()->createWithContent('licence.pdf', '%PDF-1.4 test'));
 
         $matched = $this->listing(['facility_name' => 'Polyclinique Bonanjo Annexe']);
         $this->importReview([
@@ -691,7 +695,7 @@ class FacilityClaimSelfServiceTest extends TestCase
             'claimant_role'  => 'owner',
             'claimant_email' => 'ada@example.cm',
             'claimant_phone' => '+237 600 000 001',
-        ]);
+        ], \Illuminate\Http\UploadedFile::fake()->createWithContent('licence.pdf', '%PDF-1.4 test'));
         $this->claims->approveClaim($claim->id, $admin->id);
 
         $listing->refresh();
@@ -719,11 +723,17 @@ class FacilityClaimSelfServiceTest extends TestCase
             'claimant_role'  => 'manager',
             'claimant_email' => 'else@example.cm',
             'claimant_phone' => '+237 600 000 002',
-        ]);
-        $this->claims->approveClaim($claim->id, $admin->id);
-
+        ], \Illuminate\Http\UploadedFile::fake()->createWithContent('licence.pdf', '%PDF-1.4 test'));
         // A directory listing is a hospital's public identity; approval must
-        // never hand it to a different tenant.
+        // never hand it to a different tenant — it is refused outright now.
+        try {
+            $this->claims->approveClaim($claim->id, $admin->id);
+            $this->fail('approving a claim on a linked listing must be refused');
+        } catch (\Exception $e) {
+            $this->assertSame('LISTING_ALREADY_LINKED', $e->getMessage());
+        }
+        $this->assertSame(FacilityClaimStatus::PendingReview, $claim->fresh()->claim_status);
+
         $listing->refresh();
         $this->assertSame((string) $incumbent->id, (string) $listing->facility_id);
         $this->assertDatabaseMissing('facility_update_audits', [
@@ -768,21 +778,27 @@ class FacilityClaimSelfServiceTest extends TestCase
             'claimant_role'  => 'owner',
             'claimant_email' => 'c@example.cm',
             'claimant_phone' => '+237 600 000 003',
-        ]);
+        ], \Illuminate\Http\UploadedFile::fake()->createWithContent('licence.pdf', '%PDF-1.4 test'));
         $this->claims->approveClaim($claim->id, $admin->id);
 
-        // The claim still approves and the listing is still stamped as claimed
-        // — only the join is withheld, with a reason an admin can act on.
+        // The join to an EXISTING tenant is withheld (with the reason
+        // audited), and since 2026-10-20 approval creates a NEW tenant for the
+        // listing instead, so the listing is never left unlinked.
         $listing->refresh();
-        $this->assertNull($listing->facility_id);
+        $this->assertNotNull($listing->facility_id);
         $this->assertSame((string) $user->id, (string) $listing->claimed_by_user_id);
+        $this->assertSame($listing->facility_name, Facility::find($listing->facility_id)?->name);
 
         $audit = FacilityUpdateAudit::where('facility_id', $listing->id)
             ->where('field_changed', 'facility_id')
+            ->where('source', 'like', 'facility_claim_approval_unlinked:%')
             ->firstOrFail();
 
         $this->assertSame('facility_claim_approval_unlinked:' . $expectedReason, $audit->source);
-        $this->assertTrue((bool) $audit->requires_review);
+        $this->assertDatabaseHas('facility_update_audits', [
+            'facility_id' => $listing->id,
+            'source'      => 'facility_claim_approval_tenant_created',
+        ]);
     }
 
     public static function unlinkableClaimants(): array

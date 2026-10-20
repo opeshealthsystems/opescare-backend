@@ -138,6 +138,12 @@ return [
         'unknown'    => 'Not recorded',
     ],
 
+    // DX-3: the bell for the clinician who ordered the study.
+    'notify_clinician' => [
+        'title' => 'Imaging report ready: :study',
+        'body'  => 'The report for :patient (:study) at :facility has been signed and sent.',
+    ],
+
     'flash' => [
         'draft_saved'       => 'Draft saved.',
         'finalized'         => 'Report finalized and signed.',

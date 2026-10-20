@@ -26,6 +26,9 @@ $labCollection = ['sample_collection'];
 // Imaging desk (2026-10-13): the two roles a diagnostic centre's imaging half
 // is run by. Seeded by RolesSeeder under the laboratory account category.
 $imaging = ['imaging_tech', 'radiologist'];
+// Blood bank (2026-10-20, DX-5): a blood bank's own staff. Seeded by
+// RolesSeeder under the laboratory account category.
+$bloodBank = ['blood_bank_officer', 'blood_bank_manager'];
 $pharmacy = ['pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'dispensing_officer'];
 $pharmacyStock = ['medicine_stock'];
 $billing = ['cashier', 'billing_officer', 'finance_manager', 'finance', 'refund_approver', 'wallet_ops'];
@@ -124,10 +127,12 @@ return [
         'schedule' => [...$clinical, ...$frontDesk],
 
         // Secure messaging with patients and colleagues.
-        'messaging' => [...$clinical, ...$frontDesk, ...$lab, ...$labCollection, ...$imaging, ...$pharmacy],
+        'messaging' => [...$clinical, ...$frontDesk, ...$lab, ...$labCollection, ...$imaging, ...$pharmacy, ...$bloodBank],
 
-        // Blood bank inventory.
-        'blood_inventory' => [...$doctors, ...$nurses, ...$supervisors, ...$frontDesk, ...$lab],
+        // Blood bank inventory and the blood-requests desk. The facility-admin
+        // family is here since 2026-10-20 (DX-1): a blood bank's own
+        // administrator must be able to keep its shelf and answer requests.
+        'blood_inventory' => [...$doctors, ...$nurses, ...$supervisors, ...$frontDesk, ...$lab, ...$facilityAdmins, ...$bloodBank],
 
         // Billing, payments, invoices (the /facility/billing desk): raise an
         // invoice from the facility's own catalogue, take a payment at the

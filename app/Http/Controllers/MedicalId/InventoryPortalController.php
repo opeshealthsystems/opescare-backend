@@ -9,6 +9,7 @@ use App\Modules\Inventory\Services\PharmacyInventoryService;
 use App\Modules\Inventory\Services\BloodInventoryService;
 use App\Services\Portal\PortalContextService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -84,9 +85,7 @@ class InventoryPortalController extends Controller
         // correctly — when there are none. Without this the screen accepts
         // stock all day and the Blood Finder never changes, which is the exact
         // failure this whole path was built to end.
-        $publishesToFinder = CareFacility::query()
-            ->where('facility_id', $facilityId)
-            ->exists();
+        $publishesToFinder = $this->publishesToFinder($facilityId, 'view');
 
         return view('portals.staff.inventory.blood', compact('items', 'summary', 'publishesToFinder'));
     }
@@ -104,6 +103,8 @@ class InventoryPortalController extends Controller
             $request->only(['blood_group', 'component', 'available_units', 'is_expired', 'is_quarantined', 'is_unsafe']),
             self::BLOOD_SOURCE,
         );
+
+        $this->publishesToFinder($this->bloodFacilityId(), 'write');
 
         return redirect()->route('portals.staff.inventory.blood')
             ->with('success', __('flash.blood_inventory_updated'));
@@ -127,6 +128,8 @@ class InventoryPortalController extends Controller
             self::BLOOD_SOURCE,
         );
 
+        $this->publishesToFinder($this->bloodFacilityId(), 'write');
+
         return redirect()->route('portals.staff.inventory.blood')
             ->with('success', __('flash.blood_stock_adjusted'));
     }
@@ -140,7 +143,32 @@ class InventoryPortalController extends Controller
             self::BLOOD_SOURCE,
         );
 
+        $this->publishesToFinder($this->bloodFacilityId(), 'write');
+
         return redirect()->route('portals.staff.inventory.blood')
             ->with('success', __('flash.blood_unit_flags_updated'));
+    }
+
+    /**
+     * DX-2 (2026-10-20): stock reaches the public Blood Finder only through a
+     * `care_facilities` listing linked back by facility_id. With none,
+     * BloodAvailabilityProjector writes nothing — correctly, but silently.
+     * The page warns the staff; this logs it so onboarding can see which
+     * banks are keeping a shelf no patient can find. The provenance
+     * allow-list is untouched.
+     */
+    private function publishesToFinder(string $facilityId, string $when): bool
+    {
+        $linked = CareFacility::query()->where('facility_id', $facilityId)->exists();
+
+        if (! $linked) {
+            Log::warning('blood_inventory.unlisted_facility', [
+                'facility_id' => $facilityId,
+                'when'        => $when,
+                'note'        => 'No linked directory listing: blood stock is not published to the Blood Finder.',
+            ]);
+        }
+
+        return $linked;
     }
 }

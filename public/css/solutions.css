@@ -1,0 +1,59 @@
+/* /solutions — OPES health systems catalogue. Flat cards on the finder.css
+   tokens (brand #0F4C81), no shadows or glow; mobile-first, 16px gutters. */
+
+.sol-hero { padding: 40px 0 24px; }
+.sol-eyebrow { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--f-brand); text-transform: uppercase; letter-spacing: .04em; margin: 0 0 10px; }
+.sol-hero__icon { display: inline-grid; place-items: center; width: 56px; height: 56px; border-radius: 14px; background: var(--f-wash); color: var(--f-brand); margin-bottom: 14px; }
+.sol-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+.sol-actions .f-btn { display: inline-flex; align-items: center; gap: 8px; }
+
+.sol-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 24px 0 8px; }
+.sol-kpi { background: var(--f-surface); border: 1px solid var(--f-line); border-radius: var(--f-r); padding: 14px; min-width: 0; }
+.sol-kpi__value { display: block; font-size: 24px; font-weight: 700; color: var(--f-brand); line-height: 1.1; }
+.sol-kpi__label { display: block; font-size: 13px; color: var(--f-muted); margin-top: 4px; overflow-wrap: anywhere; }
+
+.sol-section { padding: 20px 0; }
+.sol-h2 { font-size: 20px; font-weight: 700; margin: 0 0 14px; color: var(--f-ink); }
+.sol-grid { display: grid; grid-template-columns: 1fr; gap: 12px; list-style: none; margin: 0; padding: 0; }
+@media (min-width: 640px) { .sol-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1000px) { .sol-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+.sol-card { display: flex; flex-direction: column; gap: 8px; height: 100%; background: var(--f-surface); border: 1px solid var(--f-line); border-radius: var(--f-r); padding: 16px; min-width: 0; color: inherit; text-decoration: none; }
+a.sol-card:hover { border-color: var(--f-brand); }
+.sol-card__head { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.sol-card__icon { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 10px; background: var(--f-wash); color: var(--f-brand); }
+.sol-card__title { font-size: 16px; font-weight: 700; margin: 0; color: var(--f-ink); overflow-wrap: anywhere; }
+.sol-card__sub { font-size: 13px; color: var(--f-muted); margin: 0; overflow-wrap: anywhere; }
+.sol-card__body { font-size: 14px; color: var(--f-ink-soft); margin: 0; }
+.sol-card__go { margin-top: auto; display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 600; color: var(--f-brand); }
+
+.sol-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; background: var(--f-wash); color: var(--f-brand-ink); }
+.sol-pill--good { background: var(--f-good-wash); color: var(--f-good); }
+
+.sol-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; counter-reset: sol; }
+.sol-steps li { counter-increment: sol; display: flex; align-items: center; gap: 12px; background: var(--f-surface); border: 1px solid var(--f-line); border-radius: var(--f-r); padding: 12px 14px; }
+.sol-steps li::before { content: counter(sol); flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--f-brand); color: #FFFFFF; font-weight: 700; font-size: 14px; }
+.sol-chips { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; }
+
+.sol-band { background: var(--f-surface); border: 1px solid var(--f-line); border-radius: var(--f-r); padding: 18px; }
+.sol-band--brand { background: var(--f-wash); border-color: transparent; }
+.sol-crumbs { font-size: 14px; color: var(--f-muted); margin: 0 0 12px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.sol-note { font-size: 13px; color: var(--f-muted); margin-top: 16px; overflow-wrap: anywhere; }
+
+.sol-form { max-width: 720px; }
+.sol-form fieldset { border: 0; margin: 0 0 16px; padding: 0; }
+.sol-form legend { font-weight: 600; margin-bottom: 8px; }
+.sol-radio { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+.sol-form-grid { display: grid; grid-template-columns: 1fr; gap: 0 16px; }
+@media (min-width: 640px) { .sol-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.sol-hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.sol-error { color: var(--f-danger); font-size: 13px; margin: 4px 0 0; }
+.sol-errors { background: var(--f-danger-wash); color: var(--f-danger); border-radius: var(--f-r); padding: 12px 14px; margin-bottom: 16px; }
+.sol-thanks { text-align: left; }
+.sol-thanks .sol-hero__icon { background: var(--f-good-wash); color: var(--f-good); }
+textarea.f-input { min-height: 110px; }
+
+/* Health ID guilloche behind every Solutions page, as on the blog. */
+body:has(.sol-hero)::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: url("../images/health-id/guilloche-texture.webp") center / cover no-repeat; opacity: .14; }
+body:has(.sol-hero) { background-color: #EEF3F9; }

@@ -185,6 +185,8 @@ return [
         'sample_collection'   => 'Sample collection officer',
         'imaging_tech'        => 'Imaging technologist',
         'radiologist'         => 'Radiologist',
+        'blood_bank_officer'  => 'Blood bank officer',
+        'blood_bank_manager'  => 'Blood bank manager',
         'pharmacist'          => 'Pharmacist',
         'pharmacy_technician' => 'Pharmacy technician',
         'pharmacy_manager'    => 'Pharmacy manager',

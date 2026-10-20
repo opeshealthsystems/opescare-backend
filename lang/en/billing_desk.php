@@ -123,6 +123,7 @@ return [
         'col_status'  => 'Status',
         'col_sent'    => 'Sent',
         'col_number'  => 'Number',
+        'offline_note' => 'Online payment (MTN MoMo / Orange Money) is not available yet. Take the payment at the facility in cash and record it here.',
     ],
 
     // ── Receipt ───────────────────────────────────────────────────────────
@@ -227,5 +228,6 @@ return [
         'bad_phone'              => 'That is not a usable mobile money number.',
         'momo_failed'            => 'The mobile money prompt could not be sent: :reason',
         'momo_amount_is_balance' => 'A mobile money prompt is always for the full balance (:balance). Take a partial amount in cash instead.',
+        'momo_unavailable'       => 'Online payment is not available yet. Take the payment in cash at the facility.',
     ],
 ];

@@ -21,6 +21,11 @@ class Lead extends Model
         'organization_type',
         'message',
         'source',
+        'request_kind',
+        'solution_slug',
+        'facility_type',
+        'city',
+        'has_system',
         'status',
         'assigned_to',
         'notes',
@@ -31,7 +36,14 @@ class Lead extends Model
 
     protected $casts = [
         'converted_at' => 'datetime',
+        'has_system'   => 'boolean',
     ];
+
+    /** Source written by the /solutions/request form (SolutionsController). */
+    public const SOURCE_SOLUTIONS = 'solutions';
+
+    /** What a solutions request asks for. */
+    public const REQUEST_KINDS = ['purchase', 'donation'];
 
     /** Already turned into a tenant (LeadConversionService)? Never converted twice. */
     public function isConverted(): bool

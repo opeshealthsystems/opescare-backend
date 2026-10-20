@@ -138,6 +138,12 @@ return [
         'unknown'    => 'Non renseigné',
     ],
 
+    // DX-3 : la notification du clinicien qui a demandé l’examen.
+    'notify_clinician' => [
+        'title' => 'Compte rendu d’imagerie prêt : :study',
+        'body'  => 'Le compte rendu de :patient (:study) à :facility a été signé et envoyé.',
+    ],
+
     'flash' => [
         'draft_saved'       => 'Brouillon enregistré.',
         'finalized'         => 'Compte rendu finalisé et signé.',

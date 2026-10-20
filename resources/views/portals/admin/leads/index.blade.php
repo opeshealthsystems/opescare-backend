@@ -39,6 +39,12 @@
             <option value="{{ $s }}" @selected($activeStatus===$s)>{{ __('leads.statuses.'.$s) }}</option>
             @endforeach
         </select>
+        <select name="kind" class="od-select" aria-label="{{ __('solutions.admin.filter_label') }}">
+            <option value="">{{ __('solutions.admin.filter_all') }}</option>
+            @foreach(\App\Models\Lead::REQUEST_KINDS as $k)
+            <option value="{{ $k }}" @selected(($activeKind ?? null)===$k)>{{ __('solutions.admin.kind_'.$k) }}</option>
+            @endforeach
+        </select>
         <button type="submit" class="od-btn od-btn--secondary"><i data-lucide="filter"></i> {{ __('leads.admin.filter_apply') }}</button>
         <a href="{{ route('portals.admin.leads') }}" class="od-btn od-btn--ghost">{{ __('leads.admin.filter_reset') }}</a>
     </form>
@@ -73,7 +79,15 @@
                         <span class="od-table__name">{{ $lead->name }}</span>
                         <span class="od-table__sub">{{ $lead->email }}</span>
                     </td>
-                    <td data-label="{{ __('leads.admin.col_source') }}"><span class="od-pill od-pill--neutral">{{ $lead->source }}</span></td>
+                    <td data-label="{{ __('leads.admin.col_source') }}">
+                        @if($lead->source === \App\Models\Lead::SOURCE_SOLUTIONS)
+                        <span class="od-pill od-pill--neutral">{{ __('solutions.admin.source_label') }}</span>
+                        @if($lead->request_kind)<span class="od-pill od-pill--{{ $lead->request_kind === 'donation' ? 'ready' : 'normal' }}">{{ __('solutions.admin.kind_'.$lead->request_kind) }}</span>@endif
+                        <span class="od-table__sub">{{ $lead->solution_slug ? __('solutions.systems.'.$lead->solution_slug.'.name') : __('solutions.admin.system_any') }}</span>
+                        @else
+                        <span class="od-pill od-pill--neutral">{{ $lead->source }}</span>
+                        @endif
+                    </td>
                     <td data-label="{{ __('leads.admin.col_status') }}"><span class="od-pill od-pill--dot od-pill--{{ $statusBadge }}">{{ __('leads.statuses.'.$lead->status) }}</span></td>
                     <td data-label="{{ __('leads.admin.col_date') }}" class="oda-gc-muted">{{ $lead->created_at?->translatedFormat('d M Y') }}</td>
                     <td class="od-table__actions" data-label="{{ __('leads.admin.col_actions') }}">

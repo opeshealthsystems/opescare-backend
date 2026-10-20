@@ -48,6 +48,8 @@ class FacilityStaffInvite extends Model
         'labtech', 'lab_scientist', 'lab_manager', 'sample_collection',
         // Imaging
         'imaging_tech', 'radiologist',
+        // Blood bank
+        'blood_bank_officer', 'blood_bank_manager',
         // Pharmacy
         'pharmacist', 'pharmacy_technician', 'pharmacy_manager',
         // Billing

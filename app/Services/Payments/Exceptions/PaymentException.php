@@ -80,7 +80,7 @@ class PaymentException extends RuntimeException
 
     public static function providerUnavailable(): self
     {
-        return new self('provider_unavailable', 'payments.errors.provider_unavailable', 503);
+        return new self('provider_unavailable', 'payments.errors.provider_unavailable', 409);
     }
 
     public static function invalidMsisdn(): self

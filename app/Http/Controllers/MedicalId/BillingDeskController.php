@@ -190,7 +190,10 @@ class BillingDeskController extends Controller
             'refunds'   => $refunds,
             'charges'   => $this->momo->chargesFor($invoice),
             'session'   => $this->desk->openSessionFor($facilityId, (string) auth()->id()),
-            'methods'   => PaymentMethod::cases(),
+            // Mobile money only where a provider can take it (App\Support\Payments);
+            // cash at the desk always works.
+            'methods'   => \App\Support\Payments::onlineAvailable() ? PaymentMethod::cases() : [],
+            'onlinePay' => \App\Support\Payments::onlineAvailable(),
             'canRefund' => \App\Support\StaffCapabilities::canAt(auth()->user(), $facilityId, 'refund_approve'),
         ]);
     }
@@ -250,6 +253,10 @@ class BillingDeskController extends Controller
 
                 return redirect()->route('portals.billing.show', $invoice->id)
                     ->with('success', __('billing_desk.payment_recorded', ['receipt' => $receipt?->receipt_number ?? '']));
+            }
+
+            if (! \App\Support\Payments::onlineAvailable()) {
+                throw new BillingRefusal('momo_unavailable');
             }
 
             // Mobile money: the amount charged is the balance, always — a push

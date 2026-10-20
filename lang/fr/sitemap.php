@@ -31,6 +31,7 @@ return [
         'network_imaging_finder'   => 'Recherche d’imagerie',
         'care_map'                 => 'Annuaire des structures (Care Map)',
         'care_map_emergency'       => 'Accès aux urgences',
+        'care_map_places'          => 'Établissements de santé par ville',
         'solutions_hospitals'      => 'Pour les hôpitaux',
         'solutions_insurers'       => 'Pour les assureurs',
         'solutions_laboratories'   => 'Pour les laboratoires',

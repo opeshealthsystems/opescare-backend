@@ -29,6 +29,24 @@ class EnsurePortalAccess
     // below mirror those. detectPortalPrefix() returns the FIRST str_starts_with
     // match, so any prefix that is itself a prefix of another MUST be listed
     // first — hence 'facility/team' precedes 'facility'.
+    /**
+     * Who may enter the blood bank desk's portal bucket: every operations-desk
+     * role, the facility-admin family and the blood bank's own roles.
+     */
+    private const BLOOD_DESK_ROLES = [
+        'facility_admin', 'clinic_admin', 'hospital_admin', 'facility_ceo', 'branch_admin',
+        'department_manager', 'multi_facility_admin',
+        'blood_bank_officer', 'blood_bank_manager',
+        'doctor', 'multi_doctor', 'specialist', 'consultant', 'resident', 'visiting_doctor',
+        'nurse', 'triage_nurse', 'ward_nurse', 'midwife', 'nurse_supervisor',
+        'student_doctor', 'student_nurse', 'intern', 'medical_supervisor',
+        'receptionist', 'front_desk', 'appointment_coordinator', 'queue_manager', 'records_officer',
+        'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection', 'imaging_tech', 'radiologist',
+        'pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'medicine_stock', 'dispensing_officer',
+        'cashier', 'billing_officer', 'finance_manager', 'refund_approver', 'wallet_ops', 'finance',
+        'data_steward', 'reconciliation_officer', 'data_import_officer', 'data_quality_reviewer',
+    ];
+
     private const PORTAL_ROLES = [
         'patient' => [
             'patient', 'guardian', 'caregiver', 'dependent_manager', 'emergency_contact',
@@ -58,6 +76,7 @@ class EnsurePortalAccess
             // whose Team / overview links land here.
             'department_manager', 'multi_facility_admin',
             'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection', 'imaging_tech', 'radiologist',
+            'blood_bank_officer', 'blood_bank_manager',
             'pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'medicine_stock', 'dispensing_officer',
         ],
         // The facility's own service catalogue ("what we offer"). Listed
@@ -86,6 +105,7 @@ class EnsurePortalAccess
             'student_doctor', 'student_nurse', 'intern', 'medical_supervisor',
             'receptionist', 'front_desk', 'appointment_coordinator', 'queue_manager', 'records_officer',
             'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection', 'imaging_tech', 'radiologist',
+            'blood_bank_officer', 'blood_bank_manager',
             'pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'medicine_stock', 'dispensing_officer',
             'cashier', 'billing_officer', 'finance_manager', 'refund_approver', 'wallet_ops',
             'data_steward', 'reconciliation_officer', 'data_import_officer', 'data_quality_reviewer',
@@ -105,6 +125,7 @@ class EnsurePortalAccess
             'student_doctor', 'student_nurse', 'intern', 'medical_supervisor',
             'receptionist', 'front_desk', 'appointment_coordinator', 'queue_manager', 'records_officer',
             'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection', 'imaging_tech', 'radiologist',
+            'blood_bank_officer', 'blood_bank_manager',
             'pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'medicine_stock', 'dispensing_officer',
             'cashier', 'billing_officer', 'finance_manager', 'refund_approver', 'wallet_ops',
             'data_steward', 'reconciliation_officer', 'data_import_officer', 'data_quality_reviewer',
@@ -129,6 +150,7 @@ class EnsurePortalAccess
             'student_doctor', 'student_nurse', 'intern', 'medical_supervisor',
             'receptionist', 'front_desk', 'appointment_coordinator', 'queue_manager', 'records_officer',
             'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection', 'imaging_tech', 'radiologist',
+            'blood_bank_officer', 'blood_bank_manager',
             'pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'medicine_stock', 'dispensing_officer',
             'cashier', 'billing_officer', 'finance_manager', 'refund_approver', 'wallet_ops',
             'data_steward', 'reconciliation_officer', 'data_import_officer', 'data_quality_reviewer',
@@ -153,6 +175,7 @@ class EnsurePortalAccess
             'student_doctor', 'student_nurse', 'intern', 'medical_supervisor',
             'receptionist', 'front_desk', 'appointment_coordinator', 'queue_manager', 'records_officer',
             'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection', 'imaging_tech', 'radiologist',
+            'blood_bank_officer', 'blood_bank_manager',
             'pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'medicine_stock', 'dispensing_officer',
             'cashier', 'billing_officer', 'finance_manager', 'refund_approver', 'wallet_ops',
             'data_steward', 'reconciliation_officer', 'data_import_officer', 'data_quality_reviewer',
@@ -165,6 +188,7 @@ class EnsurePortalAccess
             'student_doctor', 'student_nurse', 'intern', 'medical_supervisor',
             'receptionist', 'front_desk', 'appointment_coordinator', 'queue_manager', 'records_officer',
             'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection', 'imaging_tech', 'radiologist',
+            'blood_bank_officer', 'blood_bank_manager',
             'pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'medicine_stock', 'dispensing_officer',
             'cashier', 'billing_officer', 'finance_manager', 'refund_approver', 'wallet_ops',
             'data_steward', 'reconciliation_officer', 'data_import_officer', 'data_quality_reviewer',
@@ -182,6 +206,7 @@ class EnsurePortalAccess
             'student_doctor', 'student_nurse', 'intern', 'medical_supervisor',
             'receptionist', 'front_desk', 'appointment_coordinator', 'queue_manager', 'records_officer',
             'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection', 'imaging_tech', 'radiologist',
+            'blood_bank_officer', 'blood_bank_manager',
             'pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'medicine_stock', 'dispensing_officer',
             'cashier', 'billing_officer', 'finance_manager', 'refund_approver', 'wallet_ops',
             'data_steward', 'reconciliation_officer', 'data_import_officer', 'data_quality_reviewer',
@@ -194,10 +219,17 @@ class EnsurePortalAccess
             'student_doctor', 'student_nurse', 'intern', 'medical_supervisor',
             'receptionist', 'front_desk', 'appointment_coordinator', 'queue_manager', 'records_officer',
             'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection', 'imaging_tech', 'radiologist',
+            'blood_bank_officer', 'blood_bank_manager',
             'pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'medicine_stock', 'dispensing_officer',
             'cashier', 'billing_officer', 'finance_manager', 'refund_approver', 'wallet_ops',
             'data_steward', 'reconciliation_officer', 'data_import_officer', 'data_quality_reviewer',
         ],
+        // The blood bank desk (shelf + requests). Listed BEFORE 'facility' —
+        // first prefix wins. The facility-admin family is admitted here
+        // (DX-1, 2026-10-20) although it is closed out of the rest of the
+        // operations desk; `capability:blood_inventory` decides who may act.
+        'facility/inventory/blood' => self::BLOOD_DESK_ROLES,
+        'facility/blood-requests' => self::BLOOD_DESK_ROLES,
         // Operations desk (was /portals/staff, now /facility).
         'facility' => [
             // Clinical providers
@@ -210,6 +242,7 @@ class EnsurePortalAccess
             'receptionist', 'front_desk', 'appointment_coordinator', 'queue_manager', 'records_officer',
             // Lab
             'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection', 'imaging_tech', 'radiologist',
+            'blood_bank_officer', 'blood_bank_manager',
             // Pharmacy
             'pharmacist', 'pharmacy_technician', 'pharmacy_manager', 'medicine_stock', 'dispensing_officer',
             // Billing. 'finance' sat under 'admin' only, yet it renders the
@@ -265,6 +298,7 @@ class EnsurePortalAccess
         // Phantom portals (modules removed) — see 'insurance' note above.
         'lab' => [
             'labtech', 'lab_scientist', 'lab_manager', 'lab_validator', 'sample_collection', 'imaging_tech', 'radiologist',
+            'blood_bank_officer', 'blood_bank_manager',
         ],
         'healthorg' => [
             'ngo_admin', 'health_program_manager', 'outreach_team', 'mobile_clinic_team',

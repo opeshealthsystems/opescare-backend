@@ -121,9 +121,9 @@ class DemoFacilityTypesSeeder extends Seeder
                 'phone'  => '+237233460606',
                 'logins' => [
                     'demo.imaging.admin@opescare.test' => ['facility_admin', 'Imaging Admin'],
-                    // No radiographer / imaging role exists in RolesSeeder; the
-                    // lab technician is the closest diagnostic desk role.
-                    'demo.imaging.tech@opescare.test'  => ['labtech', 'Imaging Technician'],
+                    // imaging_tech exists since 2026-10-13 (RolesSeeder); labtech
+                    // is the fallback on a deployment that lacks it.
+                    'demo.imaging.tech@opescare.test'  => ['imaging_tech|labtech', 'Imaging Technician'],
                 ],
             ],
             'eye_clinic' => [
@@ -144,6 +144,18 @@ class DemoFacilityTypesSeeder extends Seeder
                 'logins' => [
                     'demo.diagnostic.admin@opescare.test' => ['facility_admin', 'Diagnostic Admin'],
                     'demo.diagnostic.lab@opescare.test'   => ['lab_manager', 'Diagnostic Lab Manager'],
+                ],
+            ],
+            // Blood bank (2026-10-20, DX-5): its own roles, and a linked
+            // listing so stock entered here can reach the Blood Finder. No
+            // stock is seeded — an empty finder is correct.
+            'blood_bank' => [
+                'name'   => 'Banque de Sang Demo Messa',
+                'city'   => 'Yaoundé', 'region' => 'Centre', 'lat' => 3.8790, 'lng' => 11.5050,
+                'phone'  => '+237222501010',
+                'logins' => [
+                    'demo.bloodbank.manager@opescare.test' => ['blood_bank_manager|facility_admin', 'Blood Bank Manager'],
+                    'demo.bloodbank.officer@opescare.test' => ['blood_bank_officer|labtech', 'Blood Bank Officer'],
                 ],
             ],
             'maternity' => [

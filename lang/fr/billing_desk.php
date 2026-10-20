@@ -124,6 +124,7 @@ return [
         'col_status'  => 'Statut',
         'col_sent'    => 'Envoyée',
         'col_number'  => 'Numéro',
+        'offline_note' => 'Le paiement en ligne (MTN MoMo / Orange Money) n’est pas encore disponible. Encaissez le paiement à l’établissement en espèces et enregistrez-le ici.',
     ],
 
     // ── Reçu ──────────────────────────────────────────────────────────────
@@ -228,5 +229,6 @@ return [
         'bad_phone'              => 'Ce numéro mobile money n\'est pas utilisable.',
         'momo_failed'            => 'La demande mobile money n\'a pas pu être envoyée : :reason',
         'momo_amount_is_balance' => 'Une demande mobile money porte toujours sur la totalité du solde (:balance). Encaissez un montant partiel en espèces.',
+        'momo_unavailable'       => 'Le paiement en ligne n’est pas encore disponible. Encaissez le paiement en espèces à l’établissement.',
     ],
 ];

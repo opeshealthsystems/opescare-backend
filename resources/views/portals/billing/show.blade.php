@@ -201,9 +201,11 @@
 <section class="od-card">
     <header class="od-card__head">
         <h2 class="od-card__title">{{ __('billing_desk.momo.title') }}</h2>
+        @if($onlinePay ?? false)
         <form method="POST" action="{{ route('portals.billing.sync_mobile', $invoice->id) }}">@csrf
             <button type="submit" class="od-btn od-btn--secondary od-btn--sm"><i data-lucide="refresh-cw"></i> {{ __('billing_desk.momo.sync_button') }}</button>
         </form>
+        @endif
     </header>
     <div class="od-card__body">
         <div class="od-table-wrap">
@@ -303,11 +305,17 @@
                     @endforeach
                 </select>
             </div>
+            @if($onlinePay ?? false)
             <div class="odc-field">
                 <label class="odc-label" for="pay-phone">{{ __('billing_desk.phone_label') }}</label>
                 <input type="tel" id="pay-phone" name="phone" class="od-input" value="{{ old('phone') }}" autocomplete="off">
                 <p class="odc-hint">{{ __('billing_desk.phone_hint') }}</p>
             </div>
+            @else
+            <div class="odc-note odc-note--inset" data-pay-offline><i data-lucide="store"></i>
+                <div>{{ __('billing_desk.momo.offline_note') }}</div>
+            </div>
+            @endif
             <div class="odc-actions">
                 <button type="submit" class="od-btn od-btn--primary"><i data-lucide="check-circle"></i> {{ __('billing_desk.pay_button') }}</button>
             </div>

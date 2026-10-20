@@ -33,6 +33,18 @@ Route::middleware(['auth', 'mfa.verified', 'portal.access', 'platform.admin', 'f
             ->name('portals.patient.refer');
     });
 
+// ── Solutions: the OPES health systems catalogue ──────────────────────────
+// Index, one page per system in config/solutions.php, and the buy / free
+// (donation) request form that files a lead with source 'solutions'. The
+// slug constraint keeps /solutions/{slug} off the older audience pages
+// (/solutions/hospitals etc.) in routes/web.php.
+Route::get('/solutions', [\App\Http\Controllers\Marketing\SolutionsController::class, 'index'])->name('public.solutions.index');
+Route::get('/solutions/request', [\App\Http\Controllers\Marketing\SolutionsController::class, 'requestForm'])->name('public.solutions.request');
+Route::post('/solutions/request', [\App\Http\Controllers\Marketing\SolutionsController::class, 'store'])->middleware('throttle:signup')->name('public.solutions.request.store');
+Route::get('/solutions/{slug}', [\App\Http\Controllers\Marketing\SolutionsController::class, 'show'])
+    ->whereIn('slug', array_keys((array) config('solutions.systems', [])))
+    ->name('public.solutions.show');
+
 // ── Public "Request a demo" funnel (B2B lead capture) ──────────────────────
 Route::get('/request-demo',  [RequestDemoController::class, 'show'])->name('public.request-demo');
 Route::post('/request-demo', [RequestDemoController::class, 'store'])->middleware('throttle:signup')->name('public.request-demo.store');

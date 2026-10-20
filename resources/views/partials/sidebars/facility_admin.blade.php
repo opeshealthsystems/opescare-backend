@@ -89,6 +89,16 @@
         <i data-lucide="list-ordered"></i><span>{{ __('queue_desk.nav', [], $l) }}</span>
     </a>
     @endcapability
+    {{-- Blood bank (DX-1, 2026-10-20): a blood bank's administrator keeps its
+         shelf and answers its requests. Same gate as the routes. --}}
+    @capability('blood_inventory')
+    <a href="{{ route('portals.staff.inventory.blood') }}" class="sidebar-link {{ request()->routeIs('portals.staff.inventory.blood*') ? 'active' : '' }}">
+        <i data-lucide="droplets"></i><span>{{ __('public.portal.nav_inventory_blood', [], $l) }}</span>
+    </a>
+    <a href="{{ route('portals.staff.blood_requests.index') }}" class="sidebar-link {{ request()->routeIs('portals.staff.blood_requests.*') ? 'active' : '' }}">
+        <i data-lucide="clipboard-list"></i><span>{{ __('blood_desk.nav', [], $l) }}</span>
+    </a>
+    @endcapability
 </div>
 
 

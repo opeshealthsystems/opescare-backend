@@ -19,7 +19,7 @@
 --}}
 @extends('layouts.finder')
 
-@section('title', __('finder_shell.nav.find_medicine'))
+@section('title', __('finder_seo.pages.medicine_finder.title'))
 @section('description', __('public.network_medicine.meta_description'))
 
 @push('schema')

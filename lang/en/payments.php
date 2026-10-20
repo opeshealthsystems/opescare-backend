@@ -63,7 +63,7 @@ return [
         'payment_in_progress'      => 'A payment is already in progress for this invoice. Check your phone for the prompt.',
         'idempotency_key_required' => 'An Idempotency-Key header is required to start a payment.',
         'idempotency_conflict'     => 'That Idempotency-Key was already used for a different payment.',
-        'provider_unavailable'     => 'Mobile Money payments are not available right now.',
+        'provider_unavailable'     => 'Online payment is not available yet. Please pay at the facility.',
         'invalid_msisdn'           => 'Enter a valid Cameroonian mobile number.',
         'amount_mismatch'          => 'The amount shown has changed. This invoice is for :expected.',
     ],

@@ -117,7 +117,9 @@
                     </tbody>
                 </table>
 
-                @if($unpaid)
+                @if($unpaid && ! \App\Support\Payments::onlineAvailable())
+                <p class="ods-bf6e0d2" data-pay-offline><i data-lucide="info"></i> {{ __('public.developer_portal.pay_offline_note', [], $l) }}</p>
+                @elseif($unpaid)
                 <form class="ods-e3677aa" method="POST" action="{{ route('portals.developer.apps.pay', $client->id) }}">
                     @csrf
                     <input type="hidden" name="invoice_id" value="{{ $unpaid->id }}">

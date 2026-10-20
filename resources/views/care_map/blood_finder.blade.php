@@ -19,7 +19,7 @@
 --}}
 @extends('layouts.finder')
 
-@section('title', __('finder_shell.nav.find_blood'))
+@section('title', __('finder_seo.pages.blood_finder.title'))
 @section('description', __('public.network_blood.meta_description'))
 
 @push('head')

@@ -31,6 +31,7 @@ return [
         'network_imaging_finder'   => 'Imaging finder',
         'care_map'                 => 'Facility directory (Care Map)',
         'care_map_emergency'       => 'Emergency access',
+        'care_map_places'          => 'Health facilities by city',
         'solutions_hospitals'      => 'For hospitals',
         'solutions_insurers'       => 'For insurers',
         'solutions_laboratories'   => 'For laboratories',

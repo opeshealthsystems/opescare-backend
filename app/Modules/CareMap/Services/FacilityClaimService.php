@@ -9,7 +9,15 @@ use App\Models\FacilityClaim;
 use App\Models\FacilityRegistry;
 use App\Models\FacilityUpdateAudit;
 use App\Models\User;
+use App\Models\AuditEvent;
+use App\Models\FacilityRoleAssignment;
+use App\Models\Role;
+use App\Notifications\FacilityClaimUpdateNotification;
+use App\Services\Marketing\LeadConversionService;
 use App\Services\Portal\FacilityMembershipService;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\DB;
 
 class FacilityClaimService
@@ -67,14 +75,23 @@ class FacilityClaimService
      * claim is anchored on `care_facility_id` and carries the contact details a
      * reviewer needs.
      *
-     * It returns a claim in `submitted`. There is no argument, flag or code
-     * path in this method that can return an approved one — see approveClaim.
+     * It returns a claim in `pending_verification` (code sent to the listing's
+     * phone) or `pending_review` (code could not be delivered, flagged for the
+     * admin to call). No code path in this method can return an approved one.
      *
      * @param  array{claimant_name?:string,claimant_role?:string,claimant_email?:string,claimant_phone?:string,claim_reason?:string} $contact
      */
-    public function submitDirectoryClaim(string $careFacilityId, string $userId, array $contact = []): FacilityClaim
+    public function submitDirectoryClaim(string $careFacilityId, string $userId, array $contact = [], ?UploadedFile $document = null): FacilityClaim
     {
         $listing = CareFacility::findOrFail($careFacilityId);
+
+        // Ownership proof part 2: no document, no claim (OB-1).
+        if ($document === null) {
+            throw new \Exception('DOCUMENT_REQUIRED');
+        }
+        if (FacilityClaimProofService::sniffMime($document) === null) {
+            throw new \Exception('DOCUMENT_INVALID');
+        }
 
         // A claimant with a live claim on this listing has nothing to submit.
         $mine = FacilityClaim::where('care_facility_id', $listing->id)
@@ -93,18 +110,41 @@ class FacilityClaimService
             throw new \Exception('LISTING_ALREADY_CLAIMED');
         }
 
-        return FacilityClaim::create([
-            'care_facility_id' => $listing->id,
-            'facility_id'      => $listing->facility_id,   // may legitimately be null
-            'claimant_user_id' => $userId,
-            'claimant_name'    => $contact['claimant_name']  ?? null,
-            'claimant_role'    => $contact['claimant_role']  ?? null,
-            'claimant_email'   => $contact['claimant_email'] ?? null,
-            'claimant_phone'   => $contact['claimant_phone'] ?? null,
-            'claim_reason'     => $contact['claim_reason']   ?? null,
-            'claim_status'     => FacilityClaimStatus::Submitted->value,
-            'submitted_at'     => now(),
-        ]);
+        $claim = DB::transaction(function () use ($listing, $userId, $contact, $document): FacilityClaim {
+            $claim = FacilityClaim::create([
+                'care_facility_id' => $listing->id,
+                'facility_id'      => $listing->facility_id,   // may legitimately be null
+                'claimant_user_id' => $userId,
+                'claimant_name'    => $contact['claimant_name']  ?? null,
+                'claimant_role'    => $contact['claimant_role']  ?? null,
+                'claimant_email'   => $contact['claimant_email'] ?? null,
+                'claimant_phone'   => $contact['claimant_phone'] ?? null,
+                'claim_reason'     => $contact['claim_reason']   ?? null,
+                'claim_status'     => FacilityClaimStatus::PendingVerification->value,
+                'submitted_at'     => now(),
+            ]);
+
+            $this->proof()->storeDocument($claim, $document);
+
+            return $claim;
+        });
+
+        // Ownership proof part 1: a code to the LISTING's phone. When it
+        // cannot be delivered the claim moves to review, flagged.
+        try {
+            $this->proof()->sendCode($claim);
+        } catch (\Throwable $e) {
+            Log::warning('facility_claim_code_not_sent', ['claim_id' => $claim->id, 'reason' => $e->getMessage()]);
+        }
+
+        $this->notifyClaimant($claim->fresh(), FacilityClaimUpdateNotification::FILED);
+
+        return $claim->fresh();
+    }
+
+    private function proof(): FacilityClaimProofService
+    {
+        return app(FacilityClaimProofService::class);
     }
 
     /**
@@ -180,23 +220,25 @@ class FacilityClaimService
     {
         $claim = FacilityClaim::findOrFail($claimId);
 
+        if ($claim->care_facility_id) {
+            return $this->approveListingClaim($claim, $adminId);
+        }
+
+        // Registry / tenant-anchored claims (no listing id). These come from a
+        // facility that already has a tenant; they keep their flow, but get
+        // the same state guard.
+        if (! in_array($claim->claim_status, [
+            FacilityClaimStatus::Submitted, FacilityClaimStatus::UnderReview, FacilityClaimStatus::PendingReview,
+        ], true)) {
+            throw new \Exception('CLAIM_NOT_REVIEWABLE');
+        }
+
         DB::transaction(function () use ($claim, $adminId) {
             $claim->update([
                 'claim_status' => FacilityClaimStatus::Approved->value,
                 'reviewed_by'  => $adminId,
                 'reviewed_at'  => now(),
             ]);
-
-            if ($claim->care_facility_id) {
-                // ── Listing claim flow (public) ───────────────────────────────
-                $listing = CareFacility::find($claim->care_facility_id);
-
-                if ($listing) {
-                    $this->stampClaimed($listing, $claim->claimant_user_id, $adminId);
-                }
-
-                return;
-            }
 
             if ($claim->registry_entry_id) {
                 // ── Registry claim flow ───────────────────────────────────────
@@ -221,8 +263,6 @@ class FacilityClaimService
             }
 
             // ── Original CareMap claim flow ───────────────────────────────────
-            // Find the care_facilities entry linked to the operational Facility
-            // via care_facilities.facility_id (→ facilities.id)
             $careFacility = CareFacility::where('facility_id', $claim->facility_id)->first();
 
             if ($careFacility) {
@@ -234,11 +274,209 @@ class FacilityClaimService
     }
 
     /**
-     * Reject a claim request.
+     * Approve a public listing claim (owner decision 2026-10-20, OB-2 + PH-2).
+     *
+     * Guards, all re-checked under row locks so two admins clicking at once
+     * serialise:
+     *   - only `pending_review` (proof gathered) — never submitted (no proof),
+     *     rejected, revoked or already approved: CLAIM_NOT_REVIEWABLE;
+     *   - a document must be on file: CLAIM_HAS_NO_DOCUMENT;
+     *   - the listing must not be claimed already, or carry another approved
+     *     claim: LISTING_ALREADY_CLAIMED;
+     *   - the listing must not already be joined to a tenant: LISTING_ALREADY_LINKED.
+     *
+     * Then, in ONE transaction: the claim approved; the listing stamped as
+     * claimed; a tenant — the claimant's single existing posting when that
+     * facility has no listing yet (no duplicate tenants), otherwise a NEW
+     * facility of the listing's type — joined through
+     * `care_facilities.facility_id`; and an INACTIVE manager-role assignment
+     * for the claimant (pharmacy → pharmacy_manager, laboratory →
+     * lab_manager, else facility_admin; LeadConversionService::managerRoleFor).
+     * The assignment switches on only when the claimant opens the activation
+     * link with two-step verification enrolled (activate()).
+     *
+     * @throws \Exception CLAIM_NOT_REVIEWABLE | CLAIM_HAS_NO_DOCUMENT | LISTING_ALREADY_CLAIMED | LISTING_ALREADY_LINKED | ROLE_UNKNOWN
+     */
+    private function approveListingClaim(FacilityClaim $claim, $adminId): FacilityClaim
+    {
+        $approved = DB::transaction(function () use ($claim, $adminId): FacilityClaim {
+            /** @var FacilityClaim $locked */
+            $locked = FacilityClaim::whereKey($claim->id)->lockForUpdate()->firstOrFail();
+
+            if (! $locked->claim_status->isReviewable()) {
+                throw new \Exception('CLAIM_NOT_REVIEWABLE');
+            }
+            if (! $locked->hasDocument()) {
+                throw new \Exception('CLAIM_HAS_NO_DOCUMENT');
+            }
+
+            /** @var CareFacility $listing */
+            $listing = CareFacility::whereKey($locked->care_facility_id)->lockForUpdate()->firstOrFail();
+
+            $otherApproved = FacilityClaim::where('care_facility_id', $listing->id)
+                ->whereKeyNot($locked->id)
+                ->where('claim_status', FacilityClaimStatus::Approved->value)
+                ->exists();
+
+            if ($listing->isClaimed() || $otherApproved) {
+                throw new \Exception('LISTING_ALREADY_CLAIMED');
+            }
+            if ($listing->facility_id !== null) {
+                throw new \Exception('LISTING_ALREADY_LINKED');
+            }
+
+            $claimant = User::findOrFail($locked->claimant_user_id);
+            $type     = in_array($listing->facility_type, LeadConversionService::TYPES, true) ? $listing->facility_type : 'clinic';
+            $role     = Role::where('name', LeadConversionService::managerRoleFor($type))->first();
+
+            if (! $role) {
+                throw new \Exception('ROLE_UNKNOWN');
+            }
+
+            $locked->update([
+                'claim_status' => FacilityClaimStatus::Approved->value,
+                'reviewed_by'  => $adminId,
+                'reviewed_at'  => now(),
+            ]);
+
+            // Joins the claimant's single existing posting when unambiguous.
+            $this->stampClaimed($listing, $claimant->id, $adminId);
+            $listing->refresh();
+
+            if ($listing->facility_id === null) {
+                $facility = Facility::create([
+                    'name'   => $listing->facility_name,
+                    'type'   => $type,
+                    'status' => 'active',
+                ]);
+
+                $listing->update(['facility_id' => $facility->id]);
+
+                FacilityUpdateAudit::create([
+                    'facility_id'     => $listing->id,
+                    'actor_id'        => $adminId,
+                    'actor_type'      => 'admin',
+                    'field_changed'   => 'facility_id',
+                    'old_value'       => null,
+                    'new_value'       => (string) $facility->id,
+                    'source'          => 'facility_claim_approval_tenant_created',
+                    'requires_review' => false,
+                    'created_at'      => now(),
+                ]);
+            }
+
+            $facilityId = (string) $listing->facility_id;
+
+            FacilityRoleAssignment::firstOrCreate(
+                ['user_id' => $claimant->id, 'facility_id' => $facilityId, 'role_id' => $role->id],
+                ['is_active' => false, 'assigned_by' => $adminId, 'assigned_at' => now()],
+            );
+
+            $locked->update([
+                'facility_id'         => $facilityId,
+                'created_facility_id' => $facilityId,
+            ]);
+
+            AuditEvent::create([
+                'actor_id'           => $adminId,
+                'facility_id'        => $facilityId,
+                'action_type'        => 'facility_claim_approved',
+                'resource_type'      => 'FacilityClaim',
+                'resource_id'        => $locked->id,
+                'source_system'      => 'portal',
+                'emergency_override' => false,
+                'after_state'        => [
+                    'listing_id'     => $listing->id,
+                    'facility_id'    => $facilityId,
+                    'role'           => $role->name,
+                    'phone_verified' => $locked->isPhoneVerified(),
+                    'sms_status'     => $locked->sms_status,
+                ],
+                'created_at'         => now(),
+            ]);
+
+            return $locked->fresh();
+        });
+
+        app(FacilityMembershipService::class)->forget(User::find($approved->claimant_user_id));
+
+        $this->notifyClaimant($approved, FacilityClaimUpdateNotification::APPROVED, $this->activationUrlFor($approved));
+
+        return $approved;
+    }
+
+    /** A shareable activation link: signed, 7 days, useless to anyone but the claimant. */
+    public function activationUrlFor(FacilityClaim $claim): ?string
+    {
+        if ($claim->claim_status !== FacilityClaimStatus::Approved || $claim->created_facility_id === null) {
+            return null;
+        }
+
+        return URL::temporarySignedRoute('portals.listing.claims.activate', now()->addDays(7), ['claim' => $claim->id]);
+    }
+
+    /**
+     * The claimant switches on their manager role. Requires two-step
+     * verification to be enrolled first (MFA on first staff sign-in).
+     * Idempotent: a second call changes nothing.
+     *
+     * @throws \Exception CLAIM_NOT_ACTIVATABLE | MFA_REQUIRED
+     */
+    public function activate(FacilityClaim $claim, User $user): FacilityClaim
+    {
+        if ($claim->claimant_user_id !== $user->id
+            || $claim->claim_status !== FacilityClaimStatus::Approved
+            || $claim->created_facility_id === null) {
+            throw new \Exception('CLAIM_NOT_ACTIVATABLE');
+        }
+
+        if ($claim->activated_at !== null) {
+            return $claim;
+        }
+
+        if (! $user->hasTwoFactorEnabled()) {
+            throw new \Exception('MFA_REQUIRED');
+        }
+
+        DB::transaction(function () use ($claim, $user): void {
+            FacilityRoleAssignment::where('user_id', $user->id)
+                ->where('facility_id', $claim->created_facility_id)
+                ->update(['is_active' => true]);
+
+            $roleId = FacilityRoleAssignment::where('user_id', $user->id)
+                ->where('facility_id', $claim->created_facility_id)
+                ->value('role_id');
+
+            // A consumer account becomes a staff account. A user who already
+            // holds a staff role keeps it; the facility assignment above is
+            // what capability checks read at this facility.
+            if ($roleId && in_array($user->roleName(), [null, 'patient', 'emergency_contact'], true)) {
+                $user->role_id = $roleId;
+            }
+            if ($user->primary_facility_id === null) {
+                $user->primary_facility_id = $claim->created_facility_id;
+            }
+            $user->save();
+
+            $claim->forceFill(['activated_at' => now()])->save();
+        });
+
+        app(FacilityMembershipService::class)->forget($user);
+
+        return $claim->fresh();
+    }
+
+    /**
+     * Reject a claim request. Only an open claim can be rejected; an approved
+     * one is withdrawn with revokeClaim().
      */
     public function rejectClaim($claimId, $adminId, $notes = null)
     {
         $claim = FacilityClaim::findOrFail($claimId);
+
+        if (! $claim->claim_status->isOpen()) {
+            throw new \Exception('CLAIM_NOT_REVIEWABLE');
+        }
 
         $claim->update([
             'claim_status' => FacilityClaimStatus::Rejected->value,
@@ -246,6 +484,8 @@ class FacilityClaimService
             'reviewed_at'  => now(),
             'review_notes' => $notes,
         ]);
+
+        $this->notifyClaimant($claim, FacilityClaimUpdateNotification::REJECTED, null, $notes);
 
         return $claim;
     }
@@ -259,6 +499,10 @@ class FacilityClaimService
     public function revokeClaim($claimId, $adminId, $notes = null)
     {
         $claim = FacilityClaim::findOrFail($claimId);
+
+        if ($claim->claim_status !== FacilityClaimStatus::Approved) {
+            throw new \Exception('CLAIM_NOT_REVOCABLE');
+        }
 
         DB::transaction(function () use ($claim, $adminId, $notes) {
             $claim->update([
@@ -276,6 +520,28 @@ class FacilityClaimService
         });
 
         return $claim->fresh();
+    }
+
+    /** Database + mail (+ SMS when a provider is live). Never throws. */
+    private function notifyClaimant(FacilityClaim $claim, string $event, ?string $activationUrl = null, ?string $notes = null): void
+    {
+        try {
+            $user = User::find($claim->claimant_user_id);
+            if (! $user) {
+                return;
+            }
+
+            $name = (string) (CareFacility::whereKey($claim->care_facility_id)->value('facility_name') ?? '');
+
+            $user->notify(new FacilityClaimUpdateNotification($event, $claim->id, $name, $activationUrl, $notes));
+
+            $gateway = app(ClaimSmsGateway::class);
+            if ($claim->claimant_phone && $gateway->isLive()) {
+                $gateway->deliver($claim->claimant_phone, __('caremap_claim.notify.' . $event . '_body', ['facility' => $name]));
+            }
+        } catch (\Throwable $e) {
+            Log::warning('facility_claim_notify_failed', ['claim_id' => $claim->id, 'event' => $event, 'error' => $e->getMessage()]);
+        }
     }
 
     /**

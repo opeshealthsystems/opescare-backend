@@ -77,6 +77,34 @@
                             {{ $claim->review_notes ?: '—' }}
                         </td>
                     </tr>
+                    @if($claim->claim_status === \App\Enums\FacilityClaimStatus::PendingVerification)
+                    <tr>
+                        <td colspan="5">
+                            <p class="td-muted">{{ __('caremap_claim.code_prompt', ['phone' => $claim->sms_phone_masked ?? '***']) }}</p>
+                            <form method="POST" action="{{ route('portals.listing.claims.verify', $claim->id) }}" class="d-inline">
+                                @csrf
+                                <input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="12" required
+                                       class="form-control d-inline" aria-label="{{ __('caremap_claim.code_label') }}" placeholder="{{ __('caremap_claim.code_label') }}">
+                                <button type="submit" class="btn btn-primary btn-sm"><i data-lucide="check"></i> {{ __('caremap_claim.btn_verify_code') }}</button>
+                            </form>
+                            <form method="POST" action="{{ route('portals.listing.claims.resend', $claim->id) }}" class="d-inline">
+                                @csrf
+                                <button type="submit" class="btn btn-secondary btn-sm"><i data-lucide="refresh-cw"></i> {{ __('caremap_claim.btn_resend_code') }}</button>
+                            </form>
+                        </td>
+                    </tr>
+                    @elseif($claim->claim_status === \App\Enums\FacilityClaimStatus::PendingReview && ! $claim->isPhoneVerified())
+                    <tr>
+                        <td colspan="5" class="td-muted">{{ __('caremap_claim.code_undelivered_note') }}</td>
+                    </tr>
+                    @elseif(isset($activations[$claim->id]))
+                    <tr>
+                        <td colspan="5">
+                            <p class="td-muted">{{ __('caremap_claim.activate_prompt') }}</p>
+                            <a href="{{ $activations[$claim->id] }}" class="btn btn-primary btn-sm"><i data-lucide="key-round"></i> {{ __('caremap_claim.btn_activate') }}</a>
+                        </td>
+                    </tr>
+                    @endif
                 @endforeach
                 </tbody>
             </table>

@@ -64,6 +64,7 @@ class SeoController extends Controller
         'developers'                => ['0.6', 'weekly'],
         'docs'                      => ['0.6', 'weekly'],
         'sitemap'                   => ['0.3', 'weekly'],
+        'solutions'                 => ['0.7', 'monthly'],
     ];
 
     /**
@@ -216,6 +217,11 @@ class SeoController extends Controller
                 $paths['legal/' . $slug] = $lastmod;
             }
 
+            // Local-intent pages (type × city with enough active listings).
+            foreach (\App\Support\CarePlaces::combos() as $combo) {
+                $paths['care-map/' . $combo['type_slug'] . '/' . $combo['city_slug']] = null;
+            }
+
             return $this->urlsetXml($this->bilingualEntries($paths));
         });
 
@@ -315,7 +321,7 @@ class SeoController extends Controller
         $section = function (string $path): string {
             return match (true) {
                 $path === '' || str_starts_with($path, 'network/') || str_starts_with($path, 'care-map') => 'services',
-                str_starts_with($path, 'solutions/') || str_starts_with($path, 'developers')
+                $path === 'solutions' || str_starts_with($path, 'solutions/') || str_starts_with($path, 'developers')
                     || in_array($path, ['pricing', 'request-demo', 'interoperability', 'security', 'sla', 'status'], true) => 'providers',
                 in_array($path, ['about', 'about/facts', 'how-it-works', 'faq', 'help', 'contact', 'blog', 'sitemap'], true) => 'about',
                 in_array($path, ['privacy', 'terms', 'legal', 'consent', 'account-deletion'], true) => 'legal',
@@ -363,6 +369,19 @@ class SeoController extends Controller
 
     private function pageLabel(string $path): string
     {
+        // The OPES systems catalogue labels itself from lang/{en,fr}/solutions.php.
+        if ($path === 'solutions') {
+            return __('solutions.nav');
+        }
+        if ($path === 'solutions/request') {
+            return __('solutions.request.title');
+        }
+        if (str_starts_with($path, 'solutions/') && in_array(substr($path, 10), \App\Http\Controllers\Marketing\SolutionsController::slugs(), true)) {
+            $slug = substr($path, 10);
+
+            return __("solutions.systems.{$slug}.name") . ' — ' . __("solutions.systems.{$slug}.tagline");
+        }
+
         $key = 'sitemap.pages.' . ($path === '' ? 'home' : str_replace(['/', '-'], '_', $path));
 
         return \Illuminate\Support\Facades\Lang::has($key) ? __($key) : '/' . $path;
@@ -703,7 +722,7 @@ class SeoController extends Controller
     /** Public, parameterless GET routes that should be indexed (docs excluded: own sitemap). */
     private function indexablePaths(): array
     {
-        return array_values(array_filter($this->publicGetPaths(), function (string $uri) {
+        $paths = array_values(array_filter($this->publicGetPaths(), function (string $uri) {
             foreach (self::NEVER_INDEX as $blocked) {
                 if ($uri === $blocked || str_starts_with($uri, $blocked . '/')) {
                     return false;
@@ -712,6 +731,14 @@ class SeoController extends Controller
 
             return true;
         }));
+
+        // /solutions/{slug} is parameterised, so the route scan skips it; the
+        // system pages are enumerable from config/solutions.php.
+        foreach (\App\Http\Controllers\Marketing\SolutionsController::slugs() as $slug) {
+            $paths[] = 'solutions/' . $slug;
+        }
+
+        return array_values(array_unique($paths));
     }
 
     /** Every unauthenticated, parameterless GET page uri (no file endpoints). */

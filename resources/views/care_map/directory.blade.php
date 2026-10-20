@@ -354,6 +354,10 @@
   <div class="hdr-row">
     <h1 class="brand-name">{{ __('finder_seo.pages.care_map.title') }}</h1>
     <span class="hdr-spacer"></span>
+    <a href="{{ route('public.care-map.places', request('lang') === 'fr' ? ['lang' => 'fr'] : []) }}" class="f-small">
+      <span class="icon" aria-hidden="true">@includeIf('partials.finder.icon', ['name' => 'map-pin'])</span>
+      {{ __('care_places.hub.link') }}
+    </a>
     <a href="{{ route('public.care-map.emergency') }}" class="btn-emergency">
       <span class="icon" aria-hidden="true">@includeIf('partials.finder.icon', ['name' => 'phone'])</span>
       {{ __('finder_directory.emergency') }}

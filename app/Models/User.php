@@ -58,7 +58,20 @@ class User extends Authenticatable
      * without a second factor because the production env listed only
      * super_admin,admin (security scan 2026-09-15, item 3).
      */
-    public const ALWAYS_MFA_ROLES = ['super_admin', 'platform_admin', 'system_admin'];
+    public const ALWAYS_MFA_ROLES = [
+        'super_admin', 'platform_super_admin', 'platform_admin', 'system_admin',
+        // Facility managers (readiness OB-3, 2026-10-20): they hold a whole
+        // facility's staff, stock, prices and money. Kept in code, not only
+        // in the env default, so production picks them up with no env change.
+        ...self::FACILITY_MANAGER_MFA_ROLES,
+    ];
+
+    /** The facility-admin family that must use a second factor. */
+    public const FACILITY_MANAGER_MFA_ROLES = [
+        'facility_admin', 'hospital_admin', 'clinic_admin', 'branch_admin',
+        'multi_facility_admin', 'facility_executive', 'facility_ceo',
+        'pharmacy_manager', 'lab_manager', 'finance_manager', 'blood_bank_manager',
+    ];
 
     /** True if this user's role requires MFA per config/mfa.php or ALWAYS_MFA_ROLES. */
     public function requiresTwoFactor(): bool

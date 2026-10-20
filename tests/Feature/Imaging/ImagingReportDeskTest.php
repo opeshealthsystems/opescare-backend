@@ -11,6 +11,7 @@ use App\Models\Patient;
 use App\Models\RadiologyReport;
 use App\Models\Role;
 use App\Models\User;
+use App\Modules\Notifications\Models\NotificationEvent;
 use App\Services\Patient\PatientDocumentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -354,5 +355,52 @@ class ImagingReportDeskTest extends TestCase
             ->assertDontSee($order->accession_number);
 
         $this->assertSame(0, RadiologyReport::count());
+    }
+
+    /** DX-3: distributing a report tells the clinician who ordered the study. */
+    public function test_distribution_notifies_the_ordering_clinician_with_a_link_to_the_report(): void
+    {
+        [$radiologist, $facility] = $this->staff();
+        $doctor = User::factory()->create(['status' => 'active', 'primary_facility_id' => $facility->id]);
+        $order  = $this->order($facility, $doctor);
+
+        $this->as($radiologist, $facility)
+            ->post(route('portals.imaging.report.finalize', $order->id), $this->text())
+            ->assertRedirect()->assertSessionHasNoErrors();
+        $this->as($radiologist, $facility)
+            ->post(route('portals.imaging.report.distribute', $order->id))
+            ->assertRedirect();
+
+        $report = RadiologyReport::where('imaging_order_id', $order->id)->firstOrFail();
+        $bell   = NotificationEvent::where('recipient_user_id', $doctor->id)
+            ->where('event_type', 'radiology_report_ready')
+            ->first();
+
+        $this->assertNotNull($bell, 'the ordering clinician is told the report is out');
+        $payload = json_decode((string) $bell->payload_json, true);
+        $this->assertSame('/clinician/results/rad-' . $report->id, $payload['url']);
+        $this->assertSame($report->id, $payload['radiology_report_id']);
+        $this->assertNotSame('', (string) $payload['title']);
+        $this->assertStringNotContainsString('imaging_report.', (string) $payload['message'], 'the bell text is translated');
+        $this->assertSame('RadiologyReport', $bell->related_resource_type);
+
+        // The radiologist distributing it is not pinged about their own work.
+        $this->assertSame(0, NotificationEvent::where('recipient_user_id', $radiologist->id)
+            ->where('event_type', 'radiology_report_ready')->count());
+    }
+
+    public function test_no_clinician_bell_when_the_radiologist_ordered_the_study_themselves(): void
+    {
+        [$radiologist, $facility] = $this->staff();
+        $order = $this->order($facility, $radiologist);
+
+        $this->as($radiologist, $facility)
+            ->post(route('portals.imaging.report.finalize', $order->id), $this->text())
+            ->assertRedirect();
+        $this->as($radiologist, $facility)
+            ->post(route('portals.imaging.report.distribute', $order->id))
+            ->assertRedirect();
+
+        $this->assertSame(0, NotificationEvent::where('event_type', 'radiology_report_ready')->count());
     }
 }

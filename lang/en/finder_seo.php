@@ -24,11 +24,11 @@ return [
             'description' => 'Search live pharmacy stock, blood availability and 2,700+ hospitals, clinics and pharmacies across Cameroon. Free, in English and French.',
         ],
         'medicine_finder' => [
-            'title' => 'Medicine Finder — Pharmacy Stock Near You',
+            'title' => 'Find a medicine in stock near you in Cameroon',
             'description' => 'Find a medicine in stock at a pharmacy near you. Availability is reported by pharmacies on the network and timestamped — check before you travel.',
         ],
         'blood_finder' => [
-            'title' => 'Blood Finder — Blood Availability',
+            'title' => 'Find blood at hospitals and blood banks in Cameroon',
             'description' => 'Check blood availability by blood group and component at connected hospitals and blood banks in Cameroon, with the report time on every listing.',
         ],
         'care_map' => [

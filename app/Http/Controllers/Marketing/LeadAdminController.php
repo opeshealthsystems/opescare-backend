@@ -24,8 +24,15 @@ class LeadAdminController extends Controller
             $status = null;
         }
 
+        // Solutions requests (/solutions/request): purchase vs donation.
+        $kind = $request->query('kind');
+        if (! in_array($kind, Lead::REQUEST_KINDS, true)) {
+            $kind = null;
+        }
+
         $leads = Lead::query()
             ->when($status, fn ($q) => $q->where('status', $status))
+            ->when($kind, fn ($q) => $q->where('source', Lead::SOURCE_SOLUTIONS)->where('request_kind', $kind))
             ->orderByDesc('created_at')
             ->paginate(25)
             ->withQueryString();
@@ -38,6 +45,7 @@ class LeadAdminController extends Controller
         return view('portals.admin.leads.index', [
             'leads'         => $leads,
             'activeStatus'  => $status,
+            'activeKind'    => $kind,
             'counts'        => $counts,
             'totalCount'    => (int) $counts->sum(),
         ]);

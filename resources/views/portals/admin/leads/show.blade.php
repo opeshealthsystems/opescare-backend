@@ -23,6 +23,13 @@ $gcInit = mb_strtoupper(collect(preg_split('/\s+/', trim((string) $gcLabel)))->f
                 <span class="od-pill od-pill--dot od-pill--{{ $statusBadge }}">{{ __('leads.statuses.'.$lead->status) }}</span>
                 <span class="od-pill od-pill--neutral">{{ $lead->organization_type ? __('leads.org_types.'.$lead->organization_type) : '—' }}</span>
                 <span class="od-pill od-pill--neutral">{{ $lead->source }}</span>
+                @if($lead->source === \App\Models\Lead::SOURCE_SOLUTIONS)
+                @if($lead->request_kind)<span class="od-pill od-pill--{{ $lead->request_kind === 'donation' ? 'ready' : 'normal' }}">{{ __('solutions.admin.kind_'.$lead->request_kind) }}</span>@endif
+                <span class="od-pill od-pill--neutral">{{ $lead->solution_slug ? __('solutions.systems.'.$lead->solution_slug.'.name') : __('solutions.admin.system_any') }}</span>
+                @if($lead->facility_type)<span class="od-pill od-pill--neutral">{{ __('solutions.request.types.'.$lead->facility_type) }}</span>@endif
+                @if($lead->city)<span class="od-pill od-pill--neutral">{{ $lead->city }}</span>@endif
+                @if($lead->has_system !== null)<span class="od-pill od-pill--neutral">{{ $lead->has_system ? __('solutions.admin.has_system_yes') : __('solutions.admin.has_system_no') }}</span>@endif
+                @endif
             </div>
         </div>
         <div class="od-row">

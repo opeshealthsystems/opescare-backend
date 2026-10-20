@@ -243,8 +243,21 @@ class PilotClinicalJourneyTest extends TestCase
 
     private function signIn(string $email): void
     {
-        $this->post(route('login.submit'), ['email' => $email, 'password' => self::PASSWORD])
+        $response = $this->post(route('login.submit'), ['email' => $email, 'password' => self::PASSWORD])
             ->assertRedirect();
+
+        // Facility managers always need MFA (readiness OB-3): enrol on first
+        // sign-in, or answer the code challenge once enrolled.
+        if ($response->headers->get('Location') === route('mfa.challenge')) {
+            $this->get(route('mfa.challenge'))->assertOk();
+            $tf = app(\App\Modules\Auth\Services\TwoFactorService::class);
+            if ($secret = session('mfa.pending_secret')) {
+                $this->post(route('mfa.setup.submit'), ['code' => $tf->codeAt($secret)])->assertOk();
+            } else {
+                $user = User::where('email', $email)->firstOrFail();
+                $this->post('/mfa/challenge', ['code' => $tf->codeAt($user->two_factor_secret)])->assertRedirect();
+            }
+        }
         $this->assertAuthenticated();
     }
 

@@ -289,6 +289,12 @@ class CareMapController extends Controller
             ], 401);
         }
 
+        // Ownership proof (OB-1): the same licence document the web form
+        // requires; the SMS code then goes to the listing's own phone.
+        $request->validate([
+            'document' => \App\Modules\CareMap\Services\FacilityClaimProofService::documentRules(),
+        ]);
+
         try {
             $claim = $this->claimService->submitDirectoryClaim($id, $user->id, [
                 'claim_reason'   => $request->input('claim_reason', 'Listing management'),
@@ -296,7 +302,7 @@ class CareMapController extends Controller
                 'claimant_role'  => $request->input('claimant_role'),
                 'claimant_email' => $request->input('claimant_email', $user->email),
                 'claimant_phone' => $request->input('claimant_phone'),
-            ]);
+            ], $request->file('document'));
             return response()->json([
                 'status' => 'success',
                 'data' => $claim,

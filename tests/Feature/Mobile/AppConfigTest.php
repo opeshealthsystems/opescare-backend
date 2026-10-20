@@ -15,11 +15,12 @@ class AppConfigTest extends TestCase
         $res = $this->getJson('/api/mobile/app-config');
 
         $res->assertOk()
-            ->assertExactJson([
+            ->assertJson([
                 'min_supported_build' => 7,
                 'latest_version'      => '1.2.0',
                 'store_url'           => 'https://play.google.com/store/apps/details?id=cm.opescare.patient',
-            ]);
+            ])
+            ->assertJsonStructure(['payments' => ['online_available', 'pay_at_facility_note']]);
     }
 
     public function test_app_config_is_public(): void

@@ -519,6 +519,11 @@ Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'platform.adm
 Route::get('/care-map', [\App\Http\Controllers\Api\V1\CareMapController::class, 'publicDirectory'])->name('public.care-map');
 Route::get('/care-map/facility/{id}', [\App\Http\Controllers\Api\V1\CareMapController::class, 'publicProfile'])->name('public.care-map.profile');
 Route::get('/care-map/emergency', [\App\Http\Controllers\Api\V1\CareMapController::class, 'publicEmergency'])->name('public.care-map.emergency');
+// Local-intent pages ("Pharmacies in Yaoundé"); type constrained to known slugs so /care-map/facility/{id} is never shadowed.
+Route::get('/care-map/places', [\App\Http\Controllers\CarePlacesController::class, 'index'])->name('public.care-map.places');
+Route::get('/care-map/{type}/{city}', [\App\Http\Controllers\CarePlacesController::class, 'show'])
+    ->where(['type' => \App\Support\CarePlaces::typeSlugPattern(), 'city' => '[a-z0-9-]+'])
+    ->name('public.care-map.place');
 Route::middleware(['web', 'auth', 'platform.admin'])->get('/admin/care-map/governance', [\App\Http\Controllers\Api\V1\CareMapController::class, 'adminGovernance'])->name('admin.care-map.governance');
 
 // ── Facility claim + self-service listing + directory review ────────────────
@@ -537,6 +542,11 @@ Route::middleware(['web', 'auth', 'throttle:portal'])->group(function () {
     Route::post('/care-map/facility/{id}/claim', [\App\Http\Controllers\CareMap\FacilityClaimController::class, 'store'])->name('public.care-map.claim.store');
 
     Route::get('/portals/listing/claims', [\App\Http\Controllers\CareMap\FacilityClaimController::class, 'myClaims'])->name('portals.listing.claims');
+    // Ownership proof (OB-1): the code sent to the listing's phone, and the
+    // signed activation link from the approval notice.
+    Route::post('/portals/listing/claims/{claim}/verify', [\App\Http\Controllers\CareMap\FacilityClaimController::class, 'verifyCode'])->middleware('throttle:auth-code')->name('portals.listing.claims.verify');
+    Route::post('/portals/listing/claims/{claim}/resend', [\App\Http\Controllers\CareMap\FacilityClaimController::class, 'resendCode'])->middleware('throttle:auth-code')->name('portals.listing.claims.resend');
+    Route::get('/portals/listing/claims/{claim}/activate', [\App\Http\Controllers\CareMap\FacilityClaimController::class, 'activate'])->middleware('signed')->name('portals.listing.claims.activate');
 
     // Self-service listing editor — deliberately id-less.
     Route::get('/portals/listing',                       [\App\Http\Controllers\CareMap\FacilityListingController::class, 'edit'])->name('portals.listing.edit');
@@ -615,6 +625,7 @@ Route::middleware(['web', 'auth', 'platform.admin'])->group(function () {
     Route::post('/admin/care-map/review/claims/{claim}/approve', [\App\Http\Controllers\MedicalId\AdminDirectoryReviewController::class, 'approveClaim'])->name('admin.care-map.review.claims.approve');
     Route::post('/admin/care-map/review/claims/{claim}/reject',  [\App\Http\Controllers\MedicalId\AdminDirectoryReviewController::class, 'rejectClaim'])->name('admin.care-map.review.claims.reject');
     Route::post('/admin/care-map/review/claims/{claim}/revoke',  [\App\Http\Controllers\MedicalId\AdminDirectoryReviewController::class, 'revokeClaim'])->name('admin.care-map.review.claims.revoke');
+    Route::get('/admin/care-map/review/claims/{claim}/document', [\App\Http\Controllers\MedicalId\AdminDirectoryReviewController::class, 'claimDocument'])->middleware('signed')->name('admin.care-map.review.claims.document');
 
     Route::post('/admin/care-map/review/listings/{listing}/link',   [\App\Http\Controllers\MedicalId\AdminDirectoryReviewController::class, 'linkListing'])->name('admin.care-map.review.listings.link');
 

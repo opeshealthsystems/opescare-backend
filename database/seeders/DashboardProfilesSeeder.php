@@ -192,6 +192,13 @@ class DashboardProfilesSeeder extends Seeder
                 'landing_route' => 'portals.staff',
                 'description'   => 'Imaging worklist and radiology reporting',
             ],
+            [
+                'key'           => 'blood_bank',
+                'name'          => 'Blood Bank Dashboard',
+                'portal_prefix' => 'staff',
+                'landing_route' => 'portals.staff',
+                'description'   => 'Blood stock and blood requests',
+            ],
 
             // ── Pharmacy ──────────────────────────────────────────────────────
             [

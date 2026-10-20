@@ -47,6 +47,16 @@
         <div>{{ __('caremap_claim.approve_warning') }}</div>
     </div>
 
+    @if(session('claim_activation_url'))
+        <div class="oda-gd-flash">
+            <i data-lucide="link"></i>
+            <div>
+                {{ __('caremap_claim.activation_link_admin') }}
+                <input type="text" readonly class="od-input" value="{{ session('claim_activation_url') }}" aria-label="{{ __('caremap_claim.activation_link_admin') }}">
+            </div>
+        </div>
+    @endif
+
     <div class="od-card">
         <div class="od-card__head">
             <h2 class="od-card__title"><i data-lucide="clock"></i> {{ __('caremap_claim.tab_claims') }}</h2>
@@ -68,6 +78,7 @@
                             <th>{{ __('caremap_claim.col_facility') }}</th>
                             <th>{{ __('caremap_claim.claim_col_claimant') }}</th>
                             <th>{{ __('caremap_claim.claim_col_contact') }}</th>
+                            <th>{{ __('caremap_claim.claim_col_proof') }}</th>
                             <th>{{ __('caremap_claim.col_submitted') }}</th>
                             <th>&nbsp;</th>
                         </tr>
@@ -99,6 +110,27 @@
                                 @if($claim->claimant_phone)<div class="od-table__sub">{{ $claim->claimant_phone }}</div>@endif
                                 @if($claim->claim_reason)<div class="od-table__sub">{{ Str::limit($claim->claim_reason, 120) }}</div>@endif
                             </td>
+                            <td data-label="{{ __('caremap_claim.claim_col_proof') }}">
+                                <div class="od-table__sub">{{ __('caremap_claim.status_' . $claim->claim_status->value) }}</div>
+                                <div class="od-table__sub">
+                                    {{ __('caremap_claim.proof_phone') }}:
+                                    @if($claim->isPhoneVerified())
+                                        <strong>{{ __('caremap_claim.proof_yes') }}</strong>
+                                    @else
+                                        <strong>{{ __('caremap_claim.proof_no') }}</strong>
+                                        @if($claim->sms_status) ({{ __('caremap_claim.sms_status_' . $claim->sms_status) }}) @endif
+                                    @endif
+                                </div>
+                                @if($listing?->dialablePhone())<div class="od-table__sub">{{ __('caremap_claim.proof_listing_phone') }}: {{ $listing->dialablePhone() }}</div>@endif
+                                @if($claim->hasDocument())
+                                    <a class="od-table__sub" target="_blank" rel="noopener"
+                                       href="{{ URL::temporarySignedRoute('admin.care-map.review.claims.document', now()->addMinutes(\App\Modules\CareMap\Services\FacilityClaimProofService::DOCUMENT_URL_TTL_MINUTES), ['claim' => $claim->id]) }}">
+                                        <i data-lucide="file-text"></i> {{ __('caremap_claim.proof_document') }}
+                                    </a>
+                                @else
+                                    <div class="od-table__sub">{{ __('caremap_claim.proof_no_document') }}</div>
+                                @endif
+                            </td>
                             <td data-label="{{ __('caremap_claim.col_submitted') }}">
                                 <span class="od-table__sub">{{ optional($claim->submitted_at ?? $claim->created_at)->format('Y-m-d') ?? '—' }}</span>
                             </td>
@@ -111,12 +143,16 @@
                                             <i data-lucide="x"></i> {{ __('caremap_claim.btn_reject') }}
                                         </button>
                                     </form>
+                                    @if($claim->claim_status->isReviewable() || ! $claim->care_facility_id)
                                     <form method="POST" action="{{ route('admin.care-map.review.claims.approve', $claim->id) }}" class="oda-inline-form">
                                         @csrf
                                         <button type="submit" class="od-btn od-btn--row">
                                             <i data-lucide="check"></i> {{ __('caremap_claim.btn_approve') }}
                                         </button>
                                     </form>
+                                    @else
+                                        <span class="od-table__sub">{{ __('caremap_claim.approve_unavailable') }}</span>
+                                    @endif
                                 </div>
                             </td>
                         </tr>

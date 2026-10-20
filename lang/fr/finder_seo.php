@@ -20,11 +20,11 @@ return [
             'description' => 'Recherchez le stock des pharmacies, la disponibilité du sang et plus de 2 700 hôpitaux, cliniques et pharmacies au Cameroun. Gratuit, FR et EN.',
         ],
         'medicine_finder' => [
-            'title' => 'Trouver un médicament — stock en pharmacie',
+            'title' => 'Trouver un médicament en stock près de vous au Cameroun',
             'description' => 'Trouvez un médicament en stock dans une pharmacie proche. La disponibilité est déclarée par les pharmacies et horodatée — vérifiez avant de partir.',
         ],
         'blood_finder' => [
-            'title' => 'Trouver du sang — disponibilité',
+            'title' => 'Trouver du sang dans les hôpitaux et banques de sang au Cameroun',
             'description' => 'Vérifiez la disponibilité du sang par groupe et composant dans les hôpitaux et banques de sang connectés, avec l\'heure de chaque rapport.',
         ],
         'care_map' => [

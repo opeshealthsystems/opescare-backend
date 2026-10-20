@@ -169,9 +169,51 @@ class AdminDirectoryReviewController extends Controller
 
     public function approveClaim(string $claim): RedirectResponse
     {
-        $this->claims->approveClaim($claim, Auth::id());
+        try {
+            $approved = $this->claims->approveClaim($claim, Auth::id());
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            return back()->with('error', $this->claimError($e->getMessage()));
+        }
 
-        return back()->with('success', __('caremap_claim.flash_claim_approved'));
+        // The shareable activation link, shown once to the admin (it is also
+        // in the claimant's mail and in-app notice).
+        return back()
+            ->with('success', __('caremap_claim.flash_claim_approved'))
+            ->with('claim_activation_url', $this->claims->activationUrlFor($approved));
+    }
+
+    /**
+     * The claimant's licence / authorisation document. Platform admins only
+     * (route group) AND a signed, short-lived link — the file is never public.
+     */
+    public function claimDocument(string $claim): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $row  = FacilityClaim::findOrFail($claim);
+        $disk = \Illuminate\Support\Facades\Storage::disk(\App\Modules\CareMap\Services\FacilityClaimProofService::disk());
+
+        abort_unless($row->hasDocument() && $disk->exists($row->document_path), 404);
+
+        $ext = pathinfo($row->document_path, PATHINFO_EXTENSION);
+
+        return $disk->download($row->document_path, 'claim-' . $row->id . '.' . $ext, [
+            'Content-Type'           => $row->document_mime ?? 'application/octet-stream',
+            'X-Content-Type-Options' => 'nosniff',
+            'Cache-Control'          => 'private, no-store',
+        ]);
+    }
+
+    private function claimError(string $code): string
+    {
+        return match ($code) {
+            'CLAIM_NOT_REVIEWABLE'    => __('caremap_claim.error_not_reviewable'),
+            'CLAIM_NOT_REVOCABLE'     => __('caremap_claim.error_not_revocable'),
+            'CLAIM_HAS_NO_DOCUMENT'   => __('caremap_claim.error_no_document'),
+            'LISTING_ALREADY_CLAIMED' => __('caremap_claim.error_already_claimed'),
+            'LISTING_ALREADY_LINKED'  => __('caremap_claim.error_listing_already_linked'),
+            default                   => __('caremap_claim.error_generic'),
+        };
     }
 
     /**
@@ -218,7 +260,13 @@ class AdminDirectoryReviewController extends Controller
             'review_notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $this->claims->rejectClaim($claim, Auth::id(), $validated['review_notes'] ?? null);
+        try {
+            $this->claims->rejectClaim($claim, Auth::id(), $validated['review_notes'] ?? null);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            return back()->with('error', $this->claimError($e->getMessage()));
+        }
 
         return back()->with('success', __('caremap_claim.flash_claim_rejected'));
     }
@@ -229,7 +277,13 @@ class AdminDirectoryReviewController extends Controller
             'review_notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $this->claims->revokeClaim($claim, Auth::id(), $validated['review_notes'] ?? null);
+        try {
+            $this->claims->revokeClaim($claim, Auth::id(), $validated['review_notes'] ?? null);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            return back()->with('error', $this->claimError($e->getMessage()));
+        }
 
         return back()->with('success', __('caremap_claim.flash_claim_revoked'));
     }

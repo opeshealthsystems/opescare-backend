@@ -193,12 +193,15 @@ class PharmacySettingsTest extends TestCase
 
         // Path B: the claimed-listing editor, resolved from an approved claim.
         $listingB  = $this->listing(Facility::factory()->create(['type' => 'pharmacy', 'name' => 'Other']));
+        // A claim may only be approved on an UNLINKED listing (2026-10-20);
+        // approval then creates and links the tenant itself.
+        $listingB->forceFill(['facility_id' => null])->save();
         $claimant  = User::factory()->create();
         $claims    = app(FacilityClaimService::class);
         $claim     = $claims->submitDirectoryClaim($listingB->id, $claimant->id, [
             'claimant_name' => 'Dr Ada Ngu', 'claimant_role' => 'owner',
             'claimant_email' => 'ada@example.cm', 'claimant_phone' => '+237 600 000 001',
-        ]);
+        ], \Illuminate\Http\UploadedFile::fake()->createWithContent('licence.pdf', '%PDF-1.4 test'));
         $claims->approveClaim($claim->id, User::factory()->create()->id);
         $this->actingAs($claimant)->post(route('portals.listing.hours.update'), $week)
             ->assertRedirect(route('portals.listing.edit'));

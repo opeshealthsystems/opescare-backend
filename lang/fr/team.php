@@ -185,6 +185,8 @@ return [
         'sample_collection'   => 'Agent de prélèvement',
         'imaging_tech'        => 'Technologue en imagerie',
         'radiologist'         => 'Radiologue',
+        'blood_bank_officer'  => 'Agent de banque de sang',
+        'blood_bank_manager'  => 'Responsable de banque de sang',
         'pharmacist'          => 'Pharmacien',
         'pharmacy_technician' => 'Technicien en pharmacie',
         'pharmacy_manager'    => 'Responsable de pharmacie',

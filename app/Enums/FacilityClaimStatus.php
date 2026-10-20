@@ -7,8 +7,14 @@ namespace App\Enums;
  *
  * DB column: facility_claims.claim_status (string, backed value).
  *
- *   submitted → under_review → approved → revoked
- *                            ↘ rejected
+ *   pending_verification → pending_review → approved → revoked
+ *   (code sent to the       (code entered,     ↘ rejected
+ *    listing's phone)        or SMS could not
+ *                            be delivered)
+ *
+ * `submitted` / `under_review` are the pre-2026-10-20 states. They stay
+ * readable for old rows but a listing claim in them carries no ownership
+ * proof and cannot be approved (FacilityClaimService::approveClaim).
  *
  * There is no path from `submitted` to `approved` that a machine may take.
  * Anyone can assert they run a hospital; deciding whether they do is a
@@ -18,6 +24,8 @@ namespace App\Enums;
  */
 enum FacilityClaimStatus: string
 {
+    case PendingVerification = 'pending_verification';
+    case PendingReview       = 'pending_review';
     case Submitted   = 'submitted';
     case UnderReview = 'under_review';
     case Approved    = 'approved';
@@ -27,6 +35,8 @@ enum FacilityClaimStatus: string
     public function label(): string
     {
         return match ($this) {
+            self::PendingVerification => 'Awaiting phone code',
+            self::PendingReview       => 'Awaiting review',
             self::Submitted   => 'Awaiting review',
             self::UnderReview => 'Under review',
             self::Approved    => 'Approved',
@@ -39,7 +49,7 @@ enum FacilityClaimStatus: string
     public function isOpen(): bool
     {
         return match ($this) {
-            self::Submitted, self::UnderReview => true,
+            self::PendingVerification, self::PendingReview, self::Submitted, self::UnderReview => true,
             self::Approved, self::Rejected, self::Revoked => false,
         };
     }
@@ -56,7 +66,16 @@ enum FacilityClaimStatus: string
     /** Statuses that block a second claim on the same listing by the same user. */
     public static function blocking(): array
     {
-        return [self::Submitted->value, self::UnderReview->value, self::Approved->value];
+        return [
+            self::PendingVerification->value, self::PendingReview->value,
+            self::Submitted->value, self::UnderReview->value, self::Approved->value,
+        ];
+    }
+
+    /** The only state a listing claim may be approved from. */
+    public function isReviewable(): bool
+    {
+        return $this === self::PendingReview;
     }
 
     /** @return list<string> */

@@ -53,6 +53,26 @@ abstract class TestCase extends BaseTestCase
         });
     }
 
+    /**
+     * Facility managers always need MFA (User::FACILITY_MANAGER_MFA_ROLES,
+     * readiness OB-3). A test that signs one in with actingAs() is testing a
+     * desk, not the second factor, so the session is marked MFA-verified the
+     * way a real sign-in leaves it. Tests that exercise MFA itself set
+     * $enforceMfaInActingAs = true (FacilityManagersNeedMfaTest).
+     */
+    protected bool $enforceMfaInActingAs = false;
+
+    public function actingAs(\Illuminate\Contracts\Auth\Authenticatable $user, $guard = null)
+    {
+        if (! $this->enforceMfaInActingAs
+            && $user instanceof \App\Models\User
+            && in_array($user->roleName(), \App\Models\User::FACILITY_MANAGER_MFA_ROLES, true)) {
+            $this->withSession(['mfa.verified' => true]);
+        }
+
+        return parent::actingAs($user, $guard);
+    }
+
     protected function tearDown(): void
     {
         \App\Support\PublicUrlGuard::resolveUsing(null);

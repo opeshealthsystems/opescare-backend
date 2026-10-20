@@ -100,7 +100,12 @@
         <div>{{ __('caremap_claim.claim_review_notice') }}</div>
       </div>
 
-      <form method="POST" action="{{ route('public.care-map.claim.store', $facility->id) }}">
+      <div class="clm-notice">
+        @include('partials.finder.icon', ['name' => 'smartphone', 'size' => 16])
+        <div>{{ __('caremap_claim.proof_notice') }}</div>
+      </div>
+
+      <form method="POST" action="{{ route('public.care-map.claim.store', $facility->id) }}" enctype="multipart/form-data">
         @csrf
 
         <div class="clm-row">
@@ -148,6 +153,13 @@
           <textarea id="claim_reason" name="claim_reason" class="f-input" maxlength="2000">{{ old('claim_reason') }}</textarea>
           <div class="f-hint">{{ __('caremap_claim.field_reason_hint') }}</div>
           @error('claim_reason')<div class="f-error">{{ $message }}</div>@enderror
+        </div>
+
+        <div class="f-field">
+          <label class="f-label" for="document">{{ __('caremap_claim.field_document') }}</label>
+          <input type="file" id="document" name="document" class="f-input" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required>
+          <div class="f-hint">{{ __('caremap_claim.field_document_hint') }}</div>
+          @error('document')<div class="f-error">{{ $message }}</div>@enderror
         </div>
 
         <div class="f-hint">{{ __('caremap_claim.hint_false_claim') }}</div>

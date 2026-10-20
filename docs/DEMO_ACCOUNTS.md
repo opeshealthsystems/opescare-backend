@@ -33,6 +33,7 @@ column is free text and display-only).
 | eye_clinic | Clinique Ophtalmologique Demo | Yaoundé | demo |
 | diagnostic_center | Centre de Diagnostic Demo | Douala | demo |
 | maternity | Maternité Demo Essos | Yaoundé | demo |
+| blood_bank | Banque de Sang Demo Messa | Yaoundé | demo (linked, so stock entered on `/facility/inventory/blood` reaches the Blood Finder; no stock is seeded) |
 
 ## Every login
 
@@ -64,13 +65,15 @@ column is free text and display-only).
 | demo.dental.admin@opescare.test | facility_admin | Cabinet Dentaire Demo Bastos | dental | `/facility/team/overview` |
 | demo.dental.doctor@opescare.test | doctor | Cabinet Dentaire Demo Bastos | dental | `/facility` |
 | demo.imaging.admin@opescare.test | facility_admin | Centre d'Imagerie Demo Bonanjo | imaging_center | `/facility/team/overview` |
-| demo.imaging.tech@opescare.test | labtech (no imaging role exists) | Centre d'Imagerie Demo Bonanjo | imaging_center | `/facility/lab` |
+| demo.imaging.tech@opescare.test | imaging_tech | Centre d'Imagerie Demo Bonanjo | imaging_center | `/facility` (imaging desk `/facility/imaging`) |
 | demo.eye.admin@opescare.test | clinic_admin | Clinique Ophtalmologique Demo | eye_clinic | `/facility/team/overview` |
 | demo.eye.doctor@opescare.test | specialist | Clinique Ophtalmologique Demo | eye_clinic | `/facility` |
 | demo.diagnostic.admin@opescare.test | facility_admin | Centre de Diagnostic Demo | diagnostic_center | `/facility/team/overview` |
 | demo.diagnostic.lab@opescare.test | lab_manager | Centre de Diagnostic Demo | diagnostic_center | `/facility/lab/dashboard` |
 | demo.maternity.admin@opescare.test | facility_admin | Maternité Demo Essos | maternity | `/facility/team/overview` |
 | demo.maternity.midwife@opescare.test | midwife | Maternité Demo Essos | maternity | `/facility` |
+| demo.bloodbank.manager@opescare.test | blood_bank_manager | Banque de Sang Demo Messa | blood_bank | `/facility` (blood stock `/facility/inventory/blood`, requests `/facility/blood-requests`) |
+| demo.bloodbank.officer@opescare.test | blood_bank_officer | Banque de Sang Demo Messa | blood_bank | `/facility` |
 | demo.patient@opescare.test | patient (provisional ID) | — | — | `/patient` |
 | demo.reviewer@opescare.test | patient (verified ID) | — | — | `/patient` |
 | demo.boy@opescare.test | patient (child) | — | — | `/patient` |

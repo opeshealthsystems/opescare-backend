@@ -65,7 +65,7 @@ return [
         'payment_in_progress'      => 'Un paiement est déjà en cours pour cette facture. Consultez la demande sur votre téléphone.',
         'idempotency_key_required' => "Un en-tête Idempotency-Key est requis pour démarrer un paiement.",
         'idempotency_conflict'     => "Cette clé Idempotency-Key a déjà servi pour un autre paiement.",
-        'provider_unavailable'     => 'Les paiements Mobile Money sont indisponibles pour le moment.',
+        'provider_unavailable'     => 'Le paiement en ligne n’est pas encore disponible. Veuillez payer à l’établissement.',
         'invalid_msisdn'           => 'Saisissez un numéro de téléphone camerounais valide.',
         'amount_mismatch'          => 'Le montant affiché a changé. Cette facture est de :expected.',
     ],
