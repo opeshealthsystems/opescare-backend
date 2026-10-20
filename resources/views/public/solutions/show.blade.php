@@ -65,14 +65,34 @@
             @include('partials.finder.icon', ['name' => 'chevron-right', 'size' => 14])
             <span aria-current="page">{{ $solName }}</span>
         </nav>
-        <span class="sol-hero__icon">@include('partials.finder.icon', ['name' => $system['icon'], 'size' => 30])</span>
-        <p class="sol-eyebrow">{{ __("solutions.categories.{$system['category']}") }}</p>
-        <h1 class="f-h1">{{ $solName }}</h1>
-        <p class="sol-card__sub">{{ $solTagline }}</p>
-        <p class="f-lead">{{ __("solutions.systems.{$slug}.value") }}</p>
-        <div class="sol-actions">
-            <a class="f-btn f-btn--primary" href="{{ route('public.solutions.request', ['system' => $slug]) }}">@include('partials.finder.icon', ['name' => 'send', 'size' => 18]){{ __('solutions.detail.request_this', ['name' => $solName]) }}</a>
-            <a class="f-btn f-btn--ghost" href="{{ route('public.solutions.index') }}">@include('partials.finder.icon', ['name' => 'arrow-left', 'size' => 18]){{ __('solutions.detail.back') }}</a>
+        <div class="sol-hero__grid">
+            <div class="sol-hero__main">
+                <div class="sol-hero__brand">
+                    <span class="sol-hero__icon">@include('partials.finder.icon', ['name' => $system['icon'], 'size' => 28])</span>
+                    <span class="sol-pill">{{ __("solutions.categories.{$system['category']}") }}</span>
+                </div>
+                <h1 class="f-h1 sol-title">{{ $solName }}</h1>
+                <p class="sol-tagline">{{ $solTagline }}</p>
+                <p class="f-lead sol-value">{{ __("solutions.systems.{$slug}.value") }}</p>
+                <div class="sol-actions">
+                    <a class="f-btn f-btn--primary" href="{{ route('public.solutions.request', ['system' => $slug]) }}">@include('partials.finder.icon', ['name' => 'send', 'size' => 18]){{ __('solutions.detail.request_this', ['name' => $solName]) }}</a>
+                    <a class="f-btn" href="{{ route('public.solutions.request', ['system' => $slug, 'kind' => 'donation']) }}">@include('partials.finder.icon', ['name' => 'gift', 'size' => 18]){{ __('solutions.index.cta_free') }}</a>
+                </div>
+            </div>
+            <aside class="sol-glance" aria-labelledby="sol-glance">
+                <h2 class="sol-glance__title" id="sol-glance">{{ __('solutions.glance.title') }}</h2>
+                <dl class="sol-glance__list">
+                    <div><dt>{{ __('solutions.glance.category') }}</dt><dd>{{ __("solutions.categories.{$system['category']}") }}</dd></div>
+                    <div><dt>{{ __('solutions.glance.modules') }}</dt><dd>{{ count($system['features']) }}</dd></div>
+                    @if($solSteps > 0)
+                    <div><dt>{{ __('solutions.glance.steps') }}</dt><dd>{{ $solSteps }}</dd></div>
+                    @endif
+                    <div><dt>{{ __('solutions.glance.languages') }}</dt><dd>{{ __('solutions.glance.languages_v') }}</dd></div>
+                    <div><dt>{{ __('solutions.glance.chart') }}</dt><dd class="sol-yes">@include('partials.finder.icon', ['name' => 'check', 'size' => 16]){{ __('solutions.glance.included') }}</dd></div>
+                    <div><dt>{{ __('solutions.glance.interop') }}</dt><dd class="sol-yes">@include('partials.finder.icon', ['name' => 'check', 'size' => 16]){{ __('solutions.glance.included') }}</dd></div>
+                    <div><dt>{{ __('solutions.glance.free') }}</dt><dd>{{ __('solutions.glance.free_v') }}</dd></div>
+                </dl>
+            </aside>
         </div>
     </div>
 </section>
@@ -97,7 +117,7 @@
     @if($solSteps > 0)
     <section class="sol-section" aria-labelledby="sol-workflow">
         <h2 class="sol-h2" id="sol-workflow">{{ __('solutions.detail.workflow') }}</h2>
-        <ol class="sol-steps">
+        <ol class="sol-steps" style="--sol-steps: {{ $solSteps }}">
             @for($i = 1; $i <= $solSteps; $i++)
             <li>{{ __("solutions.systems.{$slug}.workflow.s{$i}") }}</li>
             @endfor
@@ -114,6 +134,6 @@
 
     @include('public.solutions._standard_blocks', ['slug' => $slug])
 
-    <p class="sol-note">{{ __('solutions.detail.source', ['url' => $system['source']]) }}</p>
+    <p class="sol-note">@include('partials.finder.icon', ['name' => 'info', 'size' => 14]){{ __('solutions.detail.source', ['url' => $system['source']]) }}</p>
 </div>
 @endsection

@@ -42,6 +42,20 @@ return [
         'meta'            => ':name — :tagline. Fait partie des systèmes de santé OPES, reliés par le Health ID OpesCare.',
     ],
 
+    'glance' => [
+        'title'       => 'En bref',
+        'category'    => 'Catégorie',
+        'modules'     => 'Modules',
+        'steps'       => 'Étapes du flux de travail',
+        'languages'   => 'Langues',
+        'languages_v' => 'Anglais et français',
+        'chart'       => 'Application Dossier patient',
+        'interop'     => "Couche d'interopérabilité",
+        'included'    => 'Inclus',
+        'free'        => 'Gratuit pour les établissements éligibles',
+        'free_v'      => 'Sur demande',
+    ],
+
     'includes' => [
         'title'       => 'Chaque système OpesCare comprend',
         'chart_title' => 'L\'application Dossier patient',

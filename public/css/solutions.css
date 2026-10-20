@@ -58,3 +58,37 @@ body:has(.sol-hero)::before { content: ""; position: fixed; inset: 0; z-index: -
   background: url("../images/health-id/guilloche-texture.webp") center / cover no-repeat; opacity: .14; }
 body:has(.sol-hero) { background-color: #EEF3F9; }
 .sol-count { font-weight: 500; color: var(--f-muted, #5b6b7b); font-size: .8em; }
+
+/* ── Detail page polish: product-page layout ───────────────────────── */
+.sol-hero__grid { display: grid; grid-template-columns: 1fr; gap: 20px; align-items: start; }
+@media (min-width: 960px) { .sol-hero__grid { grid-template-columns: minmax(0, 1fr) 340px; gap: 40px; } }
+.sol-hero__brand { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.sol-hero__brand .sol-hero__icon { margin: 0; width: 52px; height: 52px; }
+.sol-title { margin: 0 0 6px; letter-spacing: -.01em; }
+.sol-tagline { font-size: 18px; font-weight: 600; color: var(--f-ink-soft); margin: 0 0 12px; }
+.sol-value { margin: 0; max-width: 62ch; }
+
+.sol-glance { background: var(--f-surface); border: 1px solid var(--f-line); border-radius: var(--f-r); padding: 18px 20px; }
+.sol-glance__title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--f-muted); margin: 0 0 8px; }
+.sol-glance__list { margin: 0; }
+.sol-glance__list > div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; border-top: 1px solid var(--f-line); }
+.sol-glance__list > div:first-child { border-top: 0; }
+.sol-glance__list dt { font-size: 14px; color: var(--f-muted); }
+.sol-glance__list dd { margin: 0; font-size: 14px; font-weight: 600; color: var(--f-ink); text-align: right; }
+.sol-yes { display: inline-flex; align-items: center; gap: 4px; color: var(--f-good) !important; }
+
+/* Section rhythm and headings */
+.sol-section { padding: 28px 0 8px; }
+.sol-h2 { font-size: 22px; letter-spacing: -.01em; padding-bottom: 10px; border-bottom: 1px solid var(--f-line); margin-bottom: 18px; }
+.sol-card { padding: 18px; }
+.sol-card__body { line-height: 1.55; }
+
+/* Workflow: horizontal stepper on wide screens, vertical list on phones */
+@media (min-width: 960px) {
+  .sol-steps { grid-template-columns: repeat(var(--sol-steps, 4), minmax(0, 1fr)); gap: 0; }
+  .sol-steps li { flex-direction: column; align-items: flex-start; border-radius: 0; border-left-width: 0; position: relative; padding: 16px; }
+  .sol-steps li:first-child { border-left-width: 1px; border-radius: var(--f-r) 0 0 var(--f-r); }
+  .sol-steps li:last-child { border-radius: 0 var(--f-r) var(--f-r) 0; }
+}
+
+.sol-note { display: flex; align-items: center; gap: 6px; padding: 8px 0 32px; }

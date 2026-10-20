@@ -42,6 +42,20 @@ return [
         'meta'            => ':name — :tagline. Part of the OPES health systems, connected through the OpesCare Health ID.',
     ],
 
+    'glance' => [
+        'title'       => 'At a glance',
+        'category'    => 'Category',
+        'modules'     => 'Modules',
+        'steps'       => 'Workflow steps',
+        'languages'   => 'Languages',
+        'languages_v' => 'English and French',
+        'chart'       => 'Patient Chart app',
+        'interop'     => 'Interoperability layer',
+        'included'    => 'Included',
+        'free'        => 'Free for eligible facilities',
+        'free_v'      => 'On request',
+    ],
+
     'includes' => [
         'title'       => 'Every OpesCare system includes',
         'chart_title' => 'The Patient Chart app',
