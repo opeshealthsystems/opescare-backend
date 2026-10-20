@@ -21,6 +21,22 @@ return [
     'download_pdf'      => 'Download PDF',
     'download_pdf_long' => 'Download this article as a PDF',
     'about_author'      => 'About the author',
+    'author_eyebrow'    => 'Author',
+    'author_title'      => 'Articles by :name',
+    'author_meta'       => 'Articles by :name on the OpesCare blog: health guides and analysis for Cameroon.',
+    'author_posts'      => 'Articles by :name',
+    'author_empty'      => 'No articles by this author in this language yet.',
+    'author_count'      => ':count article(s)',
+    'authors' => [
+        'jude-nshome' => [
+            'role' => 'Founder, OpesCare',
+            'bio'  => 'Jude Nshome is the founder of OpesCare, the bilingual health platform built by OPES Health Systems in Cameroon. He writes about patient-owned health records, consent and building digital health infrastructure for low-resource settings.',
+        ],
+        'opes-health-systems' => [
+            'role' => 'The company behind OpesCare',
+            'bio'  => 'OPES Health Systems (Opes Health Systems Sarl) is the Cameroonian company that builds and operates OpesCare. Articles under this byline are written and reviewed by the OpesCare team.',
+        ],
+    ],
     'pdf_contents'      => 'Contents',
     'pdf_published'     => 'Published :date',
     'pdf_read_online'   => 'Read online: :url',

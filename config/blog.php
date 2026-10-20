@@ -20,6 +20,23 @@ return [
 
     'per_page' => 9,
 
+    // Bylines that get an author page at /blog/author/{slug} (slug = Str::slug
+    // of the front-matter author). Role and bio are translated in
+    // lang/{en,fr}/blog.php under authors.{slug}. same_as: ONLY real, public
+    // profile URLs; leave empty rather than invent one.
+    'authors' => [
+        'jude-nshome' => [
+            'name'    => 'Jude Nshome',
+            'type'    => 'Person',
+            'same_as' => [],
+        ],
+        'opes-health-systems' => [
+            'name'    => 'OPES Health Systems',
+            'type'    => 'Organization',
+            'same_as' => [],
+        ],
+    ],
+
     // Parsed posts are cached as plain arrays (never objects), keyed by a
     // fingerprint of the files, so an edited post invalidates itself.
     'cache_ttl' => 86400,

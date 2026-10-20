@@ -20,13 +20,17 @@
     $fsLocale    = app()->getLocale();
     $fsPath      = '/' . ltrim(request()->path() === '/' ? '' : request()->path(), '/');
     $fsPath      = rtrim($fsPath, '/') ?: '/';
-    $fsBase      = rtrim(url('/'), '/');
+    $fsBase      = \App\Support\FinderSeo::base();
     $fsEnUrl     = $fsBase . ($fsPath === '/' ? '' : $fsPath);
     $fsCanonical = $fsEnUrl . ($fsLocale === 'en' ? '' : '?lang=' . $fsLocale);
 
-    $fsSection   = trim($__env->yieldContent('title'));
-    $fsTitle     = $fsSection !== '' ? $fsSection . ' — OpesCare' : __('finder_seo.site.title');
-    $fsDesc      = trim($__env->yieldContent('description'));
+    // Section values arrive already HTML-escaped; decode once so the {{ }}
+    // below escapes exactly once (og:title was "&amp;amp;", audit F6).
+    $fsSection   = \App\Support\FinderSeo::plain(trim($__env->yieldContent('title')));
+    $fsTitle     = $fsSection !== '' ? \App\Support\FinderSeo::branded($fsSection) : __('finder_seo.site.title');
+    // A layout with its own title scheme (docs) passes the exact <title> text.
+    $fsTitle     = isset($seoTitle) && $seoTitle !== '' ? $seoTitle : $fsTitle;
+    $fsDesc      = \App\Support\FinderSeo::plain(trim($__env->yieldContent('description') ?: $__env->yieldContent('meta_description')));
     $fsDesc      = $fsDesc !== '' ? $fsDesc : \App\Support\FinderSeo::description();
     $fsOgImage   = asset(config('finder-seo.og_image', 'og-image.png'));
 

@@ -115,41 +115,6 @@ class FacilitySettingsController extends Controller
         return $this->back(__('facility_settings.flash_hours_saved', ['count' => $count]));
     }
 
-    /**
-     * Add a public service line to the linked listing — the rows the Finder
-     * profile shows patients. Same validation and the same audited writer
-     * (FacilityListingEditService) as the claim-based listing editor; the
-     * listing is the session tenant's, never an id from the request.
-     */
-    public function storeService(Request $request, FacilityListingEditService $editor): RedirectResponse
-    {
-        $listing = $this->settings->listingOrFail($this->settings->facility());
-
-        $validated = $request->validate([
-            'service_name'           => ['required', 'string', 'max:150'],
-            'service_category'       => ['required', 'string', Rule::in(array_keys(FacilityListingController::serviceCategories()))],
-            'specialty'              => ['nullable', 'string', 'max:120'],
-            'availability_status'    => ['required', 'string', Rule::in(array_keys(FacilityListingController::availabilityStatuses()))],
-            'appointment_required'   => ['nullable', 'boolean'],
-            'walk_in_allowed'        => ['nullable', 'boolean'],
-            'telemedicine_available' => ['nullable', 'boolean'],
-        ]);
-
-        $editor->addService($listing, $validated, Auth::id());
-
-        return $this->back(__('caremap_claim.flash_service_added'));
-    }
-
-    /** Remove a service line; scoped to this tenant's listing, so another facility's id is a 404. */
-    public function destroyService(string $service, FacilityListingEditService $editor): RedirectResponse
-    {
-        $listing = $this->settings->listingOrFail($this->settings->facility());
-
-        abort_unless($editor->removeService($listing, $service, Auth::id()), 404);
-
-        return $this->back(__('caremap_claim.flash_service_removed'));
-    }
-
     /** The facility photo / logo — see FacilityPhotoService for the storage contract. */
     public function updatePhoto(Request $request, FacilityPhotoService $photos): RedirectResponse
     {

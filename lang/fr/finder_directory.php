@@ -120,6 +120,13 @@ return [
         'maternity'         => 'Maternité',
         'dispensary'        => 'Dispensaire',
         'blood_bank'        => 'Banque de sang',
+        'nursing_home'        => 'Maison de retraite médicalisée',
+        'radiology'           => 'Centre de radiologie',
+        'health_organization' => 'Organisation de santé',
+        'health_org'          => 'Organisation de santé',
+        'insurance'           => 'Assureur santé',
+        'developer'           => 'Développeur / intégrateur',
+        'lite'                => 'Petite structure',
         'other'             => 'Établissement',
     ],
 

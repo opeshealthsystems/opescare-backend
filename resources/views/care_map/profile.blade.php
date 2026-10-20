@@ -32,9 +32,7 @@
   \Illuminate\Support\Carbon::setLocale(app()->getLocale());
 
   $slug = strtolower(str_replace(' ', '_', $facility->facility_type ?? 'other'));
-  $typeLabel = Lang::has("finder_directory.types.{$slug}")
-      ? __("finder_directory.types.{$slug}")
-      : ucwords(str_replace('_', ' ', $slug));
+  $typeLabel = \App\Support\FacilityTypeLabel::label($slug);
   $typeIcon = ['pharmacy' => 'pill', 'laboratory' => 'droplet', 'blood_bank' => 'droplet'][$slug] ?? 'building-2';
 
   $phone   = $facility->dialablePhone();

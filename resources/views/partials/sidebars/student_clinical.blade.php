@@ -30,6 +30,11 @@
         <i data-lucide="folder-heart"></i><span>{{ __('chart.nav', [], $l) }}</span>
     </a>
     @endcapability
+    @capability('clinical_chart')
+    <a href="{{ route('portals.immunisations.desk') }}" class="sidebar-link {{ request()->routeIs('portals.immunisations.*') ? 'active' : '' }}">
+        <i data-lucide="syringe"></i><span>{{ __('immunisation_desk.nav', [], $l) }}</span>
+    </a>
+    @endcapability
     @capability('front_desk', 'schedule')
     <a href="{{ route('portals.staff.appointments') }}" class="sidebar-link {{ request()->routeIs('portals.staff.appointments*') ? 'active' : '' }}">
         <i data-lucide="calendar-check-2"></i>

@@ -4,7 +4,7 @@
 @section('description', $category ? __('blog.category_meta', ['category' => $categoryLabel]) : __('blog.meta_description'))
 
 @push('head')
-    <link rel="stylesheet" href="{{ asset('css/blog.css') }}?v={{ @filemtime(public_path('css/blog.css')) ?: '1' }}">
+    @include('blog._inline_css', ['file' => 'blog.css'])
     <link rel="alternate" type="application/rss+xml" title="{{ __('blog.feed_title') }}" href="{{ \App\Http\Controllers\BlogController::localised(route('blog.feed'), app()->getLocale()) }}">
     @if($query !== '' || $posts->currentPage() > 1)
         <meta name="robots" content="noindex, follow">
@@ -29,7 +29,7 @@
         'description'=> __('blog.meta_description'),
         'url'        => \App\Http\Controllers\BlogController::localised($category ? route('blog.category', $category) : route('blog.index'), app()->getLocale()),
         'inLanguage' => app()->getLocale(),
-        'isPartOf'   => ['@id' => rtrim(url('/'), '/') . '/#website'],
+        'isPartOf'   => ['@id' => \App\Support\FinderSeo::base() . '/#website'],
         'mainEntity' => ['@type' => 'ItemList', 'itemListElement' => $blItems],
     ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP);
 @endphp
@@ -77,7 +77,7 @@
     @if($featured)
         @php $blFUrl = \App\Http\Controllers\BlogController::postUrl($featured); @endphp
         <article class="bl-featured">
-            <a href="{{ $blFUrl }}" tabindex="-1" aria-hidden="true"><img src="{{ asset($featured['image']) }}" alt="" width="1200" height="630" fetchpriority="high" decoding="async"></a>
+            <a href="{{ $blFUrl }}" tabindex="-1" aria-hidden="true">@include('blog._picture', ['src' => $featured['image'], 'alt' => $featured['hero_alt'] ?? '' ?: $featured['title'], 'eager' => true, 'priority' => true])</a>
             <div class="bl-featured__body">
                 <span class="f-badge">{{ __('blog.featured') }}</span>
                 @if($featured['category'] !== '')<span class="bl-cat">{{ $featured['category'] }}</span>@endif
@@ -86,6 +86,8 @@
                 <div class="bl-meta">
                     <time datetime="{{ $featured['date'] }}">{{ \Illuminate\Support\Carbon::parse($featured['date'])->translatedFormat('j F Y') }}</time>
                     <span>{{ __('blog.min_read', ['count' => $featured['reading_minutes']]) }}</span>
+                    @php $blFAuthor = \App\Http\Controllers\BlogController::authorUrl((string) $featured['author'], $featured['locale']); @endphp
+                    @if($blFAuthor)<span>{{ __('blog.by') }} <a href="{{ $blFAuthor }}" rel="author">{{ $featured['author'] }}</a></span>@endif
                 </div>
                 <p><a class="f-btn f-btn--primary" href="{{ $blFUrl }}">{{ __('blog.read_more') }} @include('partials.finder.icon', ['name' => 'arrow-right', 'size' => 18])</a></p>
             </div>

@@ -192,7 +192,8 @@
         <h3 class="panel-title"><i data-lucide="stethoscope"></i> {{ __('caremap_claim.section_services') }}</h3>
     </div>
     <div class="panel-body">
-        <p class="lst-note">{{ __('caremap_claim.svc_intro') }}</p>
+        <p class="lst-note">{{ __('caremap_claim.svc_from_catalogue') }}</p>
+        <p class="lst-note"><a href="{{ route('portals.facility.catalogue') }}"><i data-lucide="list-checks"></i> {{ __('caremap_claim.svc_open_catalogue') }}</a></p>
 
         @if($services->isEmpty())
             <div class="empty-state">
@@ -208,7 +209,6 @@
                             <th>{{ __('caremap_claim.svc_category') }}</th>
                             <th>{{ __('caremap_claim.svc_specialty') }}</th>
                             <th>{{ __('caremap_claim.svc_availability') }}</th>
-                            <th class="row-actions">&nbsp;</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -229,15 +229,6 @@
                             <td data-label="{{ __('caremap_claim.svc_availability') }}" class="td-muted">
                                 {{ $statuses[$svc->availability_status] ?? $svc->availability_status }}
                             </td>
-                            <td class="row-actions">
-                                <form method="POST" action="{{ route('portals.listing.services.destroy', $svc->id) }}">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-ghost btn-sm">
-                                        <i data-lucide="trash-2"></i> {{ __('caremap_claim.btn_remove') }}
-                                    </button>
-                                </form>
-                            </td>
                         </tr>
                     @endforeach
                     </tbody>
@@ -245,47 +236,6 @@
             </div>
         @endif
 
-        <form class="lst-mt5" method="POST" action="{{ route('portals.listing.services.store') }}">
-            @csrf
-            <div class="lst-svc-grid">
-                <div class="form-group">
-                    <label class="form-label form-label-required" for="service_name">{{ __('caremap_claim.svc_name') }}</label>
-                    <input type="text" id="service_name" name="service_name" class="form-control" maxlength="150" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label form-label-required" for="service_category">{{ __('caremap_claim.svc_category') }}</label>
-                    <select id="service_category" name="service_category" class="form-control" required>
-                        @foreach($categories as $value => $label)
-                            <option value="{{ $value }}">{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="specialty">{{ __('caremap_claim.svc_specialty') }}</label>
-                    <input type="text" id="specialty" name="specialty" class="form-control" maxlength="120">
-                </div>
-                <div class="form-group">
-                    <label class="form-label form-label-required" for="availability_status">{{ __('caremap_claim.svc_availability') }}</label>
-                    <select id="availability_status" name="availability_status" class="form-control" required>
-                        @foreach($statuses as $value => $label)
-                            <option value="{{ $value }}">{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-
-            <div class="lst-svc-flags">
-                <label class="lst-check"><input type="checkbox" name="appointment_required" value="1"> {{ __('caremap_claim.svc_appointment') }}</label>
-                <label class="lst-check"><input type="checkbox" name="walk_in_allowed" value="1" checked> {{ __('caremap_claim.svc_walkin') }}</label>
-                <label class="lst-check"><input type="checkbox" name="telemedicine_available" value="1"> {{ __('caremap_claim.svc_telemedicine') }}</label>
-            </div>
-
-            <div class="lst-mt5">
-                <button type="submit" class="btn btn-primary fs-tap">
-                    <i data-lucide="plus"></i> {{ __('caremap_claim.btn_add_service') }}
-                </button>
-            </div>
-        </form>
     </div>
 </div>
 

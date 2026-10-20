@@ -24,7 +24,7 @@
     @hasSection('seo_head')
     @yield('seo_head')
     @else
-    @hasSection('title')<title>@yield('title') — OpesCare</title>@else<title>{{ __('finder_shell.meta.default_title') }}</title>@endif
+    @hasSection('title')<title>{{ \App\Support\FinderSeo::branded(\App\Support\FinderSeo::plain(trim($__env->yieldContent('title')))) }}</title>@else<title>{{ __('finder_shell.meta.default_title') }}</title>@endif
     <meta name="description" content="@yield('description', __('finder_shell.meta.default_description'))">
     @endif
     <meta name="csrf-token" content="{{ csrf_token() }}">

@@ -27,9 +27,7 @@
 
 @include('portals.facility.settings._status', [
     'ns'        => 'facility_settings',
-    'typeLabel' => __('finder_directory.types.' . $type) !== 'finder_directory.types.' . $type
-        ? __('finder_directory.types.' . $type)
-        : __('finder_directory.types.other'),
+    'typeLabel' => \App\Support\FacilityTypeLabel::label($type),
 ])
 
 <div class="od-grid od-grid--split">

@@ -4,19 +4,18 @@
      linked translation only, and BlogPosting + BreadcrumbList + FAQPage. --}}
 @section('seo_head')
 @php
-    $blBase = rtrim(url('/'), '/');
+    $blBase = \App\Support\FinderSeo::base();
     $blImg = asset($post['image']);
     $blAlternates = [];
     foreach ($translations as $blL => $blT) {
-        $blAlternates[$blL] = \App\Http\Controllers\BlogController::postUrl($blT);
+        $blAlternates[$blL] = \App\Support\FinderSeo::absolute(\App\Http\Controllers\BlogController::postUrl($blT));
     }
     $blXDefault = $blAlternates['en'] ?? $url;
     $blBlogUrl = \App\Http\Controllers\BlogController::localised(route('blog.index'), $post['locale']);
 
-    // A named person writes as a Person; the house byline stays an Organization.
-    $blAuthor = in_array($post['author'], ['OPES Health Systems', 'OpesCare'], true)
-        ? ['@type' => 'Organization', 'name' => $post['author'], 'url' => $blBase]
-        : array_filter(['@type' => 'Person', 'name' => $post['author'], 'description' => $post['author_bio'] ?? '' ?: null]);
+    // A named person writes as a Person with a url (their author page); the
+    // house byline is the shared #organization node. See authorSchema().
+    $blAuthor = \App\Http\Controllers\BlogController::authorSchema($post['author'], (string) ($post['author_bio'] ?? ''));
 
     $blGraph = [
         [
@@ -65,7 +64,7 @@
     $blJsonLd = json_encode(['@context' => 'https://schema.org', '@graph' => $blGraph],
         JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP);
 @endphp
-<title>{{ $post['title'] }} — OpesCare</title>
+<title>{{ \App\Support\FinderSeo::branded($post['title']) }}</title>
 <meta name="description" content="{{ $post['description'] }}">
 <link rel="canonical" href="{{ $url }}">
 @foreach($blAlternates as $blL => $blHref)
@@ -104,12 +103,12 @@
 @endsection
 
 @push('head')
-    <link rel="stylesheet" href="{{ asset('css/blog.css') }}?v={{ @filemtime(public_path('css/blog.css')) ?: '1' }}">
+    @include('blog._inline_css', ['file' => 'blog.css'])
 @endpush
 
 @if(!empty($post['has_diagrams']))
 @push('head')
-    <link rel="stylesheet" href="{{ asset('css/blog-diagrams.css') }}?v={{ @filemtime(public_path('css/blog-diagrams.css')) ?: '1' }}">
+    @include('blog._inline_css', ['file' => 'blog-diagrams.css'])
 @endpush
 @endif
 
@@ -146,7 +145,8 @@
         <h1>{{ $post['title'] }}</h1>
         @if($post['description'] !== '')<p class="bl-dek">{{ $post['description'] }}</p>@endif
         <div class="bl-meta">
-            <span>{{ __('blog.by') }} {{ $post['author'] }}</span>
+            @php $blByUrl = \App\Http\Controllers\BlogController::authorUrl($post['author'], $post['locale']); @endphp
+            <span>{{ __('blog.by') }} @if($blByUrl)<a href="{{ $blByUrl }}" rel="author">{{ $post['author'] }}</a>@else{{ $post['author'] }}@endif</span>
             <span>{{ __('blog.published') }} <time datetime="{{ $post['date'] }}">{{ $blDate($post['date']) }}</time></span>
             @if($post['updated'] !== $post['date'])
                 <span>{{ __('blog.updated') }} <time datetime="{{ $post['updated'] }}">{{ $blDate($post['updated']) }}</time></span>
@@ -165,7 +165,7 @@
 
     @if($imageExists)
     <figure class="bl-heroimg">
-        <img src="{{ asset($post['image']) }}" alt="{{ $post['hero_alt'] }}" width="1200" height="630" fetchpriority="high" decoding="async">
+        @include('blog._picture', ['src' => $post['image'], 'alt' => $post['hero_alt'], 'eager' => true, 'priority' => true])
     </figure>
     @endif
 
@@ -223,7 +223,7 @@
     @if(($post['author_bio'] ?? '') !== '')
     <aside class="bl-box bl-author" aria-labelledby="bl-author">
         <h2 id="bl-author">@include('partials.finder.icon', ['name' => 'user', 'size' => 18]){{ __('blog.about_author') }}</h2>
-        <p class="bl-author__name">{{ $post['author'] }}</p>
+        <p class="bl-author__name">@if($blByUrl)<a href="{{ $blByUrl }}" rel="author">{{ $post['author'] }}</a>@else{{ $post['author'] }}@endif</p>
         <p class="f-muted" style="margin:0">{{ $post['author_bio'] }}</p>
         @if(!empty($post['downloadable']))
             <p style="margin:.75rem 0 0"><a class="f-btn f-btn--ghost" href="{{ route('blog.download', $post['slug']) }}" download>@include('partials.finder.icon', ['name' => 'download', 'size' => 18]){{ __('blog.download_pdf_long') }}</a></p>

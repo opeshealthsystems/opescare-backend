@@ -23,7 +23,15 @@ class CareFacilityService extends Model
         'telemedicine_available',
         'price_range',
         'last_updated_at',
+        'source',
+        'catalogue_item_id',
     ];
+
+    /** Typed in on the old settings / listing forms, or imported. */
+    public const SOURCE_MANUAL = 'manual';
+
+    /** Derived from the facility service catalogue by PublicServicesSync. */
+    public const SOURCE_CATALOGUE = 'catalogue';
 
     protected $casts = [
         'appointment_required' => 'boolean',

@@ -15,6 +15,8 @@ Route::get('/sitemap-blog.xml', [\App\Http\Controllers\SeoController::class, 'si
 
 Route::get('/blog',[BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/feed.xml', [BlogController::class, 'feed'])->name('blog.feed');
+Route::get('/blog/author/{author}', [BlogController::class, 'author'])
+    ->where('author', '[a-z0-9-]+')->name('blog.author');
 Route::get('/blog/category/{category}', [BlogController::class, 'category'])
     ->where('category', '[a-z0-9-]+')->name('blog.category');
 // A typeset PDF of a post whose front matter says downloadable: true. Public

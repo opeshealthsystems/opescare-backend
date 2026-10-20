@@ -122,7 +122,7 @@
                                 <span>
                                     <strong>{{ $facility->name }}</strong>
                                     @if($facility->type)
-                                        <span class="page-subtitle ods-a53f4a4">{{ $facility->type }}</span>
+                                        <span class="page-subtitle ods-a53f4a4">{{ \App\Support\FacilityTypeLabel::label($facility->type) }}</span>
                                     @endif
                                 </span>
                             </label>

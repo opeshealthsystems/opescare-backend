@@ -66,7 +66,7 @@
         ] : null,
         'telephone' => $facility->dialablePhone(),
         'openingHoursSpecification' => $ffHours !== [] ? $ffHours : null,
-        'isPartOf'  => ['@id' => rtrim(url('/'), '/') . '/#website'],
+        'isPartOf'  => ['@id' => \App\Support\FinderSeo::base() . '/#website'],
     ], fn ($v) => $v !== null);
 @endphp
 <script type="application/ld+json">

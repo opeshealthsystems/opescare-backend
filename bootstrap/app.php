@@ -18,6 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prepend(\App\Http\Middleware\CheckMaintenanceMode::class);
 
         $middleware->prepend(\App\Http\Middleware\ForceHttps::class);
+        // www.<apex> → apex 301 (SEO audit F1). Prepended after ForceHttps so it
+        // runs first: one hop straight to https://<apex>.
+        $middleware->prepend(\App\Http\Middleware\RedirectWwwToApex::class);
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\DemoSessionMiddleware::class,

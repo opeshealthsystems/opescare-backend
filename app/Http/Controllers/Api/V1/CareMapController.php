@@ -490,11 +490,19 @@ class CareMapController extends Controller
         $facility = CareFacility::with(['services', 'hours', 'insurances', 'pharmacyStock', 'labTests', 'bloodAvailability'])
             ->findOrFail($id);
 
-        return view('care_map.profile', [
+        $response = response()->view('care_map.profile', [
             'facility' => $facility,
             'bookable' => $this->listingAcceptsBookings($facility),
             'locale'   => app()->getLocale(),
         ]);
+
+        // Suspended, draft or retired listings stay reachable by link but are
+        // kept out of search indexes, matching the sitemap's active-only rule.
+        if ((string) $facility->listing_status !== 'active') {
+            $response->header('X-Robots-Tag', 'noindex, follow');
+        }
+
+        return $response;
     }
 
     /**

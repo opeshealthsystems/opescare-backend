@@ -77,7 +77,7 @@
                                 <a href="{{ route('portals.admin.onboarding.show', $facility->id) }}" class="od-table__name">{{ $facility->name }}</a>
                             </div>
                         </td>
-                        <td data-label="{{ __('onboarding.admin_portal.col_type') }}">{{ $facility->type ?? '—' }}</td>
+                        <td data-label="{{ __('onboarding.admin_portal.col_type') }}">{{ $facility->type ? \App\Support\FacilityTypeLabel::label($facility->type) : '—' }}</td>
                         <td data-label="{{ __('onboarding.admin_portal.col_progress') }}">
                             <div class="oda-gc-progress-row">
                                 <progress class="oda-gc-progress{{ $pct == 100 ? ' is-done' : '' }}" value="{{ $pct }}" max="100">{{ $pct }}%</progress>

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\BlogComment;
 use App\Services\Blog\BlogImageGenerator;
 use App\Services\Blog\BlogRepository;
+use App\Support\FinderSeo;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -38,6 +40,83 @@ class BlogController extends Controller
     public static function localised(string $url, string $locale): string
     {
         return $locale === 'en' ? $url : $url . (str_contains($url, '?') ? '&' : '?') . 'lang=' . $locale;
+    }
+
+    /** Slug of a byline ("Jude Nshome" → "jude-nshome"). */
+    public static function authorSlug(string $name): string
+    {
+        return Str::slug($name);
+    }
+
+    /** Author page URL for a byline, or null when the author has no page. */
+    public static function authorUrl(string $name, string $locale): ?string
+    {
+        $slug = self::authorSlug($name);
+
+        return isset(config('blog.authors', [])[$slug])
+            ? self::localised(route('blog.author', $slug), $locale)
+            : null;
+    }
+
+    /**
+     * schema.org node for a byline. A named person is a Person with the
+     * author page as url (sameAs only from config, never invented); the house
+     * byline IS the site Organization, referenced by the same @id and naming
+     * as the shared #organization node (name OpesCare, legal name Opes Health
+     * Systems Sarl), so the article does not introduce a second entity.
+     */
+    public static function authorSchema(string $name, string $bio = ''): array
+    {
+        $slug = self::authorSlug($name);
+        $cfg = config('blog.authors', [])[$slug] ?? null;
+        $base = FinderSeo::base();
+
+        if (($cfg['type'] ?? 'Person') === 'Organization') {
+            return [
+                '@type'     => 'Organization',
+                '@id'       => $base . '/#organization',
+                'name'      => 'OpesCare',
+                'legalName' => 'Opes Health Systems Sarl',
+                'url'       => $base,
+            ];
+        }
+
+        $url = $cfg ? FinderSeo::absolute(route('blog.author', $slug)) : null;
+
+        return array_filter([
+            '@type'       => 'Person',
+            '@id'         => $url ? $url . '#person' : null,
+            'name'        => $name,
+            'description' => $bio !== '' ? $bio : null,
+            'jobTitle'    => $cfg ? (__('blog.authors.' . $slug . '.role') ?: null) : null,
+            'url'         => $url,
+            'worksFor'    => ['@id' => $base . '/#organization'],
+            'sameAs'      => array_values($cfg['same_as'] ?? []) ?: null,
+        ], fn ($v) => $v !== null);
+    }
+
+    /** /blog/author/{author}: the author's bio and their posts in this language. */
+    public function author(Request $request, string $author)
+    {
+        $cfg = config('blog.authors', [])[$author] ?? null;
+        if ($cfg === null) {
+            abort(404);
+        }
+
+        $locale = App::getLocale();
+        $posts = array_values(array_filter(
+            $this->posts->all($locale),
+            fn ($p) => self::authorSlug((string) $p['author']) === $author
+        ));
+
+        return view('blog.author', [
+            'author'     => $author,
+            'name'       => $cfg['name'],
+            'type'       => $cfg['type'] ?? 'Person',
+            'posts'      => $posts,
+            'categories' => $this->posts->categories($locale),
+            'recent'     => array_slice($this->posts->all($locale), 0, 5),
+        ]);
     }
 
     public function index(Request $request)
@@ -148,7 +227,8 @@ class BlogController extends Controller
 
         return view('blog.show', [
             'post'          => $post,
-            'url'           => self::postUrl($post),
+            // Canonical on the app.url host, never the request host (audit F1).
+            'url'           => FinderSeo::absolute(self::postUrl($post)),
             'translations'  => $translations,
             'related'       => $this->posts->related($post, 3),
             'adjacent'      => $this->posts->adjacent($post),

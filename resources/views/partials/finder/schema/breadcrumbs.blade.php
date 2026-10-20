@@ -9,7 +9,7 @@
 --}}
 @php
     $fbItems = [
-        ['name' => __('finder_seo.breadcrumbs.home'),     'item' => rtrim(url('/'), '/')],
+        ['name' => __('finder_seo.breadcrumbs.home'),     'item' => \App\Support\FinderSeo::base()],
         ['name' => __('finder_seo.breadcrumbs.care_map'), 'item' => route('public.care-map')],
         ['name' => $facility->facility_name,              'item' => route('public.care-map.profile', $facility->id)],
     ];

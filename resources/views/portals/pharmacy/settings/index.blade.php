@@ -30,9 +30,7 @@
 
 @include('portals.facility.settings._status', [
     'ns'        => 'pharmacy_settings',
-    'typeLabel' => __('finder_directory.types.' . $facility->type) !== 'finder_directory.types.' . $facility->type
-        ? __('finder_directory.types.' . $facility->type)
-        : __('finder_directory.types.other'),
+    'typeLabel' => \App\Support\FacilityTypeLabel::label($facility->type),
 ])
 
 @include('portals.facility.settings._identity', [

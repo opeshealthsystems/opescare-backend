@@ -9,6 +9,7 @@ use App\Models\Patient;
 use App\Modules\Governance\Services\AccessLogService;
 use App\Services\Chart\PatientChartAccess;
 use App\Services\Chart\PatientChartService;
+use App\Services\Immunisation\ImmunisationDeskBoard;
 use App\Services\Immunisation\ImmunisationRecordService;
 use App\Services\Portal\DeskFacilityContext;
 use Illuminate\Http\RedirectResponse;
@@ -50,6 +51,46 @@ class ImmunisationDeskController extends Controller
 
     public function __construct(private readonly ImmunisationRecordService $doses)
     {
+    }
+
+    /**
+     * The facility-wide desk: KPIs, due today, overdue, recently given.
+     * Built by ImmunisationDeskBoard — patients tied to this facility AND
+     * passing the chart's gate, from real schedule rows only.
+     */
+    public function desk(Request $request, ImmunisationDeskBoard $board): View
+    {
+        $facilityId = $this->facilityId();
+
+        $tab = in_array($request->query('tab'), ['due', 'overdue', 'recent'], true)
+            ? $request->query('tab') : 'due';
+
+        return view('portals.immunisations.desk', $board->build($facilityId, (string) auth()->id()) + [
+            'tab' => $tab,
+        ]);
+    }
+
+    /**
+     * Desk search: EXACT Health ID only — the platform does not let a
+     * professional enumerate patients by name (same rule as the triage,
+     * queue and prescriber desks). A hit redirects to the per-patient page,
+     * which applies the chart's gate itself; a miss is a flash, not a 404,
+     * and says nothing about whether the patient exists elsewhere.
+     */
+    public function find(Request $request): RedirectResponse
+    {
+        $this->facilityId();
+
+        $validated = $request->validate(['health_id' => ['required', 'string', 'max:64']]);
+
+        $patient = Patient::resolveHealthId(trim($validated['health_id']));
+
+        if ($patient === null) {
+            return redirect()->route('portals.immunisations.desk')->withInput()
+                ->with('error', __('immunisation_desk.search_not_found'));
+        }
+
+        return redirect()->route('portals.immunisations.index', $patient->id);
     }
 
     public function index(string $patientId): View

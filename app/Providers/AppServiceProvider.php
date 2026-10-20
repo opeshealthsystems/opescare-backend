@@ -58,6 +58,12 @@ class AppServiceProvider extends ServiceProvider
          */
         \App\Models\Appointment::observe(\App\Observers\AppointmentReminderObserver::class);
 
+        /*
+         * The public services list follows the service catalogue (owner's
+         * decision 2026-10-20). See App\Services\CareMap\PublicServicesSync.
+         */
+        \App\Models\FacilityCatalogueItem::observe(\App\Observers\FacilityCatalogueItemObserver::class);
+
         // @feature('insurance') … @endfeature — hide UI belonging to a module
         // frozen out of the V1 launch scope (config/features.php). FAILS CLOSED:
         // an unknown key renders nothing.

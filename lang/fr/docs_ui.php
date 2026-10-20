@@ -3,6 +3,7 @@
 // Documentation développeurs (/docs), page d'architecture et diagrammes de flux.
 return [
     'meta_title'       => 'Documentation développeurs',
+    'seo_title_prefix' => 'Documentation développeurs OpesCare',
     'meta_description' => 'Documentation développeurs OpesCare : API Connect, ingestion FHIR R4, SDK, Bridge Agent, Widget, Webhooks et l’architecture qui les porte.',
     'skip_to_content'  => 'Aller au contenu',
     'toggle_nav'       => 'Afficher ou masquer la navigation',

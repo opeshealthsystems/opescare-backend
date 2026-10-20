@@ -109,4 +109,6 @@ return [
     'flash_no_changes'  => "Nothing changed.",
     'flash_hours_saved' => "Opening hours saved for :count day(s).",
     'services_moved_to_catalogue' => 'Services are now managed in the service catalogue.',
+    'services_from_catalogue' => 'This list is filled automatically from your service catalogue: every active service there appears on your public Finder profile. To add, rename or remove a service, edit the catalogue.',
+    'services_open_catalogue' => 'Open the service catalogue',
 ];

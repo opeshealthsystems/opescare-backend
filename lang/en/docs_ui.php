@@ -3,6 +3,7 @@
 // Developer docs shell (/docs), architecture page and flow diagrams.
 return [
     'meta_title'       => 'Developer Docs',
+    'seo_title_prefix' => 'OpesCare developer docs',
     'meta_description' => 'OpesCare developer documentation: Connect API, FHIR R4 ingest, SDK, Bridge Agent, Widget, Webhooks and the architecture behind them.',
     'skip_to_content'  => 'Skip to content',
     'toggle_nav'       => 'Toggle navigation',

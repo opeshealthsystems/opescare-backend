@@ -14,8 +14,8 @@ use Illuminate\Support\Facades\Route;
 | Record a dose from a desk PC. Same door as the chart (routes/chart.php):
 | capability:clinical_chart, then ClinicalRelationshipGate through
 | App\Services\Chart\PatientChartAccess — no basis is a 404 plus a denied
-| access-log row. {patientId} is the patient's uuid or EXACT Health ID; there
-| is no search.
+| access-log row. {patientId} is the patient's uuid or EXACT Health ID; the
+| desk's search is that same exact-Health-ID lookup, never a name search.
 |
 | Rows are immutable: there is no update and no delete route. A dose recorded
 | in error is voided (entered_in_error) through the clinician app's void
@@ -23,6 +23,13 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware(['web', 'auth', 'mfa.verified', 'portal.access', 'capability:clinical_chart'])->group(function () {
+    // The facility-wide desk (sidebar entry): due / overdue / recently given,
+    // each patient through the chart's gate. Search is by exact Health ID.
+    Route::get('/facility/immunisations', [ImmunisationDeskController::class, 'desk'])
+        ->name('portals.immunisations.desk');
+    Route::get('/facility/immunisations/find', [ImmunisationDeskController::class, 'find'])
+        ->name('portals.immunisations.find');
+
     Route::get('/facility/patients/{patientId}/immunizations', [ImmunisationDeskController::class, 'index'])
         ->where('patientId', '[A-Za-z0-9\-]{1,64}')
         ->name('portals.immunisations.index');

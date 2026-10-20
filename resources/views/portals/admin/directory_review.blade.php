@@ -242,7 +242,7 @@
                                 </td>
                                 <td data-label="{{ __('caremap_claim.link_col_facility') }}">
                                     <div class="od-table__name">{{ $row->facility_name }}</div>
-                                    <div class="od-table__sub">{{ $row->facility_type_tenant }}</div>
+                                    <div class="od-table__sub">{{ \App\Support\FacilityTypeLabel::label($row->facility_type_tenant) }}</div>
                                 </td>
                                 <td data-label="{{ __('caremap_claim.link_col_action') }}">
                                     <form method="POST" action="{{ route('admin.care-map.review.listings.link', $row->listing_id) }}" class="oda-inline-form">

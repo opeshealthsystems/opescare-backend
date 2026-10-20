@@ -20,7 +20,7 @@
         <span class="od-avatar od-avatar--lg od-tint--{{ $gcTone }}" aria-hidden="true"><i data-lucide="building-2"></i></span>
         <div class="od-detail__main">
             <h1 class="od-detail__name">{{ $facility->name }}</h1>
-            <div class="od-detail__ref"><span>{{ ucfirst($facility->type ?? '—') }}</span><span>{{ $facility->region ?? '—' }}</span></div>
+            <div class="od-detail__ref"><span>{{ $facility->type ? \App\Support\FacilityTypeLabel::label($facility->type) : '—' }}</span><span>{{ $facility->region ?? '—' }}</span></div>
             <div>
                 @if(($facility->status ?? '') === 'active')<span class="od-pill od-pill--ready od-pill--dot">{{ __('public.adm_fac_badge_active') }}</span>
                 @elseif(($facility->status ?? '') === 'suspended')<span class="od-pill od-pill--urgent od-pill--dot">{{ __('public.adm_fac_badge_suspended') }}</span>
@@ -79,7 +79,7 @@
                 <span class="oda-label__text">{{ __('public.adm_fac_show_lbl_type') }} *</span>
                 <select name="type" class="od-select" required>
                     @foreach(['hospital','clinic','pharmacy','laboratory','radiology','specialist','other'] as $t)
-                    <option value="{{ $t }}" @selected(old('type',$facility->type)===$t)>{{ ucfirst($t) }}</option>
+                    <option value="{{ $t }}" @selected(old('type',$facility->type)===$t)>{{ \App\Support\FacilityTypeLabel::label($t) }}</option>
                     @endforeach
                 </select>
             </label>
@@ -113,7 +113,7 @@
     <div class="od-card__head"><h2 class="od-card__title">{{ __('public.adm_fac_show_tab_overview') }}</h2></div>
     <div class="od-card__body">
         <dl class="oda-dl">
-            <dt>{{ __('public.adm_fac_show_lbl_type') }}</dt><dd>{{ ucfirst($facility->type ?? '—') }}</dd>
+            <dt>{{ __('public.adm_fac_show_lbl_type') }}</dt><dd>{{ $facility->type ? \App\Support\FacilityTypeLabel::label($facility->type) : '—' }}</dd>
             <dt>{{ __('public.adm_fac_show_lbl_status') }}</dt><dd>@enum($facility->status ?? 'pending')</dd>
             <dt>{{ __('public.adm_fac_show_lbl_license') }}</dt><dd class="oda-mono">{{ $facility->license_number ?? '—' }}</dd>
             <dt>{{ __('public.adm_fac_show_lbl_region') }}</dt><dd>{{ $facility->region ?? '—' }}</dd>

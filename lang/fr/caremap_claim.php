@@ -115,6 +115,8 @@ return [
     'btn_add_service'       => 'Ajouter un service',
     'btn_remove'            => 'Retirer',
     'empty_services'        => 'Aucun service n\'est encore répertorié.',
+    'svc_from_catalogue'    => "Les services sont remplis automatiquement à partir du catalogue des services de l'établissement. Le personnel qui gère l'établissement les modifie là.",
+    'svc_open_catalogue'    => 'Ouvrir le catalogue des services',
 
     'cat_consultation'      => 'Consultation',
     'cat_emergency'         => 'Urgences',
@@ -127,6 +129,7 @@ return [
     'cat_dental'            => 'Soins dentaires',
     'cat_rehabilitation'    => 'Rééducation',
     'cat_preventive'        => 'Soins préventifs',
+    'cat_procedure'         => 'Acte / intervention',
 
     'avail_available'       => 'Disponible',
     'avail_limited'         => 'Limité',

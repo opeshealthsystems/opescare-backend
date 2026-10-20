@@ -3006,7 +3006,7 @@ return [
 
     /* ── Privacy page ───────────────────────────────── */
     'privacy_page' => [
-        'page_title'          => 'Privacy Policy & Patient Data Protection | OpesCare',
+        'page_title'          => 'Privacy Policy & Patient Data Protection',
         'meta_description'    => 'OpesCare Privacy Policy — how we collect, process, protect and respect your health data under Cameroon law and international data protection frameworks.',
         'badge'               => 'Legal Document',
         'hero_title'          => 'Privacy Policy & Patient Data Protection',

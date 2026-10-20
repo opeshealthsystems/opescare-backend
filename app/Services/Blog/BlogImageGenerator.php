@@ -118,6 +118,14 @@ class BlogImageGenerator
 
         $tmp = $target . '.tmp';
         imagepng($img, $tmp, 8);
+        // A WebP twin (~80% smaller) served first via <picture>; the PNG stays
+        // as the fallback and the og:image (social fetchers want PNG/JPEG).
+        if (function_exists('imagewebp')) {
+            $webp = preg_replace('/\.png$/', '.webp', $target);
+            if ($webp !== $target && @imagewebp($img, $webp . '.tmp', 82)) {
+                rename($webp . '.tmp', $webp);
+            }
+        }
         imagedestroy($img);
         rename($tmp, $target);
 

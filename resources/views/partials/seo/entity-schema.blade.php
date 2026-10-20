@@ -18,7 +18,7 @@
     (the directive trap).
 --}}
 @php
-    $esBase = rtrim(url('/'), '/');
+    $esBase = \App\Support\FinderSeo::base();
     $esOrg = [
         '@type'      => 'Organization',
         '@id'        => $esBase . '/#organization',

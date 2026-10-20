@@ -44,11 +44,11 @@
     $serviceJsonLd = json_encode([
     '@context'      => 'https://schema.org',
     '@type'         => 'Service',
-    '@id'           => rtrim(url('/'), '/') . '/#BloodFinder',
+    '@id'           => \App\Support\FinderSeo::base() . '/#BloodFinder',
     'name'          => __('public.network_blood.hero_title'),
     'description'   => __('public.network_blood.meta_description'),
     'serviceType'   => 'Health information network service',
-    'provider'      => ['@id' => rtrim(url('/'), '/') . '/#organization'],
+    'provider'      => ['@id' => \App\Support\FinderSeo::base() . '/#organization'],
     'areaServed'    => ['@type' => 'Country', 'name' => 'Cameroon'],
     'availableChannel' => [
         '@type'             => 'ServiceChannel',

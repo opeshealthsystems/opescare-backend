@@ -115,6 +115,8 @@ return [
     'btn_add_service'       => 'Add service',
     'btn_remove'            => 'Remove',
     'empty_services'        => 'No services listed yet.',
+    'svc_from_catalogue'    => "Services are filled automatically from the facility's service catalogue. Staff who manage the facility edit them there.",
+    'svc_open_catalogue'    => 'Open the service catalogue',
 
     'cat_consultation'      => 'Consultation',
     'cat_emergency'         => 'Emergency',
@@ -127,6 +129,7 @@ return [
     'cat_dental'            => 'Dental care',
     'cat_rehabilitation'    => 'Rehabilitation',
     'cat_preventive'        => 'Preventive care',
+    'cat_procedure'         => 'Procedure',
 
     'avail_available'       => 'Available',
     'avail_limited'         => 'Limited',

@@ -34,7 +34,11 @@ class SeoController extends Controller
         'pending-approval', 'account-suspended', 'portal-unavailable',
         'lang', 'up', '_', '.well-known', 'document-preview', 'demo-access',
         // The discovery files themselves are not pages.
-        'robots.txt', 'sitemap.xml', 'sitemap-pages.xml', 'sitemap-blog.xml', 'llms.txt', 'llms-full.txt',
+        'robots.txt', 'sitemap.xml', 'sitemap-pages.xml', 'sitemap-blog.xml', 'sitemap-docs.xml', 'llms.txt', 'llms-full.txt',
+        // An iframe widget for partner sites, not a page in its own right.
+        'embed',
+        // Developer docs have their own child sitemap (sitemap-docs.xml).
+        'docs',
         // The RSS feed is a feed, not a page.
         'blog/feed.xml',
     ];
@@ -59,6 +63,7 @@ class SeoController extends Controller
         'security'                  => ['0.6', 'monthly'],
         'developers'                => ['0.6', 'weekly'],
         'docs'                      => ['0.6', 'weekly'],
+        'sitemap'                   => ['0.3', 'weekly'],
     ];
 
     /**
@@ -154,10 +159,11 @@ class SeoController extends Controller
      */
     public function sitemap(Request $request): Response
     {
-        $xml = Cache::remember('finder-seo.sitemap.index', $this->cacheTtl(), function () {
+        $xml = Cache::remember('finder-seo.sitemap.v2.index', $this->cacheTtl(), function () {
             $entries = [
                 ['loc' => url('/sitemap-pages.xml'), 'lastmod' => null],
                 ['loc' => url('/sitemap-blog.xml'), 'lastmod' => $this->blogLastmod()],
+                ['loc' => url('/sitemap-docs.xml'), 'lastmod' => null],
             ];
 
             foreach ($this->facilityChunks() as $page => $lastmod) {
@@ -199,23 +205,18 @@ class SeoController extends Controller
      */
     public function sitemapPages(Request $request): Response
     {
-        $xml = Cache::remember('finder-seo.sitemap.pages', $this->cacheTtl(), function () {
+        $xml = Cache::remember('finder-seo.sitemap.v2.pages', $this->cacheTtl(), function () {
             $urls = [];
 
-            foreach ($this->indexablePaths() as $path) {
-                [$priority, $frequency] = self::PRIORITY[$path] ?? ['0.6', 'monthly'];
+            $paths = array_fill_keys($this->indexablePaths(), null);
 
-                foreach (SetLocale::SUPPORTED as $locale) {
-                    $urls[] = [
-                        'loc'        => $this->localisedUrl($path, $locale),
-                        'priority'   => $priority,
-                        'changefreq' => $frequency,
-                        'alternates' => $this->alternatesFor($path),
-                    ];
-                }
+            // Published legal documents are real pages behind a {slug}; they
+            // are enumerable from the table, so they ship with their lastmod.
+            foreach ($this->legalDocuments() as $slug => $lastmod) {
+                $paths['legal/' . $slug] = $lastmod;
             }
 
-            return $this->urlsetXml($urls);
+            return $this->urlsetXml($this->bilingualEntries($paths));
         });
 
         return $this->xmlResponse($xml);
@@ -270,6 +271,159 @@ class SeoController extends Controller
         });
 
         return $this->xmlResponse($xml);
+    }
+
+    /**
+     * sitemap-docs.xml — the developer documentation: every parameterless
+     * /docs page from the route table plus one page per published flow
+     * diagram (/docs/flows/{flow}, enumerated from DocsDiagrams::FLOWS).
+     */
+    public function sitemapDocs(Request $request): Response
+    {
+        $xml = Cache::remember('finder-seo.sitemap.v2.docs', $this->cacheTtl(), function () {
+            return $this->urlsetXml($this->bilingualEntries(array_fill_keys($this->docsPaths(), null)));
+        });
+
+        return $this->xmlResponse($xml);
+    }
+
+    /**
+     * Static paths, docs paths and legal slugs for the human /sitemap page,
+     * so it lists exactly what the XML sitemaps list. Strings only.
+     *
+     * @return array{pages: list<string>, docs: list<string>, legal: list<string>}
+     */
+    public function publicPaths(): array
+    {
+        return [
+            'pages' => $this->indexablePaths(),
+            'docs'  => $this->docsPaths(),
+            'legal' => array_keys($this->legalDocuments()),
+        ];
+    }
+
+    /**
+     * /sitemap — the human site map. Built from publicPaths(), the same
+     * source as the XML sitemaps, so the two cannot drift. Facility profiles
+     * are summarised (count + directory link) rather than listed one by one.
+     */
+    public function sitemapPage(\App\Services\Blog\BlogRepository $posts): \Illuminate\Contracts\View\View
+    {
+        $locale = app()->getLocale();
+        $paths  = $this->publicPaths();
+
+        $section = function (string $path): string {
+            return match (true) {
+                $path === '' || str_starts_with($path, 'network/') || str_starts_with($path, 'care-map') => 'services',
+                str_starts_with($path, 'solutions/') || str_starts_with($path, 'developers')
+                    || in_array($path, ['pricing', 'request-demo', 'interoperability', 'security', 'sla', 'status'], true) => 'providers',
+                in_array($path, ['about', 'about/facts', 'how-it-works', 'faq', 'help', 'contact', 'blog', 'sitemap'], true) => 'about',
+                in_array($path, ['privacy', 'terms', 'legal', 'consent', 'account-deletion'], true) => 'legal',
+                default => 'other',
+            };
+        };
+
+        $link = fn (string $path) => [
+            'url'   => $this->localisedUrl($path, $locale),
+            'label' => $this->pageLabel($path),
+        ];
+
+        $sections = array_fill_keys(['services', 'providers', 'about', 'blog', 'docs', 'legal', 'other'], []);
+
+        foreach ($paths['pages'] as $path) {
+            $sections[$section($path)][] = $link($path);
+        }
+
+        foreach ($paths['docs'] as $path) {
+            $sections['docs'][] = $link($path);
+        }
+
+        $titles = \App\Models\LegalDocument::query()->whereIn('slug', $paths['legal'])
+            ->orderByRaw('(language = ?) asc', [$locale])   // this locale's title wins the pluck
+            ->pluck('title', 'slug');
+        foreach ($paths['legal'] as $slug) {
+            $sections['legal'][] = [
+                'url'   => $this->localisedUrl('legal/' . $slug, $locale),
+                'label' => (string) ($titles[$slug] ?? $slug),
+            ];
+        }
+
+        foreach ($posts->all($locale) as $post) {
+            $sections['blog'][] = [
+                'url'   => \App\Http\Controllers\BlogController::postUrl($post),
+                'label' => $post['title'],
+            ];
+        }
+
+        return view('public.sitemap', [
+            'sections'      => array_filter($sections),
+            'facilityCount' => $this->activeFacilityCount(),
+        ]);
+    }
+
+    private function pageLabel(string $path): string
+    {
+        $key = 'sitemap.pages.' . ($path === '' ? 'home' : str_replace(['/', '-'], '_', $path));
+
+        return \Illuminate\Support\Facades\Lang::has($key) ? __($key) : '/' . $path;
+    }
+
+    /** @return list<string> */
+    private function docsPaths(): array
+    {
+        $paths = array_values(array_filter(
+            $this->publicGetPaths(),
+            fn (string $uri) => $uri === 'docs' || str_starts_with($uri, 'docs/')
+        ));
+
+        foreach (\App\Support\Docs\DocsDiagrams::FLOWS as $flow) {
+            $paths[] = 'docs/flows/' . $flow;
+        }
+
+        sort($paths);
+
+        return array_values(array_unique($paths));
+    }
+
+    /** Active legal documents: [slug => lastmod|null]. Arrays only, never models. */
+    private function legalDocuments(): array
+    {
+        try {
+            return \App\Models\LegalDocument::query()
+                ->where('is_active', true)
+                ->orderBy('slug')
+                ->get(['slug', 'updated_at'])
+                ->mapWithKeys(fn ($d) => [$d->slug => optional($d->updated_at)->toAtomString()])
+                ->all();
+        } catch (\Throwable) {
+            return [];
+        }
+    }
+
+    /**
+     * One <url> per path per locale, each carrying the full hreflang set.
+     *
+     * @param  array<string, string|null>  $paths  path => lastmod
+     */
+    private function bilingualEntries(array $paths): array
+    {
+        $urls = [];
+
+        foreach ($paths as $path => $lastmod) {
+            [$priority, $frequency] = self::PRIORITY[$path] ?? ['0.6', 'monthly'];
+
+            foreach (SetLocale::SUPPORTED as $locale) {
+                $urls[] = [
+                    'loc'        => $this->localisedUrl($path, $locale),
+                    'lastmod'    => $lastmod,
+                    'priority'   => $priority,
+                    'changefreq' => $frequency,
+                    'alternates' => $this->alternatesFor($path),
+                ];
+            }
+        }
+
+        return $urls;
     }
 
     /**
@@ -398,6 +552,37 @@ class SeoController extends Controller
             }
         }
 
+        // Author pages (/blog/author/{slug}) — only bylines with a configured
+        // author page, exactly as BlogController::authorUrl() links them.
+        if (Route::has('blog.author')) {
+            $authors = [];
+            foreach (SetLocale::SUPPORTED as $locale) {
+                foreach ($posts->all($locale) as $post) {
+                    if (BlogController::authorUrl((string) $post['author'], 'en') !== null) {
+                        $authors[(string) $post['author']] = max($authors[(string) $post['author']] ?? '', (string) $post['updated']);
+                    }
+                }
+            }
+
+            foreach ($authors as $name => $lastmod) {
+                $alternates = [];
+                foreach (SetLocale::SUPPORTED as $l) {
+                    $alternates[$l] = BlogController::authorUrl($name, $l);
+                }
+                $alternates['x-default'] = $alternates['en'];
+
+                foreach (SetLocale::SUPPORTED as $l) {
+                    $urls[] = [
+                        'loc'        => $alternates[$l],
+                        'lastmod'    => $lastmod ?: null,
+                        'changefreq' => 'monthly',
+                        'priority'   => '0.4',
+                        'alternates' => $alternates,
+                    ];
+                }
+            }
+        }
+
         return $this->xmlResponse($this->urlsetXml($urls));
     }
 
@@ -515,8 +700,22 @@ class SeoController extends Controller
             ->header('Cache-Control', 'public, max-age=3600');
     }
 
-    /** Public, parameterless GET routes that should be indexed. */
+    /** Public, parameterless GET routes that should be indexed (docs excluded: own sitemap). */
     private function indexablePaths(): array
+    {
+        return array_values(array_filter($this->publicGetPaths(), function (string $uri) {
+            foreach (self::NEVER_INDEX as $blocked) {
+                if ($uri === $blocked || str_starts_with($uri, $blocked . '/')) {
+                    return false;
+                }
+            }
+
+            return true;
+        }));
+    }
+
+    /** Every unauthenticated, parameterless GET page uri (no file endpoints). */
+    private function publicGetPaths(): array
     {
         $paths = [];
 
@@ -531,14 +730,13 @@ class SeoController extends Controller
                 continue;   // needs a parameter — not a standalone page
             }
 
-            if (array_intersect($route->gatherMiddleware(), ['auth'])) {
-                continue;   // authenticated
+            // A dotted last segment is a file (flows.json, feed.xml), not a page.
+            if (str_contains((string) \Illuminate\Support\Str::afterLast($uri, '/'), '.')) {
+                continue;
             }
 
-            foreach (self::NEVER_INDEX as $blocked) {
-                if ($uri === $blocked || str_starts_with($uri, $blocked . '/')) {
-                    continue 2;
-                }
+            if (array_intersect($route->gatherMiddleware(), ['auth', 'auth.mobile', 'auth:sanctum'])) {
+                continue;   // authenticated
             }
 
             $paths[$uri] = true;

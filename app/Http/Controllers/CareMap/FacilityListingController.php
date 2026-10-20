@@ -95,42 +95,6 @@ class FacilityListingController extends Controller
                 : __('caremap_claim.flash_profile_updated', ['count' => count($changed)]));
     }
 
-    public function storeService(Request $request): RedirectResponse
-    {
-        $listing = $this->listing();
-
-        $validated = $request->validate([
-            'service_name'           => ['required', 'string', 'max:150'],
-            'service_category'       => ['required', 'string', 'max:60'],
-            'specialty'              => ['nullable', 'string', 'max:120'],
-            'availability_status'    => ['required', 'string', 'max:40'],
-            'appointment_required'   => ['nullable', 'boolean'],
-            'walk_in_allowed'        => ['nullable', 'boolean'],
-            'telemedicine_available' => ['nullable', 'boolean'],
-        ]);
-
-        $this->editor->addService($listing, $validated, Auth::id());
-
-        return redirect()
-            ->route('portals.listing.edit')
-            ->with('success', __('caremap_claim.flash_service_added'));
-    }
-
-    public function destroyService(string $service): RedirectResponse
-    {
-        $listing = $this->listing();
-
-        // Scoped inside the service: an id belonging to another facility
-        // matches nothing here.
-        $removed = $this->editor->removeService($listing, $service, Auth::id());
-
-        return redirect()
-            ->route('portals.listing.edit')
-            ->with($removed ? 'success' : 'error', $removed
-                ? __('caremap_claim.flash_service_removed')
-                : __('caremap_claim.error_service_not_found'));
-    }
-
     public function updateHours(Request $request): RedirectResponse
     {
         $listing = $this->listing();
@@ -173,6 +137,7 @@ class FacilityListingController extends Controller
             'dental'        => __('caremap_claim.cat_dental'),
             'rehabilitation'=> __('caremap_claim.cat_rehabilitation'),
             'preventive'    => __('caremap_claim.cat_preventive'),
+            'procedure'     => __('caremap_claim.cat_procedure'),
         ];
     }
 

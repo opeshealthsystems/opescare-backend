@@ -108,6 +108,7 @@ Schedule::command('push:check-receipts')->everyFifteenMinutes()->withoutOverlapp
 // backfill for catalogues curated before the projector existed. Idempotent,
 // nothing deleted. Runs after the blood/MPI night jobs.
 Schedule::command('lab:publish-catalogue')->dailyAt('04:30')->withoutOverlapping();
+Schedule::command('caremap:sync-public-services')->dailyAt('04:40')->withoutOverlapping();
 
 // Group E (DHIS2, docs/PLATFORM_IMPORTS.md): the platform pushed last month's
 // aggregate on the 1st at 04:00. The Finder only GENERATES the drafts then;

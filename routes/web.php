@@ -57,6 +57,9 @@ Route::get('/llms.txt',    [\App\Http\Controllers\SeoController::class, 'llms'])
 Route::get('/sitemap-pages.xml', [\App\Http\Controllers\SeoController::class, 'sitemapPages'])->name('seo.sitemap.pages');
 Route::get('/sitemap-facilities-{page}.xml', [\App\Http\Controllers\SeoController::class, 'sitemapFacilities'])
     ->whereNumber('page')->name('seo.sitemap.facilities');
+Route::get('/sitemap-docs.xml', [\App\Http\Controllers\SeoController::class, 'sitemapDocs'])->name('seo.sitemap.docs');
+// The human site map: the same sections as the XML sitemaps, translated.
+Route::get('/sitemap', [\App\Http\Controllers\SeoController::class, 'sitemapPage'])->name('public.sitemap');
 
 // Root / Landing
 Route::get('/', [PublicPageController::class, 'index'])->name('public.landing');
@@ -542,8 +545,6 @@ Route::middleware(['web', 'auth', 'throttle:portal'])->group(function () {
     // The catalogue is the canonical services editor (2026-10-19); a GET here
     // goes there. The writes below stay for existing callers and tests.
     Route::get('/portals/listing/services', static fn () => redirect()->route('portals.facility.catalogue')->with('success', __('facility_settings.services_moved_to_catalogue')))->name('portals.listing.services');
-    Route::post('/portals/listing/services',             [\App\Http\Controllers\CareMap\FacilityListingController::class, 'storeService'])->name('portals.listing.services.store');
-    Route::delete('/portals/listing/services/{service}', [\App\Http\Controllers\CareMap\FacilityListingController::class, 'destroyService'])->name('portals.listing.services.destroy');
 });
 
 /*

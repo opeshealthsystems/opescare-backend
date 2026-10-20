@@ -3,7 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', __('docs_ui.meta_title')) — OpesCare</title>
+    @php
+        // "OpesCare developer docs — Getting Started": the brand leads, so the
+        // tab, og:title and SERP title are never a bare "Getting Started" (audit F7).
+        $dxSection = \App\Support\FinderSeo::plain(trim($__env->yieldContent('title')));
+        $dxTitle = $dxSection !== '' && $dxSection !== __('docs_ui.meta_title')
+            ? __('docs_ui.seo_title_prefix') . ' — ' . $dxSection
+            : __('docs_ui.seo_title_prefix');
+    @endphp
+    <title>{{ $dxTitle }}</title>
     <meta name="description" content="@yield('meta_description', __('docs_ui.meta_description'))">
     <meta name="theme-color" content="#0F4C81">
 
@@ -22,7 +30,34 @@
 
     @yield('head')
     {{-- Canonical, hreflang, Open Graph and schema.org --}}
-    @include('partials.seo_head')
+    {{-- The same head as every finder page: canonical on the app.url host,
+         hreflang, OG/Twitter and the shared #organization / #website graph
+         (it used to emit its own MedicalOrganization + WebPage). --}}
+    @include('partials.finder.schema.site', ['seoTitle' => $dxTitle])
+    @includeIf('partials.seo.entity-schema')
+    @php
+        $dxBase = \App\Support\FinderSeo::base();
+        $dxPath = rtrim('/' . ltrim(request()->path(), '/'), '/') ?: '/';
+        $dxUrl  = $dxBase . ($dxPath === '/' ? '' : $dxPath) . (app()->getLocale() === 'en' ? '' : '?lang=' . app()->getLocale());
+        // Built in this php block: a literal schema-context key in Blade is
+        // compiled as a directive (see partials/seo_head).
+        $dxJsonLd = json_encode([
+            '@context'      => 'https://schema.org',
+            '@type'         => 'TechArticle',
+            '@id'           => $dxUrl . '#article',
+            'headline'      => $dxTitle,
+            'description'   => \App\Support\FinderSeo::plain(trim($__env->yieldContent('meta_description', __('docs_ui.meta_description')))),
+            'url'           => $dxUrl,
+            'inLanguage'    => app()->getLocale(),
+            'isPartOf'      => ['@id' => $dxBase . '/#website'],
+            'publisher'     => ['@id' => $dxBase . '/#organization'],
+            'about'         => ['@id' => $dxBase . '/#app'],
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP);
+    @endphp
+    <script type="application/ld+json">
+{!! $dxJsonLd !!}
+    </script>
+    @stack('schema')
 </head>
 <body class="docs-body dx" data-copy-label="{{ __('docs_ui.copy') }}" data-copied-label="{{ __('docs_ui.copied') }}">
 

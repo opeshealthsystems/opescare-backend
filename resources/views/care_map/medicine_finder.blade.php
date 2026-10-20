@@ -31,11 +31,11 @@
     $serviceJsonLd = json_encode([
     '@context'      => 'https://schema.org',
     '@type'         => 'Service',
-    '@id'           => rtrim(url('/'), '/') . '/#MedicineFinder',
+    '@id'           => \App\Support\FinderSeo::base() . '/#MedicineFinder',
     'name'          => __('public.network_medicine.hero_title'),
     'description'   => __('public.network_medicine.meta_description'),
     'serviceType'   => 'Health information network service',
-    'provider'      => ['@id' => rtrim(url('/'), '/') . '/#organization'],
+    'provider'      => ['@id' => \App\Support\FinderSeo::base() . '/#organization'],
     'areaServed'    => ['@type' => 'Country', 'name' => 'Cameroon'],
     'availableChannel' => [
         '@type'             => 'ServiceChannel',

@@ -123,6 +123,13 @@ return [
         'maternity'         => 'Maternity',
         'dispensary'        => 'Dispensary',
         'blood_bank'        => 'Blood Bank',
+        'nursing_home'        => 'Nursing Home',
+        'radiology'           => 'Radiology Centre',
+        'health_organization' => 'Health Organisation',
+        'health_org'          => 'Health Organisation',
+        'insurance'           => 'Health Insurer',
+        'developer'           => 'Developer / Integrator',
+        'lite'                => 'Small Facility',
         'other'             => 'Facility',
     ],
 

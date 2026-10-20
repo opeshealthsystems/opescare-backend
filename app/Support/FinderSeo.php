@@ -21,6 +21,48 @@ use Illuminate\Support\Str;
  */
 class FinderSeo
 {
+    /**
+     * Canonical origin for canonical / hreflang / og:url / JSON-LD @id.
+     * Always config('app.url') — never the request host — so a request that
+     * arrives on www.opescare.com cannot self-canonicalise to www (audit F1).
+     */
+    public static function base(): string
+    {
+        $configured = rtrim((string) config('app.url'), '/');
+
+        return $configured !== '' ? $configured : rtrim(url('/'), '/');
+    }
+
+    /** Rewrite an absolute URL's origin onto self::base(), keeping path + query. */
+    public static function absolute(string $url): string
+    {
+        $parts = parse_url($url);
+        if ($parts === false || ! isset($parts['host'])) {
+            return self::base() . '/' . ltrim($url, '/');
+        }
+
+        $path = $parts['path'] ?? '';
+
+        return self::base() . ($path === '/' ? '' : $path)
+            . (isset($parts['query']) ? '?' . $parts['query'] : '');
+    }
+
+    /**
+     * A section value (already HTML-escaped by @section) turned back into
+     * plain text, so a single {{ }} escapes it exactly once (audit F6:
+     * og:title was "&amp;amp;").
+     */
+    public static function plain(string $sectionValue): string
+    {
+        return html_entity_decode($sectionValue, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    }
+
+    /** "{title} — OpesCare", unless the title already names the brand. */
+    public static function branded(string $title): string
+    {
+        return stripos($title, 'OpesCare') !== false ? $title : $title . ' — OpesCare';
+    }
+
     /** Localized page title for the current (or given) route name. */
     public static function title(?string $routeName = null): string
     {

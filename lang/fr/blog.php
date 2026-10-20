@@ -21,6 +21,22 @@ return [
     'download_pdf'      => 'Télécharger le PDF',
     'download_pdf_long' => 'Télécharger cet article en PDF',
     'about_author'      => "À propos de l'auteur",
+    'author_eyebrow'    => 'Auteur',
+    'author_title'      => 'Articles de :name',
+    'author_meta'       => 'Articles de :name sur le blog OpesCare : guides santé et analyses pour le Cameroun.',
+    'author_posts'      => 'Articles de :name',
+    'author_empty'      => "Aucun article de cet auteur dans cette langue pour l'instant.",
+    'author_count'      => ':count article(s)',
+    'authors' => [
+        'jude-nshome' => [
+            'role' => "Fondateur d'OpesCare",
+            'bio'  => "Jude Nshome est le fondateur d'OpesCare, la plateforme de santé bilingue conçue par OPES Health Systems au Cameroun. Il écrit sur les dossiers de santé détenus par les patients, le consentement et la construction d'infrastructures de santé numérique dans les contextes à ressources limitées.",
+        ],
+        'opes-health-systems' => [
+            'role' => "L'entreprise derrière OpesCare",
+            'bio'  => "OPES Health Systems (Opes Health Systems Sarl) est l'entreprise camerounaise qui conçoit et exploite OpesCare. Les articles signés de ce nom sont rédigés et relus par l'équipe OpesCare.",
+        ],
+    ],
     'pdf_contents'      => 'Sommaire',
     'pdf_published'     => 'Publié le :date',
     'pdf_read_online'   => 'Lire en ligne : :url',

@@ -45,9 +45,7 @@
     'blood_bank' => 'droplet',
   ];
 
-  $typeLabel = fn (string $slug) => \Illuminate\Support\Facades\Lang::has("finder_directory.types.{$slug}")
-      ? __("finder_directory.types.{$slug}")
-      : ucwords(str_replace('_', ' ', $slug));
+  $typeLabel = fn (string $slug) => \App\Support\FacilityTypeLabel::label($slug);
 
   // Current filter params, re-emitted on every chip / form / page link.
   $baseParams = array_filter([

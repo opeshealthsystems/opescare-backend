@@ -62,7 +62,7 @@
         <p>{{ __('leads.conversion.converted_body', ['date' => $lead->converted_at?->translatedFormat('d M Y H:i') ?? '—']) }}</p>
         <dl class="oda-gc-facts">
             <div><dt>{{ __('leads.conversion.converted_tenant') }}</dt><dd>{{ $tenant?->name ?? '—' }}</dd></div>
-            <div><dt>{{ __('leads.conversion.label_type') }}</dt><dd>{{ $tenant?->type ? (__('finder_directory.types.' . $tenant->type) !== 'finder_directory.types.' . $tenant->type ? __('finder_directory.types.' . $tenant->type) : $tenant->type) : '—' }}</dd></div>
+            <div><dt>{{ __('leads.conversion.label_type') }}</dt><dd>{{ $tenant?->type ? \App\Support\FacilityTypeLabel::label($tenant->type) : '—' }}</dd></div>
             <div><dt>{{ __('leads.conversion.converted_id') }}</dt><dd class="oda-mono oda-gc-break">{{ $lead->converted_facility_id }}</dd></div>
         </dl>
     </div>

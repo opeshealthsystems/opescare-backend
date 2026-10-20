@@ -3007,7 +3007,7 @@ return [
 
     /* ── Page Confidentialité ───────────────────────── */
     'privacy_page' => [
-        'page_title'          => 'Politique de Confidentialité et Protection des Données Patients | OpesCare',
+        'page_title'          => 'Politique de Confidentialité et Protection des Données Patients',
         'meta_description'    => 'Politique de Confidentialité OpesCare — comment nous collectons, traitons, protégeons et respectons vos données de santé conformément au droit camerounais et aux normes internationales de protection des données.',
         'badge'               => 'Document Légal',
         'hero_title'          => 'Politique de Confidentialité et Protection des Données Patients',

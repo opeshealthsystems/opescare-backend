@@ -4,7 +4,6 @@ namespace App\Modules\CareMap\Services;
 
 use App\Models\CareFacility;
 use App\Models\CareFacilityHour;
-use App\Models\CareFacilityService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -101,59 +100,6 @@ class FacilityListingEditService
         });
 
         return array_keys($changes);
-    }
-
-    /**
-     * Add one service/specialty line to a listing.
-     *
-     * `care_facility_services` holds 11 rows for 1,863 facilities — the
-     * directory currently cannot answer "who does dialysis in Bamenda". Only
-     * the facility knows, so only the facility can fill it in.
-     *
-     * @param  array<string,mixed> $input
-     */
-    public function addService(CareFacility $listing, array $input, string $actorId): CareFacilityService
-    {
-        return DB::transaction(function () use ($listing, $input, $actorId) {
-            $service = CareFacilityService::create([
-                'facility_id'            => $listing->id,
-                'service_name'           => $input['service_name'],
-                'service_category'       => $input['service_category'],
-                'specialty'              => $input['specialty'] ?? null,
-                'availability_status'    => $input['availability_status'] ?? 'available',
-                'appointment_required'   => (bool) ($input['appointment_required'] ?? false),
-                'walk_in_allowed'        => (bool) ($input['walk_in_allowed'] ?? true),
-                'telemedicine_available' => (bool) ($input['telemedicine_available'] ?? false),
-                'last_updated_at'        => now(),
-            ]);
-
-            $this->audit($listing, $actorId, 'service:' . $service->id, null, $service->service_name);
-            $listing->forceFill(['last_profile_update_at' => now()])->save();
-
-            return $service;
-        });
-    }
-
-    /**
-     * Remove a service line — scoped to the listing, so an id belonging to
-     * another facility resolves to nothing rather than to somebody else's row.
-     */
-    public function removeService(CareFacility $listing, string $serviceId, string $actorId): bool
-    {
-        $service = CareFacilityService::where('id', $serviceId)
-            ->where('facility_id', $listing->id)
-            ->first();
-
-        if ($service === null) {
-            return false;
-        }
-
-        DB::transaction(function () use ($listing, $service, $actorId) {
-            $this->audit($listing, $actorId, 'service:' . $service->id, $service->service_name, null);
-            $service->delete();
-        });
-
-        return true;
     }
 
     /**

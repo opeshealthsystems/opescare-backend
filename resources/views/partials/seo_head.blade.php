@@ -22,7 +22,7 @@
     $seoLocale    = app()->getLocale();
     $seoPath      = '/' . ltrim(request()->path() === '/' ? '' : request()->path(), '/');
     $seoPath      = rtrim($seoPath, '/') ?: '/';
-    $seoBase      = rtrim(url('/'), '/');
+    $seoBase      = \App\Support\FinderSeo::base();
     $seoCanonical = $seoBase . ($seoPath === '/' ? '' : $seoPath)
                     . ($seoLocale === 'en' ? '' : '?lang=' . $seoLocale);
     $seoEnUrl     = $seoBase . ($seoPath === '/' ? '' : $seoPath);
@@ -139,8 +139,8 @@
             '@type'         => 'WebPage',
             '@id'           => $seoCanonical . '#webpage',
             'url'           => $seoCanonical,
-            'name'          => trim($__env->yieldContent('title', 'OpesCare')),
-            'description'   => trim($__env->yieldContent('meta_description', __('seo.org_description'))),
+            'name'          => \App\Support\FinderSeo::plain(trim($__env->yieldContent('title', 'OpesCare'))),
+            'description'   => \App\Support\FinderSeo::plain(trim($__env->yieldContent('meta_description', __('seo.org_description')))),
             'isPartOf'      => ['@id' => $seoBase . '/#website'],
             'about'         => ['@id' => $seoBase . '/#organization'],
             'inLanguage'    => $seoLocale,
@@ -148,8 +148,8 @@
     ], $seoAudience === null ? [] : [[
         '@type'       => 'Service',
         '@id'         => $seoEnUrl . '#service',
-        'name'        => trim($__env->yieldContent('title', 'OpesCare')),
-        'description' => trim($__env->yieldContent('meta_description', __('seo.org_description'))),
+        'name'        => \App\Support\FinderSeo::plain(trim($__env->yieldContent('title', 'OpesCare'))),
+        'description' => \App\Support\FinderSeo::plain(trim($__env->yieldContent('meta_description', __('seo.org_description')))),
         'serviceType' => 'Health information exchange',
         'provider'    => ['@id' => $seoBase . '/#organization'],
         'areaServed'  => ['@type' => 'Country', 'name' => 'Cameroon'],

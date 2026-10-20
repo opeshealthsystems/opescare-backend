@@ -18,7 +18,7 @@
     <div>
         <h1 class="od-page__title">{{ $facility->name }} — {{ __('readiness.page_title') }}</h1>
         <p class="od-page__sub">
-            <span class="od-pill od-pill--neutral">{{ $facility->type }}</span>
+            <span class="od-pill od-pill--neutral">{{ \App\Support\FacilityTypeLabel::label($facility->type) }}</span>
             <span class="od-pill {{ $readiness->can_go_live ? 'od-pill--ready' : 'od-pill--urgent' }}">{{ __('onboarding.admin_portal.status_'.$readiness->status) }}</span>
         </p>
     </div>

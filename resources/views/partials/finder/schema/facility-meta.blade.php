@@ -13,7 +13,7 @@
 @php
     $fmTitle     = \App\Support\FinderSeo::facilityTitle($facility);
     $fmDesc      = \App\Support\FinderSeo::facilityDescription($facility);
-    $fmUrl       = route('public.care-map.profile', $facility->id);
+    $fmUrl       = \App\Support\FinderSeo::absolute(route('public.care-map.profile', $facility->id));
     $fmLocale    = app()->getLocale();
     $fmCanonical = $fmUrl . ($fmLocale === 'en' ? '' : '?lang=' . $fmLocale);
     $fmCity      = \App\Models\CareFacility::realValue($facility->city);

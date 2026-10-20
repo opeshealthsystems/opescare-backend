@@ -77,7 +77,7 @@
                             <a href="{{ route('admin.facilities.show', $f->id) }}" class="od-table__name">{{ $f->name }}</a>
                         </div>
                     </td>
-                    <td data-label="{{ __('public.adm_fac_col_type') }}">{{ ucfirst($f->type ?? '—') }}</td>
+                    <td data-label="{{ __('public.adm_fac_col_type') }}">{{ $f->type ? \App\Support\FacilityTypeLabel::label($f->type) : '—' }}</td>
                     <td data-label="{{ __('public.adm_fac_col_region') }}">{{ $f->region ?? '—' }}</td>
                     <td data-label="{{ __('public.adm_fac_col_status') }}">
                         @if($f->status==='active')<span class="od-pill od-pill--ready od-pill--dot">{{ __('public.adm_fac_badge_active') }}</span>

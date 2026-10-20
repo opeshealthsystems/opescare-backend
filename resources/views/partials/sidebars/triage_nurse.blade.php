@@ -30,6 +30,11 @@
     </a>
     @endcapability
     @capability('clinical_chart')
+    <a href="{{ route('portals.immunisations.desk') }}" class="sidebar-link {{ request()->routeIs('portals.immunisations.*') ? 'active' : '' }}">
+        <i data-lucide="syringe"></i><span>{{ __('immunisation_desk.nav', [], $l) }}</span>
+    </a>
+    @endcapability
+    @capability('clinical_chart')
     <a href="{{ route('portals.referrals.index') }}" class="sidebar-link {{ request()->routeIs('portals.referrals.*') ? 'active' : '' }}">
         <i data-lucide="arrow-right-left"></i><span>{{ __('referral_desk.nav', [], $l) }}</span>
     </a>

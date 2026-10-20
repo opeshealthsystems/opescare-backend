@@ -291,8 +291,11 @@ class FacilityClaimSelfServiceTest extends TestCase
         $this->assertSame(0, DB::table('facility_update_audits')->where('facility_id', $theirs->id)->count());
     }
 
-    public function test_a_claimant_cannot_delete_another_facilitys_service(): void
+    public function test_a_claimant_has_no_service_write_route(): void
     {
+        // 2026-10-20: the public services list is derived from the facility
+        // service catalogue (PublicServicesSync); the claimant editor no
+        // longer writes it, so there is nothing to aim at another listing.
         $mine     = $this->listing();
         $theirs   = $this->listing();
         $claimant = $this->approvedClaimant($mine);
@@ -305,10 +308,14 @@ class FacilityClaimSelfServiceTest extends TestCase
         ]);
 
         $this->actingAs($claimant)
-            ->delete(route('portals.listing.services.destroy', $foreign->id))
-            ->assertRedirect(route('portals.listing.edit'));
+            ->delete('/portals/listing/services/' . $foreign->id)
+            ->assertNotFound();
+        $this->actingAs($claimant)
+            ->post('/portals/listing/services', ['service_name' => 'X', 'service_category' => 'diagnostic'])
+            ->assertStatus(405);
 
         $this->assertDatabaseHas('care_facility_services', ['id' => $foreign->id]);
+        $this->assertSame(1, CareFacilityService::count());
     }
 
     public function test_the_facility_is_resolved_from_the_claim_and_survives_revocation(): void
@@ -435,25 +442,23 @@ class FacilityClaimSelfServiceTest extends TestCase
 
     // ─── 7. Services and hours ───────────────────────────────────────────────
 
-    public function test_a_claimant_maintains_services_and_hours_on_their_listing(): void
+    public function test_a_claimant_maintains_hours_and_sees_services_read_only(): void
     {
         $listing  = $this->listing();
         $claimant = $this->approvedClaimant($listing);
 
-        $this->actingAs($claimant)->post(route('portals.listing.services.store'), [
-            'service_name'           => 'Hémodialyse',
-            'service_category'       => 'diagnostic',
-            'specialty'              => 'Néphrologie',
-            'availability_status'    => 'available',
-            'appointment_required'   => '1',
-            'telemedicine_available' => '1',
-        ])->assertRedirect(route('portals.listing.edit'));
+        CareFacilityService::create([
+            'facility_id'         => $listing->id,
+            'service_name'        => 'Hémodialyse',
+            'service_category'    => 'diagnostic',
+            'availability_status' => 'available',
+        ]);
 
-        $service = CareFacilityService::where('facility_id', $listing->id)->firstOrFail();
-        $this->assertSame('Hémodialyse', $service->service_name);
-        $this->assertSame('Néphrologie', $service->specialty);
-        $this->assertTrue($service->appointment_required);
-        $this->assertTrue($service->telemedicine_available);
+        $this->actingAs($claimant)->get(route('portals.listing.edit'))
+            ->assertOk()
+            ->assertSee('Hémodialyse')
+            ->assertSee(__('caremap_claim.svc_from_catalogue'))
+            ->assertDontSee('name="service_name"', false);
 
         $this->actingAs($claimant)->post(route('portals.listing.hours.update'), [
             'hours' => [
@@ -470,19 +475,6 @@ class FacilityClaimSelfServiceTest extends TestCase
             'day_of_week' => 6,
             'is_24_hours' => true,
         ]);
-
-        // Removing a service the claimant owns works, and is audited.
-        $this->actingAs($claimant)
-            ->delete(route('portals.listing.services.destroy', $service->id))
-            ->assertRedirect(route('portals.listing.edit'));
-
-        $this->assertDatabaseMissing('care_facility_services', ['id' => $service->id]);
-        $this->assertTrue(
-            DB::table('facility_update_audits')
-                ->where('facility_id', $listing->id)
-                ->where('field_changed', 'service:' . $service->id)
-                ->exists()
-        );
     }
 
     // ─── 8. The admin review desk ────────────────────────────────────────────

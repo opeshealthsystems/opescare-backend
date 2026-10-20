@@ -110,4 +110,6 @@ return [
     'flash_no_changes'  => "Aucun changement.",
     'flash_hours_saved' => "Horaires enregistrés pour :count jour(s).",
     'services_moved_to_catalogue' => 'Les services se gèrent désormais dans le catalogue des services.',
+    'services_from_catalogue' => 'Cette liste est remplie automatiquement à partir de votre catalogue des services : chaque service actif du catalogue apparaît sur votre fiche publique du Finder. Pour ajouter, renommer ou retirer un service, modifiez le catalogue.',
+    'services_open_catalogue' => 'Ouvrir le catalogue des services',
 ];
