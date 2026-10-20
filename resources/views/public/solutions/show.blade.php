@@ -78,8 +78,9 @@
 </section>
 
 <div class="f-container">
-    <section class="sol-section" aria-labelledby="sol-features">
-        <h2 class="sol-h2" id="sol-features">{{ __('solutions.detail.features') }}</h2>
+    {{-- Every module the source page lists, for every system (not only when there is no workflow). --}}
+    <section class="sol-section" aria-labelledby="sol-modules" data-testid="sol-modules">
+        <h2 class="sol-h2" id="sol-modules">{{ __('solutions.detail.modules') }} <span class="sol-count">({{ count($system['features']) }})</span></h2>
         <ul class="sol-grid sol-grid--3">
             @foreach($system['features'] as $feature => $icon)
             <li class="sol-card">
@@ -101,15 +102,6 @@
             <li>{{ __("solutions.systems.{$slug}.workflow.s{$i}") }}</li>
             @endfor
         </ol>
-    </section>
-    @else
-    <section class="sol-section" aria-labelledby="sol-modules">
-        <h2 class="sol-h2" id="sol-modules">{{ __('solutions.detail.modules') }}</h2>
-        <ul class="sol-chips">
-            @foreach($system['features'] as $feature => $icon)
-            <li class="sol-pill">@include('partials.finder.icon', ['name' => $icon, 'size' => 14]){{ __("solutions.systems.{$slug}.features.{$feature}.title") }}</li>
-            @endforeach
-        </ul>
     </section>
     @endif
 

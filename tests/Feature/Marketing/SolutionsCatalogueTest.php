@@ -71,6 +71,22 @@ class SolutionsCatalogueTest extends TestCase
         }
     }
 
+    public function test_each_detail_page_lists_every_configured_module(): void
+    {
+        foreach (config('solutions.systems') as $slug => $system) {
+            $this->assertGreaterThanOrEqual(6, count($system['features']), "{$slug} lists fewer modules than its source page");
+            $response = $this->get("/solutions/{$slug}")
+                ->assertOk()
+                ->assertSee('data-testid="sol-modules"', false)
+                ->assertSee(__('solutions.detail.modules'));
+            foreach (array_keys($system['features']) as $feature) {
+                $key = "solutions.systems.{$slug}.features.{$feature}.title";
+                $this->assertNotSame($key, __($key), "Missing lang for {$key}");
+                $response->assertSee(__($key));
+            }
+        }
+    }
+
     public function test_unknown_slug_is_404_and_older_audience_pages_still_resolve(): void
     {
         $this->get('/solutions/not-a-system')->assertNotFound();

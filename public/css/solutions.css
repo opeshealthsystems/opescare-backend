@@ -57,3 +57,4 @@ textarea.f-input { min-height: 110px; }
 body:has(.sol-hero)::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
   background: url("../images/health-id/guilloche-texture.webp") center / cover no-repeat; opacity: .14; }
 body:has(.sol-hero) { background-color: #EEF3F9; }
+.sol-count { font-weight: 500; color: var(--f-muted, #5b6b7b); font-size: .8em; }
