@@ -45,6 +45,8 @@ return [
         'interoperability'         => 'Interopérabilité',
         'download'                 => "Obtenir l'application",
         'master_patient_index'     => 'Index patient unique',
+        'e_prescription'           => 'Ordonnances électroniques',
+        'health_id'                => 'Le Health ID OpesCare',
         'security'                 => 'Sécurité',
         'sla'                      => 'Engagement de niveau de service',
         'status'                   => 'État du système',

@@ -212,6 +212,8 @@ return [
         'for_insurers'      => 'Pour les assureurs',
         'for_public_health' => 'Pour la santé publique',
         'interop_overview'  => "Vue d'ensemble",
+        'health_id_page'    => 'Le Health ID',
+        'eprescription'     => 'Ordonnances électroniques',
         'api_sdk'           => 'Connect API & SDK',
         'partnerships'      => 'Partenariats',
         // Groupes Plateforme / Réseau (navigation restructurée)
@@ -255,6 +257,8 @@ return [
         'link_bridge'        => 'Bridge Agent',
         'link_webhooks'      => 'Webhooks & Alertes',
         'link_interop'       => "Vue d'ensemble de l'interopérabilité",
+        'link_health_id'     => 'Le Health ID',
+        'link_eprescription' => 'Ordonnances électroniques',
         'link_about'         => "À propos d'Opes Health Systems",
         'link_security'      => 'Normes de sécurité',
         'link_privacy'       => 'Politique de confidentialité',

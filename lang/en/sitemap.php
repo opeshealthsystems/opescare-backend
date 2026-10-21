@@ -45,6 +45,8 @@ return [
         'interoperability'         => 'Interoperability',
         'download'                 => 'Get the app',
         'master_patient_index'     => 'Master Patient Index',
+        'e_prescription'           => 'E-prescriptions',
+        'health_id'                => 'The OpesCare Health ID',
         'security'                 => 'Security',
         'sla'                      => 'Service level agreement',
         'status'                   => 'System status',

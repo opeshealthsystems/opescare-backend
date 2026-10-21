@@ -2,7 +2,7 @@
 @php
     $hLocale   = $hLocale ?? app()->getLocale();
     $hLogo     = $hLogo ?? asset('brand/landing/opescare-logo-176.webp');
-    $hHealthId = $hHealthId ?? route('public.solutions.patients');
+    $hHealthId = $hHealthId ?? route('public.health-id');
     $hIcon     = $hIcon ?? fn (string $name, int $size = 20) => view('partials.finder.icon', ['name' => $name, 'size' => $size])->render();
 @endphp
 <footer class="hm-footer">
@@ -20,6 +20,8 @@
                     <li><a href="{{ route('public.care-map') }}">{{ __('home.footer.facilities_link') }}</a></li>
                     <li><a href="{{ route('public.network.medicine-finder') }}">{{ __('home.footer.medicines') }}</a></li>
                     <li><a href="{{ route('public.network.blood-finder') }}">{{ __('home.footer.blood') }}</a></li>
+                    <li><a href="{{ route('public.health-id') }}">{{ __('home.footer.health_id') }}</a></li>
+                    <li><a href="{{ route('public.e-prescription') }}">{{ __('home.footer.eprescription') }}</a></li>
                     <li><a href="{{ route('public.care-map.places') }}">{{ __('home.footer.places') }}</a></li>
                     <li><a href="{{ route('public.care-map.emergency') }}">{{ __('landing.v2.footer.emergency') }}</a></li>
                     <li><a href="{{ route('public.download') }}">{{ __('home.footer.app') }}</a></li>

@@ -212,6 +212,8 @@ return [
         'for_insurers'      => 'For Insurers',
         'for_public_health' => 'For Public Health',
         'interop_overview'  => 'Overview',
+        'health_id_page'    => 'The Health ID',
+        'eprescription'     => 'E-prescriptions',
         'api_sdk'           => 'Connect API & SDK',
         'partnerships'      => 'Partnerships',
         // Platform / Network groups (restructured navigation)
@@ -255,6 +257,8 @@ return [
         'link_bridge'        => 'Bridge Agent',
         'link_webhooks'      => 'Webhooks & Alerts',
         'link_interop'       => 'Interoperability Overview',
+        'link_health_id'     => 'The Health ID',
+        'link_eprescription' => 'E-prescriptions',
         'link_about'         => 'About Opes Health Systems',
         'link_security'      => 'Security Standards',
         'link_privacy'       => 'Privacy Policy',

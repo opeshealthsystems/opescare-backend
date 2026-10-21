@@ -61,6 +61,8 @@ class SeoController extends Controller
         'contact'                   => ['0.6', 'monthly'],
         'interoperability'          => ['0.7', 'monthly'],
         'master-patient-index'      => ['0.7', 'monthly'],
+        'e-prescription'            => ['0.7', 'monthly'],
+        'health-id'                 => ['0.8', 'monthly'],
         'download'                  => ['0.7', 'monthly'],
         'security'                  => ['0.6', 'monthly'],
         'developers'                => ['0.6', 'weekly'],
@@ -322,7 +324,7 @@ class SeoController extends Controller
 
         $section = function (string $path): string {
             return match (true) {
-                $path === '' || $path === 'download' || str_starts_with($path, 'network/') || str_starts_with($path, 'care-map') => 'services',
+                $path === '' || in_array($path, ['download', 'health-id', 'e-prescription'], true) || str_starts_with($path, 'network/') || str_starts_with($path, 'care-map') => 'services',
                 $path === 'solutions' || str_starts_with($path, 'solutions/') || str_starts_with($path, 'developers')
                     || in_array($path, ['pricing', 'request-demo', 'interoperability', 'master-patient-index', 'security', 'sla', 'status'], true) => 'providers',
                 in_array($path, ['about', 'about/facts', 'how-it-works', 'faq', 'help', 'contact', 'blog', 'sitemap'], true) => 'about',

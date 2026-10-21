@@ -1,6 +1,6 @@
 {{--
     Visible FAQ (same $ns.faq.categories array the FAQPage JSON-LD is built from)
-    followed by the CTA band. Expects $ns.
+    followed by the CTA band. Expects $ns; optional $ctaLinks overrides the two buttons.
 --}}
 @php
     $exIcon = fn (string $name, int $size = 20) => view('partials.finder.icon', ['name' => $name, 'size' => $size])->render();
@@ -28,8 +28,15 @@
                 <p>{{ __($ns . '.cta.sub') }}</p>
             </div>
             <div class="hm-actions">
+                @if (isset($ctaLinks))
+                    {{-- Optional override: [[url, label, modifier], ...] — patient-facing pages. --}}
+                    @foreach ($ctaLinks as [$ctaUrl, $ctaLabel, $ctaMod])
+                        <a class="hm-btn {{ $ctaMod }}" href="{{ $ctaUrl }}">{{ $ctaLabel }}</a>
+                    @endforeach
+                @else
                 <a class="hm-btn hm-btn--light" href="{{ route('public.solutions.index') }}">{{ __($ns . '.hero.cta_solutions') }}</a>
                 <a class="hm-btn hm-btn--white" href="{{ route('register.organization') }}">{{ __($ns . '.hero.cta_register') }}</a>
+                @endif
             </div>
         </div>
     </div>

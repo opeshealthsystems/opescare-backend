@@ -2,7 +2,7 @@
 @php
     $hLocale   = $hLocale ?? app()->getLocale();
     $hLogo     = $hLogo ?? asset('brand/landing/opescare-logo-176.webp');
-    $hHealthId = $hHealthId ?? route('public.solutions.patients');
+    $hHealthId = $hHealthId ?? route('public.health-id');
     $hIcon     = $hIcon ?? fn (string $name, int $size = 20) => view('partials.finder.icon', ['name' => $name, 'size' => $size])->render();
 @endphp
 <header class="hm-header">
@@ -34,6 +34,7 @@
                     <a href="{{ route('public.solutions.index') }}">{{ __('home.nav.solutions') }}</a>
                     <a href="{{ route('public.interoperability') }}">{{ __('home.nav.interop') }}</a>
                     <a href="{{ route('public.master-patient-index') }}">{{ __('home.nav.mpi') }}</a>
+                    <a href="{{ route('public.e-prescription') }}">{{ __('home.nav.eprescription') }}</a>
                     <a href="{{ route('blog.index') }}">{{ __('home.nav.blog') }}</a>
                     <a href="{{ route('public.download') }}">{{ __('home.nav.app') }}</a>
                     <a href="{{ route('login') }}">{{ __('home.nav.sign_in') }}</a>

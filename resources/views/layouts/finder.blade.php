@@ -166,6 +166,8 @@
                         <li><a class="f-footer__link" href="{{ route('public.solutions.hospitals') }}">{{ __('finder_shell.footer.for_hospitals') }}</a></li>
                         <li><a class="f-footer__link" href="{{ route('public.interoperability') }}">{{ __('finder_shell.footer.interop') }}</a></li>
                         <li><a class="f-footer__link" href="{{ route('public.master-patient-index') }}">{{ __('finder_shell.footer.mpi') }}</a></li>
+                        <li><a class="f-footer__link" href="{{ route('public.health-id') }}">{{ __('finder_shell.footer.health_id') }}</a></li>
+                        <li><a class="f-footer__link" href="{{ route('public.e-prescription') }}">{{ __('finder_shell.footer.eprescription') }}</a></li>
                         <li><a class="f-footer__link" href="{{ route('login') }}">{{ __('finder_shell.nav.login') }}</a></li>
                     </ul>
                 </nav>

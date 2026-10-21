@@ -89,6 +89,8 @@ Route::prefix('solutions')->group(function () {
 Route::get('/interoperability', [PublicPageController::class, 'interoperability'])->name('public.interoperability');
 Route::get('/download', [PublicPageController::class, 'download'])->name('public.download');
 Route::get('/master-patient-index', [PublicPageController::class, 'masterPatientIndex'])->name('public.master-patient-index');
+Route::get('/e-prescription', [PublicPageController::class, 'ePrescription'])->name('public.e-prescription');
+Route::get('/health-id', [PublicPageController::class, 'healthId'])->name('public.health-id');
 Route::get('/developers', [PublicPageController::class, 'developers'])->name('public.developers');
 Route::get('/developers/pricing', [PublicPageController::class, 'pricing'])->name('public.developers.pricing');
 Route::get('/security', [PublicPageController::class, 'security'])->name('public.security');

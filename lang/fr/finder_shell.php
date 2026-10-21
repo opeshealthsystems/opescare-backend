@@ -49,6 +49,8 @@ return [
         'for_hospitals' => 'Pour les hôpitaux et cliniques',
         'interop' => 'Interopérabilité',
         'mpi' => 'Index patient unique',
+        'health_id' => 'Health ID',
+        'eprescription' => 'Ordonnances électroniques',
         'app' => "Obtenir l'application",
         'help' => 'Centre d\'aide',
         'contact' => 'Contact',

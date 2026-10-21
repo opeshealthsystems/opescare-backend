@@ -49,6 +49,8 @@ return [
         'for_hospitals' => 'For hospitals & clinics',
         'interop' => 'Interoperability',
         'mpi' => 'Master Patient Index',
+        'health_id' => 'Health ID',
+        'eprescription' => 'E-prescriptions',
         'app' => 'Get the app',
         'help' => 'Help center',
         'contact' => 'Contact',

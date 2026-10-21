@@ -1,0 +1,160 @@
+<?php
+
+// Page publique /e-prescription — voir lang/en/public_erx.php pour les sources dans le code.
+return [
+    'meta_title' => 'Ordonnances électroniques au Cameroun',
+    'meta_desc' => 'Comment une ordonnance électronique OpesCare va du médecin à l’application du patient puis au comptoir de la pharmacie au Cameroun : rédigée sur le Health ID, vérifiée au comptoir, délivrée en totalité ou en partie, et enregistrée.',
+    'breadcrumb' => 'Ordonnances électroniques',
+
+    'hero' => [
+        'kicker' => 'Ordonnances électroniques',
+        'title_1' => 'Du médecin à la pharmacie,',
+        'title_2' => 'sur le Health ID du patient.',
+        'lead' => 'Une ordonnance électronique OpesCare est rédigée par le clinicien sur le Health ID du patient, arrive dans l’application du patient, puis est vérifiée et délivrée au comptoir de la pharmacie qu’il choisit. Plus d’écriture illisible ni de papier perdu, et chaque étape est enregistrée.',
+        'cta_primary' => 'Obtenir mon Health ID',
+        'cta_secondary' => 'Trouver un médicament',
+    ],
+
+    'net' => [
+        'label' => 'Une ordonnance électronique reliant le médecin, le patient et la pharmacie',
+        'core' => 'Ordonnance',
+        'core_sub' => 'Health ID · référence · QR',
+        'doctor' => 'Médecin',
+        'doctor_sub' => 'La rédige au bureau',
+        'patient' => 'Appli patient',
+        'patient_sub' => 'Détient le code',
+        'pharmacy' => 'Pharmacie',
+        'pharmacy_sub' => 'Vérifie et délivre',
+        'record' => 'Dossier',
+        'record_sub' => 'Statut tenu à jour',
+    ],
+
+    'what' => [
+        'eyebrow' => 'Ce que c’est',
+        'title' => 'L’ordonnance électronique, simplement.',
+        'sub' => 'C’est la même ordonnance qu’un médecin écrirait sur papier, mais créée sur OpesCare et classée sous le Health ID du patient. Chacune a une courte référence, une liste de médicaments avec dose et quantité, un prescripteur, un établissement et une date de fin.',
+        'b1_title' => 'Rédigée par un clinicien habilité',
+        'b1_desc' => 'Seuls les médecins et les superviseurs médicaux peuvent prescrire, et uniquement pour un patient avec lequel ils ont une relation de soins.',
+        'b2_title' => 'Détenue par le patient',
+        'b2_desc' => 'Elle apparaît dans l’application du patient. Le patient décide quand montrer un code à une pharmacie et peut cesser de le partager.',
+        'b3_title' => 'Délivrée une fois, puis close',
+        'b3_desc' => 'Une ordonnance est délivrée en totalité ou en partie, et jamais réécrite. Les corrections passent par un amendement ou une annulation.',
+        'panel_label' => 'Ordonnance papier comparée à une ordonnance électronique',
+        'panel_title' => 'Ce qui change',
+        'row1' => 'Une écriture que le pharmacien devine',
+        'row1_pill' => 'Médicament, dose, quantité saisis',
+        'row2' => 'Un papier qui peut être copié',
+        'row2_pill' => 'Code vérifié au comptoir',
+        'row3' => 'Aucune trace de ce qui a été remis',
+        'row3_pill' => 'Total ou partiel, enregistré',
+    ],
+
+    'flow' => [
+        'eyebrow' => 'Comment ça marche',
+        'title' => 'Une ordonnance, de la consultation au comptoir.',
+        'sub' => 'Un patient voit un médecin, reçoit une ordonnance électronique et récupère le médicament en pharmacie. Voici ce qui se passe à chaque étape.',
+        'label' => 'Le parcours de l’ordonnance électronique',
+        'pause' => 'Pause',
+        'play' => 'Lecture',
+        'prev' => 'Étape précédente',
+        'next' => 'Étape suivante',
+        'step_of' => 'Étape :n sur :total',
+        'steps' => [
+            ['who' => 'Patient', 'title' => 'Le patient est reçu', 'desc' => 'Le patient vient à un rendez-vous ou une consultation. Cette relation de soins, ou une autorisation de consentement qu’il a approuvée dans l’application, permet au médecin de prescrire.', 'chip' => 'Relation de soins'],
+            ['who' => 'Médecin', 'title' => 'Le médecin prescrit', 'desc' => 'Au bureau du prescripteur, le médecin trouve le patient par son Health ID et ajoute chaque médicament avec dose, fréquence et quantité. OpesCare vérifie d’abord la relation de soins et affiche une alerte d’interaction médicamenteuse le cas échéant.', 'chip' => 'Ordonnance émise'],
+            ['who' => 'Appli patient', 'title' => 'Elle arrive chez le patient', 'desc' => 'Le patient est notifié et voit l’ordonnance dans l’application. Au moment de la récupérer, il demande un code à l’application : une courte référence et un QR qui ouvre une page de vérification.', 'chip' => 'Référence + QR'],
+            ['who' => 'Patient', 'title' => 'Le patient choisit une pharmacie', 'desc' => 'La recherche de médicaments montre les pharmacies proches qui déclarent le médicament en stock. Le patient choisit où aller et peut y réserver le médicament.', 'chip' => 'Pharmacie choisie'],
+            ['who' => 'Pharmacie', 'title' => 'Le comptoir vérifie', 'desc' => 'Le pharmacien retrouve l’ordonnance par le Health ID du patient ou par la référence, ou scanne le QR. La page de vérification affiche les médicaments, le nom du patient et seulement le dernier groupe du Health ID.', 'chip' => 'Ordonnance vérifiée'],
+            ['who' => 'Pharmacie + patient', 'title' => 'Délivrée et enregistrée', 'desc' => 'Le pharmacien remet toute l’ordonnance ou seulement certaines lignes. Le statut devient délivrée ou partiellement délivrée, le patient est informé de ce qu’il en est, et la délivrance est enregistrée.', 'chip' => 'Totale ou partielle'],
+        ],
+    ],
+
+    'counter' => [
+        'eyebrow' => 'À la pharmacie',
+        'title' => 'Ce qui se passe derrière le comptoir.',
+        'sub' => 'Le côté pharmacie de la même ordonnance, tel que le bureau de la pharmacie le traite.',
+        'label' => 'Les étapes au comptoir de la pharmacie',
+        'pause' => 'Pause',
+        'play' => 'Lecture',
+        'prev' => 'Étape précédente',
+        'next' => 'Étape suivante',
+        'step_of' => 'Étape :n sur :total',
+        'steps' => [
+            ['who' => 'Pharmacien', 'title' => 'Un seul champ de recherche', 'desc' => 'Saisissez le Health ID de la carte ou la référence affichée sur l’écran du patient. Un Health ID fusionné dans un autre retrouve quand même le bon patient.', 'chip' => 'Ordonnance trouvée'],
+            ['who' => 'OpesCare', 'title' => 'Attribuée à ce comptoir', 'desc' => 'La première pharmacie qui traite une ordonnance se l’attribue. Une autre pharmacie ne peut plus délivrer la même ordonnance.', 'chip' => 'Une seule pharmacie'],
+            ['who' => 'Pharmacien', 'title' => 'Préparée', 'desc' => 'Le comptoir accepte l’ordonnance et la marque prête. Le patient est notifié que son ordonnance est prête à être retirée.', 'chip' => 'Patient notifié'],
+            ['who' => 'Pharmacien', 'title' => 'Remise', 'desc' => 'Choisissez les lignes remises et notez la quantité. Ce qui n’est pas remis reste ouvert sur l’ordonnance.', 'chip' => 'Lignes enregistrées'],
+            ['who' => 'Dossier', 'title' => 'Clôturée', 'desc' => 'Le statut de l’ordonnance, le registre de délivrance et l’application du patient montrent ce qui a été remis et par quelle pharmacie.', 'chip' => 'Statut à jour'],
+        ],
+    ],
+
+    'how' => [
+        'eyebrow' => 'Comment OpesCare le rend possible',
+        'title' => 'Les éléments derrière chaque ordonnance.',
+        'sub' => 'Chacun d’eux fait partie d’OpesCare aujourd’hui.',
+        'cards' => [
+            'desk' => ['title' => 'Un bureau du prescripteur', 'desc' => 'Les médecins rédigent les ordonnances sur le bureau web ou dans l’application clinicien, avec dose, fréquence, durée et quantité pour chaque médicament.'],
+            'gate' => ['title' => 'Une vérification de la relation de soins', 'desc' => 'Une ordonnance est refusée si le médecin n’a pas de relation de soins avec le patient : rendez-vous, équipe soignante, clinicien traitant, épisode récent dans l’établissement, ou autorisation de consentement.'],
+            'interact' => ['title' => 'Alertes d’interaction', 'desc' => 'Quand deux médicaments interagissent, le médecin voit une alerte. C’est un avertissement, pas un blocage : ce qui a été affiché, et si le médecin en a pris acte, est enregistré.'],
+            'code' => ['title' => 'Un code contrôlé par le patient', 'desc' => 'L’application n’émet une référence et un QR que si le patient le demande. Il peut retirer tous les codes actifs d’un coup, et une ordonnance annulée ou expirée ne peut pas être partagée.'],
+            'finder' => ['title' => 'Le stock réel dans la recherche de médicaments', 'desc' => 'La recherche n’affiche que le stock déclaré par les pharmacies elles-mêmes. Si aucune pharmacie n’a déclaré un médicament, elle le dit au lieu de deviner.'],
+            'lookup' => ['title' => 'Recherche au comptoir par Health ID ou référence', 'desc' => 'Le bureau de la pharmacie retrouve les ordonnances ouvertes à partir du Health ID de la carte ou de la référence de l’ordonnance.'],
+            'partial' => ['title' => 'Délivrance totale ou partielle', 'desc' => 'Le pharmacien peut remettre toute l’ordonnance ou seulement certaines lignes. Le patient sait exactement lesquelles.'],
+            'print' => ['title' => 'Une copie imprimée vérifiable', 'desc' => 'Une ordonnance imprimée porte un QR qui ouvre la même page de vérification : papier et téléphone sont contrôlés de la même façon.'],
+        ],
+    ],
+
+    'means' => [
+        'eyebrow' => 'Ce que cela change',
+        'title' => 'Pour les patients, les médecins et les pharmacies.',
+        'patients' => 'Pour les patients',
+        'facilities' => 'Pour les médecins et les pharmacies',
+        'p1_title' => 'Vos ordonnances au même endroit',
+        'p1_desc' => 'Chaque ordonnance reçue est dans votre application, avec son statut : active, partiellement délivrée ou délivrée.',
+        'p2_title' => 'Vous choisissez la pharmacie',
+        'p2_desc' => 'Cherchez le médicament près de chez vous, puis montrez votre code au comptoir de votre choix.',
+        'p3_title' => 'Vous décidez quand partager',
+        'p3_desc' => 'Un code n’existe que si vous le demandez, et vous pouvez cesser de le partager à tout moment.',
+        'f1_title' => 'Médecins : une ordonnance lisible et traçable',
+        'f1_desc' => 'Médicaments saisis, alertes d’interaction, et une trace de ce qui a été prescrit et du motif d’accès.',
+        'f2_title' => 'Pharmacies : vérifier avant de délivrer',
+        'f2_desc' => 'Retrouvez l’ordonnance par Health ID ou référence, voyez exactement ce qui a été prescrit, et enregistrez ce que vous avez remis.',
+        'f3_title' => 'Pour tous : une ordonnance, une pharmacie',
+        'f3_desc' => 'Dès qu’une pharmacie s’attribue une ordonnance, aucun autre comptoir ne peut la délivrer.',
+    ],
+
+    'safety' => [
+        'eyebrow' => 'Sécurité',
+        'title' => 'Conçue pour qu’une ordonnance soit délivrée une fois, par le bon comptoir.',
+        'sub' => 'Les protections qui s’appliquent à chaque ordonnance électronique.',
+        'items' => [
+            'verify' => ['title' => 'Une page de vérification pour chaque code', 'desc' => 'Le QR ouvre /verify/rx. Elle montre ce qu’il faut pour délivrer en sécurité : les médicaments, le prescripteur, l’établissement, le nom du patient et seulement le dernier groupe du Health ID. Ni adresse, ni téléphone, ni autres ordonnances.'],
+            'oracle' => ['title' => 'Une seule réponse à chaque échec', 'desc' => 'Un code inconnu, expiré ou retiré affiche le même message : un code ne peut pas être deviné par essais.'],
+            'controlled' => ['title' => 'Un registre des médicaments contrôlés', 'desc' => 'Les pharmacies tiennent un registre des médicaments contrôlés en stock et peuvent exporter le registre du mois en PDF sécurisé ou en fichier CSV.'],
+            'expiry' => ['title' => 'Les ordonnances expirent', 'desc' => 'Chaque ordonnance a une date de fin, 30 jours par défaut. Après celle-ci, ou après une annulation, elle ne peut plus être délivrée ni partagée.'],
+        ],
+    ],
+
+    'faq' => [
+        'eyebrow' => 'Questions',
+        'title' => 'Questions fréquentes',
+        'categories' => [
+            ['items' => [
+                ['q' => 'Qu’est-ce qu’une ordonnance électronique ?', 'a' => 'C’est une ordonnance créée sur OpesCare et classée sous votre Health ID au lieu d’être écrite sur papier. Elle liste chaque médicament avec dose et quantité, le prescripteur, l’établissement et une date de fin, et elle apparaît dans votre application.'],
+                ['q' => 'Qui peut rédiger une ordonnance électronique ?', 'a' => 'Les médecins et superviseurs médicaux d’un établissement sur OpesCare, uniquement pour un patient avec lequel ils ont une relation de soins, comme un rendez-vous, ou pour lequel le patient a approuvé une autorisation de consentement.'],
+                ['q' => 'Comment récupérer mon médicament ?', 'a' => 'Ouvrez l’ordonnance dans votre application et demandez un code. Montrez la référence ou le QR à la pharmacie, ou donnez votre Health ID. Le pharmacien vérifie l’ordonnance et vous remet le médicament.'],
+                ['q' => 'Puis-je choisir ma pharmacie ?', 'a' => 'Oui. Utilisez la recherche de médicaments pour voir les pharmacies qui déclarent le médicament en stock, et allez à celle de votre choix. Dès qu’une pharmacie commence à traiter l’ordonnance, elle reste avec cette pharmacie.'],
+                ['q' => 'Et si la pharmacie n’a qu’une partie de mon ordonnance ?', 'a' => 'Le pharmacien peut ne remettre que certaines lignes. L’ordonnance apparaît alors comme partiellement délivrée dans votre application, et le reste demeure ouvert.'],
+                ['q' => 'Quelqu’un d’autre peut-il utiliser mon code ?', 'a' => 'Un code n’est créé que si vous le demandez, et vous pouvez retirer tous les codes actifs depuis l’application à tout moment. Une ordonnance annulée ou expirée ne peut être ni partagée ni délivrée.'],
+                ['q' => 'OpesCare est-il disponible en français ?', 'a' => 'Oui. Chaque page, l’application et les bureaux des établissements fonctionnent en français et en anglais.'],
+            ]],
+        ],
+    ],
+
+    'cta' => [
+        'title' => 'Recevez vos ordonnances sur votre Health ID.',
+        'sub' => 'Créez votre Health ID et téléchargez l’application pour recevoir vos ordonnances électroniques et trouver votre médicament à proximité.',
+        'primary' => 'Obtenir mon Health ID',
+        'secondary' => 'Télécharger l’application',
+    ],
+];

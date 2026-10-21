@@ -29,7 +29,7 @@
     $hLogo    = asset('brand/landing/opescare-logo-176.webp');
     $hApk     = false; // the APK lives behind /download (public.download), which explains and verifies it
     $hAppUrl  = route('public.download');
-    $hHealthId = route('public.solutions.patients');
+    $hHealthId = route('public.health-id');
     $hIcon = fn (string $name, int $size = 20) => view('partials.finder.icon', ['name' => $name, 'size' => $size])->render();
 @endphp
 <!DOCTYPE html>

@@ -169,6 +169,8 @@
                     <div class="mobile-nav-group">
                         <span class="mobile-nav-label">{{ __('landing.nav.interop', [], app()->getLocale()) }}</span>
                         <a href="{{ route('public.interoperability') }}" class="mobile-nav-link">{{ __('landing.nav.interop_overview', [], app()->getLocale()) }}</a>
+                        <a href="{{ route('public.health-id') }}" class="mobile-nav-link">{{ __('landing.nav.health_id_page', [], app()->getLocale()) }}</a>
+                        <a href="{{ route('public.e-prescription') }}" class="mobile-nav-link">{{ __('landing.nav.eprescription', [], app()->getLocale()) }}</a>
                         <a href="{{ route('public.developers') }}" class="mobile-nav-link">{{ __('landing.nav.api_sdk', [], app()->getLocale()) }}</a>
                     </div>
                     <div class="mobile-nav-group">
@@ -265,6 +267,8 @@
                     <li><a href="{{ route('public.developers') }}#bridge" class="footer-link">{{ __('landing.footer.link_bridge', [], app()->getLocale()) }}</a></li>
                     <li><a href="{{ route('public.developers') }}#webhooks" class="footer-link">{{ __('landing.footer.link_webhooks', [], app()->getLocale()) }}</a></li>
                     <li><a href="{{ route('public.interoperability') }}" class="footer-link">{{ __('landing.footer.link_interop', [], app()->getLocale()) }}</a></li>
+                    <li><a href="{{ route('public.health-id') }}" class="footer-link">{{ __('landing.footer.link_health_id', [], app()->getLocale()) }}</a></li>
+                    <li><a href="{{ route('public.e-prescription') }}" class="footer-link">{{ __('landing.footer.link_eprescription', [], app()->getLocale()) }}</a></li>
                 </ul>
             </div>
 

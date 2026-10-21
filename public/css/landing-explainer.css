@@ -262,3 +262,11 @@
   .dl-scr.is-on *,.dl-scr.is-on *::after,.dl-fx__bar i{animation:none!important}
   .dl-slot--pick{background:#0F4C81;border-color:#0F4C81;color:#fff}
 }
+
+/* /health-id and /e-prescription additions */
+.ex-mono{font:700 15px ui-monospace,Consolas,monospace;color:var(--ink);letter-spacing:.04em}
+.ex-more{margin:24px 0 0}
+.ex-card .hm-eyebrow{margin:0 0 6px}
+.hm .ex-card__t{font-size:22px;line-height:1.25;margin:0 0 10px}
+.ex-card__p{margin:0 0 18px;color:var(--ink2);font-size:15.5px}
+.ex-card .hm-btn{white-space:normal;max-width:100%}

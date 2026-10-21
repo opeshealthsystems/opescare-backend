@@ -1,6 +1,7 @@
 {{--
     Animated step-through flow on navy (hero palette, lead-text colour #BFD0E2).
     Expects $ns (lang file with .flow.*) and $icons (one Lucide name per step).
+    Optional $key (default 'flow') and $fid (heading id) for a second strip on one page.
 
     Without JavaScript, or with prefers-reduced-motion, every step is shown in
     full and the controls stay hidden. public/js/explainer-flow.js adds
@@ -9,19 +10,21 @@
 --}}
 @php
     $exIcon  = fn (string $name, int $size = 20) => view('partials.finder.icon', ['name' => $name, 'size' => $size])->render();
-    $exSteps = __($ns . '.flow.steps');
+    $exKey   = $ns . '.' . ($key ?? 'flow');
+    $exFid   = $fid ?? 'ex-flow-title';
+    $exSteps = __($exKey . '.steps');
     $exTotal = count($exSteps);
 @endphp
-<section class="ex-dark" aria-labelledby="ex-flow-title">
+<section class="ex-dark" aria-labelledby="{{ $exFid }}">
     <div class="hm-wrap">
         <div class="hm-head">
-            <p class="ex-eyebrow">{{ __($ns . '.flow.eyebrow') }}</p>
-            <h2 id="ex-flow-title">{{ __($ns . '.flow.title') }}</h2>
-            <p class="ex-sub">{{ __($ns . '.flow.sub') }}</p>
+            <p class="ex-eyebrow">{{ __($exKey . '.eyebrow') }}</p>
+            <h2 id="{{ $exFid }}">{{ __($exKey . '.title') }}</h2>
+            <p class="ex-sub">{{ __($exKey . '.sub') }}</p>
         </div>
         <div class="ex-flow" data-ex-flow>
             <div class="ex-flow__bar" aria-hidden="true"><i data-ex-bar></i></div>
-            <ol class="ex-steps ex-steps--{{ $exTotal }}" role="list" aria-label="{{ __($ns . '.flow.label') }}">
+            <ol class="ex-steps ex-steps--{{ $exTotal }}" role="list" aria-label="{{ __($exKey . '.label') }}">
                 @foreach ($exSteps as $i => $step)
                     <li class="ex-step" data-ex-step>
                         <div class="ex-step__top">
@@ -36,12 +39,12 @@
                 @endforeach
             </ol>
             <div class="ex-controls" data-ex-controls hidden>
-                <p class="ex-count" data-ex-count data-tpl="{{ __($ns . '.flow.step_of') }}" data-total="{{ $exTotal }}"></p>
+                <p class="ex-count" data-ex-count data-tpl="{{ __($exKey . '.step_of') }}" data-total="{{ $exTotal }}"></p>
                 <div class="ex-controls__btns">
-                    <button type="button" class="ex-ctl" data-ex-prev aria-label="{{ __($ns . '.flow.prev') }}">{!! $exIcon('arrow-left', 18) !!}</button>
+                    <button type="button" class="ex-ctl" data-ex-prev aria-label="{{ __($exKey . '.prev') }}">{!! $exIcon('arrow-left', 18) !!}</button>
                     <button type="button" class="ex-ctl ex-ctl--wide" data-ex-toggle aria-pressed="false"
-                            data-pause="{{ __($ns . '.flow.pause') }}" data-play="{{ __($ns . '.flow.play') }}">{{ __($ns . '.flow.pause') }}</button>
-                    <button type="button" class="ex-ctl" data-ex-next aria-label="{{ __($ns . '.flow.next') }}">{!! $exIcon('arrow-right', 18) !!}</button>
+                            data-pause="{{ __($exKey . '.pause') }}" data-play="{{ __($exKey . '.play') }}">{{ __($exKey . '.pause') }}</button>
+                    <button type="button" class="ex-ctl" data-ex-next aria-label="{{ __($exKey . '.next') }}">{!! $exIcon('arrow-right', 18) !!}</button>
                 </div>
             </div>
         </div>

@@ -240,6 +240,18 @@ class PublicPageController extends Controller
         return view('public.master-patient-index');
     }
 
+    /** /e-prescription — explainer: doctor → patient app → pharmacy counter. */
+    public function ePrescription()
+    {
+        return view('public.e-prescription');
+    }
+
+    /** /health-id — explainer: the OpesCare Health ID in detail. */
+    public function healthId()
+    {
+        return view('public.health-id');
+    }
+
     public function developers()
     {
         return view('public.developers');
