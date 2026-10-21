@@ -2,104 +2,67 @@
 
 @section('title', __('onboarding.selector.title'))
 
+@push('head')
+<link rel="stylesheet" href="{{ asset('css/onboarding.css') }}?v={{ @filemtime(public_path('css/onboarding.css')) ?: '1' }}">
+@endpush
+
+@php
+    // Account-type selector, on the onboarding visual system (design 2026-10-21).
+    $obGroups = [
+        'people' => [
+            ['route' => route('register.patient'),      'icon' => 'heart-pulse',   'key' => 'patient'],
+            ['route' => route('register.professional'), 'icon' => 'stethoscope',   'key' => 'professional'],
+            ['route' => route('register.guardian'),     'icon' => 'users',         'key' => 'guardian'],
+        ],
+        'facilities' => [
+            ['route' => route('register.organization', ['type' => 'hospital']),      'icon' => 'building-2',    'key' => 'hospital'],
+            ['route' => route('register.organization', ['type' => 'pharmacy']),      'icon' => 'pill',          'key' => 'pharmacy'],
+            ['route' => route('register.organization', ['type' => 'laboratory']),    'icon' => 'flask-conical', 'key' => 'laboratory'],
+            ['route' => route('register.organization', ['type' => 'imaging']),    'icon' => 'scan-line', 'title' => 'onboarding_flow.type.cards.imaging.title', 'desc' => 'onboarding_flow.type.cards.imaging.desc'],
+            ['route' => route('register.organization', ['type' => 'blood_bank']), 'icon' => 'droplet',   'title' => 'onboarding_flow.type.cards.blood_bank.title', 'desc' => 'onboarding_flow.type.cards.blood_bank.desc'],
+            ['route' => route('register.organization', ['type' => 'public_health']), 'icon' => 'globe',         'key' => 'public_health'],
+        ],
+        'partners' => [
+            ['route' => route('register.developer'), 'icon' => 'braces', 'key' => 'developer'],
+        ],
+    ];
+@endphp
+
 @section('content')
-    <div class="f-auth-col f-auth-col--wide">
-        <div class="f-auth-card">
-            <div class="f-auth-card--center">
-                <h1 class="f-auth-title">{{ __('onboarding.selector.title') }}</h1>
-                <p class="f-auth-sub">{{ __('onboarding.selector.subtitle') }}</p>
-            </div>
+<div class="ob-wrap">
+    <div class="ob-panel">
+        <div class="ob-head">
+            <div class="ob-eyebrow">{{ __('onboarding_flow.selector.eyebrow') }}</div>
+            <h1 class="ob-h1">{{ __('onboarding.selector.title') }}</h1>
+            <p class="ob-sub">{{ __('onboarding.selector.subtitle') }}</p>
+        </div>
 
-            <div class="f-auth-grid">
+        @foreach($obGroups as $group => $cards)
+            <section class="ob-section" aria-labelledby="ob-g-{{ $group }}">
+                <h2 id="ob-g-{{ $group }}">{{ __('onboarding_flow.selector.' . $group) }}</h2>
+                @if($group === 'facilities')
+                    <p class="ob-legend-sub">{{ __('onboarding_flow.selector.facilities_help') }}</p>
+                @endif
+                <div class="ob-choices">
+                    @foreach($cards as $c)
+                        <a href="{{ $c['route'] }}" class="ob-choice">
+                            <span class="ob-ic">@include('partials.finder.icon', ['name' => $c['icon'], 'size' => 22])</span>
+                            <span class="ob-choice__body">
+                                <b>{{ __($c['title'] ?? 'onboarding.selector.cards.' . $c['key'] . '_title') }}</b>
+                                <span class="ob-choice__desc">{{ __($c['desc'] ?? 'onboarding.selector.cards.' . $c['key'] . '_desc') }}</span>
+                            </span>
+                            <span class="ob-choice__go">@include('partials.finder.icon', ['name' => 'chevron-right', 'size' => 18])</span>
+                        </a>
+                    @endforeach
+                </div>
+            </section>
+        @endforeach
 
-                {{-- Patient --}}
-                <a href="{{ route('register.patient') }}" class="f-auth-choice">
-                    <span class="f-auth-choice__icon">@include('partials.finder.icon', ['name' => 'heart-pulse', 'size' => 20])</span>
-                    <span class="f-auth-choice__body">
-                        <span class="f-auth-choice__title">{{ __('onboarding.selector.cards.patient_title') }}</span>
-                        <span class="f-auth-choice__desc">{{ __('onboarding.selector.cards.patient_desc') }}</span>
-                    </span>
-                    <span class="f-auth-choice__go">@include('partials.finder.icon', ['name' => 'chevron-right', 'size' => 18])</span>
-                </a>
-
-                {{-- Health Professional --}}
-                <a href="{{ route('register.professional') }}" class="f-auth-choice">
-                    <span class="f-auth-choice__icon">@include('partials.finder.icon', ['name' => 'stethoscope', 'size' => 20])</span>
-                    <span class="f-auth-choice__body">
-                        <span class="f-auth-choice__title">{{ __('onboarding.selector.cards.professional_title') }}</span>
-                        <span class="f-auth-choice__desc">{{ __('onboarding.selector.cards.professional_desc') }}</span>
-                    </span>
-                    <span class="f-auth-choice__go">@include('partials.finder.icon', ['name' => 'chevron-right', 'size' => 18])</span>
-                </a>
-
-                {{-- Guardian / Caregiver --}}
-                <a href="{{ route('register.guardian') }}" class="f-auth-choice">
-                    <span class="f-auth-choice__icon">@include('partials.finder.icon', ['name' => 'users', 'size' => 20])</span>
-                    <span class="f-auth-choice__body">
-                        <span class="f-auth-choice__title">{{ __('onboarding.selector.cards.guardian_title') }}</span>
-                        <span class="f-auth-choice__desc">{{ __('onboarding.selector.cards.guardian_desc') }}</span>
-                    </span>
-                    <span class="f-auth-choice__go">@include('partials.finder.icon', ['name' => 'chevron-right', 'size' => 18])</span>
-                </a>
-
-                {{-- Hospital / Clinic --}}
-                <a href="{{ route('register.organization', ['type' => 'hospital']) }}" class="f-auth-choice">
-                    <span class="f-auth-choice__icon">@include('partials.finder.icon', ['name' => 'building-2', 'size' => 20])</span>
-                    <span class="f-auth-choice__body">
-                        <span class="f-auth-choice__title">{{ __('onboarding.selector.cards.hospital_title') }}</span>
-                        <span class="f-auth-choice__desc">{{ __('onboarding.selector.cards.hospital_desc') }}</span>
-                    </span>
-                    <span class="f-auth-choice__go">@include('partials.finder.icon', ['name' => 'chevron-right', 'size' => 18])</span>
-                </a>
-
-                {{-- Pharmacy --}}
-                <a href="{{ route('register.organization', ['type' => 'pharmacy']) }}" class="f-auth-choice">
-                    <span class="f-auth-choice__icon">@include('partials.finder.icon', ['name' => 'pill', 'size' => 20])</span>
-                    <span class="f-auth-choice__body">
-                        <span class="f-auth-choice__title">{{ __('onboarding.selector.cards.pharmacy_title') }}</span>
-                        <span class="f-auth-choice__desc">{{ __('onboarding.selector.cards.pharmacy_desc') }}</span>
-                    </span>
-                    <span class="f-auth-choice__go">@include('partials.finder.icon', ['name' => 'chevron-right', 'size' => 18])</span>
-                </a>
-
-                {{-- Laboratory --}}
-                <a href="{{ route('register.organization', ['type' => 'laboratory']) }}" class="f-auth-choice">
-                    <span class="f-auth-choice__icon">@include('partials.finder.icon', ['name' => 'search', 'size' => 20])</span>
-                    <span class="f-auth-choice__body">
-                        <span class="f-auth-choice__title">{{ __('onboarding.selector.cards.laboratory_title') }}</span>
-                        <span class="f-auth-choice__desc">{{ __('onboarding.selector.cards.laboratory_desc') }}</span>
-                    </span>
-                    <span class="f-auth-choice__go">@include('partials.finder.icon', ['name' => 'chevron-right', 'size' => 18])</span>
-                </a>
-
-
-                {{-- Developer API Access --}}
-                <a href="{{ route('register.developer') }}" class="f-auth-choice">
-                    <span class="f-auth-choice__icon">@include('partials.finder.icon', ['name' => 'external-link', 'size' => 20])</span>
-                    <span class="f-auth-choice__body">
-                        <span class="f-auth-choice__title">{{ __('onboarding.selector.cards.developer_title') }}</span>
-                        <span class="f-auth-choice__desc">{{ __('onboarding.selector.cards.developer_desc') }}</span>
-                    </span>
-                    <span class="f-auth-choice__go">@include('partials.finder.icon', ['name' => 'chevron-right', 'size' => 18])</span>
-                </a>
-
-                {{-- Public Health / Research --}}
-                <a href="{{ route('register.organization', ['type' => 'public_health']) }}" class="f-auth-choice">
-                    <span class="f-auth-choice__icon">@include('partials.finder.icon', ['name' => 'globe', 'size' => 20])</span>
-                    <span class="f-auth-choice__body">
-                        <span class="f-auth-choice__title">{{ __('onboarding.selector.cards.public_health_title') }}</span>
-                        <span class="f-auth-choice__desc">{{ __('onboarding.selector.cards.public_health_desc') }}</span>
-                    </span>
-                    <span class="f-auth-choice__go">@include('partials.finder.icon', ['name' => 'chevron-right', 'size' => 18])</span>
-                </a>
-
-            </div>
-
-            <div class="f-auth-alt f-auth-alt--divide">
-                <p>{{ __('onboarding.selector.already_have') }}
-                    <a href="{{ route('login') }}">{{ __('onboarding.selector.signin') }}</a>
-                </p>
-            </div>
+        <div class="ob-alt">
+            <p>{{ __('onboarding.selector.already_have') }}
+                <a href="{{ route('login') }}">{{ __('onboarding.selector.signin') }}</a>
+            </p>
         </div>
     </div>
+</div>
 @endsection

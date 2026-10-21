@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Preview — facility onboarding</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+:root{--brand:#0F4C81;--brand-ink:#0B3A63;--navy:#0B2A4A;--ink:#0F172A;--ink2:#334155;--muted:#64748B;--line:#E2E8F0;--soft:#F8FAFC;--wash:#EAF2FA;--good:#047857;--good-wash:#ECFDF5}
+*{box-sizing:border-box}body{margin:0;font:15px/1.55 Inter,system-ui,sans-serif;color:var(--ink);background:#E9EEF4}
+.board{max-width:1360px;margin:0 auto;padding:28px 20px 60px}
+.cap{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:28px 0 10px}
+.frame{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;display:grid;grid-template-columns:380px 1fr;min-height:760px}
+/* Left rail */
+.rail{position:relative;background:var(--navy);color:#DCE7F3;padding:28px 28px 24px;display:flex;flex-direction:column;overflow:hidden}
+.rail::before{content:"";position:absolute;inset:0;background:url(../../../public/images/health-id/guilloche-texture.webp) center/cover;opacity:.10}
+.rail>*{position:relative}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;color:#fff}
+.logo img{width:30px;height:30px}
+.rail h2{color:#fff;font-size:22px;line-height:1.3;margin:28px 0 6px;letter-spacing:-.01em}
+.rail p.lead{margin:0 0 24px;color:#AFC3D8;font-size:14px}
+.steps{list-style:none;margin:0;padding:0}
+.steps li{display:grid;grid-template-columns:28px 1fr;gap:12px;padding:0 0 18px;position:relative}
+.steps li:not(:last-child)::after{content:"";position:absolute;left:13px;top:30px;bottom:2px;width:2px;background:rgba(255,255,255,.14)}
+.steps li.done:not(:last-child)::after{background:#5FA8E8}
+.dot{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;border:2px solid rgba(255,255,255,.25);color:#AFC3D8}
+.done .dot{background:#5FA8E8;border-color:#5FA8E8;color:var(--navy)}
+.now .dot{background:#fff;border-color:#fff;color:var(--brand)}
+.steps b{display:block;color:#fff;font-size:14px;font-weight:600}
+.steps span{font-size:12.5px;color:#8EA6C0}
+.now b{color:#fff}.todo b{color:#AFC3D8;font-weight:500}
+.rail-foot{margin-top:auto;border-top:1px solid rgba(255,255,255,.12);padding-top:16px;font-size:13px;color:#AFC3D8;display:grid;gap:8px}
+.rail-foot div{display:flex;gap:8px;align-items:center}
+.rail-foot svg{width:16px;height:16px;color:#5FA8E8;flex:none}
+/* Main */
+.main{display:flex;flex-direction:column}
+.top{display:flex;align-items:center;justify-content:space-between;padding:18px 40px;border-bottom:1px solid var(--line)}
+.top .meta{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.bar{height:4px;background:var(--line);border-radius:4px;width:220px;overflow:hidden}.bar i{display:block;height:100%;width:29%;background:var(--brand)}
+.lang{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;font-size:12px;font-weight:600}.lang span{padding:5px 10px}.lang .on{background:var(--wash);color:var(--brand)}
+.body{padding:36px 40px 24px;max-width:820px;width:100%}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--brand)}
+h1{font-size:28px;letter-spacing:-.02em;margin:6px 0 6px}
+.sub{color:var(--muted);margin:0 0 28px}
+fieldset{border:0;margin:0 0 26px;padding:0}
+legend{font-size:15px;font-weight:700;margin-bottom:4px}
+.legend-sub{font-size:13px;color:var(--muted);margin:0 0 14px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 18px}
+.full{grid-column:1/-1}
+label{display:block;font-size:13px;font-weight:600;color:var(--ink2);margin-bottom:6px}
+label em{color:#B91C1C;font-style:normal}
+.input{width:100%;height:44px;border:1px solid #CBD5E1;border-radius:8px;padding:0 12px;font:inherit;color:var(--ink);background:#fff}
+.input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(15,76,129,.15)}
+.input.filled{background:#fff}
+.help{font-size:12.5px;color:var(--muted);margin-top:6px}
+.prefix{display:flex}.prefix span{display:grid;place-items:center;padding:0 12px;border:1px solid #CBD5E1;border-right:0;border-radius:8px 0 0 8px;background:var(--soft);font-size:14px;color:var(--ink2)}.prefix .input{border-radius:0 8px 8px 0}
+.note{display:flex;gap:10px;background:var(--wash);border-radius:10px;padding:12px 14px;font-size:13.5px;color:var(--brand-ink)}
+.note svg{width:18px;height:18px;flex:none;margin-top:2px}
+.foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding:18px 40px;border-top:1px solid var(--line);background:var(--soft)}
+.btn{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 18px;border-radius:8px;font:600 14px Inter,sans-serif;border:1px solid var(--line);background:#fff;color:var(--ink2)}
+.btn svg{width:18px;height:18px}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.saved{font-size:13px;color:var(--good);display:flex;align-items:center;gap:6px}.saved svg{width:16px;height:16px}
+/* Type picker */
+.types{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.type{border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:8px;position:relative;background:#fff}
+.type .ic{width:42px;height:42px;border-radius:10px;background:var(--wash);color:var(--brand);display:grid;place-items:center}
+.type .ic svg{width:22px;height:22px}
+.type b{font-size:15px}.type span{font-size:13px;color:var(--muted)}
+.type.sel{border-color:var(--brand);box-shadow:0 0 0 3px rgba(15,76,129,.12)}
+.type.sel::after{content:"";position:absolute;top:14px;right:14px;width:20px;height:20px;border-radius:50%;background:var(--brand) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/12px no-repeat}
+.paths{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:22px}
+.path{border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;gap:12px}
+.path .ic{width:36px;height:36px;border-radius:9px;background:var(--good-wash);color:var(--good);display:grid;place-items:center;flex:none}
+.path .ic svg{width:18px;height:18px}
+.path b{display:block;font-size:14px}.path span{font-size:13px;color:var(--muted)}
+/* Phone frame */
+.phones{display:flex;gap:24px;flex-wrap:wrap}
+.phone{width:390px;background:#fff;border:1px solid var(--line);border-radius:22px;overflow:hidden}
+.phone .ph-top{background:var(--navy);color:#fff;padding:16px 18px}
+.phone .ph-top b{font-size:15px}
+.phone .ph-steps{display:flex;gap:4px;margin-top:12px}.phone .ph-steps i{flex:1;height:4px;border-radius:4px;background:rgba(255,255,255,.2)}.phone .ph-steps i.d{background:#5FA8E8}.phone .ph-steps i.n{background:#fff}
+.phone .ph-body{padding:20px 16px}
+.phone .grid{grid-template-columns:1fr}
+.phone .ph-foot{display:flex;gap:10px;padding:14px 16px;border-top:1px solid var(--line);background:var(--soft)}
+.phone .ph-foot .btn{flex:1;justify-content:center}
+.review{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.review div{display:flex;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--line);font-size:14px}.review div:first-child{border-top:0}
+.review dt{color:var(--muted)}.review dd{margin:0;font-weight:600}
+</style></head><body><div class="board">
+
+<p class="cap">1 · Desktop — choose facility type (step 1 of 6)</p>
+<div class="frame">
+ <aside class="rail">
+  <div class="logo"><img src="../../../public/images/health-id/seal.webp" alt="">OpesCare</div>
+  <h2>Bring your facility onto OpesCare</h2>
+  <p class="lead">About 10 minutes. You can stop at any step and continue later.</p>
+  <ol class="steps">
+   <li class="now"><div class="dot">1</div><div><b>Facility type</b><span>Hospital, clinic, pharmacy…</span></div></li>
+   <li class="todo"><div class="dot">2</div><div><b>Facility details</b><span>Legal name, licence, address</span></div></li>
+   <li class="todo"><div class="dot">3</div><div><b>Responsible person</b><span>Who we contact and verify</span></div></li>
+   <li class="todo"><div class="dot">4</div><div><b>Services</b><span>What patients can find</span></div></li>
+   <li class="todo"><div class="dot">5</div><div><b>Documents</b><span>Licence and registration</span></div></li>
+   <li class="todo"><div class="dot">6</div><div><b>Review and submit</b><span>Check and agree</span></div></li>
+  </ol>
+  <div class="rail-foot">
+   <div><i data-lucide="shield-check"></i>Reviewed by OpesCare before activation</div>
+   <div><i data-lucide="lock"></i>Documents stored privately, never public</div>
+   <div><i data-lucide="phone"></i>Help: +237 · support@opescare.com</div>
+  </div>
+ </aside>
+ <section class="main">
+  <div class="top"><div class="meta">Step 1 of 6<div class="bar"><i style="width:17%"></i></div></div><div class="lang"><span class="on">EN</span><span>FR</span></div></div>
+  <div class="body">
+   <div class="eyebrow">Facility type</div>
+   <h1>What kind of facility are you registering?</h1>
+   <p class="sub">This sets up the right desks, roles and public listing for your team.</p>
+   <div class="types">
+    <div class="type sel"><span class="ic"><i data-lucide="building-2"></i></span><b>Hospital</b><span>Wards, theatre, emergency, inpatient care</span></div>
+    <div class="type"><span class="ic"><i data-lucide="stethoscope"></i></span><b>Clinic or health centre</b><span>Outpatient consultations, maternity</span></div>
+    <div class="type"><span class="ic"><i data-lucide="pill"></i></span><b>Pharmacy</b><span>Stock, dispensing, prescriptions</span></div>
+    <div class="type"><span class="ic"><i data-lucide="flask-conical"></i></span><b>Laboratory</b><span>Samples, results, critical values</span></div>
+    <div class="type"><span class="ic"><i data-lucide="scan-line"></i></span><b>Imaging centre</b><span>Worklist, reporting, sign-off</span></div>
+    <div class="type"><span class="ic"><i data-lucide="droplet"></i></span><b>Blood bank</b><span>Blood stock and requests</span></div>
+   </div>
+   <div class="paths">
+    <div class="path"><span class="ic"><i data-lucide="map-pin"></i></span><div><b>Already listed on OpesCare?</b><span>Claim your existing profile instead — keeps your reviews and map pin.</span></div></div>
+    <div class="path"><span class="ic"><i data-lucide="gift"></i></span><div><b>No system yet?</b><span>Community and NGO facilities can receive an OPES system free.</span></div></div>
+   </div>
+  </div>
+  <div class="foot"><span class="saved"><i data-lucide="cloud-check"></i>Progress saved automatically</span><div style="display:flex;gap:10px"><a class="btn"><i data-lucide="arrow-left"></i>Back</a><a class="btn primary">Continue<i data-lucide="arrow-right"></i></a></div></div>
+ </section>
+</div>
+
+<p class="cap">2 · Desktop — facility details (step 2 of 6)</p>
+<div class="frame">
+ <aside class="rail">
+  <div class="logo"><img src="../../../public/images/health-id/seal.webp" alt="">OpesCare</div>
+  <h2>Bring your facility onto OpesCare</h2>
+  <p class="lead">About 10 minutes. You can stop at any step and continue later.</p>
+  <ol class="steps">
+   <li class="done"><div class="dot"><i data-lucide="check" style="width:14px;height:14px"></i></div><div><b>Facility type</b><span>Hospital</span></div></li>
+   <li class="now"><div class="dot">2</div><div><b>Facility details</b><span>Legal name, licence, address</span></div></li>
+   <li class="todo"><div class="dot">3</div><div><b>Responsible person</b><span>Who we contact and verify</span></div></li>
+   <li class="todo"><div class="dot">4</div><div><b>Services</b><span>What patients can find</span></div></li>
+   <li class="todo"><div class="dot">5</div><div><b>Documents</b><span>Licence and registration</span></div></li>
+   <li class="todo"><div class="dot">6</div><div><b>Review and submit</b><span>Check and agree</span></div></li>
+  </ol>
+  <div class="rail-foot">
+   <div><i data-lucide="shield-check"></i>Reviewed by OpesCare before activation</div>
+   <div><i data-lucide="lock"></i>Documents stored privately, never public</div>
+   <div><i data-lucide="phone"></i>Help: +237 · support@opescare.com</div>
+  </div>
+ </aside>
+ <section class="main">
+  <div class="top"><div class="meta">Step 2 of 6<div class="bar"><i style="width:33%"></i></div></div><div class="lang"><span class="on">EN</span><span>FR</span></div></div>
+  <div class="body">
+   <div class="eyebrow">Facility details</div>
+   <h1>Tell us about your hospital</h1>
+   <p class="sub">Use the names exactly as they appear on your operating licence.</p>
+   <fieldset><legend>Identity</legend><p class="legend-sub">Shown to patients on your public profile.</p>
+    <div class="grid">
+     <div class="full"><label>Legal name <em>*</em></label><input class="input" value="Hôpital Saint-Luc de Mvog-Ada"></div>
+     <div><label>Name patients know you by</label><input class="input" value="Saint-Luc"></div>
+     <div><label>Ownership <em>*</em></label><select class="input"><option>Private not-for-profit</option></select></div>
+    </div></fieldset>
+   <fieldset><legend>Registration</legend><p class="legend-sub">Checked by our team; never shown publicly.</p>
+    <div class="grid">
+     <div><label>MINSANTE licence number <em>*</em></label><input class="input" placeholder="e.g. 0123/A/MINSANTE"><div class="help">Found at the top of your operating authorisation.</div></div>
+     <div><label>Taxpayer number (NIU)</label><input class="input" placeholder="M0123456789X"></div>
+    </div></fieldset>
+   <fieldset><legend>Location and contact</legend>
+    <div class="grid">
+     <div><label>Region <em>*</em></label><select class="input"><option>Centre</option></select></div>
+     <div><label>City <em>*</em></label><input class="input" value="Yaoundé"></div>
+     <div class="full"><label>Street address or landmark <em>*</em></label><input class="input" placeholder="e.g. Behind Mvog-Ada market"></div>
+     <div><label>Main phone <em>*</em></label><div class="prefix"><span>+237</span><input class="input" placeholder="6XX XX XX XX"></div><div class="help">We send a confirmation code to this number.</div></div>
+     <div><label>Main email</label><input class="input" placeholder="contact@hopital.cm"></div>
+    </div></fieldset>
+   <div class="note"><i data-lucide="info"></i><div>Already on the OpesCare map? We will match this to your existing listing so patients keep finding you.</div></div>
+  </div>
+  <div class="foot"><span class="saved"><i data-lucide="cloud-check"></i>Saved 2 seconds ago</span><div style="display:flex;gap:10px"><a class="btn"><i data-lucide="arrow-left"></i>Back</a><a class="btn primary">Continue<i data-lucide="arrow-right"></i></a></div></div>
+ </section>
+</div>
+
+<p class="cap">3 · Phone — details step and review step</p>
+<div class="phones">
+ <div class="phone">
+  <div class="ph-top"><b>Facility details</b><div style="font-size:12px;color:#AFC3D8">Step 2 of 6</div><div class="ph-steps"><i class="d"></i><i class="n"></i><i></i><i></i><i></i><i></i></div></div>
+  <div class="ph-body">
+   <h1 style="font-size:22px">Tell us about your hospital</h1><p class="sub" style="margin-bottom:18px">Use the names on your licence.</p>
+   <div class="grid">
+    <div><label>Legal name <em>*</em></label><input class="input" value="Hôpital Saint-Luc"></div>
+    <div><label>MINSANTE licence number <em>*</em></label><input class="input" placeholder="0123/A/MINSANTE"></div>
+    <div><label>City <em>*</em></label><input class="input" value="Yaoundé"></div>
+    <div><label>Main phone <em>*</em></label><div class="prefix"><span>+237</span><input class="input"></div></div>
+   </div>
+  </div>
+  <div class="ph-foot"><a class="btn"><i data-lucide="arrow-left"></i>Back</a><a class="btn primary">Continue</a></div>
+ </div>
+ <div class="phone">
+  <div class="ph-top"><b>Review and submit</b><div style="font-size:12px;color:#AFC3D8">Step 6 of 6</div><div class="ph-steps"><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="n"></i></div></div>
+  <div class="ph-body">
+   <h1 style="font-size:22px">Check before you submit</h1>
+   <dl class="review">
+    <div><dt>Type</dt><dd>Hospital</dd></div>
+    <div><dt>Legal name</dt><dd>Hôpital Saint-Luc</dd></div>
+    <div><dt>Licence</dt><dd>0123/A/MINSANTE</dd></div>
+    <div><dt>Responsible person</dt><dd>Dr A. Mbarga</dd></div>
+    <div><dt>Documents</dt><dd style="color:var(--good)">2 uploaded</dd></div>
+   </dl>
+   <div class="note" style="margin-top:16px"><i data-lucide="clock"></i><div>Our team reviews within 2 working days. You get an SMS and an email with your activation link.</div></div>
+  </div>
+  <div class="ph-foot"><a class="btn"><i data-lucide="arrow-left"></i>Back</a><a class="btn primary">Submit</a></div>
+ </div>
+</div>
+
+</div><script>lucide.createIcons();</script></body></html>

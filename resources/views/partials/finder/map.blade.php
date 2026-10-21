@@ -11,6 +11,7 @@
     click/drag and follows them when typed. 'facilities' is not needed.
 --}}
 @php
+    // Optional: 'numbered' => true labels pins 1..N in list order.
     $mapId  = $mapId  ?? 'finder-map';
     $height = $height ?? '420px';
     $single = $single ?? false;
@@ -19,8 +20,10 @@
     $facilities = $facilities ?? [];
     $l = app()->getLocale();
 
+    $numbered = $numbered ?? false;
     $points = collect($facilities)
-        ->map(function ($f) {
+        ->values()
+        ->map(function ($f, $i) use ($numbered) {
             $lat = $f->latitude  ?? null;
             $lng = $f->longitude ?? null;
             if ($lat === null || $lng === null) {
@@ -39,6 +42,9 @@
                 'url'      => $id ? route('public.care-map.profile', array_filter(['id' => $id, 'lang' => request('lang')])) : null,
                 'phone'    => $phone,
                 'distance' => isset($f->distance) ? round((float) $f->distance, 1) : null,
+                // Numbered from the list order BEFORE coordinate filtering, so
+                // pin N is always card N even when a card has no coordinates.
+                'n'        => $numbered ? $i + 1 : null,
             ];
         })
         ->filter()
@@ -70,6 +76,8 @@
             .finder-map-locate:hover{background:#f1f5f9}
             .finder-user-dot{width:22px;height:22px;position:relative}
             .finder-user-dot span{position:absolute;inset:5px;background:#2563EB;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(37,99,235,.25)}
+            .finder-num-pin{display:grid;place-items:center;width:30px;height:30px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--pin,#0F4C81);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+            .finder-num-pin b{transform:rotate(45deg);color:#fff;font:700 12px Inter,system-ui,sans-serif}
             .finder-map-popup{padding:.7rem;font-family:Inter,system-ui,sans-serif;min-width:170px}
             .finder-map-popup .fmp-name{font-size:.85rem;font-weight:700;margin-bottom:.15rem;color:#0f172a}
             .finder-map-popup .fmp-city{font-size:.72rem;color:#64748b;margin-bottom:.5rem}
@@ -86,6 +94,6 @@
 @else
 <div class="finder-map-shell" style="--fm-h: {{ $height }}">
     <div data-finder-map id="{{ $mapId }}" role="application" aria-label="{{ __('finder_map.aria', [], $l) }}"></div>
-    <script type="application/json" class="finder-map-data">@json(['single' => (bool) $single, 'facilities' => $points])</script>
+    <script type="application/json" class="finder-map-data">@json(['single' => (bool) $single, 'facilities' => $points, 'pinColor' => $pinColor ?? null])</script>
 </div>
 @endif

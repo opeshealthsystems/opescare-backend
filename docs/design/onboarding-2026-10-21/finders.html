@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Preview — directory, medicine and blood finders</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+:root{--brand:#0F4C81;--brand-ink:#0B3A63;--navy:#0B2A4A;--ink:#0F172A;--ink2:#334155;--muted:#64748B;--line:#E2E8F0;--soft:#F8FAFC;--wash:#EAF2FA;--good:#047857;--good-wash:#ECFDF5;--warn:#B45309;--warn-wash:#FFFBEB;--bad:#B91C1C;--bad-wash:#FEF2F2}
+*{box-sizing:border-box}body{margin:0;font:14px/1.5 Inter,system-ui,sans-serif;color:var(--ink);background:#E9EEF4}
+.board{max-width:1400px;margin:0 auto;padding:28px 20px 60px}
+.cap{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:28px 0 10px}
+.frame{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+svg{width:18px;height:18px}
+/* App bar */
+.appbar{display:flex;align-items:center;gap:24px;padding:12px 24px;border-bottom:1px solid var(--line)}
+.logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:17px}.logo img{width:26px}
+.nav{display:flex;gap:4px}.nav a{padding:8px 12px;border-radius:8px;font-weight:500;color:var(--ink2)}.nav a.on{background:var(--wash);color:var(--brand);font-weight:600}
+.appbar .right{margin-left:auto;display:flex;gap:10px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 14px;border-radius:8px;font:600 13.5px Inter,sans-serif;border:1px solid var(--line);background:#fff;color:var(--ink2);white-space:nowrap}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.danger{color:var(--bad);border-color:#FECACA;background:var(--bad-wash)}
+.btn.sm{height:32px;padding:0 10px;font-size:13px}
+/* Search header */
+.shead{padding:22px 24px 16px;background:var(--soft);border-bottom:1px solid var(--line)}
+.shead h1{font-size:24px;letter-spacing:-.02em;margin:0 0 4px}
+.shead p{margin:0 0 14px;color:var(--muted)}
+.sbar{display:grid;grid-template-columns:1.6fr 1fr auto;gap:0;border:1px solid #CBD5E1;border-radius:12px;background:#fff;overflow:hidden;max-width:980px}
+.sbar label{display:flex;align-items:center;gap:10px;padding:0 14px;height:52px;border-right:1px solid var(--line)}
+.sbar label svg{color:var(--muted);flex:none}
+.sbar label div{display:grid}.sbar small{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}.sbar span{font-size:15px;color:var(--ink)}
+.sbar .go{margin:6px;height:40px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:500;color:var(--ink2)}
+.chip b{font-weight:600;color:var(--muted);font-size:12px}
+.chip.on{background:var(--brand);border-color:var(--brand);color:#fff}.chip.on b{color:#C7DDF2}
+/* Layout */
+.split{display:grid;grid-template-columns:260px minmax(0,1fr) 420px;min-height:640px}
+.filters{border-right:1px solid var(--line);padding:18px}
+.filters h3{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.filters section{padding-bottom:16px;margin-bottom:16px;border-bottom:1px solid var(--line)}
+.check{display:flex;align-items:center;gap:8px;padding:5px 0;color:var(--ink2)}
+.check i{width:16px;height:16px;border:1.5px solid #94A3B8;border-radius:4px}.check.on i{background:var(--brand);border-color:var(--brand)}
+.check em{margin-left:auto;font-style:normal;font-size:12px;color:var(--muted)}
+.results{padding:16px 20px;background:#fff}
+.rhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.rhead b{font-size:15px}.rhead span{color:var(--muted)}
+.sort{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:13px}.sort b{color:var(--ink);font-size:13px}
+.card{display:grid;grid-template-columns:48px 1fr auto;gap:14px;padding:16px;border:1px solid var(--line);border-radius:12px;margin-bottom:10px}
+.card:hover{border-color:#B6CDE4}
+.av{width:48px;height:48px;border-radius:10px;background:var(--wash);color:var(--brand);display:grid;place-items:center}.av svg{width:22px;height:22px}
+.card h4{margin:0;font-size:15.5px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;color:var(--muted);font-size:13px;margin-top:4px}.meta span{display:inline-flex;align-items:center;gap:4px}.meta svg{width:14px;height:14px}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.tag{font-size:12px;font-weight:600;padding:2px 8px;border-radius:6px;background:var(--soft);border:1px solid var(--line);color:var(--ink2)}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px}
+.pill.ok{background:var(--good-wash);color:var(--good)}.pill.low{background:var(--warn-wash);color:var(--warn)}.pill.out{background:var(--bad-wash);color:var(--bad)}.pill.info{background:var(--wash);color:var(--brand)}
+.pill i{width:7px;height:7px;border-radius:50%;background:currentColor}
+.acts{display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;gap:8px}
+.dist{font-weight:700;font-size:15px}.dist small{display:block;font-weight:500;color:var(--muted);font-size:12px;text-align:right}
+.map{background:#DCE6EF url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='640'%3E%3Cg fill='none' stroke='%23C5D3E0' stroke-width='6'%3E%3Cpath d='M0 120 C120 140 220 90 420 160'/%3E%3Cpath d='M60 0 C90 200 40 400 120 640'/%3E%3Cpath d='M0 420 C150 380 300 470 420 400'/%3E%3Cpath d='M300 0 C260 200 330 420 280 640'/%3E%3C/g%3E%3C/svg%3E");position:relative;border-left:1px solid var(--line)}
+.pin{position:absolute;width:30px;height:30px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--brand);border:2px solid #fff;display:grid;place-items:center}
+.pin b{transform:rotate(45deg);color:#fff;font-size:12px}
+.pin.sel{background:#fff;border-color:var(--brand)}.pin.sel b{color:var(--brand)}
+.mapctl{position:absolute;top:12px;right:12px;display:grid;gap:6px}
+.mapctl span{width:34px;height:34px;background:#fff;border:1px solid var(--line);border-radius:8px;display:grid;place-items:center}
+.pager{display:flex;justify-content:space-between;align-items:center;margin-top:14px;color:var(--muted)}
+/* Stock / blood specifics */
+.price{font-weight:700;font-size:15px}.price small{font-weight:500;color:var(--muted);font-size:12px}
+.fresh{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px}.fresh svg{width:13px;height:13px}
+.btype{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;max-width:560px;margin-top:12px}
+.btype span{height:44px;border:1px solid var(--line);border-radius:10px;background:#fff;display:grid;place-items:center;font-weight:700;font-size:15px}
+.btype span.on{background:var(--bad);border-color:var(--bad);color:#fff}
+.bgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.bcell{border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.bcell small{display:block;font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.bcell b{font-size:15px}
+.alert{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:10px;background:var(--bad-wash);color:#7F1D1D;border:1px solid #FECACA;margin-bottom:14px}
+.empty{border:1px dashed #CBD5E1;border-radius:12px;padding:22px;text-align:center;color:var(--muted)}
+.empty b{display:block;color:var(--ink);font-size:15px;margin:6px 0 2px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) 420px}
+</style></head><body><div class="board">
+
+<p class="cap">1 · Facility directory — filters, list, live map</p>
+<div class="frame">
+ <div class="appbar"><div class="logo"><img src="../../../public/images/health-id/seal.webp" alt="">OpesCare</div>
+  <nav class="nav"><a class="on">Facilities</a><a>Medicines</a><a>Blood</a><a>Lab tests</a><a>Imaging</a></nav>
+  <div class="right"><a class="btn danger"><i data-lucide="siren"></i>Emergency 112</a><a class="btn">EN · FR</a><a class="btn primary">Sign in</a></div></div>
+ <div class="shead"><h1>Find a health facility</h1><p>2,737 hospitals, clinics, pharmacies and labs across Cameroon.</p>
+  <div class="sbar"><label><i data-lucide="search"></i><div><small>What</small><span>Hospital, clinic, maternity…</span></div></label><label><i data-lucide="map-pin"></i><div><small>Where</small><span>Yaoundé, Centre</span></div></label><a class="btn primary go"><i data-lucide="search"></i>Search</a></div>
+  <div class="chips"><span class="chip on">All <b>2,737</b></span><span class="chip">Clinics <b>920</b></span><span class="chip">Pharmacies <b>557</b></span><span class="chip">Hospitals <b>519</b></span><span class="chip">Health centres <b>435</b></span><span class="chip"><i data-lucide="locate-fixed" style="width:15px"></i>Near me</span></div></div>
+ <div class="split">
+  <aside class="filters">
+   <section><h3>Open</h3><div class="check on"><i></i>Open now</div><div class="check"><i></i>Open 24 hours</div><div class="check"><i></i>Emergency services</div></section>
+   <section><h3>Services</h3><div class="check"><i></i>Maternity<em>212</em></div><div class="check"><i></i>Laboratory<em>388</em></div><div class="check"><i></i>Imaging<em>96</em></div><div class="check"><i></i>Books online<em>41</em></div></section>
+   <section><h3>Region</h3><div class="check on"><i></i>Centre<em>914</em></div><div class="check"><i></i>Littoral<em>702</em></div><div class="check"><i></i>Ouest<em>301</em></div></section>
+   <section style="border:0"><h3>Profile</h3><div class="check"><i></i>Verified by facility</div><div class="check"><i></i>Has phone number</div></section>
+  </aside>
+  <section class="results">
+   <div class="rhead"><div><b>914 facilities</b> <span>in Centre · open now</span></div><div class="sort">Sort <b>Nearest</b><i data-lucide="chevron-down" style="width:14px"></i></div></div>
+   <article class="card"><span class="av"><i data-lucide="building-2"></i></span><div><h4>Hôpital Central de Yaoundé</h4><div class="meta"><span><i data-lucide="map-pin"></i>Centre-ville, Yaoundé</span><span><i data-lucide="clock"></i>Open 24 hours</span></div><div class="tags"><span class="pill info"><i data-lucide="badge-check" style="width:13px;height:13px"></i>Verified</span><span class="tag">Emergency</span><span class="tag">Maternity</span><span class="tag">Imaging</span></div></div><div class="acts"><div class="dist">1.2 km<small>5 min drive</small></div><div style="display:flex;gap:6px"><a class="btn sm"><i data-lucide="phone" style="width:15px"></i>Call</a><a class="btn sm primary">Book</a></div></div></article>
+   <article class="card"><span class="av"><i data-lucide="stethoscope"></i></span><div><h4>Clinique de l'Espoir</h4><div class="meta"><span><i data-lucide="map-pin"></i>Bastos, Yaoundé</span><span><i data-lucide="clock"></i>Open · closes 20:00</span></div><div class="tags"><span class="tag">Consultations</span><span class="tag">Laboratory</span></div></div><div class="acts"><div class="dist">2.8 km<small>11 min</small></div><div style="display:flex;gap:6px"><a class="btn sm"><i data-lucide="navigation" style="width:15px"></i>Directions</a><a class="btn sm">Profile</a></div></div></article>
+   <article class="card"><span class="av"><i data-lucide="pill"></i></span><div><h4>Pharmacie du Soleil</h4><div class="meta"><span><i data-lucide="map-pin"></i>Mvog-Mbi, Yaoundé</span><span><i data-lucide="clock"></i>On duty tonight</span></div><div class="tags"><span class="tag">Stock updated today</span></div></div><div class="acts"><div class="dist">3.1 km<small>13 min</small></div><div style="display:flex;gap:6px"><a class="btn sm"><i data-lucide="phone" style="width:15px"></i>Call</a><a class="btn sm">Profile</a></div></div></article>
+   <div class="pager"><span>1–20 of 914</span><div style="display:flex;gap:6px"><a class="btn sm"><i data-lucide="chevron-left" style="width:15px"></i></a><a class="btn sm primary">1</a><a class="btn sm">2</a><a class="btn sm">3</a><a class="btn sm"><i data-lucide="chevron-right" style="width:15px"></i></a></div></div>
+  </section>
+  <div class="map"><div class="mapctl"><span><i data-lucide="plus"></i></span><span><i data-lucide="minus"></i></span><span><i data-lucide="locate-fixed"></i></span></div>
+   <span class="pin sel" style="left:180px;top:240px"><b>1</b></span><span class="pin" style="left:240px;top:150px"><b>2</b></span><span class="pin" style="left:120px;top:340px"><b>3</b></span><span class="pin" style="left:300px;top:400px"><b>4</b></span><span class="pin" style="left:90px;top:120px"><b>5</b></span></div>
+ </div>
+</div>
+
+<p class="cap">2 · Medicine finder — live stock with price and freshness</p>
+<div class="frame">
+ <div class="appbar"><div class="logo"><img src="../../../public/images/health-id/seal.webp" alt="">OpesCare</div><nav class="nav"><a>Facilities</a><a class="on">Medicines</a><a>Blood</a><a>Lab tests</a><a>Imaging</a></nav><div class="right"><a class="btn">EN · FR</a><a class="btn primary">Sign in</a></div></div>
+ <div class="shead"><h1>Find a medicine in stock near you</h1><p>Stock reported by pharmacies on OpesCare. Call ahead before you travel.</p>
+  <div class="sbar"><label><i data-lucide="pill"></i><div><small>Medicine</small><span>Amoxicilline 500 mg</span></div></label><label><i data-lucide="map-pin"></i><div><small>Near</small><span>Douala, Akwa</span></div></label><a class="btn primary go"><i data-lucide="search"></i>Search</a></div>
+  <div class="chips"><span class="chip on">Gélules 500 mg</span><span class="chip">Suspension 250 mg/5 ml</span><span class="chip">Comprimés 1 g</span><span class="chip"><i data-lucide="moon" style="width:15px"></i>Pharmacies on duty</span></div></div>
+ <div class="two">
+  <section class="results">
+   <div class="rhead"><div><b>6 pharmacies</b> <span>have it in stock</span></div><div class="sort">Sort <b>Nearest</b><i data-lucide="chevron-down" style="width:14px"></i></div></div>
+   <article class="card"><span class="av"><i data-lucide="pill"></i></span><div><h4>Pharmacie de la Cité</h4><div class="meta"><span><i data-lucide="map-pin"></i>Akwa, Douala</span><span><i data-lucide="clock"></i>Open · closes 21:00</span></div><div class="tags"><span class="pill ok"><i></i>In stock</span><span class="fresh"><i data-lucide="refresh-cw"></i>Updated 40 min ago</span></div></div><div class="acts"><div class="price">1,500 FCFA<small> / box of 12</small></div><div style="display:flex;gap:6px"><a class="btn sm"><i data-lucide="phone" style="width:15px"></i>Call</a><a class="btn sm primary">Reserve</a></div></div></article>
+   <article class="card"><span class="av"><i data-lucide="pill"></i></span><div><h4>Pharmacie Bonanjo</h4><div class="meta"><span><i data-lucide="map-pin"></i>Bonanjo, Douala · 1.9 km</span></div><div class="tags"><span class="pill low"><i></i>Low stock</span><span class="fresh"><i data-lucide="refresh-cw"></i>Updated 3 h ago</span></div></div><div class="acts"><div class="price">1,450 FCFA<small> / box</small></div><div style="display:flex;gap:6px"><a class="btn sm"><i data-lucide="phone" style="width:15px"></i>Call</a><a class="btn sm primary">Reserve</a></div></div></article>
+   <article class="card"><span class="av"><i data-lucide="pill"></i></span><div><h4>Pharmacie du Port</h4><div class="meta"><span><i data-lucide="map-pin"></i>Bonapriso · 3.4 km</span></div><div class="tags"><span class="pill ok"><i></i>In stock</span><span class="fresh"><i data-lucide="refresh-cw"></i>Updated yesterday</span></div></div><div class="acts"><div class="price" style="color:var(--muted);font-size:13px">Price not published</div><a class="btn sm"><i data-lucide="phone" style="width:15px"></i>Call</a></div></article>
+   <div class="empty"><i data-lucide="info"></i><b>Not every pharmacy reports stock yet</b>Pharmacies that are not on OpesCare may still have it. <a style="color:var(--brand);font-weight:600">See all pharmacies near Akwa</a></div>
+  </section>
+  <div class="map" style="min-height:560px"><div class="mapctl"><span><i data-lucide="plus"></i></span><span><i data-lucide="minus"></i></span></div><span class="pin sel" style="left:200px;top:220px"><b>1</b></span><span class="pin" style="left:150px;top:300px"><b>2</b></span><span class="pin" style="left:260px;top:360px"><b>3</b></span></div>
+ </div>
+</div>
+
+<p class="cap">3 · Blood finder — pick a group, see banks and products</p>
+<div class="frame">
+ <div class="appbar"><div class="logo"><img src="../../../public/images/health-id/seal.webp" alt="">OpesCare</div><nav class="nav"><a>Facilities</a><a>Medicines</a><a class="on">Blood</a><a>Lab tests</a><a>Imaging</a></nav><div class="right"><a class="btn danger"><i data-lucide="siren"></i>Emergency 112</a><a class="btn primary">Sign in</a></div></div>
+ <div class="shead"><h1>Find blood</h1><p>Availability reported by hospitals and blood banks. Always confirm by phone — this is not a reservation.</p>
+  <div class="btype"><span>A+</span><span>A−</span><span>B+</span><span>B−</span><span>AB+</span><span>AB−</span><span class="on">O+</span><span>O−</span></div>
+  <div class="chips"><span class="chip on">Whole blood</span><span class="chip">Red cells</span><span class="chip">Plasma</span><span class="chip">Platelets</span><span class="chip"><i data-lucide="map-pin" style="width:15px"></i>Yaoundé</span></div></div>
+ <div class="two">
+  <section class="results">
+   <div class="alert"><i data-lucide="triangle-alert"></i><div><b>In an emergency, call 112 or go straight to the nearest hospital.</b> Do not wait for stock to show here.</div></div>
+   <div class="rhead"><div><b>3 places</b> <span>report O+ whole blood</span></div><div class="sort">Sort <b>Most available</b></div></div>
+   <article class="card"><span class="av" style="background:var(--bad-wash);color:var(--bad)"><i data-lucide="droplet"></i></span><div><h4>Centre National de Transfusion Sanguine</h4><div class="meta"><span><i data-lucide="map-pin"></i>Messa, Yaoundé · 2.1 km</span><span><i data-lucide="clock"></i>Open 24 hours</span></div>
+     <div class="bgrid"><div class="bcell"><small>Whole blood</small><b>Available</b></div><div class="bcell"><small>Red cells</small><b>Available</b></div><div class="bcell"><small>Plasma</small><b style="color:var(--warn)">Low</b></div><div class="bcell"><small>Platelets</small><b style="color:var(--muted)">—</b></div></div>
+     <div class="tags"><span class="fresh"><i data-lucide="refresh-cw"></i>Updated 25 min ago by the blood bank</span></div></div>
+    <div class="acts"><span class="pill ok"><i></i>Available</span><a class="btn sm primary"><i data-lucide="phone" style="width:15px"></i>Call now</a></div></article>
+   <article class="card"><span class="av" style="background:var(--bad-wash);color:var(--bad)"><i data-lucide="droplet"></i></span><div><h4>Hôpital Général de Yaoundé — banque de sang</h4><div class="meta"><span><i data-lucide="map-pin"></i>Ngousso · 6.4 km</span></div>
+     <div class="bgrid"><div class="bcell"><small>Whole blood</small><b style="color:var(--warn)">Low</b></div><div class="bcell"><small>Red cells</small><b>Available</b></div><div class="bcell"><small>Plasma</small><b>Available</b></div><div class="bcell"><small>Platelets</small><b style="color:var(--bad)">Out</b></div></div>
+     <div class="tags"><span class="fresh"><i data-lucide="refresh-cw"></i>Updated 2 h ago</span></div></div>
+    <div class="acts"><span class="pill low"><i></i>Low</span><a class="btn sm primary"><i data-lucide="phone" style="width:15px"></i>Call now</a></div></article>
+  </section>
+  <div class="map" style="min-height:520px"><span class="pin sel" style="left:190px;top:230px;background:#fff;border-color:var(--bad)"><b style="color:var(--bad)">1</b></span><span class="pin" style="left:270px;top:150px;background:var(--bad)"><b>2</b></span></div>
+ </div>
+</div>
+
+</div><script>lucide.createIcons();</script></body></html>

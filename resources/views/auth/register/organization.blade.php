@@ -1,474 +1,492 @@
 @extends('layouts.auth')
 
 @section('title', __('onboarding.org.title'))
+@section('auth_bare', '1')
+@section('body_class', 'ob-page')
 
-@push('styles')
-<style>
-.reg-success-card{text-align:center}
-.reg-success-icon{width:4.5rem;height:4.5rem;background:var(--auth-teal-light);color:var(--auth-teal);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-bottom:1.5rem}
-.reg-success-icon__i{width:2.25rem;height:2.25rem}
-.reg-success-title{font-size:1.65rem}
-.reg-success-sub{margin-top:0.5rem;margin-bottom:2rem}
-.pending-status-card{background:var(--auth-bg,#f8fafc);border-radius:.75rem;border:1px solid var(--auth-border,#e2e8f0);padding:1.5rem;text-align:left;max-width:450px;margin:0 auto 2rem}
-.pending-meta-value{font-family:monospace;font-weight:800}
-.auth-back-link{display:inline-flex;margin-bottom:1.5rem}
-.step-title-label{font-size:.8125rem;font-weight:700;color:var(--auth-text-secondary,#64748b)}
-.form-group-mt{margin-top:1.5rem}
-.notice-mt{margin-top:2rem}
-.notice-mb{margin-bottom:2rem}
-.notice-strong{display:block;margin-bottom:.4rem}
-</style>
+@push('head')
+<link rel="stylesheet" href="{{ asset('css/onboarding.css') }}?v={{ @filemtime(public_path('css/onboarding.css')) ?: '1' }}">
 @endpush
 
+@php
+    // Split-layout facility onboarding (design 2026-10-21). Field names,
+    // validation and the POST target are unchanged — see
+    // PublicPageController@submitOrganizationRegister.
+    $obSteps = ['type', 'details', 'person', 'services', 'documents', 'review'];
+    $obTotal = count($obSteps);
+
+    $obTypes = [
+        'hospital'      => 'building-2',
+        'clinic'        => 'stethoscope',
+        'pharmacy'      => 'pill',
+        'laboratory'    => 'flask-conical',
+        'imaging'       => 'scan-line',
+        'blood_bank'    => 'droplet',
+        'public_health' => 'globe',
+    ];
+    $obSelectedType = old('org_type', request('type'));
+    if (! array_key_exists((string) $obSelectedType, $obTypes)) {
+        $obSelectedType = 'hospital';
+    }
+
+    $obTypeMsg = [
+        'hospital'      => __('onboarding.org.variants.hospital_msg'),
+        'clinic'        => __('onboarding.org.variants.clinic_msg'),
+        'pharmacy'      => __('onboarding.org.variants.pharmacy_msg'),
+        'laboratory'    => __('onboarding.org.variants.laboratory_msg'),
+        'imaging'       => __('onboarding_flow.services.imaging_msg'),
+        'blood_bank'    => __('onboarding_flow.services.blood_bank_msg'),
+        'public_health' => __('onboarding.org.variants.public_health_msg'),
+    ];
+    $obTypeNotice = [
+        'hospital'      => __('onboarding.org.variants.hospital_notice'),
+        'clinic'        => __('onboarding.org.variants.clinic_notice'),
+        'pharmacy'      => __('onboarding.org.variants.pharmacy_notice'),
+        'laboratory'    => __('onboarding.org.variants.laboratory_notice'),
+        'imaging'       => __('onboarding_flow.services.imaging_notice'),
+        'blood_bank'    => __('onboarding_flow.services.blood_bank_notice'),
+        'public_health' => __('onboarding.org.variants.public_health_notice'),
+    ];
+
+    // Services per type. Values are the ones the form always sent.
+    $obServices = [
+        'clinical'   => ['types' => 'hospital clinic public_health', 'items' => [
+            'outpatient' => __('ui_sweep.register.svc_outpatient'),
+            'emergency'  => __('ui_sweep.register.svc_emergency'),
+            'inpatient'  => __('ui_sweep.register.svc_inpatient'),
+            'laboratory' => __('ui_sweep.register.type_laboratory'),
+            'pharmacy'   => __('ui_sweep.register.type_pharmacy'),
+            'radiology'  => __('ui_sweep.register.svc_radiology'),
+        ]],
+        'pharmacy'   => ['types' => 'pharmacy', 'items' => [
+            'dispensing'   => __('ui_sweep.register.svc_dispensing'),
+            'availability' => __('ui_sweep.register.svc_availability'),
+            'reservation'  => __('ui_sweep.register.svc_reservation'),
+        ]],
+        'laboratory' => ['types' => 'laboratory', 'items' => [
+            'collection'  => __('ui_sweep.register.svc_collection'),
+            'entry'       => __('ui_sweep.register.svc_entry'),
+            'validation'  => __('ui_sweep.register.svc_validation'),
+            'integration' => __('ui_sweep.register.svc_integration'),
+        ]],
+        'imaging'    => ['types' => 'imaging', 'items' => [
+            'radiology' => __('ui_sweep.register.svc_radiology'),
+            'reporting' => __('onboarding_flow.services.svc_reporting'),
+        ]],
+        'blood_bank' => ['types' => 'blood_bank', 'items' => [
+            'blood_stock'    => __('onboarding_flow.services.svc_blood_stock'),
+            'blood_requests' => __('onboarding_flow.services.svc_blood_requests'),
+        ]],
+    ];
+    $obOldServices = (array) old('services', []);
+
+    // Help line from config only — never invented.
+    $obHelpParts = array_values(array_filter(array_map("trim", [
+        (string) config('opescare.support_phone', ''),
+        (string) config('mail.support_address', ''),
+    ]), fn ($v) => $v !== '' && ! preg_match('/no-?reply/i', $v)));
+
+    // Phones are typed without the +237 the form adds on submit.
+    $obLocalPhone = fn ($v) => trim((string) preg_replace('/^\+?237\s*/', '', (string) $v));
+@endphp
+
 @section('content')
-    @if(isset($success_application))
-        <!-- Success Screen -->
-        <div class="auth-card reg-success-card">
-            <div class="reg-success-icon">
-                <i data-lucide="badge-check" class="reg-success-icon__i"></i>
-            </div>
-            <h1 class="auth-headline reg-success-title">{{ __('onboarding.org.success.title') }}</h1>
-            <p class="auth-subheadline reg-success-sub">{{ __('onboarding.org.success.desc') }}</p>
+<div class="ob" data-ob
+     data-ob-total="{{ $obTotal }}"
+     data-ob-step-of="{{ __('onboarding_flow.step_of') }}"
+     data-ob-required="{{ __('onboarding_flow.foot.required') }}"
+     data-ob-saved="{{ __('onboarding_flow.foot.saved') }}"
+     data-ob-not-saved="{{ __('onboarding_flow.foot.not_saved') }}"
+     data-ob-not-given="{{ __('onboarding_flow.review.not_given') }}"
+     data-ob-files="{{ __('onboarding_flow.review.files_count') }}"
+     @isset($success_application) data-ob-success="1" @endisset>
 
-            <div class="pending-status-card">
-                <div class="pending-meta-row">
-                    <span class="pending-meta-label">{{ __('ui_sweep.register.org_name') }}</span>
-                    <span class="pending-meta-value">{{ $legal_name }}</span>
-                </div>
-                <div class="pending-meta-row">
-                    <span class="pending-meta-label">{{ __('ui_sweep.register.reference_id') }}</span>
-                    <span class="pending-meta-value">{{ $ref_code }}</span>
-                </div>
-                <div class="pending-meta-row">
-                    <span class="pending-meta-label">{{ __('ui_sweep.register.submission_date') }}</span>
-                    <span class="pending-meta-value">{{ now()->format('Y-m-d H:i') }}</span>
-                </div>
-                <div class="pending-meta-row">
-                    <span class="pending-meta-label">{{ __('ui_sweep.register.current_status') }}</span>
-                    <span class="badge-status badge-review">{{ __('ui_sweep.register.under_review') }}</span>
-                </div>
-            </div>
+    {{-- ===== Left rail ===== --}}
+    <aside class="ob-rail">
+        <a href="{{ route('public.landing') }}" class="ob-logo" aria-label="{{ __('finder_shell.a11y.home') }}">
+            <img src="{{ asset('images/health-id/seal.webp') }}" alt="" width="30" height="30">OpesCare
+        </a>
+        <h2>{{ __('onboarding_flow.rail.title') }}</h2>
+        <p class="ob-lead">{{ __('onboarding_flow.rail.lead') }}</p>
 
-            <a href="{{ route('public.landing') }}" class="auth-btn auth-btn-primary">
-                <i data-lucide="arrow-left"></i>
-                <span>{{ __('onboarding.org.success.cta') }}</span>
-            </a>
+        <ol class="ob-steps" aria-label="{{ __('onboarding_flow.rail.steps_label') }}">
+            @foreach($obSteps as $i => $key)
+                @php $n = $i + 1; $done = isset($success_application) || $n < 1; $now = ! isset($success_application) && $n === 1; @endphp
+                <li data-ob-rail="{{ $n }}" @class(['is-done' => $done, 'is-now' => $now, 'is-todo' => ! $done && ! $now]) @if($now) aria-current="step" @endif>
+                    <div class="ob-dot"><span class="ob-num">{{ $n }}</span>@include('partials.finder.icon', ['name' => 'check', 'size' => 14])</div>
+                    <div><b>{{ __('onboarding_flow.steps.' . $key . '.title') }}</b><span class="ob-step-hint" @if($key === 'type') data-ob-type-hint @endif>{{ __('onboarding_flow.steps.' . $key . '.hint') }}</span></div>
+                </li>
+            @endforeach
+        </ol>
+
+        <div class="ob-rail-foot">
+            <div>@include('partials.finder.icon', ['name' => 'shield-check', 'size' => 16]){{ __('onboarding_flow.rail.trust_review') }}</div>
+            <div>@include('partials.finder.icon', ['name' => 'lock', 'size' => 16]){{ __('onboarding_flow.rail.trust_private') }}</div>
+            <div>@include('partials.finder.icon', ['name' => 'phone', 'size' => 16])
+                @if(count($obHelpParts))
+                    <span>{{ __('onboarding_flow.rail.help', ['contact' => implode(' · ', $obHelpParts)]) }}</span>
+                @else
+                    <a href="{{ route('public.contact') }}">{{ __('onboarding_flow.rail.help_page') }}</a>
+                @endif
+            </div>
         </div>
-    @else
-        <div class="auth-card">
+    </aside>
 
-            <a href="{{ route('register') }}" class="back-link auth-back-link">
-                <i data-lucide="arrow-left"></i>
-                {{ __('onboarding.common.back') }}
-            </a>
+    {{-- ===== Main pane ===== --}}
+    <section class="ob-main">
 
-            <div class="auth-step-head">
-                <div class="auth-step-icon">
-                    <i data-lucide="building-2"></i>
+        {{-- Phone header (shown <768px) --}}
+        <div class="ob-mhead">
+            <div class="ob-mhead__row">
+                <div>
+                    <b data-ob-mtitle>{{ isset($success_application) ? __('onboarding_flow.success.eyebrow') : __('onboarding_flow.steps.type.title') }}</b>
+                    <div class="ob-mhead__count" data-ob-count>{{ __('onboarding_flow.step_of', ['current' => isset($success_application) ? $obTotal : 1, 'total' => $obTotal]) }}</div>
                 </div>
-                <h1 class="auth-step-title">{{ __('onboarding.org.title') }}</h1>
-                <p class="auth-step-sub">{{ __('onboarding.org.subtitle') }}</p>
+                <nav class="ob-lang" aria-label="{{ __('finder_shell.a11y.language') }}">
+                    <a href="{{ route('lang.switch', 'en') }}" @class(['is-active' => app()->getLocale() === 'en']) lang="en" hreflang="en">EN</a>
+                    <a href="{{ route('lang.switch', 'fr') }}" @class(['is-active' => app()->getLocale() === 'fr']) lang="fr" hreflang="fr">FR</a>
+                </nav>
             </div>
-
-            <!-- Step Indicators -->
-            <div class="stepper-header">
-                <span class="step-indicator" id="step-badge-label">{{ __('onboarding.org.step_counter', ['current' => 1, 'total' => 7]) }}</span>
-                <span class="step-title-label" id="step-title-label">{{ __('ui_sweep.register.org_type') }}</span>
+            <div class="ob-segs" aria-hidden="true">
+                @for($n = 1; $n <= $obTotal; $n++)
+                    <i data-ob-seg="{{ $n }}" @class(['is-done' => isset($success_application), 'is-now' => ! isset($success_application) && $n === 1])></i>
+                @endfor
             </div>
-            <div class="step-progress-bar">
-                <div class="step-progress-fill" id="step-progress" style="width:14%;"></div>
-            </div>
-
-            <form action="{{ route('register.organization.submit') }}" method="POST" id="org-multi-form" enctype="multipart/form-data" class="auth-form">
-                @csrf
-
-                <!-- Pane 1: Organization Type -->
-                <div class="stepper-pane active" id="pane-1">
-                    <div class="form-section">
-                        <div class="form-section-title">{{ __('ui_sweep.register.org_profile') }}</div>
-
-                        <div class="auth-form-group">
-                            <label for="org_type" class="auth-label">{{ __('onboarding.org.type_lbl') }} *</label>
-                            <select id="org_type" name="org_type" class="auth-input" required data-call-change="adaptOrgType" data-call-self>
-                                <option value="hospital"          {{ request('type') == 'hospital'          ? 'selected' : '' }}>{{ __('ui_sweep.register.type_hospital') }}</option>
-                                <option value="clinic"            {{ request('type') == 'clinic'            ? 'selected' : '' }}>{{ __('ui_sweep.register.type_clinic') }}</option>
-                                <option value="pharmacy"          {{ request('type') == 'pharmacy'          ? 'selected' : '' }}>{{ __('ui_sweep.register.type_pharmacy') }}</option>
-                                <option value="laboratory"        {{ request('type') == 'laboratory'        ? 'selected' : '' }}>{{ __('ui_sweep.register.type_laboratory') }}</option>
-                                <option value="public_health"     {{ request('type') == 'public_health'     ? 'selected' : '' }}>{{ __('ui_sweep.register.type_public_health') }}</option>
-                            </select>
-                        </div>
-
-                        <div class="notice-info form-group-mt" id="type-message-box"><!-- Filled by JS --></div>
-
-                        <div class="auth-form-group form-group-mt">
-                            <label class="auth-label">{{ __('onboarding.org.software_sync_lbl') }}</label>
-                            <div class="radio-group">
-                                <label class="radio-label"><input type="radio" name="has_software" value="yes"> {{ __('ui_sweep.register.yes') }}</label>
-                                <label class="radio-label"><input type="radio" name="has_software" value="no" checked> {{ __('ui_sweep.register.no') }}</label>
-                            </div>
-                        </div>
-
-                        <div class="auth-form-group">
-                            <label class="auth-label">{{ __('onboarding.org.need_api_lbl') }}</label>
-                            <div class="radio-group">
-                                <label class="radio-label"><input type="radio" name="need_api" value="yes"> {{ __('ui_sweep.register.yes') }}</label>
-                                <label class="radio-label"><input type="radio" name="need_api" value="no" checked> {{ __('ui_sweep.register.no') }}</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Pane 2: Organization Info -->
-                <div class="stepper-pane" id="pane-2">
-                    <div class="form-section">
-                        <div class="form-section-title">{{ __('ui_sweep.register.facility_details') }}</div>
-
-                        <div class="auth-form-group">
-                            <label for="legal_name" class="auth-label">{{ __('onboarding.org.legal_name') }} *</label>
-                            <input type="text" id="legal_name" name="legal_name" class="auth-input" required>
-                        </div>
-
-                        <div class="auth-form-group">
-                            <label for="trade_name" class="auth-label">{{ __('onboarding.org.trade_name') }}</label>
-                            <input type="text" id="trade_name" name="trade_name" class="auth-input">
-                        </div>
-
-                        <div class="auth-form-row">
-                            <div class="auth-form-group">
-                                <label for="reg_number" class="auth-label">{{ __('onboarding.org.reg_number') }} *</label>
-                                <input type="text" id="reg_number" name="reg_number" class="auth-input" required>
-                            </div>
-                            <div class="auth-form-group">
-                                <label for="license_number" class="auth-label">{{ __('onboarding.org.license_number') }} *</label>
-                                <input type="text" id="license_number" name="license_number" class="auth-input" required>
-                            </div>
-                        </div>
-
-                        <div class="auth-form-group">
-                            <label for="address" class="auth-label">{{ __('onboarding.org.address') }} *</label>
-                            <input type="text" id="address" name="address" class="auth-input" required>
-                        </div>
-
-                        <div class="auth-form-row">
-                            <div class="auth-form-group">
-                                <label for="main_phone" class="auth-label">{{ __('onboarding.org.main_phone') }} *</label>
-                                <input type="tel" id="main_phone" name="main_phone" class="auth-input" required>
-                            </div>
-                            <div class="auth-form-group">
-                                <label for="main_email" class="auth-label">{{ __('onboarding.org.main_email') }} *</label>
-                                <input type="email" id="main_email" name="main_email" class="auth-input" required>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Pane 3: Primary Contact -->
-                <div class="stepper-pane" id="pane-3">
-                    <div class="form-section">
-                        <div class="form-section-title">{{ __('ui_sweep.register.contact_info') }}</div>
-
-                        <div class="auth-form-group">
-                            <label for="contact_name" class="auth-label">{{ __('onboarding.org.contact_name') }} *</label>
-                            <input type="text" id="contact_name" name="contact_name" class="auth-input" required>
-                        </div>
-
-                        <div class="auth-form-group">
-                            <label for="contact_role" class="auth-label">{{ __('onboarding.org.contact_role') }} *</label>
-                            <input type="text" id="contact_role" name="contact_role" class="auth-input" required placeholder="Medical Director, IT Administrator, Chief Pharmacist...">
-                        </div>
-
-                        <div class="auth-form-row">
-                            <div class="auth-form-group">
-                                <label for="contact_email" class="auth-label">{{ __('onboarding.org.contact_email') }} *</label>
-                                <input type="email" id="contact_email" name="contact_email" class="auth-input" required>
-                            </div>
-                            <div class="auth-form-group">
-                                <label for="contact_phone" class="auth-label">{{ __('onboarding.org.contact_phone') }} *</label>
-                                <input type="tel" id="contact_phone" name="contact_phone" class="auth-input" required>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Pane 4: Services -->
-                <div class="stepper-pane" id="pane-4">
-                    <div class="form-section">
-                        <div class="form-section-title" id="services-pane-headline">{{ __('ui_sweep.register.clinical_options') }}</div>
-
-                        <div class="services-block" id="services-hospital">
-                            <div class="services-checkboxes">
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="outpatient"> {{ __('ui_sweep.register.svc_outpatient') }}</label>
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="emergency"> {{ __('ui_sweep.register.svc_emergency') }}</label>
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="inpatient"> {{ __('ui_sweep.register.svc_inpatient') }}</label>
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="laboratory"> {{ __('ui_sweep.register.type_laboratory') }}</label>
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="pharmacy"> {{ __('ui_sweep.register.type_pharmacy') }}</label>
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="radiology"> {{ __('ui_sweep.register.svc_radiology') }}</label>
-                            </div>
-                        </div>
-
-                        <div class="services-block" id="services-pharmacy" style="display:none;">
-                            <div class="services-checkboxes">
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="dispensing"> {{ __('ui_sweep.register.svc_dispensing') }}</label>
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="availability"> {{ __('ui_sweep.register.svc_availability') }}</label>
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="reservation"> {{ __('ui_sweep.register.svc_reservation') }}</label>
-                            </div>
-                        </div>
-
-                        <div class="services-block" id="services-laboratory" style="display:none;">
-                            <div class="services-checkboxes">
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="collection"> {{ __('ui_sweep.register.svc_collection') }}</label>
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="entry"> {{ __('ui_sweep.register.svc_entry') }}</label>
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="validation"> {{ __('ui_sweep.register.svc_validation') }}</label>
-                                <label class="service-check-label"><input type="checkbox" name="services[]" value="integration"> {{ __('ui_sweep.register.svc_integration') }}</label>
-                            </div>
-                        </div>
-
-
-                        <div class="notice-warning notice-mt" id="safety-notice-box">
-                            <i data-lucide="shield-alert"></i>
-                            <p id="safety-notice-text">{{ __('ui_sweep.register.default_safety') }}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Pane 5: Documents Upload -->
-                <div class="stepper-pane" id="pane-5">
-                    <div class="form-section">
-                        <div class="form-section-title">{{ __('ui_sweep.register.supporting_docs') }}</div>
-
-                        <div class="auth-form-group">
-                            <label class="auth-label">{{ __('onboarding.org.doc_business') }} *</label>
-                            <div class="file-upload-field" id="upload-box-business">
-                                <input type="file" id="doc_business" name="doc_business" required data-call-change="handleFileSelected" data-args="[&quot;doc_business&quot;,&quot;business-preview-name&quot;]">
-                                <div class="upload-icon"><i data-lucide="upload-cloud"></i></div>
-                                <p>{{ __('onboarding.common.upload_file') }}</p>
-                                <span>{{ __('onboarding.common.file_hint') }}</span>
-                            </div>
-                            <div class="file-uploaded-preview" id="business-preview" style="display:none;">
-                                <div class="file-preview-info">
-                                    <i data-lucide="file-text"></i>
-                                    <span id="business-preview-name">file.pdf</span>
-                                </div>
-                                <button type="button" class="file-preview-remove" data-call="removeUploadedFile" data-args="[&quot;doc_business&quot;,&quot;business-preview&quot;,&quot;upload-box-business&quot;]">
-                                    <i data-lucide="trash-2"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="auth-form-group">
-                            <label class="auth-label">{{ __('onboarding.org.doc_license') }} *</label>
-                            <div class="file-upload-field" id="upload-box-license">
-                                <input type="file" id="doc_license" name="doc_license" required data-call-change="handleFileSelected" data-args="[&quot;doc_license&quot;,&quot;license-preview-name&quot;]">
-                                <div class="upload-icon"><i data-lucide="upload-cloud"></i></div>
-                                <p>{{ __('onboarding.common.upload_file') }}</p>
-                                <span>{{ __('onboarding.common.file_hint') }}</span>
-                            </div>
-                            <div class="file-uploaded-preview" id="license-preview" style="display:none;">
-                                <div class="file-preview-info">
-                                    <i data-lucide="file-text"></i>
-                                    <span id="license-preview-name">file.pdf</span>
-                                </div>
-                                <button type="button" class="file-preview-remove" data-call="removeUploadedFile" data-args="[&quot;doc_license&quot;,&quot;license-preview&quot;,&quot;upload-box-license&quot;]">
-                                    <i data-lucide="trash-2"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Pane 6: Integration Context -->
-                <div class="stepper-pane" id="pane-6">
-                    <div class="form-section">
-                        <div class="form-section-title">{{ __('ui_sweep.register.system_integration') }}</div>
-
-                        <div class="auth-form-group">
-                            <label for="current_software" class="auth-label">{{ __('onboarding.org.software_name') }}</label>
-                            <input type="text" id="current_software" name="current_software" class="auth-input" placeholder="e.g. Epic Systems, Cerner, custom platform...">
-                        </div>
-
-                        <div class="auth-form-row">
-                            <div class="auth-form-group">
-                                <label for="est_users" class="auth-label">{{ __('onboarding.org.est_users') }} *</label>
-                                <input type="number" id="est_users" name="est_users" class="auth-input" required value="25">
-                            </div>
-                            <div class="auth-form-group">
-                                <label for="est_patients" class="auth-label">{{ __('onboarding.org.est_patients') }} *</label>
-                                <input type="number" id="est_patients" name="est_patients" class="auth-input" required value="500">
-                            </div>
-                        </div>
-
-                        <div class="auth-checkbox-group">
-                            <input type="checkbox" id="sync_stock" name="sync_stock" value="1">
-                            <label for="sync_stock" class="auth-checkbox-label">{{ __('ui_sweep.register.bridge_sync') }}</label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Pane 7: Review & Terms -->
-                <div class="stepper-pane" id="pane-7">
-                    <div class="form-section">
-                        <div class="form-section-title">{{ __('ui_sweep.register.governance_agreement') }}</div>
-
-                        <div class="notice-info notice-mb">
-                            <strong class="notice-strong">{{ __('ui_sweep.register.review_application') }}</strong>
-                            Please double-check all organization licenses, registry coordinates, and contact emails before submission. Applications are audited manually by OpesCare medical records governance staff.
-                        </div>
-
-                        <div class="auth-checkbox-group">
-                            <input type="checkbox" id="accuracy_confirm" name="accuracy_confirm" required>
-                            <label for="accuracy_confirm" class="auth-checkbox-label">{{ __('onboarding.org.terms_accuracy') }} *</label>
-                        </div>
-
-                        <div class="auth-checkbox-group">
-                            <input type="checkbox" id="review_confirm" name="review_confirm" required>
-                            <label for="review_confirm" class="auth-checkbox-label">{{ __('onboarding.org.terms_review') }} *</label>
-                        </div>
-
-                        <div class="auth-checkbox-group">
-                            <input type="checkbox" id="terms_agree" name="terms_agree" required>
-                            <label for="terms_agree" class="auth-checkbox-label">{{ __('onboarding.common.accept_terms') }} *</label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Stepper Actions -->
-                <div class="stepper-actions">
-                    <button type="button" class="auth-btn auth-btn-secondary" id="btn-prev" data-call="changeStep" data-args="[-1]">
-                        <i data-lucide="arrow-left"></i>
-                        <span>{{ __('onboarding.common.back') }}</span>
-                    </button>
-                    <button type="button" class="auth-btn auth-btn-primary" id="btn-next" data-call="changeStep" data-args="[1]">
-                        <span>{{ __('onboarding.common.continue') }}</span>
-                        <i data-lucide="arrow-right"></i>
-                    </button>
-                </div>
-            </form>
         </div>
-    @endif
+
+        {{-- Desktop top bar --}}
+        <div class="ob-top">
+            <div class="ob-meta">
+                <span data-ob-count>{{ __('onboarding_flow.step_of', ['current' => isset($success_application) ? $obTotal : 1, 'total' => $obTotal]) }}</span>
+                <div class="ob-bar" role="progressbar" aria-label="{{ __('onboarding_flow.progress') }}" aria-valuemin="0" aria-valuemax="{{ $obTotal }}" aria-valuenow="{{ isset($success_application) ? $obTotal : 1 }}" data-ob-bar>
+                    <i style="width:{{ isset($success_application) ? 100 : round(100 / $obTotal) }}%"></i>
+                </div>
+            </div>
+            <nav class="ob-lang" aria-label="{{ __('finder_shell.a11y.language') }}">
+                <a href="{{ route('lang.switch', 'en') }}" @class(['is-active' => app()->getLocale() === 'en']) lang="en" hreflang="en">EN</a>
+                <a href="{{ route('lang.switch', 'fr') }}" @class(['is-active' => app()->getLocale() === 'fr']) lang="fr" hreflang="fr">FR</a>
+            </nav>
+        </div>
+
+        @if(isset($success_application))
+            {{-- ===== Success ===== --}}
+            <div class="ob-body ob-success" id="f-main-content">
+                <div class="ob-success__badge">@include('partials.finder.icon', ['name' => 'circle-check', 'size' => 28])</div>
+                <div class="ob-eyebrow">{{ __('onboarding_flow.success.eyebrow') }}</div>
+                <h1>{{ __('onboarding.org.success.title') }}</h1>
+                <p class="ob-sub">{{ __('onboarding.org.success.desc') }}</p>
+
+                <dl class="ob-review">
+                    <div><dt>{{ __('ui_sweep.register.org_name') }}</dt><dd>{{ $legal_name }}</dd></div>
+                    <div><dt>{{ __('ui_sweep.register.reference_id') }}</dt><dd>{{ $ref_code }}</dd></div>
+                    <div><dt>{{ __('ui_sweep.register.submission_date') }}</dt><dd>{{ now()->format('Y-m-d H:i') }}</dd></div>
+                    <div><dt>{{ __('ui_sweep.register.current_status') }}</dt><dd>{{ __('ui_sweep.register.under_review') }}</dd></div>
+                </dl>
+
+                <a href="{{ route('public.landing') }}" class="ob-btn ob-btn--primary">
+                    @include('partials.finder.icon', ['name' => 'arrow-left', 'size' => 18]){{ __('onboarding.org.success.cta') }}
+                </a>
+            </div>
+        @else
+        <form action="{{ route('register.organization.submit') }}" method="POST" enctype="multipart/form-data" class="ob-form" data-ob-form novalidate>
+            @csrf
+            <div class="ob-body">
+
+                @if($errors->any())
+                    <div class="ob-alert" role="alert">
+                        @include('partials.finder.icon', ['name' => 'alert-circle', 'size' => 18])
+                        <div>{{ __('onboarding_flow.foot.errors') }}
+                            <ul>@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul>
+                        </div>
+                    </div>
+                @endif
+
+                <div class="ob-alert" role="alert" data-ob-invalid hidden>
+                    @include('partials.finder.icon', ['name' => 'alert-circle', 'size' => 18])
+                    <div>{{ __('onboarding_flow.foot.required') }}</div>
+                </div>
+
+                {{-- ===== 1. Facility type ===== --}}
+                <div class="ob-pane is-active" data-ob-pane="1" data-ob-title="{{ __('onboarding_flow.steps.type.title') }}" tabindex="-1">
+                    <div class="ob-eyebrow">{{ __('onboarding_flow.type.eyebrow') }}</div>
+                    <h1>{{ __('onboarding_flow.type.h1') }}</h1>
+                    <p class="ob-sub">{{ __('onboarding_flow.type.sub') }}</p>
+
+                    <fieldset>
+                        <legend class="ob-sr">{{ __('onboarding_flow.type.legend') }}</legend>
+                        <div class="ob-types">
+                            @foreach($obTypes as $value => $icon)
+                                <label class="ob-type">
+                                    <input type="radio" name="org_type" value="{{ $value }}" required
+                                           data-ob-msg="{{ $obTypeMsg[$value] }}" data-ob-notice="{{ $obTypeNotice[$value] }}"
+                                           data-ob-label="{{ __('onboarding_flow.type.cards.' . $value . '.title') }}"
+                                           @checked($obSelectedType === $value)>
+                                    <span class="ob-type__card">
+                                        <span class="ob-ic">@include('partials.finder.icon', ['name' => $icon, 'size' => 22])</span>
+                                        <b>{{ __('onboarding_flow.type.cards.' . $value . '.title') }}</b>
+                                        <span class="ob-type__desc">{{ __('onboarding_flow.type.cards.' . $value . '.desc') }}</span>
+                                    </span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </fieldset>
+
+                    <div class="ob-note" data-ob-type-msg>@include('partials.finder.icon', ['name' => 'info', 'size' => 18])<div>{{ $obTypeMsg[$obSelectedType] }}</div></div>
+
+                    <div class="ob-paths">
+                        <a class="ob-path" href="{{ route('public.care-map') }}">
+                            <span class="ob-ic">@include('partials.finder.icon', ['name' => 'map-pin', 'size' => 18])</span>
+                            <span><b>{{ __('onboarding_flow.type.claim_title') }}</b><span class="ob-path__desc">{{ __('onboarding_flow.type.claim_desc') }}</span></span>
+                        </a>
+                        <a class="ob-path" href="{{ route('public.solutions.request', ['kind' => 'donation']) }}">
+                            <span class="ob-ic">@include('partials.finder.icon', ['name' => 'gift', 'size' => 18])</span>
+                            <span><b>{{ __('onboarding_flow.type.free_title') }}</b><span class="ob-path__desc">{{ __('onboarding_flow.type.free_desc') }}</span></span>
+                        </a>
+                    </div>
+                </div>
+
+                {{-- ===== 2. Facility details ===== --}}
+                <div class="ob-pane" data-ob-pane="2" data-ob-title="{{ __('onboarding_flow.steps.details.title') }}" tabindex="-1">
+                    <div class="ob-eyebrow">{{ __('onboarding_flow.details.eyebrow') }}</div>
+                    <h1>{{ __('onboarding_flow.details.h1') }}</h1>
+                    <p class="ob-sub">{{ __('onboarding_flow.details.sub') }}</p>
+
+                    <fieldset>
+                        <legend>{{ __('onboarding_flow.details.identity') }}</legend>
+                        <p class="ob-legend-sub">{{ __('onboarding_flow.details.identity_help') }}</p>
+                        <div class="ob-grid">
+                            <div class="ob-full">
+                                <label class="ob-label" for="legal_name">{{ __('onboarding.org.legal_name') }} <em>*</em></label>
+                                <input type="text" id="legal_name" name="legal_name" class="ob-input" maxlength="200" required autocomplete="organization" value="{{ old('legal_name') }}">
+                                @error('legal_name')<div class="ob-error">{{ $message }}</div>@enderror
+                            </div>
+                            <div class="ob-full">
+                                <label class="ob-label" for="trade_name">{{ __('onboarding.org.trade_name') }}</label>
+                                <input type="text" id="trade_name" name="trade_name" class="ob-input" maxlength="200" value="{{ old('trade_name') }}">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>{{ __('onboarding_flow.details.registration') }}</legend>
+                        <p class="ob-legend-sub">{{ __('onboarding_flow.details.registration_help') }}</p>
+                        <div class="ob-grid">
+                            <div>
+                                <label class="ob-label" for="license_number">{{ __('onboarding.org.license_number') }} <em>*</em></label>
+                                <input type="text" id="license_number" name="license_number" class="ob-input" maxlength="80" required value="{{ old('license_number') }}" aria-describedby="license_help">
+                                <div class="ob-help" id="license_help">{{ __('onboarding_flow.details.license_help') }}</div>
+                                @error('license_number')<div class="ob-error">{{ $message }}</div>@enderror
+                            </div>
+                            <div>
+                                <label class="ob-label" for="reg_number">{{ __('onboarding.org.reg_number') }} <em>*</em></label>
+                                <input type="text" id="reg_number" name="reg_number" class="ob-input" maxlength="80" required value="{{ old('reg_number') }}">
+                                @error('reg_number')<div class="ob-error">{{ $message }}</div>@enderror
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>{{ __('onboarding_flow.details.contact') }}</legend>
+                        <p class="ob-legend-sub">{{ __('onboarding_flow.details.contact_help') }}</p>
+                        <div class="ob-grid">
+                            <div class="ob-full">
+                                <label class="ob-label" for="address">{{ __('onboarding.org.address') }} <em>*</em></label>
+                                <input type="text" id="address" name="address" class="ob-input" maxlength="300" required autocomplete="street-address" placeholder="{{ __('onboarding_flow.details.address_ph') }}" value="{{ old('address') }}">
+                                @error('address')<div class="ob-error">{{ $message }}</div>@enderror
+                            </div>
+                            <div>
+                                <label class="ob-label" for="main_phone">{{ __('onboarding.org.main_phone') }} <em>*</em></label>
+                                <div class="ob-prefix"><span>+237</span><input type="tel" id="main_phone" name="main_phone" class="ob-input" maxlength="25" required inputmode="tel" data-ob-phone placeholder="6XX XX XX XX" value="{{ $obLocalPhone(old('main_phone')) }}" aria-describedby="main_phone_help"></div>
+                                <div class="ob-help" id="main_phone_help">{{ __('onboarding_flow.details.phone_help') }}</div>
+                                @error('main_phone')<div class="ob-error">{{ $message }}</div>@enderror
+                            </div>
+                            <div>
+                                <label class="ob-label" for="main_email">{{ __('onboarding.org.main_email') }} <em>*</em></label>
+                                <input type="email" id="main_email" name="main_email" class="ob-input" maxlength="180" required autocomplete="email" value="{{ old('main_email') }}">
+                                @error('main_email')<div class="ob-error">{{ $message }}</div>@enderror
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <div class="ob-note">@include('partials.finder.icon', ['name' => 'info', 'size' => 18])<div>{{ __('onboarding_flow.details.match_note') }}</div></div>
+                </div>
+
+                {{-- ===== 3. Responsible person ===== --}}
+                <div class="ob-pane" data-ob-pane="3" data-ob-title="{{ __('onboarding_flow.steps.person.title') }}" tabindex="-1">
+                    <div class="ob-eyebrow">{{ __('onboarding_flow.person.eyebrow') }}</div>
+                    <h1>{{ __('onboarding_flow.person.h1') }}</h1>
+                    <p class="ob-sub">{{ __('onboarding_flow.person.sub') }}</p>
+
+                    <fieldset>
+                        <legend>{{ __('onboarding_flow.person.legend') }}</legend>
+                        <p class="ob-legend-sub">{{ __('onboarding_flow.person.legend_help') }}</p>
+                        <div class="ob-grid">
+                            <div>
+                                <label class="ob-label" for="contact_name">{{ __('onboarding.org.contact_name') }} <em>*</em></label>
+                                <input type="text" id="contact_name" name="contact_name" class="ob-input" maxlength="120" required autocomplete="name" value="{{ old('contact_name') }}">
+                                @error('contact_name')<div class="ob-error">{{ $message }}</div>@enderror
+                            </div>
+                            <div>
+                                <label class="ob-label" for="contact_role">{{ __('onboarding.org.contact_role') }} <em>*</em></label>
+                                <input type="text" id="contact_role" name="contact_role" class="ob-input" maxlength="100" required autocomplete="organization-title" placeholder="{{ __('onboarding_flow.person.role_ph') }}" value="{{ old('contact_role') }}">
+                                @error('contact_role')<div class="ob-error">{{ $message }}</div>@enderror
+                            </div>
+                            <div>
+                                <label class="ob-label" for="contact_email">{{ __('onboarding.org.contact_email') }} <em>*</em></label>
+                                <input type="email" id="contact_email" name="contact_email" class="ob-input" maxlength="180" required autocomplete="email" value="{{ old('contact_email') }}">
+                                @error('contact_email')<div class="ob-error">{{ $message }}</div>@enderror
+                            </div>
+                            <div>
+                                <label class="ob-label" for="contact_phone">{{ __('onboarding.org.contact_phone') }} <em>*</em></label>
+                                <div class="ob-prefix"><span>+237</span><input type="tel" id="contact_phone" name="contact_phone" class="ob-input" maxlength="25" required inputmode="tel" autocomplete="tel-national" data-ob-phone placeholder="6XX XX XX XX" value="{{ $obLocalPhone(old('contact_phone')) }}"></div>
+                                @error('contact_phone')<div class="ob-error">{{ $message }}</div>@enderror
+                            </div>
+                        </div>
+                    </fieldset>
+                </div>
+
+                {{-- ===== 4. Services (+ integration context) ===== --}}
+                <div class="ob-pane" data-ob-pane="4" data-ob-title="{{ __('onboarding_flow.steps.services.title') }}" tabindex="-1">
+                    <div class="ob-eyebrow">{{ __('onboarding_flow.services.eyebrow') }}</div>
+                    <h1>{{ __('onboarding_flow.services.h1') }}</h1>
+                    <p class="ob-sub">{{ __('onboarding_flow.services.sub') }}</p>
+
+                    <fieldset>
+                        <legend>{{ __('onboarding_flow.services.legend') }}</legend>
+                        <p class="ob-legend-sub">{{ __('onboarding_flow.services.legend_help') }}</p>
+                        @foreach($obServices as $group => $block)
+                            <div class="ob-checks" data-ob-services="{{ $block['types'] }}" @unless(in_array($obSelectedType, explode(' ', $block['types']), true)) hidden @endunless>
+                                @foreach($block['items'] as $val => $label)
+                                    <label class="ob-check"><input type="checkbox" name="services[]" value="{{ $val }}" data-ob-svc-label="{{ $label }}" @checked(in_array($val, $obOldServices, true))> <span>{{ $label }}</span></label>
+                                @endforeach
+                            </div>
+                        @endforeach
+                    </fieldset>
+
+                    <div class="ob-note ob-note--warn" data-ob-type-notice>@include('partials.finder.icon', ['name' => 'shield-alert', 'size' => 18])<div>{{ $obTypeNotice[$obSelectedType] }}</div></div>
+
+                    <fieldset>
+                        <legend>{{ __('onboarding_flow.services.systems') }}</legend>
+                        <p class="ob-legend-sub">{{ __('onboarding_flow.services.systems_help') }}</p>
+                        <div class="ob-grid">
+                            <div>
+                                <span class="ob-label" id="has_software_lbl">{{ __('onboarding.org.software_sync_lbl') }}</span>
+                                <div class="ob-seg" role="radiogroup" aria-labelledby="has_software_lbl">
+                                    <label><input type="radio" name="has_software" value="yes" @checked(old('has_software') === 'yes')> {{ __('ui_sweep.register.yes') }}</label>
+                                    <label><input type="radio" name="has_software" value="no" @checked(old('has_software', 'no') === 'no')> {{ __('ui_sweep.register.no') }}</label>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="ob-label" id="need_api_lbl">{{ __('onboarding.org.need_api_lbl') }}</span>
+                                <div class="ob-seg" role="radiogroup" aria-labelledby="need_api_lbl">
+                                    <label><input type="radio" name="need_api" value="yes" @checked(old('need_api') === 'yes')> {{ __('ui_sweep.register.yes') }}</label>
+                                    <label><input type="radio" name="need_api" value="no" @checked(old('need_api', 'no') === 'no')> {{ __('ui_sweep.register.no') }}</label>
+                                </div>
+                            </div>
+                            <div class="ob-full">
+                                <label class="ob-label" for="current_software">{{ __('onboarding.org.software_name') }}</label>
+                                <input type="text" id="current_software" name="current_software" class="ob-input" maxlength="200" placeholder="{{ __('onboarding_flow.services.software_ph') }}" value="{{ old('current_software') }}">
+                            </div>
+                            <div>
+                                <label class="ob-label" for="est_users">{{ __('onboarding.org.est_users') }} <em>*</em></label>
+                                <input type="number" id="est_users" name="est_users" class="ob-input" min="1" required value="{{ old('est_users', 25) }}">
+                            </div>
+                            <div>
+                                <label class="ob-label" for="est_patients">{{ __('onboarding.org.est_patients') }} <em>*</em></label>
+                                <input type="number" id="est_patients" name="est_patients" class="ob-input" min="0" required value="{{ old('est_patients', 500) }}">
+                            </div>
+                            <div class="ob-full">
+                                <label class="ob-check"><input type="checkbox" id="sync_stock" name="sync_stock" value="1" @checked(old('sync_stock'))> <span>{{ __('ui_sweep.register.bridge_sync') }}</span></label>
+                            </div>
+                        </div>
+                    </fieldset>
+                </div>
+
+                {{-- ===== 5. Documents ===== --}}
+                <div class="ob-pane" data-ob-pane="5" data-ob-title="{{ __('onboarding_flow.steps.documents.title') }}" tabindex="-1">
+                    <div class="ob-eyebrow">{{ __('onboarding_flow.documents.eyebrow') }}</div>
+                    <h1>{{ __('onboarding_flow.documents.h1') }}</h1>
+                    <p class="ob-sub">{{ __('onboarding_flow.documents.sub') }}</p>
+
+                    <fieldset>
+                        <legend>{{ __('onboarding_flow.documents.legend') }}</legend>
+                        <p class="ob-legend-sub">{{ __('onboarding_flow.documents.legend_help') }}</p>
+                        <div class="ob-grid">
+                            <div class="ob-full">
+                                <label class="ob-label" for="doc_business">{{ __('onboarding.org.doc_business') }} <em>*</em></label>
+                                <div class="ob-file"><input type="file" id="doc_business" name="doc_business" required accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" data-ob-file></div>
+                                <div class="ob-help">{{ __('onboarding.common.file_hint') }}</div>
+                            </div>
+                            <div class="ob-full">
+                                <label class="ob-label" for="doc_license">{{ __('onboarding.org.doc_license') }} <em>*</em></label>
+                                <div class="ob-file"><input type="file" id="doc_license" name="doc_license" required accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" data-ob-file></div>
+                                <div class="ob-help">{{ __('onboarding.common.file_hint') }}</div>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <div class="ob-note">@include('partials.finder.icon', ['name' => 'lock', 'size' => 18])<div>{{ __('onboarding_flow.documents.not_saved') }}</div></div>
+                </div>
+
+                {{-- ===== 6. Review and submit ===== --}}
+                <div class="ob-pane" data-ob-pane="6" data-ob-title="{{ __('onboarding_flow.steps.review.title') }}" tabindex="-1">
+                    <div class="ob-eyebrow">{{ __('onboarding_flow.review.eyebrow') }}</div>
+                    <h1>{{ __('onboarding_flow.review.h1') }}</h1>
+                    <p class="ob-sub">{{ __('onboarding_flow.review.sub') }}</p>
+
+                    <fieldset data-ob-js-only>
+                        <legend>{{ __('onboarding_flow.review.summary') }}</legend>
+                        <dl class="ob-review" data-ob-review>
+                            <div><dt>{{ __('onboarding_flow.review.l_type') }}</dt><dd data-ob-r="type"></dd></div>
+                            <div><dt>{{ __('onboarding_flow.review.l_name') }}</dt><dd data-ob-r="legal_name"></dd></div>
+                            <div><dt>{{ __('onboarding_flow.review.l_trade') }}</dt><dd data-ob-r="trade_name"></dd></div>
+                            <div><dt>{{ __('onboarding_flow.review.l_licence') }}</dt><dd data-ob-r="license_number"></dd></div>
+                            <div><dt>{{ __('onboarding_flow.review.l_reg') }}</dt><dd data-ob-r="reg_number"></dd></div>
+                            <div><dt>{{ __('onboarding_flow.review.l_address') }}</dt><dd data-ob-r="address"></dd></div>
+                            <div><dt>{{ __('onboarding_flow.review.l_phone') }}</dt><dd data-ob-r="main_phone"></dd></div>
+                            <div><dt>{{ __('onboarding_flow.review.l_email') }}</dt><dd data-ob-r="main_email"></dd></div>
+                            <div><dt>{{ __('onboarding_flow.review.l_person') }}</dt><dd data-ob-r="person"></dd></div>
+                            <div><dt>{{ __('onboarding_flow.review.l_contact') }}</dt><dd data-ob-r="person_contact"></dd></div>
+                            <div><dt>{{ __('onboarding_flow.review.l_services') }}</dt><dd data-ob-r="services"></dd></div>
+                            <div><dt>{{ __('onboarding_flow.review.l_documents') }}</dt><dd data-ob-r="documents"></dd></div>
+                        </dl>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>{{ __('onboarding_flow.review.agree') }}</legend>
+                        <p class="ob-legend-sub">{{ __('onboarding_flow.review.agree_help') }}</p>
+                        <div class="ob-checks ob-checks--one">
+                            <label class="ob-check"><input type="checkbox" id="accuracy_confirm" name="accuracy_confirm" required> <span>{{ __('onboarding.org.terms_accuracy') }} <em class="ob-req">*</em></span></label>
+                            <label class="ob-check"><input type="checkbox" id="review_confirm" name="review_confirm" required> <span>{{ __('onboarding.org.terms_review') }} <em class="ob-req">*</em></span></label>
+                            <label class="ob-check"><input type="checkbox" id="terms_agree" name="terms_agree" required> <span>{{ __('onboarding.common.accept_terms') }} <em class="ob-req">*</em></span></label>
+                        </div>
+                    </fieldset>
+
+                    <div class="ob-note">@include('partials.finder.icon', ['name' => 'clock', 'size' => 18])<div>{{ __('onboarding_flow.review.timing') }}</div></div>
+                </div>
+            </div>
+
+            {{-- Sticky footer --}}
+            <div class="ob-foot">
+                <span class="ob-saved" data-ob-saved-line aria-live="polite"></span>
+                <div class="ob-foot__btns">
+                    <button type="button" class="ob-btn" data-ob-prev hidden>
+                        @include('partials.finder.icon', ['name' => 'arrow-left', 'size' => 18]){{ __('onboarding_flow.foot.back') }}
+                    </button>
+                    <button type="button" class="ob-btn ob-btn--primary" data-ob-next>
+                        {{ __('onboarding_flow.foot.continue') }}@include('partials.finder.icon', ['name' => 'arrow-right', 'size' => 18])
+                    </button>
+                    <button type="submit" class="ob-btn ob-btn--primary" data-ob-submit>
+                        @include('partials.finder.icon', ['name' => 'check', 'size' => 18]){{ __('onboarding_flow.foot.submit') }}
+                    </button>
+                </div>
+            </div>
+        </form>
+        @endif
+    </section>
+</div>
 @endsection
 
 @section('scripts')
-    <script @cspNonce>
-        let currentStep = 1;
-        const totalSteps = 7;
-
-        const typeMessages = {
-            hospital: "{{ __('onboarding.org.variants.hospital_msg') }}",
-            clinic: "{{ __('onboarding.org.variants.clinic_msg') }}",
-            pharmacy: "{{ __('onboarding.org.variants.pharmacy_msg') }}",
-            laboratory: "{{ __('onboarding.org.variants.laboratory_msg') }}",
-            public_health: "{{ __('onboarding.org.variants.public_health_msg') }}"
-        };
-
-        const safetyNotices = {
-            hospital: @json(__('onboarding.org.variants.hospital_notice')),
-            clinic: @json(__('onboarding.org.variants.clinic_notice')),
-            pharmacy: "{{ __('onboarding.org.variants.pharmacy_notice') }}",
-            laboratory: "{{ __('onboarding.org.variants.laboratory_notice') }}",
-            public_health: "{{ __('onboarding.org.variants.public_health_notice') }}"
-        };
-
-        const stepTitles = [
-            @json(__('onboarding.org.step_1')),
-            @json(__('onboarding.org.step_2')),
-            @json(__('onboarding.org.step_3')),
-            @json(__('onboarding.org.step_4')),
-            @json(__('onboarding.org.step_5')),
-            @json(__('onboarding.org.step_6')),
-            @json(__('onboarding.org.step_7'))
-        ];
-        const stepCounter = @json(__('onboarding.org.step_counter'));
-
-        document.addEventListener('DOMContentLoaded', function() {
-            adaptOrgType();
-            updateStepperUI();
-        });
-
-        function adaptOrgType() {
-            const orgType = document.getElementById('org_type').value;
-            document.getElementById('type-message-box').innerText = typeMessages[orgType] || typeMessages['hospital'];
-            document.getElementById('safety-notice-text').innerText = safetyNotices[orgType] || safetyNotices['hospital'];
-            document.getElementById('services-hospital').style.display = (orgType === 'hospital' || orgType === 'clinic' || orgType === 'public_health') ? 'block' : 'none';
-            document.getElementById('services-pharmacy').style.display = (orgType === 'pharmacy') ? 'block' : 'none';
-            document.getElementById('services-laboratory').style.display = (orgType === 'laboratory') ? 'block' : 'none';
-            document.getElementById('services-pane-headline').innerText = orgType.toUpperCase() + " SERVICE PROFILE OPTIONS";
-        }
-
-        function changeStep(direction) {
-            if (direction === 1) {
-                const activePane = document.getElementById('pane-' + currentStep);
-                const inputs = activePane.querySelectorAll('input[required], select[required], textarea[required]');
-                let isValid = true;
-                inputs.forEach(input => {
-                    if (!input.value || (input.type === 'checkbox' && !input.checked)) {
-                        input.classList.add('auth-input-error');
-                        isValid = false;
-                    } else {
-                        input.classList.remove('auth-input-error');
-                    }
-                });
-                if (!isValid) {
-                    alert(@json(__('public.org_register_js_required_fields', [], app()->getLocale())));
-                    return;
-                }
-            }
-
-            currentStep += direction;
-
-            if (currentStep > totalSteps) {
-                document.getElementById('org-multi-form').submit();
-                return;
-            }
-
-            updateStepperUI();
-        }
-
-        function updateStepperUI() {
-            for (let i = 1; i <= totalSteps; i++) {
-                document.getElementById('pane-' + i).style.display = 'none';
-            }
-            document.getElementById('pane-' + currentStep).style.display = 'block';
-            document.getElementById('step-badge-label').innerText = stepCounter.replace(':current', currentStep).replace(':total', totalSteps);
-            document.getElementById('step-title-label').innerText = stepTitles[currentStep - 1];
-            const fillPct = (currentStep / totalSteps) * 100;
-            document.getElementById('step-progress').style.width = fillPct + '%';
-            document.getElementById('btn-prev').style.visibility = (currentStep === 1) ? 'hidden' : 'visible';
-            const btnNext = document.getElementById('btn-next');
-            const isLastStep = currentStep === totalSteps;
-            btnNext.querySelector('span').innerText = isLastStep
-                ? "{{ __('onboarding.org.cta_btn') }}"
-                : "{{ __('onboarding.common.continue') }}";
-
-            // lucide.createIcons() replaces the <i data-lucide> placeholder with
-            // an <svg>, so from the first render on there is no <i> left to
-            // re-point: querySelector('i') returned null and every step change
-            // threw "Cannot read properties of null (reading 'setAttribute')".
-            // Swap whichever node is present for a fresh placeholder instead.
-            const icon = btnNext.querySelector('i[data-lucide], svg');
-            if (icon) {
-                const placeholder = document.createElement('i');
-                placeholder.setAttribute('data-lucide', isLastStep ? 'check' : 'arrow-right');
-                icon.replaceWith(placeholder);
-            }
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-        }
-
-        function handleFileSelected(inputId, previewSpanId) {
-            const input = document.getElementById(inputId);
-            const preview = document.getElementById(inputId.replace('doc_', '') + '-preview');
-            const previewSpan = document.getElementById(previewSpanId);
-            const uploadBox = document.getElementById('upload-box-' + inputId.replace('doc_', ''));
-            if (input.files && input.files[0]) {
-                previewSpan.innerText = input.files[0].name;
-                preview.style.display = 'flex';
-                uploadBox.style.display = 'none';
-            }
-        }
-
-        function removeUploadedFile(inputId, previewId, uploadBoxId) {
-            document.getElementById(inputId).value = '';
-            document.getElementById(previewId).style.display = 'none';
-            document.getElementById(uploadBoxId).style.display = 'block';
-        }
-    </script>
+<script src="{{ asset('js/onboarding.js') }}?v={{ @filemtime(public_path('js/onboarding.js')) ?: '1' }}" @cspNonce defer></script>
 @endsection

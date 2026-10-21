@@ -51,6 +51,10 @@ class PublicPageController extends Controller
             'stats' => [
                 'facilities' => $facilities,
                 'regions'    => 10,
+                // Systems in the OPES catalogue (config/solutions.php) — read
+                // from config, so it is always the real number, never typed.
+                'systems'    => count((array) config('solutions.systems', [])),
+                'languages'  => 2,
             ],
         ]);
     }
@@ -103,7 +107,26 @@ class PublicPageController extends Controller
             );
         }
 
+        // Product grid: what each listed bank reports for the OTHER products
+        // of the same group. Same provenance gate as the search; a product a
+        // bank has not reported stays "not reported", never guessed.
+        $products = [];
+        if ($results !== null && $results->isNotEmpty()) {
+            \App\Models\BloodAvailability::query()
+                ->whereIn('facility_id', $results->pluck('id')->all())
+                ->where('blood_group', $group)
+                ->reportedByRealSource()
+                ->get(['facility_id', 'component_type', 'availability_status', 'units_available_range', 'last_updated_at'])
+                ->each(function ($row) use (&$products) {
+                    $products[(string) $row->facility_id][$row->component_type] = [
+                        'status' => $row->availability_status,
+                        'range'  => $row->units_available_range,
+                    ];
+                });
+        }
+
         return view('care_map.blood_finder', [
+            'products'  => $products,
             'group'     => $group,
             'component' => $component,
             'lat'       => $lat,

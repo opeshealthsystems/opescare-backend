@@ -33,7 +33,14 @@
     return R * 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1 - s));
   }
 
-  function markerIcon(color) {
+  function markerIcon(color, n) {
+    // Numbered pin: the number matches the result card it belongs to.
+    if (n) {
+      return L.divIcon({
+        html: '<span class="finder-num-pin" style="--pin:' + color + '"><b>' + esc(n) + '</b></span>',
+        className: '', iconSize: [30, 30], iconAnchor: [15, 30], popupAnchor: [0, -28],
+      });
+    }
     return L.divIcon({
       html: '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="0 0 28 36">' +
         '<circle cx="14" cy="14" r="12.5" fill="' + color + '" stroke="#fff" stroke-width="2.5"/>' +
@@ -71,6 +78,7 @@
   function FinderMapInstance(container, config) {
     this.container = container;
     this.single = !!config.single;
+    this.pinColor = config.pinColor || null;
     this.facilities = (config.facilities || []).filter(function (f) { return f.lat && f.lng; });
     this.markers = {};
     this.user = null;      // {latlng}
@@ -119,7 +127,7 @@
 
     this.facilities.forEach(function (f) {
       var color = TYPE_COLORS[f.type] || TYPE_COLORS.other;
-      var m = L.marker([f.lat, f.lng], { icon: markerIcon(color) }).addTo(self.map);
+      var m = L.marker([f.lat, f.lng], { icon: markerIcon(f.n ? (self.pinColor || '#0F4C81') : color, f.n) }).addTo(self.map);
       m.bindPopup(self.popupHtml(f), { maxWidth: 250 });
       // The reference labels every pin with the facility's name. Permanent,
       // below the pin, and non-interactive so it never eats a tap on the pin.
@@ -215,6 +223,10 @@
   };
 
   var instances = [];
+  // A map that was hidden (phone "Show map" toggle) has to re-measure once shown.
+  document.addEventListener('finder-map:shown', function () {
+    instances.forEach(function (i) { if (i.map) i.map.invalidateSize(); });
+  });
 
   function initAll() {
     if (typeof L === 'undefined') { setTimeout(initAll, 120); return; }

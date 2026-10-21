@@ -1,342 +1,289 @@
 {{--
-    OpesCare — public landing page (v3, 2026-10-18, hospital pilot).
+    OpesCare — public home page (v4, 2026-10-21, owner-approved design:
+    docs/design/onboarding-2026-10-21/landing.html + landing-desktop.png).
 
-    A standalone document: its own header and footer. Styling lives only in
-    public/css/landing-v2.css. The hero matches the 2026-10-18 login look:
-    public/brand/login/background.webp under a white veil (AA contrast), the
-    OpesCare logo (a 176px webp derived from public/brand/opescare-logo.png),
-    brand #0F4C81, small-caps taglines and a four-icon row. Never purple.
+    A standalone document with its own header and footer. Styling lives only
+    in public/css/landing-home.css; the one script (public/js/landing-search.js)
+    is external and nonce-tagged. Icons come from partials.finder.icon only.
 
     Rules honoured here:
-      - every string via __('landing.v2.*'); EN/FR kept 1:1
-      - no inline style=, no on*= handlers, no scripts (mobile menu is <details>)
-      - claims are only what the code ships: Health ID + QR verification,
-        consent-gated record access with an access log, open REST API and
-        FHIR R4 *ingest* for partners (routes/fhir.php). No FHIR server,
-        HL7 v2, video consultations, insurance or certifications.
-      - "How the pilot works" mirrors the real path: register.organization
-        records a Lead with a reference -> an OpesCare admin converts it
-        (LeadConversionService: facility + directory link + invite) -> the
-        contact activates via invite.accept -> facility admin invites staff
-        (portals.facility.team.invite) -> staff verify Health IDs and request
-        consent before opening a record.
+      - every string via __('home.*'); EN/FR kept 1:1
+      - no inline style=, no on*= handlers; mobile menu is <details>
+      - the hero search works WITHOUT JavaScript: it is a GET form to the
+        facility directory (care-map, ?query=); the Medicines / Blood tabs are
+        plain links to their finder pages. With JS the tabs re-point the same
+        form at medicine-finder (?q=) or blood-finder (?group=).
+      - stats are real: active care_facilities (cached scalar, controller),
+        10 regions (geography), systems = count(config('solutions.systems')),
+        2 languages
+      - the Health ID card and both panels are SAMPLE data, labelled as such
       - SEO head (canonical, hreflang, OG, JSON-LD) comes from the shared
         partials.finder.schema.site include, untouched.
 --}}
 @section('title', __('landing.v2.meta_title'))
 @section('description', __('landing.v2.meta_desc', ['count' => \App\Support\LocaleNumber::format($stats['facilities'])]))
 @php
-    $lxCount  = \App\Support\LocaleNumber::format($stats['facilities']);
-    $lxLocale = app()->getLocale();
-
-    // Illustrative QR glyph for the Health ID card: three finder squares and
-    // a fixed, deterministic module pattern. Decorative only (aria-hidden).
-    $lxQr = [];
-    for ($y = 0; $y < 21; $y++) {
-        for ($x = 0; $x < 21; $x++) {
-            $inFinder = ($x < 8 && $y < 8) || ($x > 12 && $y < 8) || ($x < 8 && $y > 12);
-            if (! $inFinder && ((($x * 7 + $y * 13 + $x * $y) % 5) < 2)) {
-                $lxQr[] = [$x, $y];
-            }
-        }
-    }
-    $lxLogo = asset('brand/landing/opescare-logo-176.webp');
+    $hCount   = \App\Support\LocaleNumber::format($stats['facilities']);
+    $hLocale  = app()->getLocale();
+    $hSystems = (int) ($stats['systems'] ?? 0);
+    $hLogo    = asset('brand/landing/opescare-logo-176.webp');
+    $hApk     = is_file(public_path('downloads/opescare-finder.apk'));
+    $hAppUrl  = $hApk ? url('/downloads/opescare-finder.apk') : route('mobile.app');
+    $hHealthId = route('public.solutions.patients');
+    $hIcon = fn (string $name, int $size = 20) => view('partials.finder.icon', ['name' => $name, 'size' => $size])->render();
 @endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', $lxLocale) }}">
+<html lang="{{ str_replace('_', '-', $hLocale) }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>{{ __('landing.v2.meta_title') }} — OpesCare</title>
-    <meta name="description" content="{{ __('landing.v2.meta_desc', ['count' => $lxCount]) }}">
+    <meta name="description" content="{{ __('landing.v2.meta_desc', ['count' => $hCount]) }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @include('partials.favicons')
     <link rel="manifest" href="{{ asset('site.webmanifest') }}">
     <link rel="preload" href="{{ asset('fonts/inter/inter-400.woff2') }}" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="{{ asset('fonts/inter/inter-700.woff2') }}" as="font" type="font/woff2" crossorigin>
-    <link rel="preload" href="{{ asset('brand/login/background.webp') }}" as="image" type="image/webp">
-    <link rel="stylesheet" href="{{ asset('css/landing-v2.css') }}?v={{ @filemtime(public_path('css/landing-v2.css')) ?: '1' }}">
+    <link rel="stylesheet" href="{{ asset('css/landing-home.css') }}?v={{ @filemtime(public_path('css/landing-home.css')) ?: '1' }}">
     @include('partials.finder.schema.site')
     @includeIf('partials.seo.entity-schema')
+    <script src="{{ asset('js/landing-search.js') }}?v={{ @filemtime(public_path('js/landing-search.js')) ?: '1' }}" @cspNonce defer></script>
 </head>
-<body class="lx">
+<body class="hm">
 
-<a class="lx-skip" href="#lx-main">{{ __('landing.v2.skip') }}</a>
+<a class="hm-skip" href="#hm-main">{{ __('home.skip') }}</a>
 
-{{-- 1 · Header ─────────────────────────────────────────────────────────── --}}
-<header class="lx-header">
-    <div class="lx-wrap lx-header__row">
-        <a class="lx-brand" href="{{ route('public.landing') }}" aria-label="{{ __('landing.v2.nav.home') }}">
-            <img class="lx-brand__mark" src="{{ $lxLogo }}" alt="" width="38" height="35">
-            <span class="lx-brand__word">OPES<b>CARE</b></span>
+{{-- Header ─────────────────────────────────────────────────────────────── --}}
+<header class="hm-header">
+    <div class="hm-wrap hm-header__row">
+        <a class="hm-logo" href="{{ route('public.landing') }}" aria-label="{{ __('home.nav.home') }}">
+            <img src="{{ $hLogo }}" alt="" width="32" height="30">OpesCare
         </a>
-
-        <nav class="lx-nav" aria-label="{{ __('landing.v2.nav.label') }}">
-            <a href="#lx-hid">{{ __('landing.v2.nav.health_id') }}</a>
-            <a href="#lx-flow">{{ __('landing.v2.nav.interop') }}</a>
-            <a href="#lx-pilot">{{ __('landing.v2.nav.pilot') }}</a>
-            <a href="#lx-who">{{ __('landing.v2.nav.who') }}</a>
-            <a href="{{ route('blog.index') }}">{{ __('blog.nav') }}</a>
+        <nav class="hm-nav" aria-label="{{ __('home.nav.label') }}">
+            <a href="{{ route('public.care-map') }}">{{ __('home.nav.find_care') }}</a>
+            <a href="{{ $hHealthId }}">{{ __('home.nav.health_id') }}</a>
+            <a href="{{ route('public.solutions.hospitals') }}">{{ __('home.nav.facilities') }}</a>
+            <a href="{{ route('public.solutions.index') }}">{{ __('home.nav.solutions') }}</a>
+            <a href="{{ route('blog.index') }}">{{ __('home.nav.blog') }}</a>
         </nav>
-
-        <div class="lx-header__actions">
-            <div class="lx-lang" role="group" aria-label="{{ __('landing.v2.nav.language') }}">
-                <a href="{{ route('lang.switch', 'en') }}" lang="en" hreflang="en" @if($lxLocale === 'en') aria-current="true" @endif>EN</a>
-                <a href="{{ route('lang.switch', 'fr') }}" lang="fr" hreflang="fr" @if($lxLocale === 'fr') aria-current="true" @endif>FR</a>
+        <div class="hm-header__r">
+            <div class="hm-lang" role="group" aria-label="{{ __('home.nav.language') }}">
+                <a href="{{ route('lang.switch', 'en') }}" lang="en" hreflang="en" @if($hLocale === 'en') aria-current="true" @endif>EN</a>
+                <span aria-hidden="true">·</span>
+                <a href="{{ route('lang.switch', 'fr') }}" lang="fr" hreflang="fr" @if($hLocale === 'fr') aria-current="true" @endif>FR</a>
             </div>
-            <a class="lx-link-quiet lx-hide-sm" href="{{ route('login') }}">{{ __('landing.v2.nav.sign_in') }}</a>
-            <a class="lx-btn lx-btn--primary lx-hide-sm" href="{{ route('register.organization') }}">{{ __('landing.v2.cta_hospital') }}</a>
-
-            <details class="lx-menu">
-                <summary aria-label="{{ __('landing.v2.nav.menu') }}"><x-landing-icon name="menu" /></summary>
-                <nav class="lx-menu__panel" aria-label="{{ __('landing.v2.nav.label') }}">
-                    <a href="#lx-hid">{{ __('landing.v2.nav.health_id') }}</a>
-                    <a href="#lx-flow">{{ __('landing.v2.nav.interop') }}</a>
-                    <a href="#lx-pilot">{{ __('landing.v2.nav.pilot') }}</a>
-                    <a href="#lx-who">{{ __('landing.v2.nav.who') }}</a>
-                    <a href="{{ route('blog.index') }}">{{ __('blog.nav') }}</a>
-                    <a href="{{ route('login') }}">{{ __('landing.v2.nav.sign_in') }}</a>
-                    <a class="lx-btn lx-btn--primary" href="{{ route('register.organization') }}">{{ __('landing.v2.cta_hospital') }}</a>
+            <a class="hm-btn hm-btn--sm hm-hide-md" href="{{ route('login') }}">{{ __('home.nav.sign_in') }}</a>
+            <a class="hm-btn hm-btn--sm hm-btn--primary hm-hide-sm" href="{{ route('register.patient') }}">{{ __('home.nav.get_id') }}</a>
+            <details class="hm-menu">
+                <summary aria-label="{{ __('home.nav.menu') }}">{!! $hIcon('menu', 22) !!}</summary>
+                <nav class="hm-menu__panel" aria-label="{{ __('home.nav.label') }}">
+                    <a href="{{ route('public.care-map') }}">{{ __('home.nav.find_care') }}</a>
+                    <a href="{{ $hHealthId }}">{{ __('home.nav.health_id') }}</a>
+                    <a href="{{ route('public.solutions.hospitals') }}">{{ __('home.nav.facilities') }}</a>
+                    <a href="{{ route('public.solutions.index') }}">{{ __('home.nav.solutions') }}</a>
+                    <a href="{{ route('blog.index') }}">{{ __('home.nav.blog') }}</a>
+                    <a href="{{ route('login') }}">{{ __('home.nav.sign_in') }}</a>
+                    <a class="hm-btn hm-btn--primary" href="{{ route('register.patient') }}">{{ __('home.nav.get_id') }}</a>
                 </nav>
             </details>
         </div>
     </div>
 </header>
 
-<main id="lx-main">
+<main id="hm-main">
 
-{{-- 2 · Hero: login look — background, logo, taglines, two CTAs, icon row --}}
-<section class="lx-hero" aria-labelledby="lx-hero-title">
-    <div class="lx-wrap lx-hero__inner">
-        <p class="lx-caps lx-caps--line">{{ __('landing.v2.hero.caps_1') }}</p>
+{{-- Hero ───────────────────────────────────────────────────────────────── --}}
+<section class="hm-hero" aria-labelledby="hm-hero-title">
+    <div class="hm-wrap hm-hero__grid">
+        <div class="hm-hero__text">
+            <span class="hm-kicker">{!! $hIcon('circle-check', 15) !!}{{ __('home.hero.kicker') }}</span>
+            <h1 id="hm-hero-title">{{ __('home.hero.title_1') }}<br><span>{{ __('home.hero.title_2') }}</span></h1>
+            <p class="hm-lead">{{ __('home.hero.lead') }}</p>
 
-        <div class="lx-lockup">
-            <img class="lx-lockup__logo" src="{{ $lxLogo }}" alt="" width="88" height="82">
-            <div>
-                <p class="lx-lockup__word" aria-hidden="true">OPES<b>CARE</b></p>
-                <p class="lx-lockup__tag">{{ __('landing.v2.hero.tagline') }}</p>
-            </div>
-        </div>
+            <form class="hm-search" method="get" action="{{ route('public.care-map') }}" role="search"
+                  aria-label="{{ __('home.hero.search_label') }}" data-hm-search>
+                <div class="hm-search__tabs">
+                    <a class="is-on" href="{{ route('public.care-map') }}" aria-current="true"
+                       data-hm-tab="facilities" data-action="{{ route('public.care-map') }}" data-name="query"
+                       data-placeholder="{{ __('home.hero.ph_facilities') }}">{{ __('home.hero.tab_facilities') }}</a>
+                    <a href="{{ route('public.network.medicine-finder') }}"
+                       data-hm-tab="medicines" data-action="{{ route('public.network.medicine-finder') }}" data-name="q"
+                       data-placeholder="{{ __('home.hero.ph_medicines') }}">{{ __('home.hero.tab_medicines') }}</a>
+                    <a href="{{ route('public.network.blood-finder') }}"
+                       data-hm-tab="blood" data-action="{{ route('public.network.blood-finder') }}" data-name="group">{{ __('home.hero.tab_blood') }}</a>
+                </div>
+                <label class="hm-sr" for="hm-q">{{ __('home.hero.search_label') }}</label>
+                <input id="hm-q" class="hm-search__input" type="search" name="query" placeholder="{{ __('home.hero.ph_facilities') }}" data-hm-input>
+                <label class="hm-sr" for="hm-group">{{ __('home.hero.blood_group') }}</label>
+                <select id="hm-group" class="hm-search__input" name="group" hidden disabled data-hm-group>
+                    <option value="">{{ __('home.hero.any_group') }}</option>
+                    @foreach (\App\Enums\BloodGroup::values() as $g)
+                        <option value="{{ $g }}">{{ $g }}</option>
+                    @endforeach
+                </select>
+                <button class="hm-btn hm-btn--sm hm-btn--primary" type="submit">{!! $hIcon('search', 17) !!}{{ __('home.hero.search') }}</button>
+            </form>
 
-        <h1 id="lx-hero-title" class="lx-h1">{{ __('landing.v2.hero.title') }}</h1>
-        <p class="lx-lead">{{ __('landing.v2.hero.lead') }}</p>
-
-        <div class="lx-actions">
-            <a class="lx-btn lx-btn--primary lx-btn--lg" href="{{ route('register.organization') }}">
-                <x-landing-icon name="hospital" :size="20" />{{ __('landing.v2.cta_hospital') }}
-            </a>
-            <a class="lx-btn lx-btn--ghost lx-btn--lg" href="{{ route('register.patient') }}">
-                <x-landing-icon name="fingerprint" :size="20" />{{ __('landing.v2.cta_patient') }}
-            </a>
-        </div>
-
-        <p class="lx-caps lx-caps--sub">{{ __('landing.v2.hero.caps_2') }}</p>
-
-        <ul class="lx-pillars" role="list">
-            @foreach ([['fingerprint', 'identity'], ['network', 'connected'], ['shield-check', 'trusted'], ['chart', 'communities']] as [$icon, $key])
-                <li><x-landing-icon :name="$icon" :size="30" /><span>{{ __('landing.v2.hero.pillar_' . $key) }}</span></li>
-            @endforeach
-        </ul>
-    </div>
-</section>
-
-{{-- 3 · Health ID ────────────────────────────────────────────────────────
-     The card mirrors opescare-finder-mobile SecureCredentialCard.tsx. Identity
-     is a neutral placeholder: grey bars, "CM-•••• ••••", no person. --}}
-<section id="lx-hid" class="lx-section lx-section--white" aria-labelledby="lx-hid-title">
-    <div class="lx-wrap lx-split">
-        <div class="lx-split__text">
-            <p class="lx-caps">{{ __('landing.v2.hid.kicker') }}</p>
-            <h2 id="lx-hid-title" class="lx-h2">{{ __('landing.v2.hid.title') }}</h2>
-            <p class="lx-lead">{{ __('landing.v2.hid.lead') }}</p>
-            <ul class="lx-points" role="list">
-                <li><x-landing-icon name="qr" :size="22" /><span>{{ __('landing.v2.hid.b1') }}</span></li>
-                <li><x-landing-icon name="badge-check" :size="22" /><span>{{ __('landing.v2.hid.b3') }}</span></li>
+            <ul class="hm-trust" role="list">
+                <li>{!! $hIcon('shield-check', 17) !!}{{ __('home.hero.trust_consent') }}</li>
+                <li>{!! $hIcon('languages', 17) !!}{{ __('home.hero.trust_languages') }}</li>
+                <li>{!! $hIcon('cloud-off', 17) !!}{{ __('home.hero.trust_network') }}</li>
             </ul>
         </div>
 
-        <figure class="lx-split__visual lx-cardstage" role="img" aria-label="{{ __('landing.v2.hid.card_alt') }}">
-            <div class="hc" aria-hidden="true">
-                <div class="hc__sub">
-                    <img class="hc__fill hc__o45" src="{{ asset('images/health-id/guilloche-texture.webp') }}" alt="" loading="lazy">
-                    <img class="hc__fill hc__o55" src="{{ asset('images/health-id/guilloche-mesh.webp') }}" alt="" loading="lazy">
-                    <img class="hc__helix" src="{{ asset('images/health-id/dna-helix.webp') }}" alt="" loading="lazy">
-                    <img class="hc__micro" src="{{ asset('images/health-id/dna-microdata.webp') }}" alt="" loading="lazy">
-                </div>
-                <span class="hc__corner hc__corner--tl"></span><span class="hc__corner hc__corner--tr"></span>
-                <span class="hc__corner hc__corner--bl"></span><span class="hc__corner hc__corner--br"></span>
+        <figure class="hm-card" role="img" aria-label="{{ __('home.card.alt') }}">
+            <div class="hm-card__t" aria-hidden="true"><b>OpesCare</b><small>{{ __('home.card.sub') }}</small></div>
+            <img class="hm-card__chip" src="{{ asset('images/health-id/chip.webp') }}" alt="" width="46" height="36" aria-hidden="true">
+            <div class="hm-card__num" aria-hidden="true">CM-HID 0000 0000 0000</div>
+            <div class="hm-card__row" aria-hidden="true">
+                <div>{{ __('home.card.holder') }}<b>{{ __('home.card.holder_sample') }}</b></div>
+                <div>{{ __('home.card.issued') }}<b>00/0000</b></div>
+            </div>
+            <span class="hm-card__sample" aria-hidden="true">{{ __('home.card.sample') }}</span>
+            <img class="hm-card__seal" src="{{ asset('images/health-id/seal.webp') }}" alt="" width="54" height="54" aria-hidden="true">
+            <span class="hm-card__qr" aria-hidden="true">{!! $hIcon('qr-code', 54) !!}</span>
+        </figure>
+    </div>
+</section>
 
-                <div class="hc__top">
-                    <div class="hc__brand">
-                        <span class="hc__logo">
-                            <svg width="20" height="20" viewBox="0 0 34 34"><circle cx="17" cy="17" r="15.5" fill="none" stroke="#0F4C81" stroke-width="2.6"/><path d="M17 9.5v15M9.5 17h15" stroke="#0F4C81" stroke-width="3.4" stroke-linecap="round"/></svg>
-                        </span>
-                        <span>
-                            <span class="hc__word">Opes<b>Care</b></span>
-                            <span class="hc__brandsub">{{ __('landing.v2.card.brand_sub') }}</span>
-                        </span>
-                    </div>
-                    <div class="hc__tag">
-                        <span>{{ __('landing.v2.card.tagline') }}</span>
-                        <img src="{{ asset('images/health-id/africa.webp') }}" alt="" width="34" height="36" loading="lazy">
-                    </div>
-                </div>
+{{-- Stats ──────────────────────────────────────────────────────────────── --}}
+<section class="hm-stats" aria-label="{{ __('home.stats.label') }}">
+    <dl class="hm-wrap hm-stats__grid">
+        <div class="hm-stat"><dt>{{ __('home.stats.facilities') }}</dt><dd>{{ $hCount }}</dd></div>
+        <div class="hm-stat"><dt>{{ __('home.stats.regions') }}</dt><dd>{{ \App\Support\LocaleNumber::format($stats['regions']) }}</dd></div>
+        <div class="hm-stat"><dt>{{ __('home.stats.systems') }}</dt><dd>{{ \App\Support\LocaleNumber::format($hSystems) }}</dd></div>
+        <div class="hm-stat"><dt>{{ __('home.stats.languages') }}</dt><dd>{{ $stats['languages'] ?? 2 }}</dd></div>
+    </dl>
+</section>
 
-                <div class="hc__face">
-                    <div class="hc__holder">
-                        <span class="hc__avatar"></span>
-                        <span class="hc__holdertext">
-                            <span class="hc__bar hc__bar--name"></span>
-                            <span class="hc__label">{{ __('landing.v2.card.label') }}</span>
-                        </span>
-                        <span class="hc__badge"><x-landing-icon name="shield" :size="12" />{{ __('landing.v2.card.verified') }}</span>
-                    </div>
-                    <div>
-                        <span class="hc__label">{{ __('landing.v2.card.health_id') }}</span>
-                        <span class="hc__id">CM-•••• ••••</span>
-                    </div>
-                    <div class="hc__body">
-                        <div class="hc__fields">
-                            <div><span class="hc__label">{{ __('landing.v2.card.dob') }}</span><span class="hc__bar"></span></div>
-                            <div class="hc__row">
-                                <div><span class="hc__label">{{ __('landing.v2.card.sex') }}</span><span class="hc__bar hc__bar--s"></span></div>
-                                <div><span class="hc__label">{{ __('landing.v2.card.blood') }}</span><span class="hc__bar hc__bar--s"></span></div>
-                            </div>
-                            <img class="hc__ecg" src="{{ asset('images/health-id/ecg-line.webp') }}" alt="" loading="lazy">
-                        </div>
-                        <div class="hc__qrcol">
-                            <span class="hc__qr">
-                                <img class="hc__qrframe" src="{{ asset('images/health-id/qr-frame.webp') }}" alt="" loading="lazy">
-                                <svg class="hc__qrcode" viewBox="0 0 21 21" shape-rendering="crispEdges">
-                                    @foreach ([[0,0],[14,0],[0,14]] as [$fx, $fy])
-                                        <rect x="{{ $fx }}" y="{{ $fy }}" width="7" height="7" fill="#001665"/>
-                                        <rect x="{{ $fx + 1 }}" y="{{ $fy + 1 }}" width="5" height="5" fill="#fff"/>
-                                        <rect x="{{ $fx + 2 }}" y="{{ $fy + 2 }}" width="3" height="3" fill="#001665"/>
-                                    @endforeach
-                                    @foreach ($lxQr as [$qx, $qy])
-                                        <rect x="{{ $qx }}" y="{{ $qy }}" width="1" height="1" fill="#001665"/>
-                                    @endforeach
-                                </svg>
-                            </span>
-                            <span class="hc__scan">{{ __('landing.v2.card.scan') }}</span>
-                        </div>
-                    </div>
-                </div>
+{{-- Services ───────────────────────────────────────────────────────────── --}}
+<section class="hm-s" aria-labelledby="hm-svc-title">
+    <div class="hm-wrap">
+        <div class="hm-head">
+            <p class="hm-eyebrow">{{ __('home.services.eyebrow') }}</p>
+            <h2 id="hm-svc-title">{{ __('home.services.title') }}</h2>
+            <p class="hm-sub">{{ __('home.services.sub') }}</p>
+        </div>
+        <div class="hm-grid4">
+            @foreach ([
+                ['pill', 'medicine', route('public.network.medicine-finder'), ''],
+                ['droplet', 'blood', route('public.network.blood-finder'), 'hm-ic--red'],
+                ['calendar-plus', 'appointments', route('public.care-map'), ''],
+                ['map-pin', 'directory', route('public.care-map.places'), ''],
+            ] as [$icon, $key, $href, $mod])
+                <a class="hm-svc" href="{{ $href }}">
+                    <span class="hm-ic {{ $mod }}">{!! $hIcon($icon, 20) !!}</span>
+                    <h3>{{ __('home.services.' . $key . '_title') }}</h3>
+                    <p>{{ __('home.services.' . $key . '_desc') }}</p>
+                    <span class="hm-go">{{ __('home.services.' . $key . '_cta') }}{!! $hIcon('arrow-right', 16) !!}</span>
+                </a>
+            @endforeach
+        </div>
+    </div>
+</section>
 
-                <div class="hc__foot">
-                    <img class="hc__chip" src="{{ asset('images/health-id/chip.webp') }}" alt="" loading="lazy">
-                    <span class="hc__footcopy">
-                        <span class="hc__foot1">{{ __('landing.v2.card.foot_1') }}</span>
-                        <span class="hc__foot2">{{ __('landing.v2.card.foot_2') }}</span>
-                    </span>
-                </div>
-                <span class="hc__seal">
-                    <img class="hc__ring" src="{{ asset('images/health-id/holo-ring.webp') }}" alt="" loading="lazy">
-                    <img class="hc__sealimg" src="{{ asset('images/health-id/seal.webp') }}" alt="" loading="lazy">
-                    <img class="hc__shield" src="{{ asset('images/health-id/verification-shield.webp') }}" alt="" loading="lazy">
-                </span>
-                <span class="hc__microtext">{{ __('landing.v2.card.microtext') }}</span>
-                <span class="hc__edge">{{ __('landing.v2.card.edge') }}</span>
+{{-- For patients ───────────────────────────────────────────────────────── --}}
+<section class="hm-s hm-s--alt" aria-labelledby="hm-pat-title">
+    <div class="hm-wrap hm-split">
+        <div>
+            <p class="hm-eyebrow">{{ __('home.patients.eyebrow') }}</p>
+            <h2 id="hm-pat-title">{{ __('home.patients.title') }}</h2>
+            <p class="hm-sub">{{ __('home.patients.sub') }}</p>
+            <ul class="hm-list" role="list">
+                @foreach ([['key-round', 'b1'], ['file-check', 'b2'], ['users', 'b3']] as [$icon, $k])
+                    <li><span class="hm-ic hm-ic--good">{!! $hIcon($icon, 18) !!}</span><div><b>{{ __('home.patients.' . $k . '_title') }}</b><span>{{ __('home.patients.' . $k . '_desc') }}</span></div></li>
+                @endforeach
+            </ul>
+            <a class="hm-btn hm-btn--primary" href="{{ $hAppUrl }}" @if($hApk) download="OpesCare.apk" rel="nofollow" @endif>{!! $hIcon('smartphone', 18) !!}{{ __('home.patients.cta') }}</a>
+        </div>
+        <figure class="hm-panel" role="img" aria-label="{{ __('home.patients.panel_label') }}">
+            <div class="hm-panel__ph" aria-hidden="true"><i></i><i></i><i></i>{{ __('home.patients.panel_title') }}</div>
+            <div class="hm-kpis" aria-hidden="true">
+                <div class="hm-kpi"><small>{{ __('home.patients.kpi_visit') }}</small><b>{{ __('home.patients.kpi_visit_val') }}</b></div>
+                <div class="hm-kpi"><small>{{ __('home.patients.kpi_results') }}</small><b>{{ __('home.patients.kpi_results_val') }}</b></div>
+                <div class="hm-kpi"><small>{{ __('home.patients.kpi_access') }}</small><b>1</b></div>
+            </div>
+            <div class="hm-rows" aria-hidden="true">
+                <div><span>{{ __('home.patients.row1') }}</span><span class="hm-pill hm-pill--b">{{ __('home.patients.row1_pill') }}</span></div>
+                <div><span>{{ __('home.patients.row2') }}</span><span class="hm-pill hm-pill--g">{{ __('home.patients.row2_pill') }}</span></div>
+                <div><span>{{ __('home.patients.row3') }}</span><span class="hm-muted">{{ __('home.patients.row3_state') }}</span></div>
             </div>
         </figure>
     </div>
 </section>
 
-{{-- 4 · How information moves (interoperability + consent) ─────────────── --}}
-<section id="lx-flow" class="lx-section" aria-labelledby="lx-flow-title">
-    <div class="lx-wrap">
-        <div class="lx-head">
-            <p class="lx-caps">{{ __('landing.v2.flow.kicker') }}</p>
-            <h2 id="lx-flow-title" class="lx-h2">{{ __('landing.v2.flow.title') }}</h2>
-            <p class="lx-lead">{{ __('landing.v2.flow.lead') }}</p>
-        </div>
-
-        <ol class="lx-flowline" role="list" aria-label="{{ __('landing.v2.flow.label') }}">
-            <li class="lx-flowline__node">{{ __('landing.v2.flow.from') }}</li>
-            <li class="lx-flowline__edge">{{ __('landing.v2.flow.out') }}</li>
-            <li class="lx-flowline__node lx-flowline__node--hub">OPESCARE</li>
-            <li class="lx-flowline__edge">{{ __('landing.v2.flow.back') }}</li>
-            <li class="lx-flowline__node">{{ __('landing.v2.flow.to') }}</li>
-        </ol>
-
-        <ul class="lx-trio" role="list">
-            <li>
-                <x-landing-icon name="lock" :size="22" />
-                <div><h3 class="lx-h4">{{ __('landing.v2.flow.consent_title') }}</h3><p>{{ __('landing.v2.flow.consent_desc') }}</p></div>
-            </li>
-            <li>
-                <x-landing-icon name="history" :size="22" />
-                <div><h3 class="lx-h4">{{ __('landing.v2.flow.log_title') }}</h3><p>{{ __('landing.v2.flow.log_desc') }}</p></div>
-            </li>
-            <li>
-                <x-landing-icon name="code" :size="22" />
-                <div>
-                    <h3 class="lx-h4">{{ __('landing.v2.flow.api_title') }}</h3><p>{{ __('landing.v2.flow.api_desc') }}</p>
-                    <a class="lx-more" href="{{ route('docs.index') }}">{{ __('landing.v2.flow.api_cta') }} <x-landing-icon name="arrow-right" :size="16" /></a>
-                </div>
-            </li>
-        </ul>
-    </div>
-</section>
-
-{{-- 5 · How the pilot works — only steps that exist in the code ────────── --}}
-<section id="lx-pilot" class="lx-section lx-section--white" aria-labelledby="lx-pilot-title">
-    <div class="lx-wrap">
-        <div class="lx-head">
-            <p class="lx-caps">{{ __('landing.v2.pilot.kicker') }}</p>
-            <h2 id="lx-pilot-title" class="lx-h2">{{ __('landing.v2.pilot.title') }}</h2>
-        </div>
-        <ol class="lx-steps" role="list">
-            @foreach ([['file-text', 'apply'], ['badge-check', 'verify'], ['mail', 'activate'], ['user-plus', 'team'], ['qr', 'start']] as $i => [$icon, $key])
-                <li class="lx-step">
-                    <span class="lx-step__top"><span class="lx-step__num" aria-hidden="true">{{ $i + 1 }}</span><x-landing-icon :name="$icon" :size="22" /></span>
-                    <h3 class="lx-h4">{{ __('landing.v2.pilot.' . $key . '_title') }}</h3>
-                    <p>{{ __('landing.v2.pilot.' . $key . '_desc') }}</p>
-                </li>
-            @endforeach
-        </ol>
-        <div class="lx-actions">
-            <a class="lx-btn lx-btn--primary lx-btn--lg" href="{{ route('register.organization') }}">{{ __('landing.v2.cta_hospital') }}</a>
-            <a class="lx-btn lx-btn--ghost lx-btn--lg" href="{{ route('public.contact') }}">{{ __('landing.v2.pilot.contact') }}</a>
-        </div>
-    </div>
-</section>
-
-{{-- 6 · Who it is for ──────────────────────────────────────────────────── --}}
-<section id="lx-who" class="lx-section" aria-labelledby="lx-who-title">
-    <div class="lx-wrap">
-        <div class="lx-head">
-            <h2 id="lx-who-title" class="lx-h2">{{ __('landing.v2.who.title') }}</h2>
-        </div>
-        <ul class="lx-cols" role="list">
-            @foreach ([
-                ['hospital', 'hospital', route('public.solutions.hospitals')],
-                ['pill', 'pharmacy', route('public.solutions.pharmacies')],
-                ['flask', 'lab', route('public.solutions.laboratories')],
-                ['user', 'patient', route('register.patient')],
-            ] as [$icon, $key, $href])
-                <li class="lx-col">
-                    <x-landing-icon :name="$icon" :size="26" />
-                    <h3 class="lx-h3">{{ __('landing.v2.who.' . $key . '_title') }}</h3>
-                    <p>{{ __('landing.v2.who.' . $key . '_desc') }}</p>
-                    <a class="lx-more" href="{{ $href }}">{{ __('landing.v2.who.' . $key . '_cta') }} <x-landing-icon name="arrow-right" :size="16" /></a>
-                </li>
-            @endforeach
-        </ul>
-    </div>
-</section>
-
-{{-- 7 · Closing band ───────────────────────────────────────────────────── --}}
-<section class="lx-section lx-section--tight" aria-labelledby="lx-partner-title">
-    <div class="lx-wrap">
-        <div class="lx-band">
-            <div>
-                <p class="lx-caps lx-caps--light">{{ __('landing.v2.hero.tagline') }}</p>
-                <h2 id="lx-partner-title" class="lx-h2">{{ __('landing.v2.band.title') }}</h2>
+{{-- For facilities ─────────────────────────────────────────────────────── --}}
+<section class="hm-s" aria-labelledby="hm-fac-title">
+    <div class="hm-wrap hm-split hm-split--rev">
+        <figure class="hm-panel" role="img" aria-label="{{ __('home.facilities.panel_label') }}">
+            <div class="hm-panel__ph" aria-hidden="true"><i></i><i></i><i></i>{{ __('home.facilities.panel_title') }}</div>
+            <div class="hm-kpis" aria-hidden="true">
+                <div class="hm-kpi"><small>{{ __('home.facilities.kpi_waiting') }}</small><b>14</b></div>
+                <div class="hm-kpi"><small>{{ __('home.facilities.kpi_seen') }}</small><b>62</b></div>
+                <div class="hm-kpi"><small>{{ __('home.facilities.kpi_results') }}</small><b>5</b></div>
             </div>
-            <div class="lx-actions">
-                <a class="lx-btn lx-btn--light lx-btn--lg" href="{{ route('register.organization') }}">{{ __('landing.v2.cta_hospital') }}</a>
-                <a class="lx-btn lx-btn--outline-light lx-btn--lg" href="{{ route('register.patient') }}">{{ __('landing.v2.cta_patient') }}</a>
+            <div class="hm-rows" aria-hidden="true">
+                <div><span>{{ __('home.facilities.row1') }}</span><span class="hm-pill hm-pill--r">{{ __('home.facilities.row1_pill') }}</span></div>
+                <div><span>{{ __('home.facilities.row2') }}</span><span class="hm-pill hm-pill--b">{{ __('home.facilities.row2_pill') }}</span></div>
+                <div><span>{{ __('home.facilities.row3') }}</span><span class="hm-pill hm-pill--g">{{ __('home.facilities.row3_pill') }}</span></div>
+            </div>
+        </figure>
+        <div>
+            <p class="hm-eyebrow">{{ __('home.facilities.eyebrow') }}</p>
+            <h2 id="hm-fac-title">{{ __('home.facilities.title') }}</h2>
+            <p class="hm-sub">{{ __('home.facilities.sub') }}</p>
+            <ul class="hm-list" role="list">
+                @foreach ([['map-pin', 'b1'], ['network', 'b2'], ['gift', 'b3']] as [$icon, $k])
+                    <li><span class="hm-ic hm-ic--good">{!! $hIcon($icon, 18) !!}</span><div><b>{{ __('home.facilities.' . $k . '_title') }}</b><span>{{ __('home.facilities.' . $k . '_desc') }}</span></div></li>
+                @endforeach
+            </ul>
+            <div class="hm-actions">
+                <a class="hm-btn hm-btn--primary" href="{{ route('register.organization') }}">{!! $hIcon('building-2', 18) !!}{{ __('home.facilities.cta_register') }}</a>
+                <a class="hm-btn" href="{{ route('public.solutions.index') }}">{{ __('home.facilities.cta_systems', ['count' => $hSystems]) }}</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+{{-- Interoperability ───────────────────────────────────────────────────── --}}
+<section class="hm-s hm-s--alt" aria-labelledby="hm-int-title">
+    <div class="hm-wrap">
+        <div class="hm-head">
+            <p class="hm-eyebrow">{{ __('home.interop.eyebrow') }}</p>
+            <h2 id="hm-int-title">{{ __('home.interop.title') }}</h2>
+            <p class="hm-sub">{{ __('home.interop.sub') }}</p>
+        </div>
+        <ol class="hm-flow" role="list" aria-label="{{ __('home.interop.label') }}">
+            <li class="hm-node"><span class="hm-ic">{!! $hIcon('stethoscope', 20) !!}</span><b>{{ __('home.interop.clinic') }}</b><span>{{ __('home.interop.clinic_desc') }}</span></li>
+            <li class="hm-arrow" aria-hidden="true">{!! $hIcon('arrow-right', 20) !!}</li>
+            <li class="hm-node hm-node--hub"><span class="hm-ic">{!! $hIcon('shield-check', 20) !!}</span><b>{{ __('home.interop.layer') }}</b><span>{{ __('home.interop.layer_desc') }}</span></li>
+            <li class="hm-arrow" aria-hidden="true">{!! $hIcon('arrow-right', 20) !!}</li>
+            <li class="hm-node"><span class="hm-ic">{!! $hIcon('building-2', 20) !!}</span><b>{{ __('home.interop.hospital') }}</b><span>{{ __('home.interop.hospital_desc') }}</span></li>
+        </ol>
+    </div>
+</section>
+
+{{-- Live in four steps + CTA band ──────────────────────────────────────── --}}
+<section class="hm-s" aria-labelledby="hm-steps-title">
+    <div class="hm-wrap">
+        <div class="hm-head">
+            <p class="hm-eyebrow">{{ __('home.steps.eyebrow') }}</p>
+            <h2 id="hm-steps-title">{{ __('home.steps.title') }}</h2>
+        </div>
+        <ol class="hm-steps" role="list">
+            @foreach (['register', 'verify', 'activate', 'live'] as $i => $key)
+                <li class="hm-step"><span class="hm-step__n" aria-hidden="true">0{{ $i + 1 }}</span><b>{{ __('home.steps.' . $key . '_title') }}</b><span>{{ __('home.steps.' . $key . '_desc') }}</span></li>
+            @endforeach
+        </ol>
+
+        <div class="hm-cta">
+            <div>
+                <h2>{{ __('home.cta.title') }}</h2>
+                <p>{{ __('home.cta.sub') }}</p>
+            </div>
+            <div class="hm-actions">
+                <a class="hm-btn hm-btn--light" href="{{ route('public.contact') }}">{{ __('home.cta.talk') }}</a>
+                <a class="hm-btn hm-btn--white" href="{{ route('register.organization') }}">{{ __('home.facilities.cta_register') }}</a>
             </div>
         </div>
     </div>
@@ -344,55 +291,63 @@
 
 </main>
 
-{{-- 8 · Footer ─────────────────────────────────────────────────────────── --}}
-<footer class="lx-footer">
-    <div class="lx-wrap">
-        <div class="lx-footer__grid">
+{{-- Footer ─────────────────────────────────────────────────────────────── --}}
+<footer class="hm-footer">
+    <div class="hm-wrap">
+        <div class="hm-footer__cols">
             <div>
-                <a class="lx-brand lx-brand--footer" href="{{ route('public.landing') }}" aria-label="{{ __('landing.v2.nav.home') }}">
-                    <img class="lx-brand__mark" src="{{ $lxLogo }}" alt="" width="34" height="32" loading="lazy">
-                    <span class="lx-brand__word">OPES<b>CARE</b></span>
+                <a class="hm-logo hm-logo--light" href="{{ route('public.landing') }}" aria-label="{{ __('home.nav.home') }}">
+                    <img src="{{ $hLogo }}" alt="" width="32" height="30" loading="lazy">OpesCare
                 </a>
-                <p class="lx-footer__tagline">{{ __('landing.v2.footer.tagline') }}</p>
+                <p>{{ __('home.footer.tagline') }}</p>
             </div>
-            <nav aria-labelledby="lx-f1">
-                <h2 id="lx-f1" class="lx-footer__title">{{ __('landing.v2.footer.product') }}</h2>
+            <nav aria-labelledby="hm-f1">
+                <h2 id="hm-f1">{{ __('home.footer.find_care') }}</h2>
                 <ul role="list">
-                    <li><a href="{{ route('register.patient') }}">{{ __('landing.v2.cta_patient') }}</a></li>
-                    <li><a href="{{ route('public.network.medicine-finder') }}">{{ __('landing.v2.footer.medicine') }}</a></li>
-                    <li><a href="{{ route('public.network.blood-finder') }}">{{ __('landing.v2.footer.blood') }}</a></li>
-                    <li><a href="{{ route('public.care-map') }}">{{ __('landing.v2.footer.directory') }}</a></li>
+                    <li><a href="{{ route('public.care-map') }}">{{ __('home.footer.facilities_link') }}</a></li>
+                    <li><a href="{{ route('public.network.medicine-finder') }}">{{ __('home.footer.medicines') }}</a></li>
+                    <li><a href="{{ route('public.network.blood-finder') }}">{{ __('home.footer.blood') }}</a></li>
+                    <li><a href="{{ route('public.care-map.places') }}">{{ __('home.footer.places') }}</a></li>
                     <li><a href="{{ route('public.care-map.emergency') }}">{{ __('landing.v2.footer.emergency') }}</a></li>
-                    <li><a href="{{ route('blog.index') }}">{{ __('blog.nav') }}</a></li>
+                </ul>
+            </nav>
+            <nav aria-labelledby="hm-f2">
+                <h2 id="hm-f2">{{ __('home.footer.facilities') }}</h2>
+                <ul role="list">
+                    <li><a href="{{ route('register.organization') }}">{{ __('home.footer.register') }}</a></li>
+                    <li><a href="{{ route('public.care-map') }}">{{ __('home.footer.claim') }}</a></li>
+                    <li><a href="{{ route('public.solutions.index') }}">{{ __('home.footer.solutions') }}</a></li>
+                    <li><a href="{{ route('public.solutions.request', ['kind' => 'donation']) }}">{{ __('home.footer.free_systems') }}</a></li>
+                </ul>
+            </nav>
+            <nav aria-labelledby="hm-f3">
+                <h2 id="hm-f3">{{ __('home.footer.company') }}</h2>
+                <ul role="list">
+                    <li><a href="{{ route('public.about') }}">{{ __('home.footer.about') }}</a></li>
+                    {{-- The shared partials.seo.footer-facts-link adds facts + sitemap + solutions in one
+                         list; here each lives in its own column instead (facts: Company, sitemap:
+                         Legal, solutions: Facilities), so nothing is listed twice. --}}
+                    <li><a href="{{ route('public.facts') }}">{{ __('facts.footer_link') }}</a></li>
+                    <li><a href="{{ route('blog.index') }}">{{ __('home.footer.blog') }}</a></li>
+                    <li><a href="{{ route('public.developers') }}">{{ __('home.footer.developers') }}</a></li>
                     <li><a href="{{ route('public.faq') }}">{{ __('landing.footer.link_faq') }}</a></li>
+                    <li><a href="{{ route('public.contact') }}">{{ __('home.footer.contact') }}</a></li>
                 </ul>
             </nav>
-            <nav aria-labelledby="lx-f2">
-                <h2 id="lx-f2" class="lx-footer__title">{{ __('landing.v2.footer.facilities') }}</h2>
+            <nav aria-labelledby="hm-f4">
+                <h2 id="hm-f4">{{ __('home.footer.legal') }}</h2>
                 <ul role="list">
-                    <li><a href="{{ route('register.organization') }}">{{ __('landing.v2.cta_hospital') }}</a></li>
-                    <li><a href="{{ route('public.solutions.hospitals') }}">{{ __('landing.v2.footer.hospitals') }}</a></li>
-                    <li><a href="{{ route('public.solutions.pharmacies') }}">{{ __('landing.v2.footer.pharmacies') }}</a></li>
-                    <li><a href="{{ route('public.solutions.laboratories') }}">{{ __('landing.v2.footer.labs') }}</a></li>
-                    <li><a href="{{ route('docs.index') }}">{{ __('landing.v2.footer.docs') }}</a></li>
-                </ul>
-            </nav>
-            <nav aria-labelledby="lx-f3">
-                <h2 id="lx-f3" class="lx-footer__title">{{ __('landing.v2.footer.legal') }}</h2>
-                <ul role="list">
-                    <li><a href="{{ route('public.terms') }}">{{ __('landing.v2.footer.terms') }}</a></li>
-                    <li><a href="{{ route('public.privacy') }}">{{ __('landing.v2.footer.privacy') }}</a></li>
+                    <li><a href="{{ route('public.privacy') }}">{{ __('home.footer.privacy') }}</a></li>
+                    <li><a href="{{ route('public.terms') }}">{{ __('home.footer.terms') }}</a></li>
                     <li><a href="{{ route('public.consent') }}">{{ __('landing.v2.footer.consent') }}</a></li>
                     <li><a href="{{ route('public.security') }}">{{ __('landing.v2.footer.security') }}</a></li>
-                    <li><a href="{{ route('public.contact') }}">{{ __('landing.v2.footer.contact') }}</a></li>
-                    @includeIf('partials.seo.footer-facts-link')
+                    <li><a href="{{ route('public.sitemap') }}">{{ __('home.footer.sitemap') }}</a></li>
                 </ul>
             </nav>
         </div>
-        <div class="lx-footer__meta">
-            <p>{{ __('landing.v2.footer.copyright', ['year' => date('Y')]) }}</p>
-            <p class="lx-footer__lang">
-                <x-landing-icon name="globe" :size="16" />
+        <div class="hm-footer__bottom">
+            <p>{{ __('home.footer.copyright', ['year' => date('Y')]) }}</p>
+            <p>
                 <a href="{{ route('lang.switch', 'en') }}" lang="en" hreflang="en">English</a>
                 <span aria-hidden="true">·</span>
                 <a href="{{ route('lang.switch', 'fr') }}" lang="fr" hreflang="fr">Français</a>

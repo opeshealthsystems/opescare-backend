@@ -428,10 +428,43 @@ class CareMapController extends Controller
 
         $all = collect($this->searchService->searchNearby($request->all()));
 
+        $regionBase = $all;
+
         if ($region !== '') {
             $all = $all->filter(
                 fn ($f) => strcasecmp(trim((string) $f->region), $region) === 0
             )->values();
+        }
+
+        // Region counts describe the set BEFORE the region filter, so every
+        // region link says how many results it would really give.
+        $regionCounts = $regionBase
+            ->map(fn ($f) => trim((string) $f->region))
+            ->filter()
+            ->countBy()
+            ->all();
+
+        // Sidebar filters. Each one reads a column the listing really holds;
+        // filters we have no data for (services, emergency department,
+        // online booking) are deliberately not offered.
+        $filters = [
+            'open_now' => $request->boolean('open_now'),
+            'open_24h' => $request->boolean('open_24h'),
+            'has_phone' => $request->boolean('has_phone'),
+            'verified' => $request->boolean('verified'),
+        ];
+        $now = now();
+        if ($filters['open_now']) {
+            $all = $all->filter(fn ($f) => self::openState($f, $now) === true)->values();
+        }
+        if ($filters['open_24h']) {
+            $all = $all->filter(fn ($f) => self::isOpen24hToday($f, $now))->values();
+        }
+        if ($filters['has_phone']) {
+            $all = $all->filter(fn ($f) => $f->dialablePhone() !== null)->values();
+        }
+        if ($filters['verified']) {
+            $all = $all->filter(fn ($f) => in_array($f->verification_status, ['license_verified', 'government_verified'], true))->values();
         }
 
         $total = $all->count();
@@ -476,7 +509,21 @@ class CareMapController extends Controller
                 ->all()
         );
 
+        // Which listings on THIS page can take a booking: one query for the
+        // page, same rule as listingAcceptsBookings().
+        $pageTenantIds = $facilities->getCollection()->pluck('facility_id')->filter()->unique()->values();
+        $liveTenants = $pageTenantIds->isEmpty() ? [] : \App\Models\Facility::query()
+            ->whereIn('id', $pageTenantIds->all())
+            ->whereIn('status', ['active', 'active_demo'])
+            ->pluck('id')->map(fn ($id) => (string) $id)->all();
+        $bookableIds = $facilities->getCollection()
+            ->filter(fn ($f) => $f->facility_id !== null && in_array((string) $f->facility_id, $liveTenants, true))
+            ->pluck('id')->map(fn ($id) => (string) $id)->all();
+
         return view('care_map.directory', [
+            'filters'      => $filters,
+            'regionCounts' => $regionCounts,
+            'bookableIds'  => $bookableIds,
             'facilities' => $facilities,
             'total'      => $total,
             'typeCounts' => $typeCounts,
@@ -486,6 +533,44 @@ class CareMapController extends Controller
             'queryText'    => trim((string) $request->query('query', '')),
             'locale'     => app()->getLocale(),
         ]);
+    }
+
+    /**
+     * Open / closed right now from the listing's own reported hours for today:
+     * true, false, or null when the listing reports nothing for today.
+     */
+    public static function openState($facility, $now): ?bool
+    {
+        $today = self::todayHours($facility, $now);
+        if ($today === null) {
+            return null;
+        }
+        if ($today->is_24_hours) {
+            return true;
+        }
+        if ($today->is_closed) {
+            return false;
+        }
+        if ($today->opens_at && $today->closes_at) {
+            $t = $now->format('H:i');
+            return $t >= substr($today->opens_at, 0, 5) && $t <= substr($today->closes_at, 0, 5);
+        }
+        return null;
+    }
+
+    public static function isOpen24hToday($facility, $now): bool
+    {
+        return (bool) (self::todayHours($facility, $now)?->is_24_hours);
+    }
+
+    public static function todayHours($facility, $now)
+    {
+        $hours = $facility->hours ?? null;
+        if (! $hours || $hours->isEmpty()) {
+            return null;
+        }
+        $day = (int) $now->format('w');
+        return $hours->first(fn ($h) => (int) $h->day_of_week === $day);
     }
 
     /**
@@ -499,6 +584,7 @@ class CareMapController extends Controller
         $response = response()->view('care_map.profile', [
             'facility' => $facility,
             'bookable' => $this->listingAcceptsBookings($facility),
+            'nearby'   => $this->nearbyListings($facility),
             'locale'   => app()->getLocale(),
         ]);
 
@@ -509,6 +595,43 @@ class CareMapController extends Controller
         }
 
         return $response;
+    }
+
+    /**
+     * Up to five nearest ACTIVE listings to this one, by straight-line distance.
+     *
+     * Cheap on purpose: a ~0.25° bounding box (about 28 km) narrows the scan on
+     * the lat/lng columns before the haversine sort. A listing without
+     * coordinates gets no "nearby" block — distance is never guessed.
+     *
+     * @return \Illuminate\Support\Collection<int, object{id:int,facility_name:string,facility_type:?string,city:?string,distance_km:float}>
+     */
+    private function nearbyListings(CareFacility $listing): \Illuminate\Support\Collection
+    {
+        $lat = $listing->latitude;
+        $lng = $listing->longitude;
+        if ($lat === null || $lng === null || ((float) $lat === 0.0 && (float) $lng === 0.0)) {
+            return collect();
+        }
+
+        $lat = (float) $lat;
+        $lng = (float) $lng;
+        $box = 0.25;
+
+        return CareFacility::query()
+            ->where('listing_status', 'active')
+            ->whereKeyNot($listing->getKey())
+            ->whereBetween('latitude', [$lat - $box, $lat + $box])
+            ->whereBetween('longitude', [$lng - $box, $lng + $box])
+            ->select(['id', 'facility_name', 'facility_type', 'city'])
+            ->selectRaw(
+                '6371 * 2 * ASIN(SQRT(POWER(SIN(RADIANS(latitude - ?) / 2), 2) + COS(RADIANS(?)) * COS(RADIANS(latitude)) * POWER(SIN(RADIANS(longitude - ?) / 2), 2))) AS distance_km',
+                [$lat, $lat, $lng]
+            )
+            ->orderBy('distance_km')
+            ->limit(5)
+            ->toBase()
+            ->get();
     }
 
     /**
