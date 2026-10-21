@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Preview — hero slides</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+:root{--brand:#0F4C81;--navy:#0B2A4A;--sky:#7CC0F5;--ink:#0F172A;--muted:#64748B;--line:#E2E8F0;--good:#047857;--bad:#B91C1C}
+*{box-sizing:border-box}body{margin:0;font:16px/1.6 Inter,system-ui,sans-serif;background:#fff;color:var(--ink)}
+svg{width:18px;height:18px}
+.hero{position:relative;background:var(--navy);color:#fff;overflow:hidden;min-height:620px}
+.hero::before{content:"";position:absolute;inset:0;background:url(../../../public/images/health-id/guilloche-texture.webp) center/cover;opacity:.12}
+.wrap{position:relative;max-width:1200px;margin:0 auto;padding:64px 24px 40px;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;min-height:620px}
+.kicker{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.1);color:#C7DDF2}
+h1{font-size:52px;line-height:1.08;letter-spacing:-.03em;margin:18px 0 14px;min-height:2.2em}
+h1 .l2{color:var(--sky)}
+.caret{display:inline-block;width:3px;height:.9em;background:var(--sky);margin-left:4px;vertical-align:-.08em;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.lead{font-size:18px;color:#BFD0E2;max-width:520px;margin:0 0 24px;min-height:5em;transition:opacity .5s}
+.btns{display:flex;gap:10px}
+.btn{display:inline-flex;align-items:center;gap:8px;height:46px;padding:0 20px;border-radius:10px;font-weight:600;font-size:15px;background:#fff;color:var(--brand)}
+.btn.ghost{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.3)}
+.dots{display:flex;gap:8px;margin-top:30px;align-items:center}
+.dots span{height:6px;width:26px;border-radius:6px;background:rgba(255,255,255,.22);overflow:hidden;position:relative}
+.dots span.on::after{content:"";position:absolute;inset:0;background:var(--sky);transform-origin:left;animation:fill 7s linear forwards}
+.dots span.done{background:var(--sky)}
+@keyframes fill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.dots small{margin-left:8px;font-size:13px;color:#9CC3E8}
+/* Visual stage: crossfade only, no sliding */
+.stage{position:relative;height:500px}
+.vis{position:absolute;inset:0;display:grid;place-items:center;opacity:0;transition:opacity .9s ease;pointer-events:none}
+.vis.on{opacity:1}
+/* Slide 1: Health ID card with anatomy */
+.card{position:relative;width:520px;border-radius:22px;background:linear-gradient(135deg,#1B5E9B,#0B2A4A);padding:22px;box-shadow:0 30px 60px -20px rgba(0,0,0,.55);overflow:hidden;display:grid;grid-template-columns:150px 1fr;gap:18px}
+.card::before{content:"";position:absolute;inset:0;background:url(../../../public/images/health-id/guilloche-mesh.webp) center/cover;opacity:.35}
+.card>*{position:relative}
+.ctop{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center}
+.ctop b{font-size:17px;display:flex;align-items:center;gap:8px}.ctop b img{width:24px}
+.ctop small{font-size:10.5px;letter-spacing:.12em;color:#9CC3E8}
+.sample{font-size:10px;font-weight:700;letter-spacing:.08em;border:1px solid rgba(255,255,255,.4);padding:2px 7px;border-radius:999px;color:#DCE7F3}
+.body{position:relative;height:300px;border-radius:14px;background:rgba(255,255,255,.06);display:grid;place-items:center}
+.figure{position:relative;height:280px;aspect-ratio:305/720}
+.figure img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.heart{position:absolute;left:36.7%;top:16.8%;width:26.9%;height:13.1%;background:url(../../../public/images/health-id/living/adult-female-current.webp) 0 0/600% 400% no-repeat;animation:beat 1.2s steps(1) infinite}
+@keyframes beat{0%{background-position:0 0}12%{background-position:20% 0}25%{background-position:40% 0}37%{background-position:60% 0}50%{background-position:80% 0}62%{background-position:100% 0}75%{background-position:0 33.3%}87%{background-position:20% 33.3%}}
+.ping{position:absolute;width:12px;height:12px;border-radius:50%;background:#F87171;border:2px solid #fff;animation:ping 1.6s ease-out infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(248,113,113,.7)}80%{box-shadow:0 0 0 12px rgba(248,113,113,0)}}
+.info{display:grid;gap:10px;align-content:start}
+.num{font:600 18px ui-monospace,Consolas,monospace;letter-spacing:.06em}
+.who{display:flex;gap:18px;font-size:11.5px;color:#9CC3E8}.who b{display:block;color:#fff;font-size:14px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tile{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:8px 10px}
+.tile small{display:flex;align-items:center;gap:5px;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:#9CC3E8}.tile small svg{width:13px;height:13px}
+.tile b{display:block;font-size:15px;margin-top:2px}
+.tile.blood b{font-size:24px;line-height:1.1}
+.tile.alert{border-color:rgba(248,113,113,.5);background:rgba(185,28,28,.18)}.tile.alert small{color:#FCA5A5}
+.tile.full{grid-column:1/-1}
+.qr{position:absolute;right:20px;bottom:20px;width:62px;height:62px;background:#fff;border-radius:10px;display:grid;place-items:center;color:var(--navy)}.qr svg{width:44px;height:44px}
+/* Slide 2: interoperability network */
+.net{position:relative;width:520px;height:440px}
+.net svg.lines{position:absolute;inset:0;width:100%;height:100%}
+.net svg.lines path{fill:none;stroke:rgba(124,192,245,.45);stroke-width:2;stroke-dasharray:6 8;animation:dash 1.6s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-28}}
+.node{position:absolute;transform:translate(-50%,-50%);background:#fff;color:var(--ink);border-radius:14px;padding:10px 12px;display:flex;align-items:center;gap:10px;min-width:150px;box-shadow:0 12px 30px -12px rgba(0,0,0,.5)}
+.node .ic{width:34px;height:34px;border-radius:9px;background:#EAF2FA;color:var(--brand);display:grid;place-items:center;flex:none}
+.node b{font-size:13.5px;display:block;line-height:1.2}.node small{font-size:11.5px;color:var(--muted)}
+.core{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,#1B5E9B,#0F4C81);border:2px solid var(--sky);display:grid;place-items:center;text-align:center;box-shadow:0 0 0 14px rgba(124,192,245,.08),0 0 0 30px rgba(124,192,245,.05)}
+.core img{width:42px;margin:0 auto}.core b{font-size:14px;display:block}.core small{font-size:11px;color:#C7DDF2}
+.packet{position:absolute;left:50%;top:50%;font-size:11px;font-weight:600;background:var(--sky);color:var(--navy);padding:3px 8px;border-radius:999px;transform:translate(-50%,-50%)}
+/* Slide 3: MPI */
+.mpi{width:520px;display:grid;grid-template-columns:1fr 70px 1fr;gap:10px;align-items:center}
+.recs{display:grid;gap:10px}
+.rec{background:#fff;color:var(--ink);border-radius:12px;padding:10px 12px;font-size:12.5px;box-shadow:0 12px 30px -14px rgba(0,0,0,.5)}
+.rec header{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px}
+.rec b{font-size:14px;display:block}
+.rec .m{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.m span{font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px;background:#ECFDF5;color:var(--good)}
+.m span.x{background:#FFFBEB;color:#B45309}
+.merge{display:grid;place-items:center;gap:6px;color:var(--sky);font-size:12px;font-weight:700;text-align:center}
+.merge svg{width:30px;height:30px}
+.golden{background:#fff;color:var(--ink);border-radius:16px;padding:16px;border:2px solid var(--sky);box-shadow:0 20px 40px -16px rgba(0,0,0,.6)}
+.golden .t{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--brand)}
+.golden b{display:block;font-size:17px;margin:6px 0 2px}.golden .id{font:600 13px ui-monospace,Consolas,monospace;color:var(--muted)}
+.golden ul{list-style:none;padding:0;margin:10px 0 0;display:grid;gap:6px;font-size:12.5px}
+.golden li{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:6px}.golden li span{color:var(--muted)}
+.score{margin-top:10px;font-size:12px;color:var(--muted)}.bar{height:6px;border-radius:6px;background:#E2E8F0;margin-top:4px;overflow:hidden}.bar i{display:block;height:100%;width:96%;background:var(--good)}
+.cap{font:700 12px Inter;letter-spacing:.08em;text-transform:uppercase;color:#64748B;padding:18px 24px 6px;max-width:1200px;margin:0 auto}
+@media (prefers-reduced-motion:reduce){.heart,.ping,.net svg.lines path,.dots span.on::after,.caret{animation:none}}
+</style></head><body>
+<p class="cap">Hero — three slides, auto-change every 7 s, crossfade (no sliding), title types itself</p>
+<section class="hero"><div class="wrap">
+ <div>
+  <span class="kicker" id="kicker"><i data-lucide="badge-check" style="width:15px;height:15px"></i><span>Cameroon's first national Health ID</span></span>
+  <h1 id="title"></h1>
+  <p class="lead" id="lead"></p>
+  <div class="btns"><a class="btn" id="cta1"></a><a class="btn ghost" id="cta2"></a></div>
+  <div class="dots" id="dots"><span></span><span></span><span></span><small id="count"></small></div>
+ </div>
+ <div class="stage">
+  <!-- 1 Health ID with anatomy -->
+  <div class="vis" data-v="0"><div class="card">
+   <div class="ctop"><b><img src="../../../public/images/health-id/seal.webp" alt="">OpesCare</b><span style="display:flex;gap:8px;align-items:center"><small>HEALTH ID · CAMEROON</small><span class="sample">SAMPLE</span></span></div>
+   <div class="body"><div class="figure"><img src="../../../public/images/health-id/living/adult-female-base.png" alt="Anatomy figure"><span class="heart"></span><span class="ping" style="left:50%;top:6%"></span></div></div>
+   <div class="info">
+    <div class="num">CM-HID 0000 0000 0000</div>
+    <div class="who"><div>Holder<b>Sample holder</b></div><div>Sex · age<b>F · 34</b></div></div>
+    <div class="tiles">
+     <div class="tile blood"><small><i data-lucide="droplet"></i>Blood group</small><b>O+</b></div>
+     <div class="tile alert"><small><i data-lucide="triangle-alert"></i>Allergy</small><b>Penicillin</b></div>
+     <div class="tile full"><small><i data-lucide="heart-pulse"></i>Health condition</small><b>Hypertension · on treatment</b></div>
+    </div>
+   </div>
+   <span class="qr"><i data-lucide="qr-code"></i></span>
+  </div></div>
+  <!-- 2 Interoperability -->
+  <div class="vis" data-v="1"><div class="net">
+   <svg class="lines" viewBox="0 0 520 440"><path d="M90 70 Q180 140 260 220"/><path d="M430 70 Q340 140 260 220"/><path d="M80 370 Q170 300 260 220"/><path d="M440 370 Q350 300 260 220"/><path d="M260 30 L260 220"/></svg>
+   <div class="core"><div><img src="../../../public/images/health-id/seal.webp" alt=""><b>OpesCare layer</b><small>Health ID · consent · audit</small></div></div>
+   <div class="node" style="left:90px;top:70px"><span class="ic"><i data-lucide="building-2"></i></span><div><b>Hospital</b><small>Opens granted record</small></div></div>
+   <div class="node" style="left:430px;top:70px"><span class="ic"><i data-lucide="stethoscope"></i></span><div><b>Clinic</b><small>Sends a referral</small></div></div>
+   <div class="node" style="left:90px;top:370px"><span class="ic"><i data-lucide="flask-conical"></i></span><div><b>Laboratory</b><small>Returns results</small></div></div>
+   <div class="node" style="left:430px;top:370px"><span class="ic"><i data-lucide="pill"></i></span><div><b>Pharmacy</b><small>Dispenses the Rx</small></div></div>
+   <div class="node" style="left:260px;top:28px"><span class="ic"><i data-lucide="smartphone"></i></span><div><b>Patient app</b><small>Approves access</small></div></div>
+   <span class="packet" style="left:180px;top:150px">referral</span><span class="packet" style="left:340px;top:300px">result</span>
+  </div></div>
+  <!-- 3 Master Patient Index -->
+  <div class="vis" data-v="2"><div class="mpi">
+   <div class="recs">
+    <div class="rec"><header><span>Hôpital Central</span><span>2019</span></header><b>Amara Dongmo</b>F · 12/03/1991<div class="m"><span>Name</span><span>DOB</span><span>Phone</span></div></div>
+    <div class="rec"><header><span>Clinique Bastos</span><span>2023</span></header><b>Amara D. Dongmo</b>F · 12/03/1991<div class="m"><span>DOB</span><span>Phone</span><span class="x">Name variant</span></div></div>
+    <div class="rec"><header><span>Laboratoire Biocentre</span><span>2026</span></header><b>DONGMO Amara</b>F · 1991<div class="m"><span>Name</span><span class="x">Year only</span></div></div>
+   </div>
+   <div class="merge"><i data-lucide="git-merge"></i>Reviewed<br>match</div>
+   <div class="golden"><div class="t"><i data-lucide="fingerprint"></i>One patient</div><b>Amara Dongmo</b><span class="id">CM-HID 0000 0000 0000</span>
+    <ul><li><span>Linked records</span><b>3</b></li><li><span>Facilities</span><b>3</b></li><li><span>Merged by</span><b>Records desk</b></li></ul>
+    <div class="score">Match confidence<div class="bar"><i></i></div></div></div>
+  </div></div>
+ </div>
+</div></section>
+
+<script>
+const slides=[
+ {k:"Cameroon's first national Health ID",t1:"One Health ID.",t2:"Care that connects.",lead:"Your blood group, allergies and conditions travel with you — readable by any hospital you choose, only with your consent.",c1:"Get your Health ID",c2:"How it works"},
+ {k:"OpesCare interoperability layer",t1:"Every facility.",t2:"One conversation.",lead:"Hospitals, clinics, labs and pharmacies exchange referrals, results and prescriptions through the Health ID — consent-based, and logged on both sides.",c1:"Connect your facility",c2:"See the systems"},
+ {k:"Master Patient Index",t1:"One patient.",t2:"One record.",lead:"The same person registered at three facilities becomes one patient. Possible duplicates are matched, reviewed by a records officer, and merged reversibly.",c1:"For hospitals",c2:"Read how matching works"}
+];
+const $=id=>document.getElementById(id);
+const vis=[...document.querySelectorAll('.vis')],dots=[...document.querySelectorAll('#dots span')];
+let i=0,timer,typing;
+function type(el,a,b){clearInterval(typing);const full=[a,b];let li=0,ci=0;el.innerHTML='';
+ const render=()=>{el.innerHTML=(li>0?full[0]:full[0].slice(0,ci))+(li>0?'<br><span class="l2">'+full[1].slice(0,ci)+'</span>':'')+'<span class="caret"></span>'};
+ typing=setInterval(()=>{ci++;if(ci>full[li].length){if(li===0){li=1;ci=0}else{clearInterval(typing);}}render()},55);}
+function show(n){i=n;const s=slides[n];
+ vis.forEach((v,k)=>v.classList.toggle('on',k===n));
+ dots.forEach((d,k)=>{d.classList.remove('on','done');if(k<n)d.classList.add('done');});void dots[n].offsetWidth;dots[n].classList.add('on');
+ $('kicker').lastElementChild.textContent=s.k;$('lead').style.opacity=0;
+ setTimeout(()=>{$('lead').textContent=s.lead;$('lead').style.opacity=1},300);
+ $('cta1').textContent=s.c1;$('cta2').textContent=s.c2;$('count').textContent=(n+1)+' / 3';
+ type($('title'),s.t1,s.t2);}
+const q=new URLSearchParams(location.search).get('slide');
+if(q!==null){show(+q);clearInterval(typing);const s=slides[+q];$('title').innerHTML=s.t1+'<br><span class="l2">'+s.t2+'</span>';$('lead').textContent=s.lead;$('lead').style.opacity=1}
+else{show(0);timer=setInterval(()=>show((i+1)%3),7000);}
+lucide.createIcons();
+</script></body></html>

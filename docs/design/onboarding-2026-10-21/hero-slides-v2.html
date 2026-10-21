@@ -1,0 +1,188 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Preview — hero slides v2</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="../../../public/css/finder.css"><link rel="stylesheet" href="../../../public/css/landing-home.css"><script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script><style>/* ---- additions on top of the live landing-home.css ---- */
+.hx-stage{position:relative;justify-self:center;width:100%;max-width:440px;height:390px}
+.hx-vis{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:opacity .8s ease,visibility 0s .8s}
+.hx-vis.is-on{opacity:1;visibility:visible;transition:opacity .8s ease}
+/* Slide 1: the exact live card, with a medical band added inside it */
+.hm .hx-card{aspect-ratio:auto;height:390px;max-width:440px}
+.hm .hx-card .hm-card__qr{bottom:auto;top:181px}
+.hm .hx-card .hm-card__seal{bottom:auto;top:199px}
+.hx-med{position:absolute;left:24px;right:24px;bottom:14px;height:110px;display:grid;grid-template-columns:44px 1fr;gap:14px;align-items:center;border-top:1px solid rgba(255,255,255,.16);padding-top:12px}
+.hx-fig{position:relative;height:100px;width:42px;justify-self:center}
+.hx-fig img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.hx-heart{position:absolute;left:36.7%;top:16.8%;width:26.9%;height:13.1%;background:url(../../../public/images/health-id/living/adult-female-current.webp) 0 0/600% 400% no-repeat;animation:hxbeat 1.1s steps(1) infinite}
+@keyframes hxbeat{0%{background-position:0 0}17%{background-position:20% 0}34%{background-position:40% 0}50%{background-position:60% 0}67%{background-position:80% 0}84%{background-position:100% 0}}
+.hx-pain{position:absolute;left:50%;top:4%;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:#F87171}
+.hx-tiles{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.hx-t{border:1px solid rgba(255,255,255,.16);border-radius:8px;padding:4px 9px;min-width:0}
+.hx-t small{display:flex;align-items:center;gap:5px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:#9CC3E8}
+.hx-t small svg{width:12px;height:12px}
+.hx-t b{display:block;font-size:13.5px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hx-t--alert small{color:#FCA5A5}
+.hx-t--wide{grid-column:1/-1}
+/* Slide 2: interoperability — one clean colour, the lead text colour */
+.hx-net{position:relative;width:440px;height:390px;color:#BFD0E2}
+.hx-lines{position:absolute;inset:0;width:100%;height:100%}
+.hx-lines path{fill:none;stroke:rgba(191,208,226,.35);stroke-width:1.5;stroke-dasharray:4 6}
+.hx-core{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:156px;padding:14px 10px;border:1px solid rgba(191,208,226,.45);border-radius:14px;background:#0B2A4A;text-align:center;display:grid;gap:4px;justify-items:center}
+.hx-core svg{width:22px;height:22px}.hx-core b{font-size:14px;color:#fff}.hx-core small{font-size:11.5px}
+.hx-node{position:absolute;transform:translate(-50%,-50%);width:200px;display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid rgba(191,208,226,.3);border-radius:12px;background:#0B2A4A}
+.hx-node svg{width:20px;height:20px;flex:none}
+.hx-node b{display:block;font-size:13.5px;color:#fff;line-height:1.2}.hx-node small{font-size:11.5px}
+/* Slide 3: master patient index — same palette */
+.hx-mpi{width:440px;height:390px;display:grid;grid-template-columns:1fr 30px 1.1fr;gap:10px;align-items:center;color:#BFD0E2}
+.hx-recs{display:grid;gap:8px}
+.hx-rec{border:1px solid rgba(191,208,226,.3);border-radius:10px;padding:9px 11px;font-size:11.5px;background:#0B2A4A}
+.hx-rec header{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:#9CC3E8;margin-bottom:2px}
+.hx-rec b{display:block;color:#fff;font-size:13.5px}
+.hx-arrow{display:grid;place-items:center}.hx-arrow svg{width:22px;height:22px}
+.hx-gold{border:1px solid rgba(191,208,226,.6);border-radius:14px;padding:14px;background:#0B2A4A}
+.hx-gold small{display:flex;align-items:center;gap:6px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase}.hx-gold small svg{width:14px;height:14px}
+.hx-gold>b{display:block;color:#fff;font-size:16px;margin-top:6px}
+.hx-id{font:600 11.5px ui-monospace,Consolas,monospace}
+.hx-gold dl{margin:10px 0 0;display:grid;gap:5px;font-size:12px}
+.hx-gold dl div{display:flex;justify-content:space-between;gap:8px;border-top:1px solid rgba(191,208,226,.2);padding-top:5px}.hx-gold dd{margin:0;color:#fff;font-weight:600;text-align:right}
+.hx-caret{display:inline-block;width:3px;height:.85em;background:currentColor;margin-left:4px;vertical-align:-.06em;animation:hxblink 1s steps(1) infinite}
+@keyframes hxblink{50%{opacity:0}}
+/* Narrow screens: keep the old card footprint (aspect 1.586) and scale the 440x390 visual into it */
+@media (max-width:900px){.hx-stage{height:auto;aspect-ratio:1.586;max-width:440px}.hx-vis>*{flex:none;transform:scale(var(--hx-s,1));transform-origin:center}}
+@media (prefers-reduced-motion:reduce){.hx-heart,.hx-caret{animation:none}.hx-vis{transition:none}}
+
+/* ---- v3 card: full-height rotating anatomy (same art as the app), four medical fields ---- */
+.hm .hx-card3{aspect-ratio:auto;height:390px;max-width:440px;width:440px;display:grid;grid-template-columns:1fr 150px;gap:0;padding:22px 0 20px 22px}
+.hx3-left{display:flex;flex-direction:column;min-width:0;padding-right:8px}
+.hx3-chiprow{display:flex;align-items:center;justify-content:space-between;margin-top:14px}
+.hx3-chiprow .hm-card__chip{margin-top:0}
+.hm .hx3-chiprow .hm-card__sample{position:static}
+.hm .hx3-num{font-size:16.5px;margin-top:12px;white-space:nowrap}
+.hx-card3 .hm-card__row{margin-top:10px}
+.hx3-tiles{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:14px}
+.hx3-foot{margin-top:auto;display:flex;align-items:center;gap:10px}
+.hx3-seal{width:40px;height:40px;opacity:.9}
+.hx3-qr{width:52px;height:52px;background:#fff;border-radius:9px;display:grid;place-items:center;color:#0B2A4A}.hx3-qr svg{width:38px;height:38px}
+.hx3-fig{position:relative;margin:-22px 0 -20px;height:390px;perspective:900px;border-left:1px solid rgba(255,255,255,.12);display:grid;place-items:center}
+.hx3-spin{position:relative;height:360px;margin-top:14px;aspect-ratio:305/720;transform-style:preserve-3d;animation:hx3turn 14s linear infinite}
+@keyframes hx3turn{from{transform:rotateY(0)}to{transform:rotateY(360deg)}}
+.hx3-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.hx3-back{transform:rotateY(180deg) scaleX(-1)}
+.hx3-face>img:first-child{position:absolute;inset:0;width:100%;height:100%}
+.hx3-current{position:absolute;inset:0;background:url(../../../public/images/health-id/living/adult-female-current.webp) 0 0/600% 400% no-repeat}
+.hx3-heart{position:absolute;left:36.07%;top:16.94%;width:26.89%;height:13.06%;animation:hx3lub .833s linear infinite;transform-origin:center}
+@keyframes hx3lub{0%{transform:scale(1)}10%{transform:scale(.9)}18%{transform:scale(1.03)}30%{transform:scale(.94)}45%,100%{transform:scale(1)}}
+.hx3-view{position:absolute;top:8px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#9CC3E8}
+@media (prefers-reduced-motion:reduce){.hx3-spin,.hx3-heart{animation:none}}
+</style></head><body class="hm"><section class="hm-hero" aria-labelledby="hm-hero-title">
+    <div class="hm-wrap hm-hero__grid">
+        <div class="hm-hero__text">
+            <span class="hm-kicker" data-hx-kicker><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="f-icon" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+Cameroon&#039;s first national Health ID</span>
+            <h1 id="hm-hero-title" data-hx-title>One Health ID.<br><span>Care that connects.</span></h1>
+            <p class="hm-lead" data-hx-lead>Find medicines in stock, blood, and the right facility near you — and carry one record that every hospital you choose can read, only with your consent.</p>
+
+            <form class="hm-search" method="get" action="/public/care-map" role="search"
+                  aria-label="Search for care" data-hm-search>
+                <div class="hm-search__tabs">
+                    <a class="is-on" href="#care-map" aria-current="true"
+                       data-hm-tab="facilities" data-action="/public/care-map" data-name="query"
+                       data-placeholder="Hospital in Douala">Facilities</a>
+                    <a href="#network/medicine-finder"
+                       data-hm-tab="medicines" data-action="/public/network/medicine-finder" data-name="q"
+                       data-placeholder="Paracetamol, amoxicillin…">Medicines</a>
+                    <a href="#network/blood-finder"
+                       data-hm-tab="blood" data-action="/public/network/blood-finder" data-name="group">Blood</a>
+                </div>
+                <label class="hm-sr" for="hm-q">Search for care</label>
+                <input id="hm-q" class="hm-search__input" type="search" name="query" placeholder="Hospital in Douala" data-hm-input>
+                <label class="hm-sr" for="hm-group">Blood group</label>
+                <select id="hm-group" class="hm-search__input" name="group" hidden disabled data-hm-group>
+                    <option value="">Any group</option>
+                                            <option value="A+">A+</option>
+                                            <option value="A-">A-</option>
+                                            <option value="B+">B+</option>
+                                            <option value="B-">B-</option>
+                                            <option value="AB+">AB+</option>
+                                            <option value="AB-">AB-</option>
+                                            <option value="O+">O+</option>
+                                            <option value="O-">O-</option>
+                                    </select>
+                <button class="hm-btn hm-btn--sm hm-btn--primary" type="submit"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="f-icon" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+Search</button>
+            </form>
+
+            <ul class="hm-trust" role="list">
+                <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="f-icon" aria-hidden="true" focusable="false"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1 1 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+Consent on every record</li>
+                <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="f-icon" aria-hidden="true" focusable="false"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>
+English and French</li>
+                <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="f-icon" aria-hidden="true" focusable="false"><path d="m2 2 20 20"/><path d="M5.782 5.782A7 7 0 0 0 9 19h8.5a4.5 4.5 0 0 0 1.307-.193"/><path d="M21.532 16.5A4.5 4.5 0 0 0 17.5 10h-1.79A7.008 7.008 0 0 0 10 5.07"/></svg>
+Works on slow networks</li>
+            </ul>
+        </div>
+
+        <div class="hx-stage">
+ <div class="hx-vis is-on" data-v="0"><figure class="hm-card hx-card3" role="img" aria-label="Sample OpesCare Health ID card, not a real person">
+  <div class="hx3-left">
+    <div class="hm-card__t"><b>OpesCare</b><small>HEALTH ID · CAMEROON</small></div>
+    <div class="hx3-chiprow"><img class="hm-card__chip" src="../../../public/images/health-id/chip.webp" alt="" width="46" height="36"><span class="hm-card__sample">Sample</span></div>
+    <div class="hm-card__num hx3-num">CM-HID 0000 0000 0000</div>
+    <div class="hm-card__row"><div>Holder<b>Sample holder</b></div><div>Issued<b>00/0000</b></div></div>
+    <div class="hx3-tiles">
+      <div class="hx-t"><small><i data-lucide="droplet"></i>Blood group</small><b>O+</b></div>
+      <div class="hx-t hx-t--alert"><small><i data-lucide="shield-alert"></i>Allergy</small><b>Penicillin</b></div>
+      <div class="hx-t"><small><i data-lucide="activity"></i>Condition</small><b>Hypertension</b></div>
+      <div class="hx-t"><small><i data-lucide="phone"></i>Emergency</small><b>Sister · 6XX</b></div>
+    </div>
+    <div class="hx3-foot"><img class="hx3-seal" src="../../../public/images/health-id/seal.webp" alt="" width="40" height="40"><span class="hx3-qr"><i data-lucide="qr-code"></i></span></div>
+  </div>
+  <div class="hx3-fig" aria-hidden="true">
+    <div class="hx3-spin">
+      <div class="hx3-face hx3-front"><img src="../../../public/images/health-id/living/adult-female-base.png" alt=""><span class="hx3-current"></span><img class="hx3-heart" src="../../../public/images/health-id/living/adult-female-heart.png" alt=""></div>
+      <div class="hx3-face hx3-back"><img src="../../../public/images/health-id/living/adult-female-base.png" alt=""><span class="hx3-current"></span><img class="hx3-heart" src="../../../public/images/health-id/living/adult-female-heart.png" alt=""></div>
+    </div>
+    <span class="hx3-view" data-hx-view>Front</span>
+  </div>
+</figure>
+</div>
+ <div class="hx-vis" data-v="1"><div class="hx-net">
+   <svg class="hx-lines" viewBox="0 0 440 390" aria-hidden="true"><path d="M95 62 L220 195"/><path d="M345 62 L220 195"/><path d="M95 328 L220 195"/><path d="M345 328 L220 195"/></svg>
+   <div class="hx-core"><i data-lucide="share-2"></i><b>OpesCare layer</b><small>Health ID · consent · audit log</small></div>
+   <div class="hx-node" style="left:95px;top:62px"><i data-lucide="building-2"></i><div><b>Hospital</b><small>Opens what is granted</small></div></div>
+   <div class="hx-node" style="left:345px;top:62px"><i data-lucide="stethoscope"></i><div><b>Clinic</b><small>Sends a referral</small></div></div>
+   <div class="hx-node" style="left:95px;top:328px"><i data-lucide="flask-conical"></i><div><b>Laboratory</b><small>Returns results</small></div></div>
+   <div class="hx-node" style="left:345px;top:328px"><i data-lucide="pill"></i><div><b>Pharmacy</b><small>Dispenses the Rx</small></div></div>
+ </div></div>
+ <div class="hx-vis" data-v="2"><div class="hx-mpi">
+   <div class="hx-recs">
+    <div class="hx-rec"><header><span>Hôpital Central · 2019</span></header><b>Amara Dongmo</b><span>F · 12/03/1991 · 6XX XX 21 04</span></div>
+    <div class="hx-rec"><header><span>Clinique Bastos · 2023</span></header><b>Amara D. Dongmo</b><span>F · 12/03/1991 · 6XX XX 21 04</span></div>
+    <div class="hx-rec"><header><span>Laboratoire · 2026</span></header><b>DONGMO Amara</b><span>F · 1991</span></div>
+   </div>
+   <div class="hx-arrow"><i data-lucide="git-merge"></i></div>
+   <div class="hx-gold"><small><i data-lucide="user-round-check"></i>One patient</small><b>Amara Dongmo</b><span class="hx-id">CM-HID 0000 0000 0000</span>
+    <dl><div><dt>Linked records</dt><dd>3</dd></div><div><dt>Facilities</dt><dd>3</dd></div><div><dt>Reviewed</dt><dd>Records desk</dd></div><div><dt>Merge</dt><dd>Reversible</dd></div></dl></div>
+ </div></div>
+</div>
+    </div>
+</section><script>const S=[
+ {k:"Cameroon's first national Health ID",a:"One Health ID.",b:"Care that connects.",l:"Find medicines in stock, blood, and the right facility near you — and carry one record that every hospital you choose can read, only with your consent."},
+ {k:"OpesCare interoperability layer",a:"Every facility.",b:"One conversation.",l:"Hospitals, clinics, labs and pharmacies exchange referrals, results and prescriptions through the Health ID — consent-based, and logged on both sides."},
+ {k:"Master Patient Index",a:"One patient.",b:"One record.",l:"The same person registered at several facilities becomes one patient. Possible duplicates are matched, reviewed by a records officer, and merged reversibly."}];
+const V=[...document.querySelectorAll('.hx-vis')],T=document.querySelector('[data-hx-title]'),L=document.querySelector('[data-hx-lead]'),K=document.querySelector('[data-hx-kicker]');
+let i=0,ty;
+function type(a,b){clearInterval(ty);let p=0,c=0;const r=()=>{T.innerHTML=(p?a:a.slice(0,c))+(p?'<br><span>'+b.slice(0,c)+'</span>':'')+'<span class="hx-caret"></span>'};
+ ty=setInterval(()=>{c++;if(c>(p?b:a).length){if(!p){p=1;c=0}else{clearInterval(ty);setTimeout(()=>{const k=T.querySelector('.hx-caret');k&&k.remove()},1200)}}r()},50)}
+function go(n){i=n;V.forEach((v,k)=>v.classList.toggle('is-on',k===n));const s=S[n];
+ K.lastChild.textContent=s.k;L.textContent=s.l;type(s.a,s.b)}
+const q=new URLSearchParams(location.search).get('slide');
+if(q!==null){go(+q);clearInterval(ty);T.innerHTML=S[+q].a+'<br><span>'+S[+q].b+'</span>'}
+else{go(0);if(!matchMedia('(prefers-reduced-motion: reduce)').matches)setInterval(()=>go((i+1)%3),7000)}
+const st=document.querySelector('.hx-stage');
+function fit(){const r=st.getBoundingClientRect();const s=Math.min(1,r.height/390,r.width/440);st.style.setProperty('--hx-s',s)}
+fit();addEventListener('resize',fit);
+// The app's current sheet: 24 frames (6x4), one cycle per 833 ms beat.
+const cur=[...document.querySelectorAll('.hx3-current')];let f=0;
+if(!matchMedia('(prefers-reduced-motion: reduce)').matches)setInterval(()=>{f=(f+1)%24;const x=(f%6)*20,y=Math.floor(f/6)*(100/3);cur.forEach(e=>e.style.backgroundPosition=x+'% '+y+'%')},833/24);
+// Front/back label follows the turn (14 s per revolution).
+const vw=document.querySelector('[data-hx-view]'),t0=performance.now();
+setInterval(()=>{const a=((performance.now()-t0)/14000*360)%360;vw.textContent=(a<90||a>270)?'Front':'Back'},200);
+lucide.createIcons();
+</script></body></html>
