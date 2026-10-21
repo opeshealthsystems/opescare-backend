@@ -283,3 +283,28 @@ body.hm{margin:0;font:16px/1.6 Inter,system-ui,-apple-system,"Segoe UI",sans-ser
 .hx-node svg,.hx-core svg,.hx-arrow svg,.hx-gold small svg{color:#BFD0E2}
 .hx-rec span{display:block}
 .hm-more{margin-top:28px;justify-content:center}
+
+/* ── Health ID slide: merge of facility records into the card ── */
+.mg{position:absolute;inset:0;pointer-events:none;z-index:3}
+.mg-rec{position:absolute;left:22px;width:200px;padding:8px 10px;border-radius:10px;background:#0E345A;border:1px solid rgba(191,208,226,.45);color:#BFD0E2;font-size:11.5px;line-height:1.35;opacity:0;transform-origin:left top}
+.mg-rec small{display:block;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:#9CC3E8}
+.mg-rec b{display:block;color:#fff;font-size:13px}
+.mg-rec span{display:block}
+.mg-r1{top:78px}.mg-r2{top:142px}.mg-r3{top:206px}
+.mg-badge{position:absolute;left:22px;top:-14px;display:flex;align-items:center;gap:8px;padding:5px 12px;border-radius:999px;background:#fff;color:#0B2A4A;font-size:12px;font-weight:700;opacity:0}
+.mg-dot{width:8px;height:8px;border-radius:50%;background:#047857}
+.mg.run .mg-r1{animation:mg1 12s cubic-bezier(.45,0,.2,1) infinite}
+.mg.run .mg-r2{animation:mg2 12s cubic-bezier(.45,0,.2,1) infinite}
+.mg.run .mg-r3{animation:mg3 12s cubic-bezier(.45,0,.2,1) infinite}
+@keyframes mg1{0%{opacity:0;transform:translateY(8px)}6%,22%{opacity:1;transform:none}32%,100%{opacity:0;transform:translate(0,122px) scale(.62)}}
+@keyframes mg2{0%,3%{opacity:0;transform:translateY(8px)}9%,25%{opacity:1;transform:none}35%,100%{opacity:0;transform:translate(133px,58px) scale(.62)}}
+@keyframes mg3{0%,6%{opacity:0;transform:translateY(8px)}12%,28%{opacity:1;transform:none}38%,100%{opacity:0;transform:translate(0,47px) scale(.62)}}
+.mg.run .mg-badge{animation:mgB 12s ease infinite}
+@keyframes mgB{0%,38%{opacity:0;transform:translateY(6px)}43%,94%{opacity:1;transform:none}100%{opacity:0}}
+.mg.run ~ .hx-card3 .hx-t{animation:mgT 12s ease infinite}
+@keyframes mgT{0%,30%{border-color:rgba(255,255,255,.16)}34%{border-color:rgba(191,208,226,.9)}48%,100%{border-color:rgba(255,255,255,.16)}}
+.mg.run ~ .hx-card3 .hx3-left > :not(.hx3-tiles):not(.hm-card__t){animation:mgDim 12s ease infinite}
+@keyframes mgDim{0%{opacity:1}6%,30%{opacity:.15}40%,100%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.mg{display:none}}
+
+.hx-t small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

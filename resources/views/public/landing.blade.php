@@ -27,8 +27,8 @@
     $hLocale  = app()->getLocale();
     $hSystems = (int) ($stats['systems'] ?? 0);
     $hLogo    = asset('brand/landing/opescare-logo-176.webp');
-    $hApk     = is_file(public_path('downloads/opescare-finder.apk'));
-    $hAppUrl  = $hApk ? url('/downloads/opescare-finder.apk') : route('mobile.app');
+    $hApk     = false; // the APK lives behind /download (public.download), which explains and verifies it
+    $hAppUrl  = route('public.download');
     $hHealthId = route('public.solutions.patients');
     $hIcon = fn (string $name, int $size = 20) => view('partials.finder.icon', ['name' => $name, 'size' => $size])->render();
 @endphp
@@ -120,6 +120,13 @@
         <div class="hx-stage" data-hx-stage data-hx-slides="{{ json_encode($hxSlides, JSON_UNESCAPED_UNICODE) }}" data-hx-figures="{{ json_encode($hxFigures, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}">
             {{-- Slide 1: the Health ID card --}}
             <div class="hx-vis is-on" data-hx-vis>
+            {{-- Merge: records from three facilities fold into the one Health ID (illustrative). --}}
+            <div class="mg" data-hx-merge aria-hidden="true">
+                <div class="mg-rec mg-r1"><small>{{ __('home.merge.r1_src') }}</small><b>Amara Dongmo</b><span>{{ __('home.merge.r1_fact') }}</span></div>
+                <div class="mg-rec mg-r2"><small>{{ __('home.merge.r2_src') }}</small><b>Amara D. Dongmo</b><span>{{ __('home.merge.r2_fact') }}</span></div>
+                <div class="mg-rec mg-r3"><small>{{ __('home.merge.r3_src') }}</small><b>DONGMO Amara</b><span>{{ __('home.merge.r3_fact') }}</span></div>
+                <div class="mg-badge"><span class="mg-dot"></span>{{ __('home.merge.badge') }}</div>
+            </div>
             <figure class="hm-card hx-card3" role="img" aria-label="{{ __('home.card.alt') }}">
                 <div class="hx3-left" aria-hidden="true">
                     <div class="hm-card__t"><b>OpesCare</b><small>{{ __('home.card.sub') }}</small></div>
@@ -237,7 +244,7 @@
                     <li><span class="hm-ic hm-ic--good">{!! $hIcon($icon, 18) !!}</span><div><b>{{ __('home.patients.' . $k . '_title') }}</b><span>{{ __('home.patients.' . $k . '_desc') }}</span></div></li>
                 @endforeach
             </ul>
-            <a class="hm-btn hm-btn--primary" href="{{ $hAppUrl }}" @if($hApk) download="OpesCare.apk" rel="nofollow" @endif>{!! $hIcon('smartphone', 18) !!}{{ __('home.patients.cta') }}</a>
+            <a class="hm-btn hm-btn--primary" href="{{ $hAppUrl }}" @if($hApk) download="opescare.apk" @endif>{!! $hIcon('smartphone', 18) !!}{{ __('home.patients.cta') }}</a>
         </div>
         <figure class="hm-panel" role="img" aria-label="{{ __('home.patients.panel_label') }}">
             <div class="hm-panel__ph" aria-hidden="true"><i></i><i></i><i></i>{{ __('home.patients.panel_title') }}</div>

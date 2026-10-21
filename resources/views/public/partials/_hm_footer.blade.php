@@ -22,6 +22,7 @@
                     <li><a href="{{ route('public.network.blood-finder') }}">{{ __('home.footer.blood') }}</a></li>
                     <li><a href="{{ route('public.care-map.places') }}">{{ __('home.footer.places') }}</a></li>
                     <li><a href="{{ route('public.care-map.emergency') }}">{{ __('landing.v2.footer.emergency') }}</a></li>
+                    <li><a href="{{ route('public.download') }}">{{ __('home.footer.app') }}</a></li>
                 </ul>
             </nav>
             <nav aria-labelledby="hm-f2">

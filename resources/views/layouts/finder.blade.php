@@ -155,6 +155,7 @@
                         <li><a class="f-footer__link" href="{{ route('portals.patient.appointments.book') }}">{{ __('finder_shell.nav.book_appointment') }}</a></li>
                         <li><a class="f-footer__link" href="{{ route('public.care-map') }}">{{ __('finder_shell.nav.directory') }}</a></li>
                         <li><a class="f-footer__link" href="{{ route('public.care-map.emergency') }}">{{ __('finder_shell.footer.emergency') }}</a></li>
+                        <li><a class="f-footer__link" href="{{ route('public.download') }}">{{ __('finder_shell.footer.app') }}</a></li>
                     </ul>
                 </nav>
 

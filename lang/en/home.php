@@ -13,6 +13,7 @@ return [
         'blog' => 'Blog',
         'interop' => 'Interoperability',
         'mpi' => 'Master Patient Index',
+        'app' => 'Get the app',
         'language' => 'Language',
         'sign_in' => 'Sign in',
         'get_id' => 'Get your Health ID',
@@ -193,6 +194,7 @@ return [
         'sitemap' => 'Sitemap',
         'interop' => 'Interoperability',
         'mpi' => 'Master Patient Index',
+        'app' => 'Get the app',
         'copyright' => '© :year OPES Health Systems',
     ],
 ];

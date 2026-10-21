@@ -106,3 +106,28 @@
 @media (prefers-reduced-motion:reduce){
   .ex-step,.ex-chip,.ex-step__ic,.ex-flow__bar i,.ex-faq__item summary .f-icon{transition:none}
 }
+
+/* /download (public.download) ──────────────────────────────────────── */
+.dl-facts{list-style:none;padding:0;margin:0 0 22px;display:flex;flex-wrap:wrap;gap:8px 18px;font-size:14px;color:#C7DDF2}
+.dl-facts li{display:inline-flex;align-items:center;gap:6px}
+.dl-facts .f-icon{color:#9CC3E8}
+.dl-note{margin:14px 0 0;font-size:13px;color:#9CC3E8}
+.dl-qrcard{margin:0;display:flex;flex-direction:column;align-items:center;gap:14px;padding:22px;border-radius:18px;background:rgba(255,255,255,.06);border:1px solid rgba(191,208,226,.25);text-align:center;max-width:280px}
+.dl-qr{position:relative;width:200px;height:200px;background:#fff;border-radius:14px;padding:12px;display:block}
+.dl-qr svg{display:block;width:100%;height:100%}
+.dl-qr img{position:absolute;left:50%;top:50%;width:40px;height:40px;transform:translate(-50%,-50%)}
+.dl-qrcard figcaption{display:flex;flex-direction:column;gap:4px;font-size:13px;color:#BFD0E2}
+.dl-qrcard figcaption b{color:#fff;font-size:15px}
+.dl-steps{list-style:none;padding:0;margin:0}
+.dl-n{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--brand);color:#fff;font-size:13px;margin-right:4px}
+.dl-callout{display:flex;align-items:flex-start;gap:10px;margin:22px 0 0;padding:14px 16px;border-radius:12px;background:#EEF4FA;color:var(--ink2);font-size:14.5px}
+.dl-callout .f-icon{color:var(--brand);flex:none;margin-top:2px}
+.dl-sha__label{margin:0 0 8px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.dl-sha{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.dl-sha code{flex:1 1 280px;min-width:0;overflow-wrap:anywhere;word-break:break-all;font:600 14px/1.5 ui-monospace,Consolas,monospace;background:#F4F7FB;border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--ink)}
+.dl-sha [hidden]{display:none}
+.dl-how{margin:22px 0 10px}
+.dl-howlist{margin:0;padding-left:18px;display:grid;gap:8px;color:var(--ink2);font-size:14.5px}
+.dl-howlist code{font:13px ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+.dl-actions .hm-btn{white-space:normal;text-align:center;min-width:0;max-width:100%}
+@media (max-width:600px){.dl-qr{width:170px;height:170px}}

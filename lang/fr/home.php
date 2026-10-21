@@ -13,6 +13,7 @@ return [
         'blog' => 'Blog',
         'interop' => 'Interopérabilité',
         'mpi' => 'Index patient unique',
+        'app' => "Obtenir l'application",
         'language' => 'Langue',
         'sign_in' => 'Se connecter',
         'get_id' => 'Obtenir votre Health ID',
@@ -193,6 +194,7 @@ return [
         'sitemap' => 'Plan du site',
         'interop' => 'Interopérabilité',
         'mpi' => 'Index patient unique',
+        'app' => "Obtenir l'application",
         'copyright' => '© :year OPES Health Systems',
     ],
 ];

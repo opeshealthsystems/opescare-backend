@@ -87,6 +87,7 @@ Route::prefix('solutions')->group(function () {
 
 // Tech & Dev
 Route::get('/interoperability', [PublicPageController::class, 'interoperability'])->name('public.interoperability');
+Route::get('/download', [PublicPageController::class, 'download'])->name('public.download');
 Route::get('/master-patient-index', [PublicPageController::class, 'masterPatientIndex'])->name('public.master-patient-index');
 Route::get('/developers', [PublicPageController::class, 'developers'])->name('public.developers');
 Route::get('/developers/pricing', [PublicPageController::class, 'pricing'])->name('public.developers.pricing');

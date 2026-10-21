@@ -49,6 +49,7 @@ return [
         'for_hospitals' => 'For hospitals & clinics',
         'interop' => 'Interoperability',
         'mpi' => 'Master Patient Index',
+        'app' => 'Get the app',
         'help' => 'Help center',
         'contact' => 'Contact',
         'terms' => 'Terms of service',

@@ -43,6 +43,7 @@ return [
         'developers_pricing'       => 'Developer pricing',
         'request_demo'             => 'Request a demo',
         'interoperability'         => 'Interoperability',
+        'download'                 => 'Get the app',
         'master_patient_index'     => 'Master Patient Index',
         'security'                 => 'Security',
         'sla'                      => 'Service level agreement',

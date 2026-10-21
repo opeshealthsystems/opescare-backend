@@ -49,6 +49,7 @@ return [
         'for_hospitals' => 'Pour les hôpitaux et cliniques',
         'interop' => 'Interopérabilité',
         'mpi' => 'Index patient unique',
+        'app' => "Obtenir l'application",
         'help' => 'Centre d\'aide',
         'contact' => 'Contact',
         'terms' => 'Conditions d\'utilisation',

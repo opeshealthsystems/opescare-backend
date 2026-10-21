@@ -46,6 +46,8 @@
 
   fit();
   reserveLead();
+  var mg0 = stage.querySelector('[data-hx-merge]');
+  if (mg0 && !reduced) mg0.classList.add('run');
   window.addEventListener('resize', function () { fit(); reserveLead(); });
 
   function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -76,6 +78,9 @@
       v.classList.toggle('is-on', on);
       if (k > 0 || !on) v.setAttribute('aria-hidden', on ? 'false' : 'true');
     });
+    // Replay the merge each time the Health ID slide comes round.
+    var mg = stage.querySelector('[data-hx-merge]');
+    if (mg && !reduced) { mg.classList.remove('run'); if (i === 0) { void mg.offsetWidth; mg.classList.add('run'); } }
     var s = slides[i];
     if (!s) return;
     if (kicker) kicker.textContent = s.k;

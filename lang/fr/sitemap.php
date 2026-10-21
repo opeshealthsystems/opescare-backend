@@ -43,6 +43,7 @@ return [
         'developers_pricing'       => 'Tarifs développeurs',
         'request_demo'             => 'Demander une démo',
         'interoperability'         => 'Interopérabilité',
+        'download'                 => "Obtenir l'application",
         'master_patient_index'     => 'Index patient unique',
         'security'                 => 'Sécurité',
         'sla'                      => 'Engagement de niveau de service',

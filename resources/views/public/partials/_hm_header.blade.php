@@ -35,6 +35,7 @@
                     <a href="{{ route('public.interoperability') }}">{{ __('home.nav.interop') }}</a>
                     <a href="{{ route('public.master-patient-index') }}">{{ __('home.nav.mpi') }}</a>
                     <a href="{{ route('blog.index') }}">{{ __('home.nav.blog') }}</a>
+                    <a href="{{ route('public.download') }}">{{ __('home.nav.app') }}</a>
                     <a href="{{ route('login') }}">{{ __('home.nav.sign_in') }}</a>
                     <a class="hm-btn hm-btn--primary" href="{{ route('register.patient') }}">{{ __('home.nav.get_id') }}</a>
                 </nav>

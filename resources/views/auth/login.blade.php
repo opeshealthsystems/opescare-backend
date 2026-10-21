@@ -158,20 +158,16 @@
                 <a href="{{ route('register') }}" class="lg-link">{{ __('login_page.create_account') }}</a>
             </p>
 
-            {{-- The Android build, offered only when this host actually holds it. --}}
-            @php $apkPath = public_path('downloads/opescare-finder.apk'); @endphp
-            @if(is_file($apkPath))
+            {{-- The Android app: /download explains, sizes and verifies the build. --}}
             <div class="f-auth-app lg-app">
-                <a class="f-auth-app__btn" href="{{ url('/downloads/opescare-finder.apk') }}"
-                   download="OpesCare.apk" rel="nofollow">
+                <a class="f-auth-app__btn" href="{{ route('public.download') }}">
                     @include('partials.finder.icon', ['name' => 'download', 'size' => 18])
                     <span>{{ __('onboarding.login.download_app') }}</span>
                 </a>
                 <p class="f-auth-app__meta">
-                    {{ __('onboarding.login.download_app_meta', ['size' => number_format(filesize($apkPath) / 1048576, 0)]) }}
+                    {{ __('onboarding.login.download_app_meta', ['size' => (int) round(((int) config('mobile.apk.size')) / 1048576)]) }}
                 </p>
             </div>
-            @endif
 
             <ul class="lg-badges" aria-label="{{ __('login_page.badges_label') }}">
                 <li><span class="lg-badge__ring">@include('partials.finder.icon', ['name' => 'id-card', 'size' => 22])</span><span>{{ __('login_page.badge_health_id') }}</span></li>

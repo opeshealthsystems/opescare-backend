@@ -216,6 +216,25 @@ class PublicPageController extends Controller
         return view('public.interoperability');
     }
 
+    /**
+     * /download — the Android app. Facts come from config('mobile.apk'); the
+     * size is read from the file when this host holds it.
+     */
+    public function download()
+    {
+        $apk = config('mobile.apk');
+        $url = (string) ($apk['url'] ?? '/downloads/opescare.apk');
+        $local = str_starts_with($url, '/') ? public_path(ltrim($url, '/')) : null;
+        $size = ($local && is_file($local)) ? (int) filesize($local) : (int) ($apk['size'] ?? 0);
+
+        return view('public.download', [
+            'apk' => $apk,
+            'apkUrl' => str_starts_with($url, '/') ? url($url) : $url,
+            'apkSize' => $size,
+            'apkSizeMb' => (int) round($size / 1048576),
+        ]);
+    }
+
     public function masterPatientIndex()
     {
         return view('public.master-patient-index');
