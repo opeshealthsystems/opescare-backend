@@ -59,7 +59,8 @@ class SeoController extends Controller
         'blog'                      => ['0.8', 'weekly'],
         'about/facts'               => ['0.7', 'monthly'],
         'contact'                   => ['0.6', 'monthly'],
-        'interoperability'          => ['0.6', 'monthly'],
+        'interoperability'          => ['0.7', 'monthly'],
+        'master-patient-index'      => ['0.7', 'monthly'],
         'security'                  => ['0.6', 'monthly'],
         'developers'                => ['0.6', 'weekly'],
         'docs'                      => ['0.6', 'weekly'],
@@ -322,7 +323,7 @@ class SeoController extends Controller
             return match (true) {
                 $path === '' || str_starts_with($path, 'network/') || str_starts_with($path, 'care-map') => 'services',
                 $path === 'solutions' || str_starts_with($path, 'solutions/') || str_starts_with($path, 'developers')
-                    || in_array($path, ['pricing', 'request-demo', 'interoperability', 'security', 'sla', 'status'], true) => 'providers',
+                    || in_array($path, ['pricing', 'request-demo', 'interoperability', 'master-patient-index', 'security', 'sla', 'status'], true) => 'providers',
                 in_array($path, ['about', 'about/facts', 'how-it-works', 'faq', 'help', 'contact', 'blog', 'sitemap'], true) => 'about',
                 in_array($path, ['privacy', 'terms', 'legal', 'consent', 'account-deletion'], true) => 'legal',
                 default => 'other',

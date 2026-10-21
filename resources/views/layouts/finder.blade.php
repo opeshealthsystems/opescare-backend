@@ -163,6 +163,8 @@
                     <ul>
                         <li><a class="f-footer__link" href="{{ route('public.solutions.pharmacies') }}">{{ __('finder_shell.nav.for_pharmacies') }}</a></li>
                         <li><a class="f-footer__link" href="{{ route('public.solutions.hospitals') }}">{{ __('finder_shell.footer.for_hospitals') }}</a></li>
+                        <li><a class="f-footer__link" href="{{ route('public.interoperability') }}">{{ __('finder_shell.footer.interop') }}</a></li>
+                        <li><a class="f-footer__link" href="{{ route('public.master-patient-index') }}">{{ __('finder_shell.footer.mpi') }}</a></li>
                         <li><a class="f-footer__link" href="{{ route('login') }}">{{ __('finder_shell.nav.login') }}</a></li>
                     </ul>
                 </nav>

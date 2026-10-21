@@ -216,6 +216,11 @@ class PublicPageController extends Controller
         return view('public.interoperability');
     }
 
+    public function masterPatientIndex()
+    {
+        return view('public.master-patient-index');
+    }
+
     public function developers()
     {
         return view('public.developers');

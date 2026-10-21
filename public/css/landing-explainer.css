@@ -1,0 +1,108 @@
+/* Explainer pages (/interoperability, /master-patient-index) — loaded after
+   landing-home.css by layouts/hm.blade.php. Same palette: navy #0B2A4A, brand
+   #0F4C81, lead text #BFD0E2. No glow, never purple. */
+
+/* Hero additions */
+.ex-crumbs{display:flex;flex-wrap:wrap;gap:8px;font-size:13px;color:#9CC3E8;margin-bottom:14px}
+.ex-crumbs a{text-decoration:underline;text-underline-offset:3px}
+.ex-crumbs a:hover{color:#fff}
+.ex-crumbs [aria-current]{color:#C7DDF2}
+.hm-hero .hm-actions{margin-top:4px}
+.ex-hvis{justify-self:center;display:flex;flex-direction:column;align-items:center;min-width:0;max-width:100%}
+.ex-sample{margin:6px 0 0;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#9CC3E8}
+
+/* Light sections */
+.ex-rows>div{justify-content:flex-start}
+.ex-rows .f-icon{color:#94A3B8;flex:none}
+.ex-before{color:var(--muted);flex:1 1 auto;min-width:0}
+.ex-rows .hm-pill{white-space:normal;text-align:right}
+.ex-h3{font-size:18px;margin:0 0 16px}
+.ex-feats{list-style:none;padding:0;margin:0}
+.ex-feats--3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.ex-causes{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
+.ex-feat{border:1px solid var(--line);border-radius:14px;padding:22px;background:#fff;display:flex;flex-direction:column;gap:10px;min-width:0}
+.ex-feat h3{font-size:16.5px;margin:4px 0 0;line-height:1.3}
+.ex-feat p{margin:0;color:var(--muted);font-size:14.5px}
+.ex-split-top{align-items:start}
+.ex-list-tight{margin:0}
+.ex-two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.ex-card{border:1px solid var(--line);border-radius:16px;background:#fff;padding:24px;min-width:0}
+.ex-card__h{display:flex;align-items:center;gap:12px;font-size:19px;margin:0}
+.ex-card .hm-list{margin:18px 0 0}
+
+/* FAQ */
+.ex-faq{display:grid;gap:10px;max-width:860px}
+.ex-faq__item{border:1px solid var(--line);border-radius:12px;background:#fff}
+.ex-faq__item summary{list-style:none;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px 18px;font-weight:600;cursor:pointer}
+.ex-faq__item summary::-webkit-details-marker{display:none}
+.ex-faq__item summary .f-icon{color:var(--brand);transition:transform .2s ease}
+.ex-faq__item[open] summary .f-icon{transform:rotate(180deg)}
+.ex-faq__item p{margin:0;padding:0 18px 18px;color:var(--ink2);font-size:15px}
+
+/* Navy flow section — hero palette, cards in the lead-text colour */
+.ex-dark{position:relative;background:var(--navy);color:#BFD0E2;padding:84px 0;overflow:hidden}
+.ex-dark::before{content:"";position:absolute;inset:0;background:url(../images/health-id/guilloche-texture.webp) center/cover;opacity:.1;pointer-events:none}
+.ex-dark>.hm-wrap{position:relative}
+.hm .ex-dark h2{color:#fff}
+.ex-eyebrow{margin:0;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#7CC0F5}
+.ex-sub{font-size:17px;color:#BFD0E2;max-width:640px;margin:0}
+.ex-flow__bar{height:3px;border-radius:3px;background:rgba(191,208,226,.18);margin-bottom:18px;overflow:hidden}
+.ex-flow__bar i{display:block;height:100%;width:100%;background:#BFD0E2;transform-origin:left center;transform:scaleX(var(--ex-p,1));transition:transform .6s ease}
+.ex-steps{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;counter-reset:none}
+.ex-steps--5{grid-template-columns:repeat(5,1fr)}
+.ex-step{position:relative;border:1px solid rgba(191,208,226,.3);border-radius:14px;background:#0B2A4A;padding:18px;display:flex;flex-direction:column;gap:8px;min-width:0;transition:opacity .5s ease,transform .5s ease,border-color .5s ease}
+.ex-step__top{display:flex;align-items:center;gap:10px}
+.ex-step__ic{width:40px;height:40px;border-radius:10px;border:1px solid rgba(191,208,226,.45);display:grid;place-items:center;color:#BFD0E2;flex:none;transition:background-color .5s ease,color .5s ease}
+.ex-step__n{font:700 13px ui-monospace,Consolas,monospace;color:#9CC3E8}
+.ex-step__who{margin-left:auto;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9CC3E8;text-align:right}
+.ex-step b{color:#fff;font-size:16px;line-height:1.3}
+.ex-step p{margin:0;font-size:14px;color:#BFD0E2}
+.ex-chip{margin-top:auto;align-self:flex-start;display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;border:1px solid rgba(191,208,226,.4);color:#fff;transition:opacity .5s ease,transform .5s ease}
+.ex-chip .f-icon{color:#BFD0E2}
+
+/* Animated state (added by explainer-flow.js; absent without JS or with reduced motion) */
+.ex-flow.is-anim .ex-step{opacity:.42}
+.ex-flow.is-anim .ex-step .ex-chip{opacity:0;transform:translateY(4px)}
+.ex-flow.is-anim .ex-step.is-done{opacity:.8}
+.ex-flow.is-anim .ex-step.is-done .ex-chip{opacity:1;transform:none}
+.ex-flow.is-anim .ex-step.is-on{opacity:1;border-color:#BFD0E2;transform:translateY(-4px)}
+.ex-flow.is-anim .ex-step.is-on .ex-chip{opacity:1;transform:none}
+.ex-flow.is-anim .ex-step.is-on .ex-step__ic{background:#BFD0E2;color:#0B2A4A;border-color:#BFD0E2}
+
+.ex-controls{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-top:22px}
+.ex-controls[hidden]{display:none}
+.ex-count{margin:0;font-size:14px;font-weight:600;color:#C7DDF2}
+.ex-controls__btns{display:flex;gap:8px}
+.ex-ctl{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:0 12px;border-radius:10px;border:1px solid rgba(191,208,226,.45);background:transparent;color:#fff;font:inherit;font-weight:600;font-size:14px;cursor:pointer}
+.ex-ctl:hover{background:rgba(255,255,255,.08)}
+.ex-ctl--wide{min-width:96px}
+.hm .ex-ctl:focus-visible{outline:3px solid #7CC0F5;outline-offset:2px}
+
+/* Responsive */
+@media (max-width:1080px){
+  .ex-steps,.ex-steps--5{grid-template-columns:repeat(2,1fr)}
+  .ex-causes,.ex-feats--3{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:900px){
+  .ex-dark{padding:60px 0}
+  .ex-two{grid-template-columns:1fr}
+  .ex-hvis{width:100%}
+}
+@media (max-width:600px){
+  .ex-steps,.ex-steps--5,.ex-causes,.ex-feats--3{grid-template-columns:1fr}
+  .ex-flow.is-anim .ex-step.is-on{transform:none}
+  .ex-card{padding:18px}
+  .ex-rows>div{flex-wrap:wrap}
+  .ex-rows .hm-pill{text-align:left}
+}
+/* The 440×390 hero visuals (hx-net / hx-mpi) are fixed-size; shrink them on
+   narrow screens instead of letting them overflow. */
+@media (max-width:520px){
+  .ex-hvis .hx-net,.ex-hvis .hx-mpi{zoom:.76}
+}
+@media (max-width:400px){
+  .ex-hvis .hx-net,.ex-hvis .hx-mpi{zoom:.7}
+}
+@media (prefers-reduced-motion:reduce){
+  .ex-step,.ex-chip,.ex-step__ic,.ex-flow__bar i,.ex-faq__item summary .f-icon{transition:none}
+}

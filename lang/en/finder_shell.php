@@ -47,6 +47,8 @@ return [
         'col_legal' => 'Legal & help',
         'emergency' => 'Emergency care',
         'for_hospitals' => 'For hospitals & clinics',
+        'interop' => 'Interoperability',
+        'mpi' => 'Master Patient Index',
         'help' => 'Help center',
         'contact' => 'Contact',
         'terms' => 'Terms of service',

@@ -11,6 +11,8 @@ return [
         'facilities' => 'For facilities',
         'solutions' => 'Solutions',
         'blog' => 'Blog',
+        'interop' => 'Interoperability',
+        'mpi' => 'Master Patient Index',
         'language' => 'Language',
         'sign_in' => 'Sign in',
         'get_id' => 'Get your Health ID',
@@ -148,6 +150,8 @@ return [
         'layer_desc' => 'Health ID · consent · audit log',
         'hospital' => 'Hospital',
         'hospital_desc' => 'Opens the record it was granted',
+        'learn_more' => 'How interoperability works',
+        'mpi_more' => 'How the Master Patient Index works',
     ],
     'steps' => [
         'eyebrow' => 'Getting started',
@@ -187,6 +191,8 @@ return [
         'privacy' => 'Privacy',
         'terms' => 'Terms',
         'sitemap' => 'Sitemap',
+        'interop' => 'Interoperability',
+        'mpi' => 'Master Patient Index',
         'copyright' => '© :year OPES Health Systems',
     ],
 ];

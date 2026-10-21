@@ -47,6 +47,8 @@ return [
         'col_legal' => 'Mentions et aide',
         'emergency' => 'Soins d\'urgence',
         'for_hospitals' => 'Pour les hôpitaux et cliniques',
+        'interop' => 'Interopérabilité',
+        'mpi' => 'Index patient unique',
         'help' => 'Centre d\'aide',
         'contact' => 'Contact',
         'terms' => 'Conditions d\'utilisation',

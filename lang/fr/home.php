@@ -11,6 +11,8 @@ return [
         'facilities' => 'Pour les structures',
         'solutions' => 'Solutions',
         'blog' => 'Blog',
+        'interop' => 'Interopérabilité',
+        'mpi' => 'Index patient unique',
         'language' => 'Langue',
         'sign_in' => 'Se connecter',
         'get_id' => 'Obtenir votre Health ID',
@@ -148,6 +150,8 @@ return [
         'layer_desc' => "Health ID · consentement · journal d'audit",
         'hospital' => 'Hôpital',
         'hospital_desc' => 'Ouvre le dossier qui lui a été accordé',
+        'learn_more' => 'Comment fonctionne l’interopérabilité',
+        'mpi_more' => 'Comment fonctionne l’index patient unique',
     ],
     'steps' => [
         'eyebrow' => 'Pour commencer',
@@ -187,6 +191,8 @@ return [
         'privacy' => 'Confidentialité',
         'terms' => 'Conditions',
         'sitemap' => 'Plan du site',
+        'interop' => 'Interopérabilité',
+        'mpi' => 'Index patient unique',
         'copyright' => '© :year OPES Health Systems',
     ],
 ];
