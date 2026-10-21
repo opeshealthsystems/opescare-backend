@@ -38,6 +38,24 @@ class DownloadPageTest extends TestCase
         }
     }
 
+    public function test_inside_the_app_walkthroughs_render_every_flow_in_both_languages(): void
+    {
+        foreach (['en', 'fr'] as $locale) {
+            $html = $this->get('/download?lang=' . $locale)->assertOk()->getContent();
+
+            $this->assertStringContainsString('data-dl-flows', $html);
+            $this->assertStringContainsString(e(__('public_download.flows.title', [], $locale)), $html);
+            $this->assertStringContainsString(e(__('public_download.flows.sample', [], $locale)), $html);
+            foreach (['consent', 'access', 'rx', 'results', 'hid', 'appts', 'family'] as $flow) {
+                $this->assertStringContainsString('id="dl-flow-' . $flow . '"', $html);
+                $this->assertStringContainsString(e(__('public_download.flows.' . $flow . '.label', [], $locale)), $html);
+            }
+            $this->assertStringContainsString('CM-HID 0000 0000 0000', $html);
+            $this->assertStringContainsString('images/health-id/living/adult-female-base.png', $html);
+            $this->assertDoesNotMatchRegularExpression('/\son[a-z]+\s*=\s*"/i', $html, 'inline event handler');
+        }
+    }
+
     public function test_software_application_and_breadcrumb_json_ld(): void
     {
         $html = $this->get('/download')->assertOk()->getContent();

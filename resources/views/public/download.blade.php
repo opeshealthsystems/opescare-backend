@@ -114,6 +114,8 @@
     </div>
 </section>
 
+@include('public._download_flows')
+
 {{-- Verify ────────────────────────────────────────────────────────────── --}}
 <section class="hm-s" aria-labelledby="dl-verify-title">
     <div class="hm-wrap">
