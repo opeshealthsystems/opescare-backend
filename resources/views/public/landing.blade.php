@@ -195,27 +195,27 @@
             {{-- Slide 2: interoperability --}}
             <div class="hx-vis" data-hx-vis aria-hidden="true"><div class="hx-net">
                 <svg class="hx-lines" viewBox="0 0 440 390"><path d="M95 62 L220 195"/><path d="M345 62 L220 195"/><path d="M95 328 L220 195"/><path d="M345 328 L220 195"/></svg>
-                <div class="hx-core">{!! $hIcon('share-2', 22) !!}<b>{{ __('home.interop.core') }}</b><small>{{ __('home.interop.core_sub') }}</small></div>
-                <div class="hx-node hx-n1">{!! $hIcon('building-2', 20) !!}<div><b>{{ __('home.interop.hospital') }}</b><small>{{ __('home.interop.hospital_sub') }}</small></div></div>
-                <div class="hx-node hx-n2">{!! $hIcon('stethoscope', 20) !!}<div><b>{{ __('home.interop.clinic') }}</b><small>{{ __('home.interop.clinic_sub') }}</small></div></div>
-                <div class="hx-node hx-n3">{!! $hIcon('flask-conical', 20) !!}<div><b>{{ __('home.interop.lab') }}</b><small>{{ __('home.interop.lab_sub') }}</small></div></div>
-                <div class="hx-node hx-n4">{!! $hIcon('pill', 20) !!}<div><b>{{ __('home.interop.pharmacy') }}</b><small>{{ __('home.interop.pharmacy_sub') }}</small></div></div>
+                <div class="hx-core">{!! $hIcon('share-2', 22) !!}<b>{{ __('home.hx_interop.core') }}</b><small>{{ __('home.hx_interop.core_sub') }}</small></div>
+                <div class="hx-node hx-n1">{!! $hIcon('building-2', 20) !!}<div><b>{{ __('home.hx_interop.hospital') }}</b><small>{{ __('home.hx_interop.hospital_sub') }}</small></div></div>
+                <div class="hx-node hx-n2">{!! $hIcon('stethoscope', 20) !!}<div><b>{{ __('home.hx_interop.clinic') }}</b><small>{{ __('home.hx_interop.clinic_sub') }}</small></div></div>
+                <div class="hx-node hx-n3">{!! $hIcon('flask-conical', 20) !!}<div><b>{{ __('home.hx_interop.lab') }}</b><small>{{ __('home.hx_interop.lab_sub') }}</small></div></div>
+                <div class="hx-node hx-n4">{!! $hIcon('pill', 20) !!}<div><b>{{ __('home.hx_interop.pharmacy') }}</b><small>{{ __('home.hx_interop.pharmacy_sub') }}</small></div></div>
             </div></div>
 
             {{-- Slide 3: master patient index (illustrative sample records) --}}
             <div class="hx-vis" data-hx-vis aria-hidden="true"><div class="hx-mpi">
                 <div class="hx-recs">
-                    <div class="hx-rec"><header>{{ __('home.mpi.rec1_src') }}</header><b>Amara Dongmo</b><span>F · 12/03/1991</span></div>
-                    <div class="hx-rec"><header>{{ __('home.mpi.rec2_src') }}</header><b>Amara D. Dongmo</b><span>F · 12/03/1991</span></div>
-                    <div class="hx-rec"><header>{{ __('home.mpi.rec3_src') }}</header><b>DONGMO Amara</b><span>F · 1991</span></div>
+                    <div class="hx-rec"><header>{{ __('home.hx_mpi.rec1_src') }}</header><b>Amara Dongmo</b><span>F · 12/03/1991</span></div>
+                    <div class="hx-rec"><header>{{ __('home.hx_mpi.rec2_src') }}</header><b>Amara D. Dongmo</b><span>F · 12/03/1991</span></div>
+                    <div class="hx-rec"><header>{{ __('home.hx_mpi.rec3_src') }}</header><b>DONGMO Amara</b><span>F · 1991</span></div>
                 </div>
                 <div class="hx-arrow">{!! $hIcon('git-merge', 22) !!}</div>
-                <div class="hx-gold"><small>{!! $hIcon('user-check', 14) !!}{{ __('home.mpi.one') }}</small><b>Amara Dongmo</b><span class="hx-id">CM-HID 0000 0000 0000</span>
+                <div class="hx-gold"><small>{!! $hIcon('user-check', 14) !!}{{ __('home.hx_mpi.one') }}</small><b>Amara Dongmo</b><span class="hx-id">CM-HID 0000 0000 0000</span>
                     <dl>
-                        <div><dt>{{ __('home.mpi.linked') }}</dt><dd>3</dd></div>
-                        <div><dt>{{ __('home.mpi.facilities') }}</dt><dd>3</dd></div>
-                        <div><dt>{{ __('home.mpi.reviewed') }}</dt><dd>{{ __('home.mpi.reviewed_v') }}</dd></div>
-                        <div><dt>{{ __('home.mpi.merge') }}</dt><dd>{{ __('home.mpi.merge_v') }}</dd></div>
+                        <div><dt>{{ __('home.hx_mpi.linked') }}</dt><dd>3</dd></div>
+                        <div><dt>{{ __('home.hx_mpi.facilities') }}</dt><dd>3</dd></div>
+                        <div><dt>{{ __('home.hx_mpi.reviewed') }}</dt><dd>{{ __('home.hx_mpi.reviewed_v') }}</dd></div>
+                        <div><dt>{{ __('home.hx_mpi.merge') }}</dt><dd>{{ __('home.hx_mpi.merge_v') }}</dd></div>
                     </dl>
                 </div>
             </div></div>

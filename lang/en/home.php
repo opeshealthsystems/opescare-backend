@@ -39,14 +39,14 @@ return [
         'interop' => ['kicker' => 'OpesCare interoperability layer', 'title_1' => 'Every facility.', 'title_2' => 'One conversation.', 'lead' => 'Hospitals, clinics, labs and pharmacies exchange referrals, results and prescriptions through the Health ID — consent-based, and logged on both sides.'],
         'mpi' => ['kicker' => 'Master Patient Index', 'title_1' => 'One patient.', 'title_2' => 'One record.', 'lead' => 'The same person registered at several facilities becomes one patient: duplicates matched, reviewed by a records officer, merged reversibly.'],
     ],
-    'interop' => [
+    'hx_interop' => [
         'core' => 'OpesCare layer', 'core_sub' => 'Health ID · consent · audit log',
         'hospital' => 'Hospital', 'hospital_sub' => 'Opens what is granted',
         'clinic' => 'Clinic', 'clinic_sub' => 'Sends a referral',
         'lab' => 'Laboratory', 'lab_sub' => 'Returns results',
         'pharmacy' => 'Pharmacy', 'pharmacy_sub' => 'Dispenses the prescription',
     ],
-    'mpi' => [
+    'hx_mpi' => [
         'rec1_src' => 'Hôpital Central · 2019', 'rec2_src' => 'Clinique Bastos · 2023', 'rec3_src' => 'Laboratory · 2026',
         'one' => 'One patient', 'linked' => 'Linked records', 'facilities' => 'Facilities',
         'reviewed' => 'Reviewed', 'reviewed_v' => 'Records desk', 'merge' => 'Merge', 'merge_v' => 'Reversible',

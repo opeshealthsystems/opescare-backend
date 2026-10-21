@@ -83,8 +83,16 @@
     type(s.a, s.b);
   }
 
+  // The Health ID slide stays three times as long as the others (21 s vs 7 s),
+  // so the anatomy has time to turn through a figure or two.
+  var BASE_MS = 7000;
+  function dwell(i) { return i === 0 ? BASE_MS * 3 : BASE_MS; }
+  function next() {
+    show((current + 1) % vis.length);
+    setTimeout(next, dwell(current));
+  }
   if (!reduced && vis.length > 1 && slides.length === vis.length) {
-    setInterval(function () { show((current + 1) % vis.length); }, 7000);
+    setTimeout(next, dwell(0));
   }
 
   // ── Living anatomy ────────────────────────────────────────────────────

@@ -39,14 +39,14 @@ return [
         'interop' => ['kicker' => "Couche d'interopérabilité OpesCare", 'title_1' => 'Chaque structure.', 'title_2' => 'Un seul échange.', 'lead' => 'Hôpitaux, cliniques, laboratoires et pharmacies échangent références, résultats et ordonnances via le Health ID, avec consentement.'],
         'mpi' => ['kicker' => 'Index patient unique', 'title_1' => 'Un patient.', 'title_2' => 'Un dossier.', 'lead' => 'Une personne enregistrée dans plusieurs structures devient un seul patient : doublons rapprochés, vérifiés, fusionnés de façon réversible.'],
     ],
-    'interop' => [
+    'hx_interop' => [
         'core' => 'Couche OpesCare', 'core_sub' => 'Health ID · consentement · journal',
         'hospital' => 'Hôpital', 'hospital_sub' => 'Ouvre ce qui est autorisé',
         'clinic' => 'Clinique', 'clinic_sub' => 'Envoie une référence',
         'lab' => 'Laboratoire', 'lab_sub' => 'Renvoie les résultats',
         'pharmacy' => 'Pharmacie', 'pharmacy_sub' => "Délivre l'ordonnance",
     ],
-    'mpi' => [
+    'hx_mpi' => [
         'rec1_src' => 'Hôpital Central · 2019', 'rec2_src' => 'Clinique Bastos · 2023', 'rec3_src' => 'Laboratoire · 2026',
         'one' => 'Un patient', 'linked' => 'Dossiers liés', 'facilities' => 'Structures',
         'reviewed' => 'Vérifié', 'reviewed_v' => 'Bureau des dossiers', 'merge' => 'Fusion', 'merge_v' => 'Réversible',
