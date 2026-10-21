@@ -57,10 +57,10 @@ class AdminFacilityManagementController
 
         $facility = Facility::findOrFail($id);
 
-        $staffCount   = $facility->users()->count();
-        $patientCount = Patient::where('facility_id', $id)->count();
+        // Every section reads real rows only; empty sections are hidden by the view.
+        $overview = app(\App\Services\Admin\FacilityOverviewBuilder::class)->build($facility);
 
-        return view('portals.admin.facilities.show', compact('facility', 'staffCount', 'patientCount'));
+        return view('portals.admin.facilities.show', compact('facility', 'overview'));
     }
 
     public function store(Request $request)
