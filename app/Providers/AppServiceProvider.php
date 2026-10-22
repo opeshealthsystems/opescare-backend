@@ -172,6 +172,11 @@ class AppServiceProvider extends ServiceProvider
         Route::middleware('api')
             ->group(base_path('routes/mobile_vitals.php'));
 
+        // Partner-reported readings (fhir_partner_*), labelled and apart
+        // from facility readings — routes/mobile_partner_readings.php.
+        Route::middleware('api')
+            ->group(base_path('routes/mobile_partner_readings.php'));
+
         // Pre-consult questionnaire — the short clinical intake a patient
         // completes before an appointment, plus the clinician's read of it.
         // Same rationale as above: its own file so parallel work cannot collide.

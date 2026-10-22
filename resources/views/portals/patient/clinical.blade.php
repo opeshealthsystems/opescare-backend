@@ -68,5 +68,44 @@
         </div>
     </div>
     @endif
+
+    {{-- Partner-reported readings (FHIR pushes from partner systems): apart
+         from the record above, every row labelled with system + facility. --}}
+    @if(!empty($partner))
+    <div class="f-card" data-section="partner-readings">
+        <h2>{{ __('partner_readings.title') }} <span class="f-badge f-badge--warn">{{ __('partner_readings.provenance_label') }}</span></h2>
+        <p class="pf-badge--muted">{{ __('partner_readings.separate_note') }}</p>
+        @if($partner['items']->isEmpty())
+            <p>{{ __('partner_readings.none') }}</p>
+        @else
+        <div class="pf-table-wrap">
+            <table class="pf-table">
+                <thead>
+                    <tr>
+                        <th>{{ __('partner_readings.col_taken') }}</th>
+                        <th>{{ __('partner_readings.col_reading') }}</th>
+                        <th>{{ __('partner_readings.col_value') }}</th>
+                        <th>{{ __('partner_readings.col_source') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach($partner['items'] as $r)
+                    <tr>
+                        <td>{{ $r['effective_at'] ? \Illuminate\Support\Carbon::parse($r['effective_at'])->translatedFormat('d M Y') : '—' }}</td>
+                        <td>{{ $r['display'] ?: '—' }}</td>
+                        <td>@if($r['value'] !== null){{ rtrim(rtrim(number_format((float) $r['value'], 4, '.', ''), '0'), '.') }} {{ $r['unit'] }}@else{{ $r['value_text'] ?? $r['conclusion'] ?? '—' }}@endif</td>
+                        <td>
+                            <span class="f-badge f-badge--warn">{{ $r['provenance_label'] }}</span>
+                            <span class="f-badge pf-badge--muted">{{ __('partner_readings.badge_system', ['name' => $r['sending_system']['name']]) }}</span>
+                            <span class="f-badge pf-badge--muted">{{ __('partner_readings.badge_facility', ['name' => $r['sending_facility']['name'] ?? __('partner_readings.unknown_facility')]) }}</span>
+                        </td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+        </div>
+        @endif
+    </div>
+    @endif
 </div>
 @endsection

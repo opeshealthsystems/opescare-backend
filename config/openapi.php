@@ -43,6 +43,32 @@ return [
     ],
 
     'schemas' => [
+        'PartnerReading' => ['type' => 'object', 'description' => 'A reading pushed in by a partner system over FHIR R4. Never a facility measurement; always labelled with the sending facility and system.', 'properties' => [
+            'id' => $uuid,
+            'type' => ['type' => 'string', 'enum' => ['observation', 'diagnostic_report', 'immunization']],
+            'kind' => ['type' => 'string', 'nullable' => true, 'description' => 'vital-signs | laboratory | report category | immunization'],
+            'display' => ['type' => 'string', 'nullable' => true],
+            'code' => ['type' => 'string'],
+            'code_system' => ['type' => 'string', 'enum' => ['LOINC', 'CVX']],
+            'value' => ['type' => 'number', 'nullable' => true],
+            'unit' => ['type' => 'string', 'nullable' => true],
+            'value_text' => ['type' => 'string', 'nullable' => true],
+            'components' => ['type' => 'array', 'nullable' => true, 'items' => ['type' => 'object', 'properties' => [
+                'code' => ['type' => 'string', 'nullable' => true], 'display' => ['type' => 'string', 'nullable' => true],
+                'value' => ['type' => 'number', 'nullable' => true], 'unit' => ['type' => 'string', 'nullable' => true],
+                'value_text' => ['type' => 'string', 'nullable' => true],
+            ]]],
+            'reference_range' => ['type' => 'string', 'nullable' => true, 'description' => 'As sent by the partner'],
+            'interpretation' => ['type' => 'string', 'nullable' => true, 'description' => 'The partner\'s own flag, never re-judged'],
+            'conclusion' => ['type' => 'string', 'nullable' => true],
+            'status' => ['type' => 'string'],
+            'effective_at' => $iso,
+            'received_at' => $iso,
+            'sending_facility' => ['type' => 'object', 'properties' => ['id' => $uuid, 'name' => ['type' => 'string', 'nullable' => true]]],
+            'sending_system' => ['type' => 'object', 'properties' => ['name' => ['type' => 'string'], 'client_id' => ['type' => 'string']]],
+            'provenance' => ['type' => 'string', 'enum' => ['partner_reported']],
+            'provenance_label' => ['type' => 'string'],
+        ]],
         'PainSite' => ['type' => 'object', 'properties' => [
             'id' => $uuid,
             'region' => ['type' => 'string', 'enum' => ['head', 'forehead', 'face', 'neck', 'chest', 'upper_abdomen', 'lower_abdomen', 'pelvis', 'right_arm', 'left_arm', 'right_leg', 'left_leg', 'upper_back', 'lower_back']],
@@ -104,6 +130,27 @@ return [
     ],
 
     'overrides' => [
+        'GET /api/mobile/records/partner-readings' => [
+            'tags' => ['Mobile'], 'summary' => 'The patient\'s partner-reported readings, labelled and apart from facility readings', 'operationId' => 'MobilePartnerReadings_index',
+            'description' => 'Observations, reports and immunizations pushed in by partner systems over FHIR R4, newest first. Every row names the sending facility and system and carries provenance partner_reported. Patient from the bearer token only.',
+            'security' => [['MobileToken' => []]],
+            'parameters' => [
+                ['name' => 'page', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 20]],
+                ['name' => 'per_page', 'in' => 'query', 'required' => false, 'schema' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 50]],
+            ],
+            'responses' => [
+                '200' => ['description' => 'Partner-reported readings', 'content' => ['application/json' => ['schema' => ['type' => 'object', 'properties' => [
+                    'data' => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/PartnerReading']],
+                    'meta' => ['type' => 'object', 'properties' => [
+                        'page' => ['type' => 'integer'], 'per_page' => ['type' => 'integer'], 'total' => ['type' => 'integer'],
+                        'has_more' => ['type' => 'boolean'], 'provenance' => ['type' => 'string'],
+                        'provenance_label' => ['type' => 'string'], 'note' => ['type' => 'string'],
+                    ]],
+                ]]]]],
+                '401' => ['description' => 'Unauthenticated', 'content' => ['application/json' => ['schema' => ['$ref' => '#/components/schemas/Error']]]],
+                '422' => ['description' => 'Validation failed', 'content' => ['application/json' => ['schema' => ['$ref' => '#/components/schemas/Error']]]],
+            ],
+        ],
         'GET /api/mobile/preconsult/appointments/{appointment}/pain-sites' => [
             'tags' => ['Mobile'], 'summary' => 'List the pain sites sent at check-in for this appointment', 'operationId' => 'MobilePreconsultPainSite_index',
             'security' => [['MobileToken' => []]],

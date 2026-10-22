@@ -253,6 +253,15 @@ class MedicalRecordExportService
             }
         }
 
+        // Partner-reported readings (fhir_partner_*): exported with their
+        // provenance — meta.source names the sending system, meta.security
+        // marks them partner-asserted, and an extension names the sending
+        // facility — so no reader of this bundle can take them for readings
+        // taken at a facility.
+        foreach ($this->partnerEntries($patient->id, $subject) as $entry) {
+            $entries[] = $entry;
+        }
+
         return [
             'resourceType' => 'Bundle',
             'id'           => \Illuminate\Support\Str::uuid()->toString(),
@@ -261,6 +270,76 @@ class MedicalRecordExportService
             'timestamp'    => Carbon::now()->toIso8601String(),
             'entry'        => $entries,
         ];
+    }
+
+    /** @return array<int,array<string,mixed>> */
+    private function partnerEntries(string $patientId, array $subject): array
+    {
+        $rows = app(\App\Services\Chart\PartnerReadingsService::class)
+            ->forPatient($patientId, 1, \App\Services\Chart\PartnerReadingsService::MAX_PER_PAGE)['items'];
+
+        $out = [];
+        foreach ($rows as $r) {
+            $meta = [
+                'source'   => 'urn:opescare:partner:' . $r['sending_system']['name'],
+                'security' => [[
+                    'system'  => 'https://opescare.com/fhir/CodeSystem/provenance',
+                    'code'    => 'partner_reported',
+                    'display' => 'Reported by partner system; not measured at a facility on this platform.',
+                ]],
+                'extension' => [[
+                    'url'         => 'https://opescare.com/fhir/StructureDefinition/sending-facility',
+                    'valueString' => (string) ($r['sending_facility']['name'] ?? $r['sending_facility']['id']),
+                ]],
+            ];
+            $coding = [[
+                'system'  => $r['code_system'] === 'CVX' ? 'http://hl7.org/fhir/sid/cvx' : self::FHIR_SYSTEM_LOINC,
+                'code'    => (string) $r['code'],
+                'display' => $r['display'],
+            ]];
+
+            $resource = match ($r['type']) {
+                'immunization' => [
+                    'resourceType'       => 'Immunization',
+                    'id'                 => $r['id'],
+                    'meta'               => $meta,
+                    'status'             => $r['status'],
+                    'vaccineCode'        => ['coding' => $coding, 'text' => $r['display']],
+                    'code'               => ['text' => $r['display']],
+                    'patient'            => $subject,
+                    'occurrenceDateTime' => $r['effective_at'],
+                ],
+                'diagnostic_report' => array_filter([
+                    'resourceType'      => 'DiagnosticReport',
+                    'id'                => $r['id'],
+                    'meta'              => $meta,
+                    'status'            => $r['status'],
+                    'code'              => ['coding' => $coding, 'text' => $r['display']],
+                    'subject'           => $subject,
+                    'effectiveDateTime' => $r['effective_at'],
+                    'conclusion'        => $r['conclusion'],
+                ], fn ($v) => $v !== null),
+                default => array_filter([
+                    'resourceType'      => 'Observation',
+                    'id'                => $r['id'],
+                    'meta'              => $meta,
+                    'status'            => $r['status'],
+                    'code'              => ['coding' => $coding, 'text' => $r['display']],
+                    'subject'           => $subject,
+                    'effectiveDateTime' => $r['effective_at'],
+                    'valueQuantity'     => $r['value'] !== null ? array_filter(['value' => $r['value'], 'unit' => $r['unit']], fn ($v) => $v !== null) : null,
+                    'valueString'       => $r['value'] === null ? $r['value_text'] : null,
+                ], fn ($v) => $v !== null),
+            };
+            $entry = $this->fhirEntry($resource);
+            if ($r['type'] === 'immunization') {
+                // `code` is not an Immunization element; it only fed the narrative.
+                unset($entry['resource']['code']);
+            }
+            $out[] = $entry;
+        }
+
+        return $out;
     }
 
     /**

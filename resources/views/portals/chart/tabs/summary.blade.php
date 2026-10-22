@@ -418,3 +418,28 @@
     @endif
 </div>
 @endif
+
+{{-- Partner-reported readings: their own card, never part of the KPIs or
+     trend above (those are facility readings only). --}}
+@if(!empty($open['partner']))
+<section class="od-card" aria-labelledby="cs-partner-title">
+    <header class="od-card__head"><h2 class="od-card__title" id="cs-partner-title">{{ __('partner_readings.title') }}</h2>
+        <span class="od-pill od-pill--pending">{{ __('partner_readings.provenance_label') }}</span>
+        <a class="od-card__link" href="{{ route('portals.chart.show', ['id' => $patient->id, 'tab' => 'partner_reported']) }}">{{ __('partner_readings.all') }}</a></header>
+    <div class="od-card__body">
+        @if($partnerCount === 0)
+            <p class="od-muted">{{ __('partner_readings.none') }}</p>
+        @else
+            <p class="od-muted">{{ trans_choice('partner_readings.summary_count', $partnerCount, ['count' => $partnerCount]) }}</p>
+            <ul class="od-list cs-list-wrap">
+                @foreach($partnerReadings as $r)
+                    <li class="od-list__row"><span class="od-list__icon od-tint--amber"><i data-lucide="share-2"></i></span><span class="od-list__text">
+                        <span class="od-list__title">{{ $r['display'] ?: '—' }}@if($r['value'] !== null) · {{ rtrim(rtrim(number_format((float) $r['value'], 4, '.', ''), '0'), '.') }} {{ $r['unit'] }}@endif</span>
+                        <span class="od-list__sub">{{ $fmtDate($r['effective_at']) }} · {{ __('partner_readings.badge_system', ['name' => $r['sending_system']['name']]) }} · {{ __('partner_readings.badge_facility', ['name' => $r['sending_facility']['name'] ?? __('partner_readings.unknown_facility')]) }}</span>
+                    </span></li>
+                @endforeach
+            </ul>
+        @endif
+    </div>
+</section>
+@endif

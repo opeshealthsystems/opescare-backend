@@ -8,6 +8,7 @@ use App\Models\Patient;
 use App\Modules\Governance\Services\ConsentService;
 use App\Services\Chart\ChartSummaryBuilder;
 use App\Services\Chart\PatientChartAccess;
+use App\Services\Chart\PartnerReadingsService;
 use App\Services\Chart\PatientChartService;
 use App\Services\Portal\DeskFacilityContext;
 use App\Services\Portal\PortalContextService;
@@ -244,6 +245,8 @@ class PatientChartController extends Controller
             'preconsult'    => ['submissions' => $this->chart->preconsult($patient, $facilityId)],
             'triage'        => ['triage' => $this->chart->triageHistory($patient, $facilityId)],
             'documents'     => ['documents' => $this->chart->documents($patient)],
+            'partner_reported' => ['partner' => app(PartnerReadingsService::class)
+                ->forPatient($patient->id, (int) request()->query('page', 1))],
         };
     }
 

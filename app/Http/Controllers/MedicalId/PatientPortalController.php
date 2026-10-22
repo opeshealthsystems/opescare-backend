@@ -1113,7 +1113,13 @@ class PatientPortalController extends Controller
             );
         }
 
-        return view('portals.patient.clinical', compact('patient', 'conditions'));
+        // Partner-reported readings: shown apart from the record above,
+        // labelled with the sending system and facility.
+        $partner = $patient
+            ? app(\App\Services\Chart\PartnerReadingsService::class)->forPatient($patient->id, 1, 20)
+            : null;
+
+        return view('portals.patient.clinical', compact('patient', 'conditions', 'partner'));
     }
 
     /**

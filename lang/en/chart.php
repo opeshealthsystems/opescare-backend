@@ -39,6 +39,7 @@ return [
         'preconsult'    => 'Pre-consult',
         'triage'        => 'Triage history',
         'documents'     => 'Documents',
+        'partner_reported' => 'Partner-reported',
     ],
 
     // ── Basis and scope ───────────────────────────────────────────────────
@@ -217,7 +218,7 @@ return [
     'link_queue'      => 'Patient queue',
     'link_blood'      => 'Blood requests',
     'read_only'       => 'Read-only. Nothing on this page writes to the record.',
-    'partner_notice'  => 'Data pushed by partner systems over the interoperability API is not shown on this chart.',
+    'partner_notice'  => 'Readings sent by partner systems are on the Partner-reported tab, labelled with the sending system and facility, and never mixed with readings taken here.',
     'consent_request_title' => 'Ask the patient for access',
     'consent_request_hint' => 'The patient receives the request on their phone and decides. If they approve, this facility can open the chart for 24 hours.',
     'consent_purpose' => 'Reason',

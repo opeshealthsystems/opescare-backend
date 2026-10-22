@@ -89,6 +89,7 @@ return [
         'vitals'             => 'Vital signs',
         'documents'          => 'Documents',
         'immunization'       => 'Immunizations',
+        'partner_reported'  => 'Readings sent by partner systems',
         'patient_reported_intake' => 'Your pre-consult answers',
         'triage'             => 'Triage',
         'pain_sites'         => 'Where it hurts (pain sites)',

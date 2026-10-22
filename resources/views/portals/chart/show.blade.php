@@ -152,8 +152,8 @@
             </ul></div>
         </section>
 
-        {{-- Partner-pushed data (fhir_partner_*) is deliberately absent; see
-             App\Services\Chart\PatientChartService. --}}
+        {{-- Partner-pushed data (fhir_partner_*) has its own tab; see
+             App\Services\Chart\PartnerReadingsService. --}}
         <p class="odc-hint"><i data-lucide="info"></i> {{ __('chart.partner_notice') }}</p>
     </aside>
 </div>

@@ -66,12 +66,14 @@ final class ChartSummaryBuilder
         'care_team'     => 'care_team',
         'family'        => 'family_links',
         'access'        => 'access_log',
+        'partner'       => 'partner_reported',
     ];
 
     public function __construct(
         private readonly PatientChartService $chart,
         private readonly PainSiteService $pain,
         private readonly ConsentService $consents,
+        private readonly PartnerReadingsService $partner,
     ) {
     }
 
@@ -170,6 +172,15 @@ final class ChartSummaryBuilder
             $data['guardians']        = $this->guardians($patient);
             $data['emergencyContact'] = $this->emergencyContact($patient);
             $mark('family');
+        }
+
+        // Partner-reported: a count and the newest few, in their own card.
+        // Never passed to kpis()/trend() — those are facility readings only.
+        if ($open('partner')) {
+            $partner = $this->partner->forPatient($patient->id, 1, 3);
+            $data['partnerReadings'] = $partner['items'];
+            $data['partnerCount']    = $partner['total'];
+            $mark('partner');
         }
 
         if ($open('access')) {

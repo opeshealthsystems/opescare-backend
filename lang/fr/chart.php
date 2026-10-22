@@ -35,6 +35,7 @@ return [
         'preconsult'    => 'Pré-consultation',
         'triage'        => 'Historique de triage',
         'documents'     => 'Documents',
+        'partner_reported' => 'Transmis par des partenaires',
     ],
 
     // ── Fondement et périmètre ────────────────────────────────────────────
@@ -213,7 +214,7 @@ return [
     'link_queue'      => 'File des patients',
     'link_blood'      => 'Demandes de sang',
     'read_only'       => 'Lecture seule. Rien sur cette page n’écrit dans le dossier.',
-    'partner_notice'  => 'Les données poussées par des systèmes partenaires via l’API d’interopérabilité ne sont pas affichées sur ce dossier.',
+    'partner_notice'  => 'Les mesures envoyées par des systèmes partenaires sont dans l’onglet Transmis par des partenaires, avec le système et l’établissement d’envoi, et ne sont jamais mêlées aux mesures prises ici.',
     'consent_request_title' => "Demander l'accès au patient",
     'consent_request_hint' => "Le patient reçoit la demande sur son téléphone et décide. S'il accepte, cet établissement peut ouvrir le dossier pendant 24 heures.",
     'consent_purpose' => 'Motif',

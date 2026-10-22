@@ -69,6 +69,7 @@ return [
         'vitals'             => 'Signes vitaux',
         'documents'          => 'Documents',
         'immunization'       => 'Vaccinations',
+        'partner_reported'  => 'Mesures transmises par des systèmes partenaires',
         'patient_reported_intake' => 'Vos réponses de pré-consultation',
         'triage'             => 'Triage',
         'pain_sites'         => 'Où vous avez mal (sites douloureux)',

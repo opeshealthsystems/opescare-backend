@@ -39,12 +39,13 @@ use Illuminate\Support\Facades\DB;
  * inferred from an empty list). Every method here is a read; there is no write
  * to any clinical table and no delete anywhere in this service.
  *
- * NOT READ, DELIBERATELY: the `fhir_partner_*` tables. How partner-asserted
- * observations, reports and immunizations should sit beside facility-measured
- * rows on a clinician's screen is an open clinical decision
+ * NOT READ HERE, DELIBERATELY: the `fhir_partner_*` tables. The owner decided
+ * (2026-10-22) that partner-asserted readings are shown, but on their OWN tab
+ * (`partner_reported`), read by PartnerReadingsService and labelled with the
+ * sending facility and system. No method in this service may merge them into
+ * facility vitals, labs or immunisations, or into any trend
  * (App\Enums\VitalProvenance::PartnerReported documents why they are not the
- * same act). Until that decision is made, this chart shows none of them, and
- * says nothing — an absence here is not a claim that no partner data exists.
+ * same act).
  */
 final class PatientChartService
 {
@@ -71,6 +72,9 @@ final class PatientChartService
         'preconsult'    => ['patient_reported_intake', 'PreconsultSubmission'],
         'triage'        => ['triage',                  'TriageRecord'],
         'documents'     => ['documents',               'OfficialDocument'],
+        // Partner systems' FHIR pushes — their own tab and their own audit
+        // category, never a section of the facility's vitals or labs.
+        'partner_reported' => ['partner_reported',     'PartnerObservation'],
     ];
 
     /** `prescriptions.status` values that are a CURRENT medicine. */
