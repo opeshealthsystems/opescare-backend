@@ -43,10 +43,10 @@ return [
     'apk' => [
         'url' => env('MOBILE_APK_URL', '/downloads/opescare.apk'),
         'version' => env('MOBILE_LATEST_VERSION', '1.5.0'),
-        'build' => (int) env('MOBILE_APK_BUILD', 15),
-        'released' => env('MOBILE_APK_RELEASED', '2026-10-18'),
-        'sha256' => env('MOBILE_APK_SHA256', '8113330835afe6951311fa6fe5c3dc7bacc36235519afb81cceb663238507478'),
-        'size' => (int) env('MOBILE_APK_SIZE', 144855865),
+        'build' => (int) env('MOBILE_APK_BUILD', 16),
+        'released' => env('MOBILE_APK_RELEASED', '2026-10-22'),
+        'sha256' => env('MOBILE_APK_SHA256', '475130d2fbd36475086be72627e1fd764fdd6f8d49637239a5420142d8d3b408'),
+        'size' => (int) env('MOBILE_APK_SIZE', 144972149),
     ],
 
 ];
