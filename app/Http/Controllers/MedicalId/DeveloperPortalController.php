@@ -398,6 +398,12 @@ class DeveloperPortalController extends Controller
             'insurance:read',
             'public_health:read',
             'webhooks:manage',
+            // FHIR R4 ingest (routes/fhir.php). Without these a partner (e.g.
+            // OPES Triage) could never request the scopes the ingest routes
+            // check, so no self-service app could ever reach /api/fhir/R4.
+            \App\Http\Controllers\Api\Fhir\FhirIngestController::SCOPE_OBSERVATION,
+            \App\Http\Controllers\Api\Fhir\FhirIngestController::SCOPE_DIAGNOSTIC_REPORT,
+            \App\Http\Controllers\Api\Fhir\FhirIngestController::SCOPE_IMMUNIZATION,
         ];
 
         return view('portals.developer.create_production_request', compact(
