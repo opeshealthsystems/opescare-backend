@@ -44,7 +44,7 @@ class OverpassClient
      * nicety: it is how an operator asks a client to slow down instead of
      * null-routing it.
      */
-    public const USER_AGENT = 'OpesCare-FacilityImporter/1.0 (+https://opescare.cloud; facility-data@opescare.cloud)';
+    public const USER_AGENT = 'OpesCare-FacilityImporter/1.0 (+https://opescare.com; facility-data@opescare.com)';
 
     public const DEFAULT_ENDPOINT = 'https://overpass-api.de/api/interpreter';
 

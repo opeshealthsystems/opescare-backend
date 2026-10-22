@@ -13,7 +13,7 @@
         The facility-side pitch for hospitals and clinics: claim the listing,
         report blood availability, take bookings — all free, all on Finder.
         Institutions that came looking for the full OpesCare platform (records,
-        interoperability, APIs) get an honest pointer to opescare.cloud instead
+        interoperability, APIs) get a pointer to /solutions on opescare.com instead
         of hospital-sales copy on a consumer product.
     --}}
     <style>
@@ -98,9 +98,9 @@
                 <div class="f-card">
                     <h2>{{ __('finder_story.hospitals.platform_title') }}</h2>
                     <p class="f-muted">{{ __('finder_story.hospitals.platform_p') }}</p>
-                    <a class="f-btn fs-platform-cta" href="https://opescare.cloud" rel="noopener">
+                    <a class="f-btn fs-platform-cta" href="{{ route('public.solutions.index') }}">
                         {{ __('finder_story.hospitals.platform_cta') }}
-                        @include('partials.finder.icon', ['name' => 'external-link', 'size' => 16])
+                        @include('partials.finder.icon', ['name' => 'arrow-right', 'size' => 16])
                     </a>
                 </div>
             </div>

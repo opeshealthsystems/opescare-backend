@@ -29,16 +29,16 @@ class ApiPlanQuotaTest extends TestCase
         $this->assertSame(75000, ApiPlan::forKey('growth')->price_xaf);
     }
 
-    public function test_public_pricing_page_hands_developers_to_the_platform(): void
+    public function test_public_pricing_page_hands_developers_to_the_developer_page(): void
     {
-        // API plans still exist and are enforced (the rest of this file), but
-        // the marketing page for them belongs to the OpesCare platform, not
-        // the consumer Finder. The route survives for old links and now hands
-        // developers to opescare.cloud.
+        // API plans still exist and are enforced (the rest of this file); the
+        // plans are shown on /developers. The old route survives for old links
+        // and points at the developer page on opescare.com — never opescare.cloud.
         $res = $this->get('/developers/pricing');
 
         $res->assertOk();
-        $res->assertSee('opescare.cloud');
+        $res->assertSee(route('public.developers'), false);
+        $res->assertDontSee('opescare.cloud');
         $res->assertSee(__('finder_story.redirect.heading'));
     }
 

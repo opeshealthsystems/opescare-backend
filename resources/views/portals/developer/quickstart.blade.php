@@ -20,7 +20,7 @@
         . "    \"status\": \"final\",\n"
         . "    \"category\": [{\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\", \"code\": \"vital-signs\"}]}],\n"
         . "    \"code\": {\"coding\": [{\"system\": \"http://loinc.org\", \"code\": \"8867-4\", \"display\": \"Heart rate\"}]},\n"
-        . "    \"subject\": {\"identifier\": {\"system\": \"https://opescare.cloud/health-id\", \"value\": \"OC-XXXX-XXXX-XXXX\"}},\n"
+        . "    \"subject\": {\"identifier\": {\"system\": \"https://opescare.com/fhir/health-id\", \"value\": \"CM-HID-XXXX-XXXX-XXXX\"}},\n"
         . "    \"effectiveDateTime\": \"" . now()->toIso8601String() . "\",\n"
         . "    \"valueQuantity\": {\"value\": 72, \"unit\": \"/min\", \"system\": \"http://unitsofmeasure.org\", \"code\": \"/min\"}\n"
         . "  }'";

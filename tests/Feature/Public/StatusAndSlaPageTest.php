@@ -36,15 +36,16 @@ class StatusAndSlaPageTest extends TestCase
         $res->assertSee('Scheduled DB upgrade');
     }
 
-    public function test_sla_page_hands_institutions_to_the_platform(): void
+    public function test_sla_page_points_institutions_to_opescare_com_pages(): void
     {
-        // The SLA belongs to the OpesCare platform (institutions), not the
-        // consumer Finder. The route survives for old links, but the page now
-        // says so honestly and points both audiences the right way.
+        // No published SLA page; the route survives for old links and points
+        // institutions at contact + status on opescare.com, never opescare.cloud.
         $res = $this->get('/sla');
 
         $res->assertOk();
-        $res->assertSee('opescare.cloud');
+        $res->assertDontSee('opescare.cloud');
+        $res->assertSee(route('public.contact'), false);
+        $res->assertSee(route('public.status'), false);
         $res->assertSee(__('finder_story.redirect.heading'));
         $res->assertDontSee('Service credits');
     }

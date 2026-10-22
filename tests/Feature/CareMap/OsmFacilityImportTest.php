@@ -733,7 +733,7 @@ class OsmFacilityImportTest extends TestCase
             $agent = $request->header('User-Agent')[0] ?? '';
 
             return str_contains($agent, 'OpesCare')
-                && str_contains($agent, 'opescare.cloud');
+                && str_contains($agent, 'opescare.com');
         });
     }
 

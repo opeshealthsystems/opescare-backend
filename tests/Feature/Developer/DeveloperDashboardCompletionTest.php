@@ -282,6 +282,9 @@ class DeveloperDashboardCompletionTest extends TestCase
             ->assertSee(url('/api/v1/connect/auth/token'))
             ->assertSee(url('/api/fhir/R4/metadata'))
             ->assertSee('YOUR_CLIENT_SECRET')
+            ->assertSee('https://opescare.com/fhir/health-id')
+            ->assertSee('CM-HID-XXXX-XXXX-XXXX')
+            ->assertDontSee('opescare.cloud')
             ->assertDontSee('sk_sandbox_PLAINTEXT')
             ->assertDontSee($app->client_secret)
             // Honest about what a facility-less sandbox app can and cannot do.

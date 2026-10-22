@@ -228,8 +228,8 @@ return [
         'step4'       => 'Once approved, update your page, report availability and manage bookings.',
 
         'platform_title' => 'Looking for the OpesCare platform?',
-        'platform_p'     => 'The full OpesCare health platform for hospitals and institutions — health records, interoperability, developer APIs and institutional agreements — is a separate product. It lives at opescare.cloud.',
-        'platform_cta'   => 'Visit opescare.cloud',
+        'platform_p'     => 'The full OpesCare health platform for hospitals and institutions — health records, interoperability, developer APIs and institutional agreements — lives here on opescare.com. See the solutions for hospitals and institutions, or build on the API from the developer page.',
+        'platform_cta'   => 'Explore solutions',
 
         'cta_primary'   => 'Find your facility',
         'cta_secondary' => 'Create an account',
@@ -247,13 +247,21 @@ return [
 
     // ── Platform pages that no longer belong on this product ───────────────
     'redirect' => [
-        'meta_description' => 'This page belongs to the OpesCare health platform for hospitals and institutions. OpesCare is the free tool for finding care in Cameroon.',
+        'meta_description' => 'OpesCare for hospitals, institutions and developers: solutions, the developer API, and how to reach the team. OpesCare is also the free tool for finding care in Cameroon.',
         'eyebrow'          => 'OpesCare',
-        'heading'          => 'This page belongs to the OpesCare platform',
-        'lead'             => 'You have reached OpesCare — the free tool for finding medicine, blood and care in Cameroon. What you were looking for is part of the OpesCare health platform for hospitals and institutions, which is a separate product.',
-        'platform_title'   => 'Looking for the OpesCare platform?',
-        'platform_p'       => 'Interoperability, developer APIs and documentation, institutional pricing, demos and service agreements live on the platform site.',
-        'platform_cta'     => 'Visit opescare.cloud',
+        'heading'          => 'Where to go from here',
+        'lead'             => 'You have reached OpesCare — the free tool for finding medicine, blood and care in Cameroon, and the health platform for hospitals and institutions. Everything for institutions and developers is here on opescare.com.',
+        'platform_title'   => 'For institutions and developers',
+        'platform_p'       => 'Explore the solutions for your organisation, send us a request, or build on the OpesCare API. For pricing, agreements and anything else, contact the team.',
+        'platform_cta'     => 'Explore solutions',
+        'links'            => [
+            'solutions'  => 'Explore solutions',
+            'request'    => 'Request a solution',
+            'developers' => 'Developer page',
+            'docs'       => 'API documentation',
+            'contact'    => 'Contact the team',
+            'status'     => 'Service status',
+        ],
         'consumer_title'   => 'Looking for care?',
         'consumer_p'       => 'Finder helps you locate facilities, medicine and blood near you — free, in English and in French.',
         'privacy_note'     => 'Wondering how Finder handles your data? The privacy policy explains it in plain language.',

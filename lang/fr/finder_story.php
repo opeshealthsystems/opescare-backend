@@ -224,8 +224,8 @@ return [
         'step4'       => "Une fois la demande approuvée, mettez votre fiche à jour, déclarez vos disponibilités et gérez vos rendez-vous.",
 
         'platform_title' => 'Vous cherchez la plateforme OpesCare ?',
-        'platform_p'     => "La plateforme de santé OpesCare complète pour les hôpitaux et institutions — dossiers de santé, interopérabilité, API développeurs et accords institutionnels — est un produit distinct. Elle vit sur opescare.cloud.",
-        'platform_cta'   => 'Aller sur opescare.cloud',
+        'platform_p'     => "La plateforme de santé OpesCare complète pour les hôpitaux et institutions — dossiers de santé, interopérabilité, API développeurs et accords institutionnels — se trouve ici, sur opescare.com. Consultez les solutions pour les hôpitaux et institutions, ou construisez sur l'API depuis la page développeurs.",
+        'platform_cta'   => 'Voir les solutions',
 
         'cta_primary'   => 'Retrouver votre établissement',
         'cta_secondary' => 'Créer un compte',
@@ -243,13 +243,21 @@ return [
 
     // ── Pages plateforme qui n'ont plus leur place sur ce produit ──────────
     'redirect' => [
-        'meta_description' => "Cette page appartient à la plateforme de santé OpesCare pour les hôpitaux et institutions. OpesCare est l'outil gratuit pour trouver des soins au Cameroun.",
+        'meta_description' => "OpesCare pour les hôpitaux, institutions et développeurs : solutions, API développeurs et comment joindre l'équipe. OpesCare est aussi l'outil gratuit pour trouver des soins au Cameroun.",
         'eyebrow'          => 'OpesCare',
-        'heading'          => 'Cette page appartient à la plateforme OpesCare',
-        'lead'             => "Vous êtes sur OpesCare — l'outil gratuit pour trouver médicaments, sang et soins au Cameroun. Ce que vous cherchiez fait partie de la plateforme de santé OpesCare pour les hôpitaux et institutions, qui est un produit distinct.",
-        'platform_title'   => 'Vous cherchez la plateforme OpesCare ?',
-        'platform_p'       => "L'interopérabilité, les API et la documentation développeurs, les tarifs institutionnels, les démonstrations et les accords de service vivent sur le site de la plateforme.",
-        'platform_cta'     => 'Aller sur opescare.cloud',
+        'heading'          => 'Par où continuer',
+        'lead'             => "Vous êtes sur OpesCare — l'outil gratuit pour trouver médicaments, sang et soins au Cameroun, et la plateforme de santé pour les hôpitaux et institutions. Tout ce qui concerne les institutions et les développeurs se trouve ici, sur opescare.com.",
+        'platform_title'   => 'Pour les institutions et les développeurs',
+        'platform_p'       => "Découvrez les solutions pour votre organisation, envoyez-nous une demande ou construisez sur l'API OpesCare. Pour les tarifs, les accords et tout le reste, contactez l'équipe.",
+        'platform_cta'     => 'Voir les solutions',
+        'links'            => [
+            'solutions'  => 'Voir les solutions',
+            'request'    => 'Demander une solution',
+            'developers' => 'Page développeurs',
+            'docs'       => 'Documentation API',
+            'contact'    => "Contacter l'équipe",
+            'status'     => 'État du service',
+        ],
         'consumer_title'   => 'Vous cherchez des soins ?',
         'consumer_p'       => "Le Finder vous aide à localiser établissements, médicaments et sang près de chez vous — gratuitement, en français et en anglais.",
         'privacy_note'     => "Vous vous demandez comment le Finder traite vos données ? La politique de confidentialité l'explique en langage clair.",

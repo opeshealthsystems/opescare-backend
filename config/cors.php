@@ -19,7 +19,7 @@ return [
 
     'allowed_origins' => array_filter(array_map('trim', explode(',', env(
         'CORS_ALLOWED_ORIGINS',
-        'https://opescare.cloud,https://www.opescare.cloud'
+        'https://opescare.com,https://www.opescare.com,https://opescare.cloud,https://www.opescare.cloud'
     )))),
 
     /*

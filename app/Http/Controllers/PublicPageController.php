@@ -254,7 +254,7 @@ class PublicPageController extends Controller
 
     public function developers()
     {
-        return view('public.developers');
+        return view('public.developers', ['plans' => \App\Models\ApiPlan::public()]);
     }
 
     public function security()
