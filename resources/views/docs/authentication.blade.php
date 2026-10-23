@@ -127,10 +127,11 @@ var response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandler
 <table class="docs-table">
     <thead><tr><th>Scope</th><th>Description</th><th>Risk Level</th></tr></thead>
     <tbody>
+        <tr><td><code>health_id:read</code></td><td>Resolve and verify patient Health IDs (<code>/patients/resolve</code>, <code>/patients/verify/{health_id}</code>); granted to sandbox apps</td><td>Low</td></tr>
         <tr><td><code>health_id:verify</code></td><td>Verify and resolve patient Health IDs</td><td>Low</td></tr>
-        <tr><td><code>patients:read</code></td><td>Read consented patient summary and clinical data</td><td>Medium</td></tr>
-        <tr><td><code>consents:read</code></td><td>Check consent grant status</td><td>Low</td></tr>
-        <tr><td><code>consents:write</code></td><td>Request patient consent</td><td>Low</td></tr>
+        <tr><td><code>patients:read</code></td><td>Read the consented patient summary (<code>/patients/{health_id}/summary</code> with <code>X-Consent-Grant-Id</code>); granted to sandbox apps</td><td>Medium</td></tr>
+        <tr><td><code>consents:read</code></td><td>Check your facility's consent status by Health ID (<code>/consents/status/{health_id}</code>); granted to sandbox apps</td><td>Low</td></tr>
+        <tr><td><code>consents:write</code></td><td>Request patient consent by Health ID (<code>/consents/request-medical-id</code>); production, facility-bound apps</td><td>Low</td></tr>
         <tr><td><code>encounters:write</code></td><td>Push clinical encounters and recommendations</td><td>High</td></tr>
         <tr><td><code>labs:read</code></td><td>Read lab orders and results</td><td>Medium</td></tr>
         <tr><td><code>labs:write</code></td><td>Push lab results and interpretations</td><td>High</td></tr>

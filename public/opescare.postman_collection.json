@@ -587,6 +587,70 @@
                     }
                 },
                 {
+                    "name": "Ask a patient for consent by Health ID (facility from the token)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{bearerToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/connect/consents/request-medical-id",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "connect",
+                                "consents",
+                                "request-medical-id"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "The token facility's consent status with a patient",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{bearerToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/connect/consents/status/{health_id}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "connect",
+                                "consents",
+                                "status",
+                                "{health_id}"
+                            ]
+                        }
+                    }
+                },
+                {
                     "name": "Sync Blood Stock",
                     "request": {
                         "method": "POST",
@@ -661,6 +725,96 @@
                                     "language": "json"
                                 }
                             }
+                        }
+                    }
+                },
+                {
+                    "name": "Resolve a patient by Health ID or demographics (never creates)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{bearerToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/connect/patients/resolve",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "connect",
+                                "patients",
+                                "resolve"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Verify a Health ID (format, check block, registration, status)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{bearerToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/connect/patients/verify/{health_id}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "connect",
+                                "patients",
+                                "verify",
+                                "{health_id}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Pull the consented patient summary",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{bearerToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/connect/patients/{health_id}/summary",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "connect",
+                                "patients",
+                                "{health_id}",
+                                "summary"
+                            ]
                         }
                     }
                 },
@@ -7173,6 +7327,62 @@
                     }
                 },
                 {
+                    "name": "List the pain sites sent at check-in for this appointment",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/mobile/preconsult/appointments/{appointment}/pain-sites",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "mobile",
+                                "preconsult",
+                                "appointments",
+                                "{appointment}",
+                                "pain-sites"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Report where it hurts at pre-consult check-in",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/mobile/preconsult/appointments/{appointment}/pain-sites",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "mobile",
+                                "preconsult",
+                                "appointments",
+                                "{appointment}",
+                                "pain-sites"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
                     "name": "Submit",
                     "request": {
                         "method": "POST",
@@ -7595,6 +7805,25 @@
                                 "imported",
                                 "{id}",
                                 "file"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "The patient's partner-reported readings, labelled and apart from facility readings",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/mobile/records/partner-readings",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "mobile",
+                                "records",
+                                "partner-readings"
                             ]
                         }
                     }

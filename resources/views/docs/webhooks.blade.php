@@ -42,9 +42,14 @@
 <table class="docs-table">
     <thead><tr><th>Event</th><th>Triggered When</th></tr></thead>
     <tbody>
-        <tr><td><code>lab_result.released</code></td><td>A laboratory result is released for a patient of your facility</td></tr>
-        <tr><td><code>prescription.issued</code></td><td>A prescription is issued at your facility</td></tr>
-        <tr><td><code>consent.granted</code></td><td>A patient approves a consent request from your facility</td></tr>
+        <tr><td><code>consent.granted</code></td><td>A patient approves a consent request from your facility. <code>resource</code>: <code>{grant_id, health_id, facility_id, scope[], status, granted_at, expires_at}</code>; send <code>grant_id</code> as <code>X-Consent-Grant-Id</code> on the record pull</td></tr>
+        <tr><td><code>consent.denied</code></td><td>The patient refuses your request. <code>{grant_id: null, consent_id, health_id, facility_id, scope[], status: "denied", denied_at}</code></td></tr>
+        <tr><td><code>consent.revoked</code></td><td>The patient withdraws a grant. <code>{grant_id, consent_id, health_id, facility_id, scope[], status: "revoked", expires_at, revoked_at}</code></td></tr>
+        <tr><td><code>consent.expired</code></td><td>A grant reached its expiry (swept hourly). <code>{grant_id, consent_id, health_id, facility_id, scope[], status: "expired", expires_at, expired_at}</code></td></tr>
+        <tr><td><code>lab_result.released</code></td><td>A laboratory result is released for a patient of your facility. <code>{lab_order_id, health_id, facility_id, test_code, test_name, status, released_at}</code></td></tr>
+        <tr><td><code>prescription.issued</code></td><td>A prescription is issued at your facility. <code>{prescription_id, reference, health_id, facility_id, status, item_count, prescribed_at, expires_at}</code></td></tr>
+        <tr><td><code>patient.merged</code></td><td>Two Health IDs of one person are merged (reviewed by a person; reversible). Sent to facilities holding an active grant from either. <code>{merge_id, retired_health_id, survivor_health_id, facility_id, status: "merged", merged_at}</code>; the retired id keeps resolving as an alias</td></tr>
+        <tr><td><code>patient.unmerged</code></td><td>A merge is reversed. <code>{merge_id, retired_health_id, survivor_health_id, facility_id, status: "unmerged", unmerged_at}</code></td></tr>
     </tbody>
 </table>
 
@@ -54,30 +59,26 @@
     <div class="docs-code-tabs"><button class="docs-code-tab active" data-lang="json">JSON</button></div>
     <div class="docs-code-pane active" data-lang="json">
 <pre>{
-  "id":         "evt_01HX9K2ABCD",
-  "type":       "lab_result.released",
-  "version":    "1.0",
-  "created_at": "2026-06-01T10:30:00Z",
-  "data": {
-    "health_id":     "CM-HID-7KQ9-MP42-X8D1",
-    "lab_result_id": "lr_xxxxxx",
-    "test_name":     "Complete Blood Count",
-    "flagged":       true,
-    "facility_id":   "00000000-0000-0000-0000-100000000001"
+  "event_type":     "consent.granted",
+  "schema_version": "v1",
+  "occurred_at":    "2026-10-23T10:30:00+00:00",
+  "resource": {
+    "grant_id":    "9d2f0c4e-0000-0000-0000-000000000000",
+    "health_id":   "CM-HID-7KQ9-MP42-X8D1",
+    "facility_id": "00000000-0000-0000-0000-100000000001",
+    "scope":       ["patients:read"],
+    "status":      "active",
+    "granted_at":  "2026-10-23T10:30:00+00:00",
+    "expires_at":  "2026-11-22T10:30:00+00:00"
   },
-  "meta": {
-    "organization_id": "org-uuid",
-    "facility_id":     "00000000-0000-0000-0000-100000000001",
-    "environment":     "production",
-    "request_id":      "req-uuid"
-  }
+  "event_id": "01a16a00-0000-0000-0000-000000000000"
 }</pre>
     </div>
 </div>
 
 <div class="docs-callout info">
     <i data-lucide="info" class="docs-icon"></i>
-    <div>The event type is in the <code>type</code> field (not <code>event</code>). Payload sensitivity varies by event — most deliver only metadata by default. Contact support to request full payload delivery for specific events.</div>
+    <div>The event type is in <code>event_type</code>; dedupe on <code>event_id</code> (also sent as <code>X-OpesCare-Event-Id</code>). Payloads carry identifiers only, never names or clinical values: fetch the record over the API your grant opens. Failed deliveries are retried after 60 s and 300 s (3 attempts in total).</div>
 </div>
 
 <h2 id="verification">Signature Verification</h2>

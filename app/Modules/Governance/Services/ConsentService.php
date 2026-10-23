@@ -230,6 +230,9 @@ class ConsentService
             after: ['status' => $request->status],
         );
 
+        // Partner webhook (consent.denied) — never able to fail the refusal.
+        \App\Modules\Connect\Services\WebhookEventPublisher::consentDenied($request);
+
         return $request;
     }
 
@@ -381,6 +384,9 @@ class ConsentService
             after: ['status' => 'revoked', 'grant_id' => $grant->id],
             grantId: $grant->id,
         );
+
+        // Partner webhook (consent.revoked) — never able to fail the revocation.
+        \App\Modules\Connect\Services\WebhookEventPublisher::consentRevoked($grant);
 
         return $grant;
     }

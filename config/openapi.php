@@ -202,6 +202,77 @@ return [
                 '401' => ['description' => 'Missing client credentials', 'content' => ['application/json' => ['schema' => ['$ref' => '#/components/schemas/Error']]]],
             ],
         ],
+        // ── Connect partner patient / consent API (PatientController, ConsentController) ──
+        'POST /api/v1/connect/patients/resolve' => [
+            'tags' => ['Connect'], 'summary' => 'Resolve a patient by Health ID or demographics (never creates)', 'operationId' => 'Connect_resolvePatient',
+            'description' => 'Scope health_id:read. Sandbox tokens see demo patients only. A demographic lookup needs consent_acknowledged=true before any search; an ambiguous match returns no Health ID.',
+            'security' => [['BearerAuth' => []]],
+            'requestBody' => $jsonBody(['type' => 'object', 'required' => ['purpose'], 'properties' => [
+                'health_id' => ['type' => 'string', 'maxLength' => 30],
+                'first_name' => ['type' => 'string'], 'last_name' => ['type' => 'string'], 'full_name' => ['type' => 'string'],
+                'date_of_birth' => ['type' => 'string', 'format' => 'date'], 'dob' => ['type' => 'string', 'format' => 'date'],
+                'sex' => ['type' => 'string', 'enum' => ['male', 'female']],
+                'phone_number' => ['type' => 'string'], 'phone' => ['type' => 'string'], 'country_code' => ['type' => 'string'],
+                'purpose' => ['type' => 'string'], 'consent_acknowledged' => ['type' => 'boolean'], 'external_reference' => ['type' => 'string'],
+            ]]),
+            'responses' => [
+                '200' => ['description' => 'found: {status, health_id, match{confidence, method}, patient{display_name (masked), sex, year_of_birth, country_code, verification_status, identity_status, active, verified}, next_action}'],
+                '404' => ['description' => 'HEALTH_ID_NOT_FOUND | PATIENT_NOT_FOUND'],
+                '409' => ['description' => 'AMBIGUOUS_MATCH (no Health IDs returned)'],
+                '422' => ['description' => 'MISSING_LOOKUP_CRITERIA | CONSENT_REQUIRED | INVALID_PAYLOAD'],
+            ],
+        ],
+        'GET /api/v1/connect/patients/verify/{health_id}' => [
+            'tags' => ['Connect'], 'summary' => 'Verify a Health ID (format, check block, registration, status)', 'operationId' => 'Connect_verifyHealthId',
+            'security' => [['BearerAuth' => []]],
+            'parameters' => [['name' => 'health_id', 'in' => 'path', 'required' => true, 'schema' => ['type' => 'string']]],
+            'responses' => [
+                '200' => ['description' => '{status: valid, health_id, active, verified, resolved_via_alias, queried_health_id, patient{...}}'],
+                '404' => ['description' => 'HEALTH_ID_NOT_FOUND'],
+                '422' => ['description' => 'HEALTH_ID_INVALID_FORMAT (format or check block)'],
+            ],
+        ],
+        'GET /api/v1/connect/patients/{health_id}/summary' => [
+            'tags' => ['Connect'], 'summary' => 'Pull the consented patient summary', 'operationId' => 'Connect_patientSummary',
+            'description' => 'Scope patients:read and an active consent grant from this patient to the token facility covering patients:read.',
+            'security' => [['BearerAuth' => []]],
+            'parameters' => [
+                ['name' => 'health_id', 'in' => 'path', 'required' => true, 'schema' => ['type' => 'string']],
+                ['name' => 'X-Consent-Grant-Id', 'in' => 'header', 'required' => true, 'schema' => $uuid],
+                ['name' => 'X-Purpose-Of-Use', 'in' => 'header', 'required' => false, 'schema' => ['type' => 'string', 'default' => 'treatment']],
+            ],
+            'responses' => [
+                '200' => ['description' => '{status, health_id, summary_generated_at, verification_status, consent{grant_id, scope, expires_at}, demographics{...}, sections{recent_visits, recent_lab_results, medications, allergies, chronic_conditions, immunizations}}'],
+                '403' => ['description' => 'FACILITY_REQUIRED | CONSENT_REQUIRED (reason: facility_mismatch | scope_insufficient when applicable)'],
+            ],
+        ],
+        'POST /api/v1/connect/consents/request-medical-id' => [
+            'tags' => ['Connect'], 'summary' => 'Ask a patient for consent by Health ID (facility from the token)', 'operationId' => 'Connect_requestConsent',
+            'security' => [['BearerAuth' => []]],
+            'requestBody' => $jsonBody(['type' => 'object', 'required' => ['health_id', 'purpose', 'requested_scope'], 'properties' => [
+                'health_id' => ['type' => 'string'], 'purpose' => ['type' => 'string', 'pattern' => '^[a-z0-9_.:-]+$'],
+                'requested_scope' => ['type' => 'array', 'items' => ['type' => 'string', 'enum' => ['patients:read']]],
+                'expires_in_days' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 365, 'default' => 30],
+                'justification' => ['type' => 'string', 'maxLength' => 500],
+            ]]),
+            'responses' => [
+                '201' => ['description' => '{status: success, consent_id, request_id, consent_status: pending, grant_id: null, requested_scope, expires_in_days, expires_at, existing: false}'],
+                '200' => ['description' => 'Open request returned (existing: true) or already granted (consent_status: granted, grant_id, grant_expires_at)'],
+                '403' => ['description' => 'FACILITY_REQUIRED | HEALTH_ID_SUSPENDED'],
+                '404' => ['description' => 'HEALTH_ID_NOT_FOUND'],
+                '422' => ['description' => 'INVALID_PAYLOAD'],
+            ],
+        ],
+        'GET /api/v1/connect/consents/status/{health_id}' => [
+            'tags' => ['Connect'], 'summary' => 'The token facility\'s consent status with a patient', 'operationId' => 'Connect_consentStatus',
+            'security' => [['BearerAuth' => []]],
+            'parameters' => [['name' => 'health_id', 'in' => 'path', 'required' => true, 'schema' => ['type' => 'string']]],
+            'responses' => [
+                '200' => ['description' => '{health_id, status (granted|pending|denied|revoked|expired|none), consent_status, grant_id, request_id, id, scope[], expires_at}'],
+                '403' => ['description' => 'FACILITY_REQUIRED'],
+                '404' => ['description' => 'HEALTH_ID_NOT_FOUND'],
+            ],
+        ],
         'GET /.well-known/jwks.json' => [
             'tags' => ['Discovery'], 'summary' => 'JSON Web Key Set (RFC 7517)', 'operationId' => 'Discovery_jwks', 'security' => [],
             'responses' => ['200' => ['description' => 'JWK Set', 'content' => ['application/json' => ['schema' => ['$ref' => '#/components/schemas/Jwks']]]]],

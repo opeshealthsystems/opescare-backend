@@ -76,10 +76,24 @@ class ExpireLapsedConsentGrants extends Command
         // updateQuietly-equivalent: a bulk update fires no model events, which is
         // what we want — this is a clock catching up with itself, not a consent
         // decision, and it must not look like one in any listener or audit trail.
-        $updated = $query->update([
-            'status'     => 'expired',
-            'updated_at' => $now,
-        ]);
+        //
+        // The ids are read first so each partner facility can be told
+        // (consent.expired) — a webhook is a notification to the grantee, not a
+        // consent decision, and it is sent only for rows this run flipped.
+        $ids = (clone $query)->pluck('id')->all();
+
+        $updated = ConsentGrant::withoutGlobalScopes()
+            ->whereIn('id', $ids)
+            ->where('status', 'active')
+            ->update([
+                'status'     => 'expired',
+                'updated_at' => $now,
+            ]);
+
+        foreach (array_chunk($ids, 500) as $chunk) {
+            ConsentGrant::withoutGlobalScopes()->whereIn('id', $chunk)->where('status', 'expired')->get()
+                ->each(fn (ConsentGrant $grant) => \App\Modules\Connect\Services\WebhookEventPublisher::consentExpired($grant));
+        }
 
         $this->info("Expired {$updated} lapsed consent grant(s).");
 

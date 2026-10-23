@@ -2,6 +2,7 @@
 
 namespace App\Modules\MasterPatientIndex\Services;
 
+use App\Modules\Connect\Services\WebhookEventPublisher;
 use App\Enums\AuditEventType;
 use App\Enums\IdentityStatus;
 use App\Models\AuditEvent;
@@ -150,7 +151,7 @@ final class PatientMergeService
             throw new InvalidArgumentException('MPI_MERGE_SAME_PATIENT');
         }
 
-        return DB::transaction(function () use ($survivor, $retired, $actorId, $reason, $candidate) {
+        $merge = DB::transaction(function () use ($survivor, $retired, $actorId, $reason, $candidate) {
             // Re-read both under a row lock, scope-blind: the caller may hold a
             // stale copy, and two operators merging the same pair at once must
             // serialise here rather than both succeed.
@@ -250,6 +251,11 @@ final class PatientMergeService
 
             return $merge;
         });
+
+        // Partner webhook (patient.merged), after commit; never able to fail the merge.
+        $this->notifyPartners($merge, merged: true);
+
+        return $merge;
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -274,7 +280,7 @@ final class PatientMergeService
             throw new RuntimeException('MPI_UNMERGE_PARTY_PURGED');
         }
 
-        return DB::transaction(function () use ($merge, $actorId, $reason) {
+        $merge = DB::transaction(function () use ($merge, $actorId, $reason) {
             $survivor = $this->lockedPatient($merge->survivor_patient_id);
             $retired  = $this->lockedPatient($merge->retired_patient_id);
 
@@ -365,6 +371,33 @@ final class PatientMergeService
 
             return $merge;
         });
+
+        // Partner webhook (patient.unmerged), after commit.
+        $this->notifyPartners($merge, merged: false);
+
+        return $merge;
+    }
+
+    /**
+     * patient.merged / patient.unmerged to the facilities holding an active
+     * consent grant from either party (WebhookEventPublisher). Best effort:
+     * a lookup or delivery failure never undoes the merge.
+     */
+    private function notifyPartners(PatientMerge $merge, bool $merged): void
+    {
+        rescue(function () use ($merge, $merged) {
+            $ids = array_values(array_filter([(string) $merge->survivor_patient_id, (string) $merge->retired_patient_id]));
+            $healthIds = Patient::withoutGlobalScope('isolate_demo')->whereIn('id', $ids)->pluck('health_id', 'id');
+            $survivor = (string) ($healthIds[(string) $merge->survivor_patient_id] ?? '');
+            $retired  = (string) ($healthIds[(string) $merge->retired_patient_id] ?? '');
+            if ($survivor === '' || $retired === '') {
+                return;
+            }
+
+            $merged
+                ? WebhookEventPublisher::patientMerged((string) $merge->getKey(), $retired, $survivor, $ids)
+                : WebhookEventPublisher::patientUnmerged((string) $merge->getKey(), $retired, $survivor, $ids);
+        }, null, report: false);
     }
 
     // ══════════════════════════════════════════════════════════════════════

@@ -4,7 +4,8 @@
 // the platform's sealed api.php remains authoritative for the platform.
 //
 // Kept: health, Connect auth + partner inventory stock ingest (+ widget session),
-// the mobile patient API for the Finder feature set (auth, profile, timeline, QR,
+// the Connect partner patient/consent API (resolve, verify, consent request/status,
+// consented summary pull — rebuilt 2026-10-23 for OPES Triage), the mobile patient API for the Finder feature set (auth, profile, timeline, QR,
 // privacy/governance, appointments, facilities, family, notifications, settings,
 // pharmacy/medicine finder), the public care-map finder API, and the demo reset
 // hook. Everything else (FHIR, Connect records/webhooks/reconciliation, clinical
@@ -52,6 +53,23 @@ Route::prefix('v1/connect')->group(function () {
         Route::post('/inventory/pharmacy-stock/sync', [\App\Http\Controllers\Api\V1\Connect\InventoryController::class, 'syncPharmacyStock']);
         Route::post('/inventory/blood-stock/sync', [\App\Http\Controllers\Api\V1\Connect\InventoryController::class, 'syncBloodStock']);
     });
+
+    // Partner patient + consent API (OPES Triage and other HIS). Each route names its
+    // scope on auth.bearer (403 insufficient_scope otherwise); the token's environment
+    // claim partitions the register (sandbox apps see demo patients only); facility-bound
+    // routes take the facility from the token alone. Lookups carry an extra per-client
+    // limiter (connect-lookup, 60/min) on top of the 200/min client budget. Audited to
+    // audit_events with identifiers only — never names, dates of birth or phone numbers.
+    Route::middleware(['auth.bearer:health_id:read', 'throttle.client:200,1', 'api.quota', 'throttle:connect-lookup'])->group(function () {
+        Route::post('/patients/resolve', [\App\Http\Controllers\Api\V1\Connect\PatientController::class, 'resolve']);
+        Route::get('/patients/verify/{health_id}', [\App\Http\Controllers\Api\V1\Connect\PatientController::class, 'verify']);
+    });
+    Route::middleware(['auth.bearer:patients:read', 'throttle.client:200,1', 'api.quota'])
+        ->get('/patients/{health_id}/summary', [\App\Http\Controllers\Api\V1\Connect\PatientController::class, 'summary']);
+    Route::middleware(['auth.bearer:consents:write', 'throttle.client:200,1', 'api.quota'])
+        ->post('/consents/request-medical-id', [\App\Http\Controllers\Api\V1\Connect\ConsentController::class, 'requestMedicalId']);
+    Route::middleware(['auth.bearer:consents:read', 'throttle.client:200,1', 'api.quota'])
+        ->get('/consents/status/{health_id}', [\App\Http\Controllers\Api\V1\Connect\ConsentController::class, 'status']);
 });
 
 /*

@@ -39,7 +39,7 @@ use Illuminate\Support\Str;
 class DeveloperExtController extends Controller
 {
     /** The only event types SendWebhookJob will ever be asked to deliver (docs/webhooks). */
-    public const EVENT_TYPES = ['consent.granted', 'lab_result.released', 'prescription.issued'];
+    public const EVENT_TYPES = \App\Modules\Connect\Services\WebhookEventPublisher::EVENT_TYPES;
 
     /** refusal_code (fhir_ingest_events) → FHIR OperationOutcome issue.code, as FhirOutcome renders it. */
     private const ISSUE_CODES = [

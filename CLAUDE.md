@@ -83,6 +83,7 @@ reverted:
 | Telemedicine | Still thin: book-to-consult only, no in-app video. |
 | DHIS2 monthly aggregate reporting | Live, admin-only (`routes/imports_dhis2.php`, `/admin/public-health/dhis2`, nav link in `_admin_nav`). This is *Finder reporting its own aggregates to MINSANTE* — a one-way push of counts, not the platform's DHIS2 data-exchange integration, which stays out. Recorded here 2026-10-12 so the "Deliberately absent" line above is not read as a reason to delete it. |
 | FHIR R4 / HL7 | **FHIR R4 inbound ingest is live** for partners (`routes/fhir.php`: bearer-scoped DiagnosticReport, Immunization, Observation, transaction; `tests/Feature/Fhir`) plus a patient FHIR export on mobile. Outbound FHIR server and HL7 v2 remain absent. Corrected 2026-10-18 — the code had shipped it. |
+| Connect partner patient/consent API | Added 2026-10-23 for OPES Triage (`routes/api.php` `v1/connect`: `patients/resolve`, `patients/verify/{health_id}`, `patients/{health_id}/summary`, `consents/request-medical-id`, `consents/status/{health_id}`; `PatientController`, `ConsentController`, `App\Services\Connect\*`; `tests/Feature/Connect/PartnerPatientApiTest.php`). Bearer scope per route, token `environment` partitions the register (sandbox → demo patients only), facility from the token only, resolve never creates a patient. Webhooks `consent.denied/revoked/expired`, `patient.merged/unmerged` join the original three. |
 
 ## Data invariants
 - **PostgreSQL** — never MySQL date functions (`DATE_FORMAT`); use

@@ -528,6 +528,12 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(30)->by($request->ip());
         });
 
+        // Connect patient lookups (resolve / verify) — per integration client, on top of
+        // the 200/min client budget, to bound Health ID / demographic enumeration.
+        RateLimiter::for('connect-lookup', function (Request $request) {
+            return Limit::perMinute(60)->by('connect-lookup|' . ($request->attributes->get('integration_client_id') ?: $request->ip()));
+        });
+
         // Patient portal rate limit — prevents QR spam, profile-scrape, and enumeration.
         // 120 requests per minute per authenticated user is generous for normal use
         // while blocking automated abuse (a QR-flood attack would hit this instantly).
